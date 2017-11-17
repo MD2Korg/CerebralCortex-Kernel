@@ -22,3 +22,16 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+class Data():
+    def __init__(self, CC):
+
+        self.CC = CC
+        self.configuration = CC.configuration
+
+        self.influxdbIP = self.configuration['influxdb']['host']
+        self.influxdbPort = self.configuration['influxdb']['port']
+        self.influxdbDatabase = self.configuration['influxdb']['database']
+        self.influxdbUser = self.configuration['influxdb']['db_user']
+        self.influxdbPassword = self.configuration['influxdb']['db_pass']

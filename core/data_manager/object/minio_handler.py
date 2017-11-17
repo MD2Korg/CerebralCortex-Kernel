@@ -22,3 +22,137 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import json
+import os
+from minio import Minio
+from minio.error import ResponseError
+from typing import List
+
+
+class MinioHandler():
+
+    def __init__(self):
+        db_url = self.host + ":" + self.port
+        self.minioClient = Minio(db_url, access_key=self.access_key, secret_key=self.secret_key, secure=self.secure)
+
+    ###################################################################
+    ################## GET DATA METHODS ###############################
+    ###################################################################
+    
+    def get_buckets(self) -> List:
+        """
+        returns all available buckets in Minio storage
+        :return: [{bucket-name: str, last_modified: str}], in case of an error [{"error": str}]
+        """
+        bucket_list = []
+        try:
+            for bucket in self.minioClient.list_buckets():
+                bucket_list.append({"bucket-name": bucket.name, "last_modified": str(bucket.creation_date)})
+        except Exception as e:
+            return [{"error": str(e)}]
+
+    def get_bucket_objects(self, bucket_name: str) -> List:
+        """
+        returns a list of all objects stored in the specified Minio bucket
+        :param bucket_name:
+        :return:{object-name:{stat1:str, stat2, str}},  in case of an error [{"error": str}]
+        """
+        objects_in_bucket = {}
+        objects_list = []
+        try:
+            objects = self.minioClient.list_objects(bucket_name, recursive=True)
+            for obj in objects:
+                object_stat = self.minioClient.stat_object(obj.bucket_name, obj.object_name)
+                object_stat = json.dumps(object_stat, default=lambda o: o.__dict__)
+                object_stat = json.loads(object_stat)
+                objects_in_bucket[obj.object_name] = object_stat
+                objects_list.append(objects_in_bucket)
+            return objects_list
+        except Exception as e:
+            return [{"error": str(e)}]
+
+    def get_object_stats(self, bucket_name: str, object_name: str) -> dict:
+        """
+        Returns properties (e.g., object type, last modified etc.) of an object stored in a specified bucket
+        :param bucket_name:
+        :param object_name:
+        :return: {stat1:str, stat2, str},  in case of an error {"error": str}
+        """
+        try:
+            if self.bucket_exist(bucket_name):
+                object_stat = self.minioClient.stat_object(bucket_name, object_name)
+                object_stat = json.dumps(object_stat, default=lambda o: o.__dict__)
+                object_stat = json.loads(object_stat)
+                return object_stat
+            else:
+                return [{"error": "Bucket does not exist"}]
+
+        except Exception as e:
+            return {"error": str(e)}
+
+    def get_object(self, bucket_name: str, object_name: str) -> dict:
+        """
+        Returns stored object (HttpResponse)
+        :param bucket_name:
+        :param object_name:
+        :return: object (HttpResponse), in case of an error {"error": str}
+        """
+        obj = {}
+        try:
+            if self.bucket_exist(bucket_name):
+                obj = self.minioClient.get_object(bucket_name, object_name)
+                return obj
+            else:
+                return {"error": "Bucket does not exist"}
+
+        except Exception as e:
+            return {"error": str(e)}
+
+    def is_bucket(self, bucket_name: str) -> bool:
+        """
+
+        :param bucket_name:
+        :return: True/False, in case of an error {"error": str}
+        """
+        try:
+            return self.minioClient.bucket_exists(bucket_name)
+        except ResponseError as e:
+            return {"error": str(e)}
+
+    ###################################################################
+    ################## STORE DATA METHODS #############################
+    ###################################################################
+
+    def create_bucket(self, bucket_name: str) -> bool:
+        """
+        creates a bucket
+        :param bucket_name:
+        """
+        if not bucket_name:
+            return {"error": "Bucket name cannot be empty"}
+        try:
+            self.minioClient.make_bucket(bucket_name, location=self.CC.timezone)
+            return True
+        except ResponseError as e:
+            return {"error": str(e)}
+
+    def upload_object(self, bucket_name: str, object_name: str, object_file_name: object) -> bool:
+        """
+        Uploads an object to Minio storage
+        :param bucket_name:
+        :param object_name:
+        :param object_file_name: it shall contain full path of a file with file name (e.g., /home/nasir/obj.zip)
+        :return: True/False, in case of an error {"error": str}
+        """
+        if not object_file_name:
+            return {"error": "File name cannot be empty"}
+        try:
+            file_stat = os.stat(object_file_name)
+            file_data = open(object_file_name, 'rb')
+            self.minioClient.put_object(bucket_name, object_name, file_data,
+                          file_stat.st_size, content_type='application/csv')
+            return True
+        except ResponseError as e:
+            return {"error": str(e)}
+

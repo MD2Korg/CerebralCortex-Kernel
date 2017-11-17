@@ -22,3 +22,19 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+from core.data_manager.object.minio_handler import MinioHandler
+
+
+class Data(MinioHandler):
+
+    def __init__(self, CC):
+
+        self.CC = CC
+        self.configuration = CC.configuration
+
+        self.host = self.configuration['minio']['host']
+        self.port = self.configuration['minio']['port']
+        self.access_key=self.configuration['minio']['access_key'],
+        self.secret_key=self.configuration['minio']['secret_key'],
+        self.secure=self.configuration['minio']['secure']
