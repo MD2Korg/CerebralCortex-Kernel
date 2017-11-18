@@ -23,20 +23,23 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import json
 
-class Data():
-    def __init__(self, CC):
-        self.CC = CC
-        self.configuration = CC.configuration
 
-        self.host_ip = self.configuration['cassandra']['host']
-        self.host_port = self.configuration['cassandra']['port']
-        self.keyspace_name = self.configuration['cassandra']['keyspace']
-        self.datapoint_table = self.configuration['cassandra']['datapoint_table']
-        self.batch_size = 64500
-
-        self.influxdbIP = self.configuration['influxdb']['host']
-        self.influxdbPort = self.configuration['influxdb']['port']
-        self.influxdbDatabase = self.configuration['influxdb']['database']
-        self.influxdbUser = self.configuration['influxdb']['db_user']
-        self.influxdbPassword = self.configuration['influxdb']['db_pass']
+def convert_sample(sample):
+    if isinstance(sample, list):
+        values = sample
+    elif isinstance(sample, tuple):
+        values = list(sample)
+    else:
+        try:
+            values = json.loads(sample)
+        except:
+            try:
+                values = [float(values)]
+            except:
+                try:
+                    values = list(map(float, values.split(',')))
+                except:
+                    values = sample
+    return values
