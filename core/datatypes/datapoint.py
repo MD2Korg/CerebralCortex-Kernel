@@ -23,10 +23,49 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from core.metadata_manager.annotations import Annotations
-from core.metadata_manager.data_descriptor import DataDescriptor
-from core.metadata_manager.execution_context import ExecutionContext
+from datetime import datetime
+from typing import Any
 
 
-class Metadata(Annotations, DataDescriptor, ExecutionContext):
-    pass
+class DataPoint:
+    def __init__(self,
+                 start_time: datetime = None,
+                 end_time: datetime = None,
+                 sample: Any = None):
+        self._start_time = start_time
+        self._end_time = end_time
+        self._sample = sample
+
+    @property
+    def sample(self):
+        return self._sample
+
+    @sample.setter
+    def sample(self, val):
+        self._sample = val
+
+    @property
+    def start_time(self):
+        return self._start_time
+
+    @start_time.setter
+    def start_time(self, val):
+        self._start_time = val
+
+    @property
+    def end_time(self):
+        return self._end_time
+
+    @end_time.setter
+    def end_time(self, val):
+        self._end_time = val
+
+    @classmethod
+    def from_tuple(cls, start_time: datetime, sample: Any, end_time: datetime = None):
+        return cls(start_time, end_time, sample)
+
+    def __str__(self):
+        return str(self.start_time) + " - " + str(self.sample)
+
+    def __repr__(self):
+        return 'DataPoint(' + ', '.join(map(str, [self.start_time, self.end_time, self.sample]))

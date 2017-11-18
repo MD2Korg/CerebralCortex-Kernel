@@ -25,9 +25,9 @@
 
 import mysql.connector
 
+
 class Data():
     def __init__(self, CC):
-
         self.CC = CC
         self.configuration = CC.configuration
         self.hostIP = self.configuration['mysql']['host']

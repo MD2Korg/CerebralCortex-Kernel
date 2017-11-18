@@ -25,13 +25,13 @@
 
 import json
 import os
+from typing import List
+
 from minio import Minio
 from minio.error import ResponseError
-from typing import List
 
 
 class MinioHandler():
-
     def __init__(self):
         db_url = self.host + ":" + self.port
         self.minioClient = Minio(db_url, access_key=self.access_key, secret_key=self.secret_key, secure=self.secure)
@@ -39,7 +39,7 @@ class MinioHandler():
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
-    
+
     def get_buckets(self) -> List:
         """
         returns all available buckets in Minio storage
@@ -137,22 +137,21 @@ class MinioHandler():
         except ResponseError as e:
             return {"error": str(e)}
 
-    def upload_object(self, bucket_name: str, object_name: str, object_file_name: object) -> bool:
+    def upload_object(self, bucket_name: str, object_name: str, object_filepath: object) -> bool:
         """
         Uploads an object to Minio storage
         :param bucket_name:
         :param object_name:
-        :param object_file_name: it shall contain full path of a file with file name (e.g., /home/nasir/obj.zip)
+        :param object_filepath: it shall contain full path of a file with file name (e.g., /home/nasir/obj.zip)
         :return: True/False, in case of an error {"error": str}
         """
-        if not object_file_name:
+        if not object_filepath:
             return {"error": "File name cannot be empty"}
         try:
-            file_stat = os.stat(object_file_name)
-            file_data = open(object_file_name, 'rb')
+            file_stat = os.stat(object_filepath)
+            file_data = open(object_filepath, 'rb')
             self.minioClient.put_object(bucket_name, object_name, file_data,
-                          file_stat.st_size, content_type='application/csv')
+                                        file_stat.st_size, content_type='application/csv')
             return True
         except ResponseError as e:
             return {"error": str(e)}
-

@@ -22,3 +22,25 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import yaml
+
+
+class ConfigHandler():
+    def __init__(self, filepath: str = None):
+        """
+        Initialization for the configuration object
+        :param filepath: path to a yml configuration file for Cerebral Cortex
+        """
+        if filepath is not None:
+            self.load_file(filepath)
+        else:
+            self.config = None
+
+    def load_file(self, filepath: str):
+        """
+        Helper function to load a yaml file
+        :param filepath: path to a yml configuration file for Cerebral Cortex
+        """
+        with open(filepath, 'r') as ymlfile:
+            self.config = yaml.load(ymlfile)

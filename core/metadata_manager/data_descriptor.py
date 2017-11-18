@@ -22,3 +22,36 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+class DataDescriptor:
+    def __init__(self,
+                 type_string: str = None,
+                 unit: str = None,
+                 descriptive_statistic: str = None):
+        self._type = type_string
+        self._unit = unit
+        self._descriptive_statistic = descriptive_statistic
+
+    @property
+    def type(self):
+        return self._type
+
+    @type.setter
+    def type(self, value):
+        self._type = value
+
+    @property
+    def unit(self):
+        return self._unit
+
+    @unit.setter
+    def unit(self, value):
+        self._unit = value
+
+    @property
+    def descriptive_statistic(self):
+        return self._descriptive_statistic
+
+    @descriptive_statistic.setter
+    def descriptive_statistic(self, value):
+        self._descriptive_statistic = value

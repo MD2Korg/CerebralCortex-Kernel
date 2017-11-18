@@ -22,3 +22,19 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+class Annotations:
+    def __init__(self,
+                 name: str = None,
+                 stream_identifier: int = None):
+        self._name = name
+        self._stream_identifier = stream_identifier
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def stream_identifier(self):
+        return self._stream_identifier

@@ -22,11 +22,9 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-from core.metadata_manager.annotations import Annotations
-from core.metadata_manager.data_descriptor import DataDescriptor
-from core.metadata_manager.execution_context import ExecutionContext
+from enum import Enum
 
 
-class Metadata(Annotations, DataDescriptor, ExecutionContext):
-    pass
+class StreamTypes(Enum):
+    DATASTREAM = 1,
+    ANNOTATIONSTREAM = 2,

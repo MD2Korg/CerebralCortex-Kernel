@@ -22,3 +22,13 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+from core.config_manager.config import Configuration
+
+
+class CerebralCortex:
+    def __init__(self, configuration_file, timezone='UTC'):
+        self.config_filepath = configuration_file
+        self.config = Configuration(filepath=configuration_file).config
+        self.timezone = timezone
