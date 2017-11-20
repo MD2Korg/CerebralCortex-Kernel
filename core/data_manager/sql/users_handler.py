@@ -32,7 +32,7 @@ from typing import List
 from pytz import timezone
 
 
-class StreamHandler():
+class UserHandler():
     def __init__(self):
         pass
 
