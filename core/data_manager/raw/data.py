@@ -36,9 +36,3 @@ class Data(StreamHandler):
         self.keyspace_name = self.configuration['cassandra']['keyspace']
         self.datapoint_table = self.configuration['cassandra']['datapoint_table']
         self.batch_size = 64500
-
-        self.influxdbIP = self.configuration['influxdb']['host']
-        self.influxdbPort = self.configuration['influxdb']['port']
-        self.influxdbDatabase = self.configuration['influxdb']['database']
-        self.influxdbUser = self.configuration['influxdb']['db_user']
-        self.influxdbPassword = self.configuration['influxdb']['db_pass']

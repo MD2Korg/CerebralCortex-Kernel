@@ -23,8 +23,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from core.data_manager.time_series.influxdb_handler import InfluxdbHandler
 
-class Data():
+
+class Data(InfluxdbHandler):
     def __init__(self, CC):
         self.CC = CC
         self.configuration = CC.configuration
