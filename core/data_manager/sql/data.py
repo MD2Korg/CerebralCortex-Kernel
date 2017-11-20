@@ -25,8 +25,10 @@
 
 import mysql.connector
 
+from core.data_manager.sql.stream_handler import StreamHandler
 
-class Data():
+
+class Data(StreamHandler):
     def __init__(self, CC):
         self.CC = CC
         self.configuration = CC.configuration

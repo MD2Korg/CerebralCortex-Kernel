@@ -23,8 +23,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from core.data_manager.raw.stream_handler import StreamHandler
 
-class Data():
+
+class Data(StreamHandler):
     def __init__(self, CC):
         self.CC = CC
         self.configuration = CC.configuration

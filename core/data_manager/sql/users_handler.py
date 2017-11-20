@@ -22,3 +22,147 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import hashlib
+import random
+import string
+from datetime import datetime
+from typing import List
+
+from pytz import timezone
+
+
+class StreamHandler():
+    def __init__(self):
+        pass
+
+    ###################################################################
+    ################## GET DATA METHODS ###############################
+    ###################################################################
+
+    def get_user_info(self, user_id=None, username: str = None) -> List:
+        """
+
+        :param user_id:
+        :param username:
+        :return:
+        """
+        if not user_id and not username:
+            return None
+
+        if user_id and not username:
+            qry = "select user_metadata from user where identifier=%s"
+            vals = user_id
+        elif not user_id and username:
+            qry = "select user_metadata from user where username=%s"
+            vals = username
+        else:
+            qry = "select user_metadata from user where identifier=%s and username=%s"
+            vals = user_id, username
+
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+        if len(rows) == 0:
+            return []
+        else:
+            return rows[0]["user_metadata"]
+
+    def login_user(self, username: str, password: str) -> bool:
+        """
+
+        :param username:
+        :param password:
+        :return:
+        """
+        if not username or not password:
+            raise ValueError("User name and password cannot be empty/null.")
+
+        qry = "select * from user where username=%s and password=%s"
+        vals = username, password
+
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+        if len(rows) == 0:
+            return False
+        else:
+            return True
+
+    def is_auth_token_valid(self, token_owner: str, auth_token: str, auth_token_expiry_time: datetime) -> bool:
+        """
+
+        :param token_owner:
+        :param auth_token:
+        :param auth_token_expiry_time:
+        :return:
+        """
+        if not auth_token or not auth_token_expiry_time:
+            raise ValueError("Auth token and auth-token expiry time cannot be null/empty.")
+
+        qry = "select * from user where token=%s and username=%s"
+        vals = auth_token, token_owner
+
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+
+        if len(rows) == 0:
+            return False
+        else:
+            token_expiry_time = rows[0]["token_expiry"]
+            localtz = timezone(self.CC_obj.time_zone)
+            token_expiry_time = localtz.localize(token_expiry_time)
+
+            if token_expiry_time < auth_token_expiry_time:
+                return False
+            else:
+                return True
+
+    ###################################################################
+    ################## STORE DATA METHODS #############################
+    ###################################################################
+
+    def update_auth_token(self, username: str, auth_token: str, auth_token_issued_time: datetime,
+                          auth_token_expiry_time: datetime) -> str:
+
+        """
+
+        :param username:
+        :param auth_token:
+        :param auth_token_issued_time:
+        :param auth_token_expiry_time:
+        :return uuid of the current user
+        """
+        if not auth_token and not auth_token_expiry_time and not auth_token_issued_time:
+            raise ValueError("Auth token and auth-token issue/expiry time cannot be null/empty.")
+
+        qry = "UPDATE " + self.userTable + " set token=%s, token_issued=%s, token_expiry=%s where username=%s"
+        vals = auth_token, auth_token_issued_time, auth_token_expiry_time, username
+
+        user_uuid = self.get_user_uuid(username)
+
+        self.cursor.execute(qry, vals)
+        self.dbConnection.commit()
+
+        return user_uuid
+
+    def gen_random_pass(self, string_type: str, size: int = 8) -> str:
+        """
+        :param string_type:
+        :param size:
+        :return:
+        """
+        if (string_type == "varchar"):
+            chars = string.ascii_lowercase + string.digits
+        elif (string_type == "char"):
+            chars = string.ascii_lowercase
+        else:
+            chars = string.digits
+
+        return ''.join(random.choice(chars) for _ in range(size))
+
+    def encrypt_user_password(self, user_password: str) -> str:
+        """
+        :param user_password:
+        :return:
+        """
+        hash_pwd = hashlib.sha256(user_password.encode('utf-8'))
+        return hash_pwd.hexdigest()

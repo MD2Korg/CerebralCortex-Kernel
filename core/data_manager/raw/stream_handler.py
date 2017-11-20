@@ -55,6 +55,15 @@ class StreamHandler():
     def get_stream(self, stream_id: uuid, day, start_time: datetime = None, end_time: datetime = None,
                    data_type=DataSet.COMPLETE) -> DataStream:
 
+        """
+
+        :param stream_id:
+        :param day:
+        :param start_time:
+        :param end_time:
+        :param data_type:
+        :return:
+        """
         if not stream_id or not day:
             return None
 
@@ -173,7 +182,7 @@ class StreamHandler():
         :param datastream:
         """
         owner_id = datastream.owner
-        name = datastream.name
+        stream_name = datastream.name
         data_descriptor = datastream.data_descriptor
         execution_context = datastream.execution_context
         annotations = datastream.annotations
@@ -205,10 +214,10 @@ class StreamHandler():
             stream_id = datastream.identifier
 
             # save metadata in SQL store
-            Data(self.CC).store_stream_info(stream_id, owner_id, name,
-                                            data_descriptor, execution_context,
-                                            annotations,
-                                            stream_type, new_start_time, new_end_time)
+            Data(self.CC).save_stream_metadata(stream_id, stream_name, owner_id,
+                                               data_descriptor, execution_context,
+                                               annotations,
+                                               stream_type, new_start_time, new_end_time)
 
             # save raw sensor data in Cassandra
             self.save_raw_data(stream_id, data)
