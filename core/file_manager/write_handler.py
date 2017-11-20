@@ -22,3 +22,22 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import os
+
+
+class WriteHandler():
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def rename_file(old_filepath: str):
+        """
+
+        :param old_filepath:
+        """
+        old_file_name = old_filepath.rsplit('/', 1)[1]
+        new_file_name = "PROCESSED_" + old_file_name
+        new_file_name = str.replace(old_filepath, old_file_name, new_file_name)
+        if os.path.isfile(old_filepath):
+            os.rename(old_filepath, new_file_name)

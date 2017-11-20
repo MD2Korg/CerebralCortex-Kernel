@@ -39,7 +39,7 @@ class DataStream:
                  name: UUID = None,
                  data_descriptor: List[DataDescriptor] = None,
                  execution_context: ExecutionContext = None,
-                 annotations: List[StreamReference] = None,
+                 annotations: List = None,
                  stream_type: str = None,
                  start_time: datetime = None,
                  end_time: datetime = None,

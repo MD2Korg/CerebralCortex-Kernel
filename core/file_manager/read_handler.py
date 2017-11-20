@@ -22,3 +22,113 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import datetime
+import gzip
+import json
+from pympler import asizeof
+from core.datatypes.datastream import DataStream, DataPoint
+from core.datatypes.stream_types import StreamTypes
+from core.util.data_types import convert_sample
+
+
+class ReadHandler():
+    def __init__(self):
+        pass
+
+    def file_processor(self, msg: dict, zip_filepath: str) -> DataStream:
+        """
+        :param msg:
+        :param zip_filepath:
+        :return:
+        """
+
+        if not isinstance(msg["metadata"],dict):
+            metadata_header = json.loads(msg["metadata"])
+        else:
+            metadata_header = msg["metadata"]
+
+        identifier = metadata_header["identifier"]
+        owner = metadata_header["owner"]
+        name = metadata_header["name"]
+        data_descriptor = metadata_header["data_descriptor"]
+        execution_context = metadata_header["execution_context"]
+        if "annotations" in metadata_header:
+            annotations = metadata_header["annotations"]
+        else:
+            annotations={}
+        if "stream_type" in metadata_header:
+            stream_type = metadata_header["stream_type"]
+        else:
+            stream_type = StreamTypes.DATASTREAM
+
+        try:
+            gzip_file_content = self.get_gzip_file_contents(zip_filepath + msg["filename"])
+            datapoints = list(map(lambda x: self.row_to_datapoint(x), gzip_file_content.splitlines()))
+            self.rename_file(zip_filepath + msg["filename"])
+
+            start_time = datapoints[0].start_time
+            end_time = datapoints[len(datapoints) - 1].end_time
+
+            ds = DataStream(identifier,
+                            owner,
+                            name,
+                            data_descriptor,
+                            execution_context,
+                            annotations,
+                            stream_type,
+                            start_time,
+                            end_time,
+                            datapoints)
+            return ds
+        except Exception as e:
+            print("In Kafka preprocessor - Error in processing file: " + str(msg["filename"])+" Owner-ID: "+owner + "Stream Name: "+name + " - " + str(e))
+            return []
+
+    def row_to_datapoint(self, row: str) -> dict:
+        """
+            Format data based on mCerebrum's current GZ-CSV format into what Cerebral
+        Cortex expects
+        :param row:
+        :return:
+        """
+        ts, offset, values = row.split(',', 2)
+        ts = int(ts) / 1000.0
+        offset = int(offset)
+
+        sample = convert_sample(values)
+
+        timezone = datetime.timezone(datetime.timedelta(milliseconds=offset))
+        ts = datetime.datetime.fromtimestamp(ts, timezone)
+        return DataPoint(start_time=ts, sample=sample)
+
+    def get_gzip_file_contents(self, file_name: str) -> str:
+        """
+        Read and return gzip compressed file contents
+        :param file_name:
+        :return:
+        """
+        fp = gzip.open(file_name)
+        gzip_file_content = fp.read()
+        fp.close()
+        gzip_file_content = gzip_file_content.decode('utf-8')
+        return gzip_file_content
+
+    def get_chunk_size(self, data):
+
+        if len(data) > 0:
+            chunk_size = 750000/(asizeof.asizeof(data)/len(data)) #0.75MB chunk size without metadata
+            return round(chunk_size)
+        else:
+            return 0
+
+    def chunks(data: str, max_len: int) -> str:
+        """
+        Yields max_len sized chunks with the remainder in the last
+        :param data:
+        :param max_len:
+        """
+        # TODO: default yield value needs to be set
+        for i in range(0, len(data), max_len):
+            yield data[i:i + max_len]
+

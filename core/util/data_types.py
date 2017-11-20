@@ -41,5 +41,5 @@ def convert_sample(sample):
                 try:
                     values = list(map(float, values.split(',')))
                 except:
-                    values = sample
+                    values = [sample]
     return values
