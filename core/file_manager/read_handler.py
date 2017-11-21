@@ -30,12 +30,22 @@ from pympler import asizeof
 from core.datatypes.datastream import DataStream, DataPoint
 from core.datatypes.stream_types import StreamTypes
 from core.util.data_types import convert_sample
-
+from core.util.debuging_decorators import log_execution_time
 
 class ReadHandler():
     def __init__(self):
         pass
 
+    def read_file(self, filepath):
+        if not filepath:
+            return None
+
+        with open(filepath, "r") as file:
+            data = file.read()
+            file.close()
+        return data
+
+    @log_execution_time
     def file_processor(self, msg: dict, zip_filepath: str) -> DataStream:
         """
         :param msg:
@@ -65,7 +75,7 @@ class ReadHandler():
         try:
             gzip_file_content = self.get_gzip_file_contents(zip_filepath + msg["filename"])
             datapoints = list(map(lambda x: self.row_to_datapoint(x), gzip_file_content.splitlines()))
-            self.rename_file(zip_filepath + msg["filename"])
+            #self.rename_file(zip_filepath + msg["filename"])
 
             start_time = datapoints[0].start_time
             end_time = datapoints[len(datapoints) - 1].end_time
@@ -82,7 +92,8 @@ class ReadHandler():
                             datapoints)
             return ds
         except Exception as e:
-            print("In Kafka preprocessor - Error in processing file: " + str(msg["filename"])+" Owner-ID: "+owner + "Stream Name: "+name + " - " + str(e))
+            #print("In Kafka preprocessor - Error in processing file: " + str(msg["filename"])+" Owner-ID: "+owner + "Stream Name: "+name + " - " + str(e))
+            print(e)
             return []
 
     def row_to_datapoint(self, row: str) -> dict:
@@ -96,12 +107,11 @@ class ReadHandler():
         ts = int(ts) / 1000.0
         offset = int(offset)
 
-        sample = convert_sample(values)
-
         timezone = datetime.timezone(datetime.timedelta(milliseconds=offset))
         ts = datetime.datetime.fromtimestamp(ts, timezone)
-        return DataPoint(start_time=ts, sample=sample)
+        return DataPoint(start_time=ts, sample=values)
 
+    @log_execution_time
     def get_gzip_file_contents(self, file_name: str) -> str:
         """
         Read and return gzip compressed file contents

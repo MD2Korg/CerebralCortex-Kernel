@@ -27,15 +27,6 @@ import yaml
 
 
 class ConfigHandler():
-    def __init__(self, filepath: str = None):
-        """
-        Initialization for the configuration object
-        :param filepath: path to a yml configuration file for Cerebral Cortex
-        """
-        if filepath is not None:
-            self.load_file(filepath)
-        else:
-            self.config = None
 
     def load_file(self, filepath: str):
         """

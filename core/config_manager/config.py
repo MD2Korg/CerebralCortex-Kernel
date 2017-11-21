@@ -29,3 +29,7 @@ from core.config_manager.config_handler import ConfigHandler
 class Configuration(ConfigHandler):
     def __init__(self, config_filepath):
         self.config_filepath = config_filepath
+        if config_filepath is not None:
+            self.load_file(config_filepath)
+        else:
+            self.config = None

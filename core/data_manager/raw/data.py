@@ -29,10 +29,10 @@ from core.data_manager.raw.stream_handler import StreamHandler
 class Data(StreamHandler):
     def __init__(self, CC):
         self.CC = CC
-        self.configuration = CC.configuration
+        self.config = CC.config
 
-        self.host_ip = self.configuration['cassandra']['host']
-        self.host_port = self.configuration['cassandra']['port']
-        self.keyspace_name = self.configuration['cassandra']['keyspace']
-        self.datapoint_table = self.configuration['cassandra']['datapoint_table']
+        self.host_ip = self.config['cassandra']['host']
+        self.host_port = self.config['cassandra']['port']
+        self.keyspace_name = self.config['cassandra']['keyspace']
+        self.datapoint_table = self.config['cassandra']['datapoint_table']
         self.batch_size = 64500

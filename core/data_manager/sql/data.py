@@ -32,15 +32,15 @@ from core.data_manager.sql.kafka_offsets_handler import KafkaOffsetsHandler
 class Data(StreamHandler, UserHandler, KafkaOffsetsHandler):
     def __init__(self, CC):
         self.CC = CC
-        self.configuration = CC.configuration
-        self.hostIP = self.configuration['mysql']['host']
-        self.hostPort = self.configuration['mysql']['port']
-        self.database = self.configuration['mysql']['database']
-        self.dbUser = self.configuration['mysql']['db_user']
-        self.dbPassword = self.configuration['mysql']['db_pass']
-        self.datastreamTable = self.configuration['mysql']['datastream_table']
-        self.kafkaOffsetsTable = self.configuration['mysql']['kafka_offsets_table']
-        self.userTable = self.configuration['mysql']['user_table']
+        self.config = CC.config
+        self.hostIP = self.config['mysql']['host']
+        self.hostPort = self.config['mysql']['port']
+        self.database = self.config['mysql']['database']
+        self.dbUser = self.config['mysql']['db_user']
+        self.dbPassword = self.config['mysql']['db_pass']
+        self.datastreamTable = self.config['mysql']['datastream_table']
+        self.kafkaOffsetsTable = self.config['mysql']['kafka_offsets_table']
+        self.userTable = self.config['mysql']['user_table']
 
         self.dbConnection = mysql.connector.connect(host=self.hostIP, port=self.hostPort, user=self.dbUser,
                                                     password=self.dbPassword, database=self.database)

@@ -27,7 +27,7 @@ import json
 import uuid
 from datetime import datetime
 from typing import List
-
+from core.util.debuging_decorators import log_execution_time
 from pytz import timezone
 
 
@@ -269,6 +269,7 @@ class StreamHandler():
     ################## STORE DATA METHODS #############################
     ###################################################################
 
+    @log_execution_time
     def save_stream_metadata(self, stream_id: uuid, stream_name: str, owner_id: uuid,
                              data_descriptor: dict,
                              execution_context: dict,
@@ -288,7 +289,7 @@ class StreamHandler():
 
         if self.is_stream(stream_id=stream_id):
             stream_end_time = self.check_end_time(stream_id, end_time)
-            annotation_status = self.append_annotations(stream_id, owner_id, annotations)
+            annotation_status = self.annotations_status(stream_id, owner_id, annotations)
         else:
             stream_end_time = None
             annotation_status = "new"
@@ -351,7 +352,7 @@ class StreamHandler():
         :param end_time:
         :return:
         """
-        localtz = timezone(self.CC_obj.time_zone)
+        localtz = timezone(self.CC.timezone)
 
         qry = "SELECT end_time from " + self.datastreamTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(stream_id)}

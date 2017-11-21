@@ -74,14 +74,6 @@ class DataStream:
         return result
 
     @property
-    def annotations(self):
-        return self._annotations
-
-    @annotations.setter
-    def annotations(self, value):
-        self._annotations = value
-
-    @property
     def identifier(self):
         return self._identifier
 
@@ -96,6 +88,30 @@ class DataStream:
     @name.setter
     def name(self, value):
         self._name = value
+
+    @property
+    def star_time(self):
+        return self._start_time
+
+    @star_time.setter
+    def start_time(self, val):
+        self._start_time = val
+
+    @property
+    def end_time(self):
+        return self._end_time
+
+    @end_time.setter
+    def end_time(self, val):
+        self._end_time = val
+
+    @property
+    def annotations(self):
+        return self._annotations
+
+    @annotations.setter
+    def annotations(self, value):
+        self._annotations = value
 
     @property
     def data_descriptor(self):

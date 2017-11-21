@@ -23,6 +23,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-class FileIO():
+from core.file_manager.read_handler import ReadHandler
+from core.file_manager.write_handler import WriteHandler
+
+
+class FileIO(ReadHandler, WriteHandler):
     def __init__(self):
         pass

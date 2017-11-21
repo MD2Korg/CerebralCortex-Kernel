@@ -24,4 +24,41 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#ERRORS, WARNING, MISSING-DATA
+import datetime
+import json
+import os
+import unittest
+import json
+
+from pytz import timezone
+
+from cerebralcortex import CerebralCortex
+from core.file_manager.file_io import FileIO
+from core.data_manager.raw.file_to_db import FileToDB
+
+class TestFileToDataStream(unittest.TestCase):
+    testConfigFile = os.path.join(os.path.dirname(__file__), 'res/test_configuration.yml')
+    CC = CerebralCortex(testConfigFile)
+    configuration = CC.config
+
+    def test_01_setup_data(self):
+        msg= {}
+        test_dir_path = "/home/ali/IdeaProjects/CerebralCortex-2.0/core/test_suite/sample_data/"
+        test_json_file = test_dir_path+"6ff7c2ff-deaf-4c2f-aff5-63228ee13540.json"
+        test_gz_file = "6ff7c2ff-deaf-4c2f-aff5-63228ee13540.csv.gz"
+        metadata = FileIO().read_file(test_json_file)
+        msg["metadata"] = json.loads(metadata)
+        msg["filename"] = test_gz_file
+
+        #result = FileIO().file_processor(msg, test_dir_path)
+
+        FileToDB(self.CC).file_processor(msg, test_dir_path)
+
+        print("completed")
+
+
+        
+
+
+if __name__ == '__main__':
+    unittest.main()

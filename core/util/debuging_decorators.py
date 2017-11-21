@@ -24,4 +24,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-#ERRORS, WARNING, MISSING-DATA
+from datetime import datetime
+from functools import wraps
+
+
+def log_execution_time(f):
+    @wraps(f)
+    def wrapped(*arg, **kwargs):
+        start_time = datetime.now()
+        r = f(*arg, *kwargs)
+        print("\n",f, " - Total execution time is: ", datetime.now()-start_time)
+        return r
+    return wrapped

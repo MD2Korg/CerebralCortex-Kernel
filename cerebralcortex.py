@@ -30,5 +30,5 @@ from core.config_manager.config import Configuration
 class CerebralCortex:
     def __init__(self, configuration_file, timezone='UTC'):
         self.config_filepath = configuration_file
-        self.config = Configuration(filepath=configuration_file).config
+        self.config = Configuration(configuration_file).config
         self.timezone = timezone

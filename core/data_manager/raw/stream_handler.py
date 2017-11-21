@@ -29,13 +29,14 @@ from enum import Enum
 from typing import List
 
 from cassandra.cluster import Cluster
-from cassandra.query import BatchStatement, ConsistencyLevel, SimpleStatement
+from cassandra.query import BatchStatement, ConsistencyLevel, SimpleStatement, BatchType
 from pytz import timezone
 
 from core.data_manager.sql.data import Data
 from core.datatypes.datapoint import DataPoint
 from core.datatypes.datastream import DataStream
 from core.util.data_types import convert_sample
+from core.util.debuging_decorators import log_execution_time
 
 
 class DataSet(Enum):
@@ -174,7 +175,7 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-
+    @log_execution_time
     def save_stream(self, datastream: DataStream):
 
         """
@@ -222,6 +223,7 @@ class StreamHandler():
             # save raw sensor data in Cassandra
             self.save_raw_data(stream_id, data)
 
+    @log_execution_time
     def save_raw_data(self, stream_id: uuid, datapoints: DataPoint):
 
         """
@@ -242,11 +244,14 @@ class StreamHandler():
             stream_id = uuid.UUID(stream_id)
 
         for data_block in self.datapoints_to_cassandra_sql_batch(stream_id, datapoints, qry_without_endtime,
-                                                                 qry_with_endtime):
-            session.execute(data_block)
+                                                               qry_with_endtime):
+            st = datetime.now()
+            session.execute_async(data_block)
             data_block.clear()
+            print("Total time to insert batch ",len(data_block), datetime.now()-st)
         session.shutdown();
         cluster.shutdown();
+
 
     def datapoints_to_cassandra_sql_batch(self, stream_id: uuid, datapoints: DataPoint, qry_without_endtime: str,
                                           qry_with_endtime: str):
@@ -258,7 +263,7 @@ class StreamHandler():
         :param qry_without_endtime:
         :param qry_with_endtime:
         """
-        batch = BatchStatement(consistency_level=ConsistencyLevel.QUORUM)
+        batch = BatchStatement(batch_type=BatchType.UNLOGGED)
         batch.clear()
         dp_number = 1
         for dp in datapoints:
@@ -271,7 +276,7 @@ class StreamHandler():
 
             if dp_number > self.batch_size:
                 yield batch
-                batch = BatchStatement(consistency_level=ConsistencyLevel.QUORUM)
+                batch = BatchStatement(batch_type=BatchType.UNLOGGED)
                 # just to make sure batch does not have any existing entries.
                 batch.clear()
                 dp_number = 1
@@ -279,6 +284,6 @@ class StreamHandler():
                 if dp.end_time:
                     batch.add(insert_qry, (stream_id, day, dp.start_time, dp.end_time, sample))
                 else:
-                    batch.add(insert_qry, (stream_id, day, dp.start_time, sample))
+                    batch.add(insert_qry, (stream_id, day, dp.start_time, sample.encode()))
                 dp_number += 1
         yield batch
