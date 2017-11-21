@@ -105,7 +105,7 @@ class FileToDB(StreamHandler):
 
             for data_block in self.line_to_batch_block(stream_id, all_data, qry_with_endtime):
                 st = datetime.datetime.now()
-                session.execute_async(data_block)
+                session.execute(data_block)
                 data_block.clear()
                 print("Total time to insert batch ",len(data_block), datetime.datetime.now()-st)
             session.shutdown();
