@@ -24,14 +24,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from enum import Enum
 from typing import List
 
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, ConsistencyLevel, SimpleStatement, BatchType
 from pytz import timezone
-
+import json
 from core.data_manager.sql.data import Data
 from core.datatypes.datapoint import DataPoint
 from core.datatypes.datastream import DataStream
@@ -52,7 +52,7 @@ class StreamHandler():
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
-
+    @log_execution_time
     def get_stream(self, stream_id: uuid, day, start_time: datetime = None, end_time: datetime = None,
                    data_type=DataSet.COMPLETE) -> DataStream:
 
@@ -68,7 +68,7 @@ class StreamHandler():
         if not stream_id or not day:
             return None
 
-        where_clause = "identifier=" + str(stream_id) + " and day='" + str(day) + "'"
+        where_clause = "where identifier=" + str(stream_id) + " and day='" + str(day) + "'"
 
         if start_time:
             where_clause += " and start_time>=cast('" + start_time + "' as timestamp)"
@@ -77,14 +77,14 @@ class StreamHandler():
             where_clause += " and start_time<=cast('" + end_time + "' as timestamp)"
 
         # query datastream(mysql) for metadata
-        datastream_metadata = Data(self.CC).get_stream_info(stream_id)
+        datastream_metadata = Data(self.CC).get_stream_metadata(stream_id)
 
         if data_type == DataSet.COMPLETE:
-            dps = self.load_cassandra_data(stream_id, where_clause=where_clause)
-            data = self.row_to_datapoints(dps)
-            stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, data)
+            dps = self.load_cassandra_data(where_clause)
+            #data = self.row_to_datapoints(dps)
+            stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps)
         elif data_type == DataSet.ONLY_DATA:
-            dps = self.load_cassandra_data(stream_id, where_clause=where_clause)
+            dps = self.load_cassandra_data(where_clause)
             data = self.row_to_datapoints(dps)
             return data
         elif data_type == DataSet.ONLY_METADATA:
@@ -93,6 +93,26 @@ class StreamHandler():
             raise ValueError("Failed to get data stream. Invalid type parameter.")
         return stream
 
+    @staticmethod
+    def map_datapoint_and_metadata_to_datastream(stream_id: int, datastream_info:dict, data: object) -> DataStream:
+        """
+        This method will map the datapoint and metadata to datastream object
+        :param stream_id:
+        :param data: list
+        :return: datastream object
+        """
+
+        ownerID = datastream_info[0]["owner"]
+        name = datastream_info[0]["name"]
+        data_descriptor = json.loads(datastream_info[0]["data_descriptor"])
+        execution_context = json.loads(datastream_info[0]["execution_context"])
+        annotations = json.loads(datastream_info[0]["annotations"])
+        stream_type = datastream_info[0]["type"]
+        start_time = datastream_info[0]["start_time"]
+        end_time = datastream_info[0]["end_time"]
+        return DataStream(stream_id, ownerID, name, data_descriptor, execution_context, annotations,
+                          stream_type, start_time, end_time, data)
+
     def load_cassandra_data(self, where_clause=None) -> List:
         """
 
@@ -100,7 +120,7 @@ class StreamHandler():
         :param datapoints:
         :param batch_size:
         """
-        cluster = Cluster([self.hostIP], port=self.hostPort)
+        cluster = Cluster([self.host_ip], port=self.host_port)
 
         session = cluster.connect(self.keyspace_name)
 
@@ -108,13 +128,28 @@ class StreamHandler():
         statement = SimpleStatement(query)
         data = []
         for row in session.execute(statement):
-            data.append(row)
+            data += self.parse_row(row)
+            #data.append(row)
 
         session.shutdown()
         cluster.shutdown()
 
         return data
 
+    def parse_row(self, row):
+        updated_rows = []
+        try:
+            rows = json.loads(row[2])
+            for r in rows:
+                offset = r[1]
+                #timezone = datetime.timezone(datetime.timedelta(milliseconds=offset))
+                start_time = datetime.fromtimestamp(r[0])
+
+                sample = convert_sample(r[2])
+                updated_rows.append(DataPoint(start_time=start_time, sample=sample))
+            return updated_rows
+        except Exception as e:
+            print(e)
     def get_stream_samples(self, stream_id, day, start_time=None, end_time=None) -> List[DataPoint]:
         """
         returns list of DataPoint objects

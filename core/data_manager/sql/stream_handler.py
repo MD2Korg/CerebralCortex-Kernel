@@ -40,7 +40,7 @@ class StreamHandler():
     ###################################################################
 
     def get_stream_metadata(self, stream_id) -> List:
-        qry = "SELECT type, data_descriptor, execution_context, annotations from " + self.datastreamTable + " where identifier=%(identifier)s"
+        qry = "SELECT * from " + self.datastreamTable + " where identifier=%(identifier)s"
         vals = {"identifier": stream_id}
         self.cursor.execute(qry, vals)
         return self.cursor.fetchall()

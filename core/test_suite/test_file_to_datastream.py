@@ -35,13 +35,14 @@ from pytz import timezone
 from cerebralcortex import CerebralCortex
 from core.file_manager.file_io import FileIO
 from core.data_manager.raw.file_to_db import FileToDB
+from core.data_manager.raw.data import Data
 
 class TestFileToDataStream(unittest.TestCase):
     testConfigFile = os.path.join(os.path.dirname(__file__), 'res/test_configuration.yml')
     CC = CerebralCortex(testConfigFile)
     configuration = CC.config
 
-    def test_01_setup_data(self):
+    def test_01_save_data(self):
         msg= {}
         test_dir_path = "/home/ali/IdeaProjects/CerebralCortex-2.0/core/test_suite/sample_data/"
         test_json_file = test_dir_path+"6ff7c2ff-deaf-4c2f-aff5-63228ee13540.json"
@@ -50,13 +51,11 @@ class TestFileToDataStream(unittest.TestCase):
         msg["metadata"] = json.loads(metadata)
         msg["filename"] = test_gz_file
 
-        #result = FileIO().file_processor(msg, test_dir_path)
-
         FileToDB(self.CC).file_processor(msg, test_dir_path)
 
-        print("completed")
-
-
+    # def test_02_get_data(self):
+    #     ds = Data(self.CC).get_stream("f28a97c6-b76a-3f96-ac78-5f142dd2d401", "24481117")
+    #     print(ds)
         
 
 

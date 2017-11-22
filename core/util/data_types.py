@@ -27,6 +27,9 @@ import json
 
 
 def convert_sample(sample):
+    if "\x00" in sample:
+        sample = sample.replace("\x00", "")
+
     if isinstance(sample, list):
         values = sample
     elif isinstance(sample, tuple):
@@ -36,10 +39,28 @@ def convert_sample(sample):
             values = json.loads(sample)
         except:
             try:
-                values = [float(values)]
+                values = eval(sample)
             except:
                 try:
-                    values = list(map(float, values.split(',')))
+                    values = [float(sample)]
                 except:
-                    values = [sample]
+                    try:
+                        values = list(map(float, values.split(',')))
+                    except:
+                        values = [sample]
     return values
+
+def convert_sample_short(sample):
+    try:
+        values = json.loads(sample)
+    except:
+        try:
+            values = list(map(float, sample.replace("[","").replace("]","").replace("(","").replace(")","").split(',')))
+        except:
+            try:
+                values = [float(sample)]
+            except:
+                values = [sample]
+    return values
+
+#convert_sample('(0.0024687682368556008, 0.17776913487103307, 0.2295764062106903, 0.09898929381168664, 0.5109892310134816)')

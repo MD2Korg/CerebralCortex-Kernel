@@ -23,33 +23,23 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from core.data_manager.raw.stream_handler import StreamHandler
 import datetime
-import gzip
 import json
-import numpy
-from pympler import asizeof
-from core.datatypes.datastream import DataStream, DataPoint
-from core.datatypes.stream_types import StreamTypes
-from core.util.data_types import convert_sample
-from core.util.debuging_decorators import log_execution_time
 import uuid
-from enum import Enum
-from typing import List
 
 from cassandra.cluster import Cluster
-from cassandra.query import BatchStatement, ConsistencyLevel, SimpleStatement, BatchType
-from pytz import timezone
+from cassandra.query import BatchStatement, BatchType
 
-from core.data_manager.sql.data import Data
+from core.data_manager.raw.stream_handler import StreamHandler
 from core.datatypes.datapoint import DataPoint
 from core.datatypes.datastream import DataStream
-from core.util.data_types import convert_sample
-from core.util.debuging_decorators import log_execution_time
+from core.datatypes.stream_types import StreamTypes
 from core.file_manager.read_handler import ReadHandler
+from core.util.debuging_decorators import log_execution_time
 
 '''It is responsible to read .gz files and insert data in Cassandra and Influx. 
 This class is only for CC internal use.'''
+
 
 class FileToDB(StreamHandler):
     def __init__(self, CC):
@@ -60,7 +50,8 @@ class FileToDB(StreamHandler):
         self.host_port = self.config['cassandra']['port']
         self.keyspace_name = self.config['cassandra']['keyspace']
         self.datapoint_table = self.config['cassandra']['datapoint_table']
-        self.batch_size = 64500
+        self.batch_size = 999
+        self.sample_group_size = 99
 
     @log_execution_time
     def file_processor(self, msg: dict, zip_filepath: str) -> DataStream:
@@ -70,7 +61,7 @@ class FileToDB(StreamHandler):
         :return:
         """
 
-        if not isinstance(msg["metadata"],dict):
+        if not isinstance(msg["metadata"], dict):
             metadata_header = json.loads(msg["metadata"])
         else:
             metadata_header = msg["metadata"]
@@ -90,7 +81,7 @@ class FileToDB(StreamHandler):
         if "annotations" in metadata_header:
             annotations = metadata_header["annotations"]
         else:
-            annotations={}
+            annotations = {}
         if "stream_type" in metadata_header:
             stream_type = metadata_header["stream_type"]
         else:
@@ -104,49 +95,16 @@ class FileToDB(StreamHandler):
             all_data = self.line_to_sample(lines)
 
             for data_block in self.line_to_batch_block(stream_id, all_data, qry_with_endtime):
-                st = datetime.datetime.now()
+                # st = datetime.datetime.now()
                 session.execute(data_block)
-                data_block.clear()
-                print("Total time to insert batch ",len(data_block), datetime.datetime.now()-st)
+                # data_block.clear()
+                # print("Total time to insert batch ",len(data_block), datetime.datetime.now()-st)
             session.shutdown();
             cluster.shutdown();
 
         except Exception as e:
             print(e)
             return []
-
-    def line_to_batch(self, stream_id: uuid, lines: DataPoint, insert_qry: str):
-
-        """
-
-        :param stream_id:
-        :param lines:
-        :param qry_without_endtime:
-        :param qry_with_endtime:
-        """
-        batch = BatchStatement(batch_type=BatchType.UNLOGGED)
-        batch.clear()
-        line_number = 1
-        for line in lines:
-            ts, offset, sample = line.split(',', 2)
-            start_time = int(ts) / 1000.0
-            offset = int(offset)
-
-            #timezone = datetime.timezone(datetime.timedelta(milliseconds=offset))
-            start_time = datetime.datetime.fromtimestamp(start_time)
-
-            day = "24481117"#start_time.strftime("%Y%m%d")
-
-            if line_number > 10:
-                yield batch
-                batch = BatchStatement(batch_type=BatchType.UNLOGGED)
-                # just to make sure batch does not have any existing entries.
-                batch.clear()
-                line_number = 1
-            else:
-                batch.add(insert_qry.bind(stream_id, day, start_time, sample))
-                line_number += 1
-        yield batch
 
     def line_to_batch_block(self, stream_id: uuid, lines: DataPoint, insert_qry: str):
 
@@ -159,7 +117,7 @@ class FileToDB(StreamHandler):
         """
         batch = BatchStatement(batch_type=BatchType.UNLOGGED)
         batch.clear()
-        line_number = 1
+        line_number = 0
         for line in lines:
 
             start_time = line[0]
@@ -167,11 +125,12 @@ class FileToDB(StreamHandler):
             day = line[2]
             sample = line[3]
 
-            if line_number > 10:
+            if line_number > self.batch_size:
                 yield batch
                 batch = BatchStatement(batch_type=BatchType.UNLOGGED)
                 # just to make sure batch does not have any existing entries.
                 batch.clear()
+                batch.add(insert_qry.bind([stream_id, day, start_time, end_time, sample]))
                 line_number = 1
             else:
                 batch.add(insert_qry.bind([stream_id, day, start_time, end_time, sample]))
@@ -190,23 +149,23 @@ class FileToDB(StreamHandler):
         """
 
         sample_batch = []
-        big_blob = []
-        line_number = 1
+        grouped_samples = []
+        line_number = 0
         for line in lines:
             ts, offset, sample = line.split(',', 2)
             start_time = int(ts) / 1000.0
             offset = int(offset)
-            if line_number==1:
-                #data_block
-                sample_batch=[]
+            if line_number == 1:
+                sample_batch = []
                 first_start_time = datetime.datetime.fromtimestamp(start_time)
                 # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
                 start_day = first_start_time.strftime("%Y%m%d")
-            if line_number > 10000:
+            if line_number > self.sample_group_size:
                 last_start_time = datetime.datetime.fromtimestamp(start_time)
-                big_blob.append([first_start_time,last_start_time, start_day, json.dumps(sample_batch)])
+                grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
                 line_number = 1
             else:
                 sample_batch.append([start_time, offset, sample])
                 line_number += 1
-        return big_blob
+        grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
+        return grouped_samples
