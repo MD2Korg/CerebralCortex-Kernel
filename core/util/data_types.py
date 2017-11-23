@@ -27,7 +27,7 @@ import json
 
 
 def convert_sample(sample):
-    if "\x00" in sample:
+    if isinstance(sample, str) and "\x00" in sample:
         sample = sample.replace("\x00", "")
 
     if isinstance(sample, tuple):
@@ -37,9 +37,13 @@ def convert_sample(sample):
     else:
         try:
             values = json.loads(sample)
+            if not isinstance(values, list) and not isinstance(values,dict):
+                values = [values]
         except:
             try:
                 values = eval(sample)
+                if isinstance(values, tuple):
+                    values = list(values)
             except:
                 try:
                     values = [float(sample)]
