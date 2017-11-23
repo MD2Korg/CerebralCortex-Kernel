@@ -286,6 +286,8 @@ class StreamHandler():
         :param stream_type:
         """
         isQueryReady = 0
+        if stream_id:
+            stream_id = str(stream_id)
 
         if self.is_stream(stream_id=stream_id):
             stream_end_time = self.check_end_time(stream_id, end_time)

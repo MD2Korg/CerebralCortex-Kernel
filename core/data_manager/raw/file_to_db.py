@@ -30,8 +30,6 @@ import uuid
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, BatchType
 
-from core.data_manager.raw.stream_handler import StreamHandler
-
 from core.data_manager.sql.data import Data as metadata
 from core.datatypes.datapoint import DataPoint
 from core.datatypes.datastream import DataStream
@@ -46,7 +44,7 @@ from influxdb import InfluxDBClient
 This class is only for CC internal use.'''
 
 
-class FileToDB(StreamHandler):
+class FileToDB():
     def __init__(self, CC):
         self.CC = CC
         self.config = CC.config
@@ -123,10 +121,7 @@ class FileToDB(StreamHandler):
                     print(e)
 
             for data_block in self.line_to_batch_block(stream_id, all_data["samples"], qry_with_endtime):
-                # st = datetime.datetime.now()
                 session.execute(data_block)
-                # data_block.clear()
-                # print("Total time to insert batch ",len(data_block), datetime.datetime.now()-st)
             session.shutdown();
             cluster.shutdown();
 
@@ -239,6 +234,7 @@ class FileToDB(StreamHandler):
 
             try:
                 object['fields'] = {}
+                # TODO: This method is SUPER slow
                 #values = convert_sample(values)
                 if isinstance(values, list):
                     for i, sample_val in enumerate(values):
