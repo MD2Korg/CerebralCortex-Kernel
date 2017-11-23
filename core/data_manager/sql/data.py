@@ -25,9 +25,10 @@
 
 import mysql.connector
 
+from core.data_manager.sql.kafka_offsets_handler import KafkaOffsetsHandler
 from core.data_manager.sql.stream_handler import StreamHandler
 from core.data_manager.sql.users_handler import UserHandler
-from core.data_manager.sql.kafka_offsets_handler import KafkaOffsetsHandler
+
 
 class Data(StreamHandler, UserHandler, KafkaOffsetsHandler):
     def __init__(self, CC):

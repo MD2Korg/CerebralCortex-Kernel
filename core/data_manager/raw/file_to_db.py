@@ -29,6 +29,7 @@ import uuid
 
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, BatchType
+from influxdb import InfluxDBClient
 
 from core.data_manager.sql.data import Data as metadata
 from core.datatypes.datapoint import DataPoint
@@ -36,9 +37,6 @@ from core.datatypes.datastream import DataStream
 from core.datatypes.stream_types import StreamTypes
 from core.file_manager.read_handler import ReadHandler
 from core.util.debuging_decorators import log_execution_time
-from core.util.data_types import convert_sample
-from influxdb import InfluxDBClient
-
 
 '''It is responsible to read .gz files and insert data in Cassandra and Influx. 
 This class is only for CC internal use.'''
@@ -81,7 +79,7 @@ class FileToDB():
         session = cluster.connect(self.keyspace_name)
 
         influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort, username=self.influxdbUser,
-                                password=self.influxdbPassword, database=self.influxdbDatabase)
+                                         password=self.influxdbPassword, database=self.influxdbDatabase)
 
         qry_with_endtime = session.prepare(
             "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, sample) VALUES (?, ?, ?, ?, ?)")
@@ -106,7 +104,7 @@ class FileToDB():
             gzip_file_content = ReadHandler().get_gzip_file_contents(zip_filepath + msg["filename"])
             lines = gzip_file_content.splitlines()
 
-            if influxdb==False:
+            if influxdb == False:
                 all_data = self.line_to_sample(lines)
             else:
                 # FOR INFLUXDB+CASSANDRA
@@ -116,7 +114,7 @@ class FileToDB():
                     for influx_batch in all_data["influxdb"]:
                         influxdb_client.write_points(influx_batch)
 
-                    print("Time took to insert in Influxdb: ", datetime.datetime.now()-st)
+                    print("Time took to insert in Influxdb: ", datetime.datetime.now() - st)
                 except Exception as e:
                     print(e)
 
@@ -125,7 +123,9 @@ class FileToDB():
             session.shutdown();
             cluster.shutdown();
 
-            metadata(self.CC).save_stream_metadata(stream_id,name, owner, data_descriptor, execution_context, annotations, StreamTypes.DATASTREAM, all_data["samples"][0][0], all_data["samples"][len(all_data["samples"])-1][1])
+            metadata(self.CC).save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                                   annotations, StreamTypes.DATASTREAM, all_data["samples"][0][0],
+                                                   all_data["samples"][len(all_data["samples"]) - 1][1])
         except Exception as e:
             print(e)
             return []
@@ -192,9 +192,10 @@ class FileToDB():
                 sample_batch.append([start_time, offset, sample])
                 line_number += 1
         grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
-        return {"samples":grouped_samples}
+        return {"samples": grouped_samples}
 
-    def line_to_sample_influxdb(self, lines, stream_id, stream_owner_id, stream_owner_name, stream_name, data_descriptor):
+    def line_to_sample_influxdb(self, lines, stream_id, stream_owner_id, stream_owner_name, stream_name,
+                                data_descriptor):
 
         """
         Converts a gz file lines into sample values format and influxdb object
@@ -235,7 +236,7 @@ class FileToDB():
             try:
                 object['fields'] = {}
                 # TODO: This method is SUPER slow
-                #values = convert_sample(values)
+                # values = convert_sample(values)
                 if isinstance(values, list):
                     for i, sample_val in enumerate(values):
                         if len(values) == total_dd_columns:
@@ -259,7 +260,7 @@ class FileToDB():
                     object['fields']['value_0'] = values
                 except:
                     object['fields']['value_0'] = str(values)
-            if influx_counter>10000:
+            if influx_counter > 10000:
                 influx_batch.append(influx_data)
             else:
                 influx_data.append(object)
@@ -279,4 +280,4 @@ class FileToDB():
                 line_number += 1
         grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
         influx_batch.append(influx_data)
-        return {"samples": grouped_samples, "influxdb":influx_batch}
+        return {"samples": grouped_samples, "influxdb": influx_batch}

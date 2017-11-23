@@ -24,18 +24,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import datetime
 import json
 import os
 import unittest
-import json
-
-from pytz import timezone
 
 from cerebralcortex import CerebralCortex
-from core.file_manager.file_io import FileIO
 from core.data_manager.raw.file_to_db import FileToDB
-from core.data_manager.raw.data import Data
+from core.file_manager.file_io import FileIO
+
 
 class TestFileToDataStream(unittest.TestCase):
     testConfigFile = os.path.join(os.path.dirname(__file__), 'res/test_configuration.yml')
@@ -43,9 +39,9 @@ class TestFileToDataStream(unittest.TestCase):
     configuration = CC.config
 
     def test_01_save_data(self):
-        msg= {}
+        msg = {}
         test_dir_path = "/home/ali/IdeaProjects/CerebralCortex-2.0/core/test_suite/sample_data/"
-        test_json_file = test_dir_path+"6ff7c2ff-deaf-4c2f-aff5-63228ee13540.json"
+        test_json_file = test_dir_path + "6ff7c2ff-deaf-4c2f-aff5-63228ee13540.json"
         test_gz_file = "6ff7c2ff-deaf-4c2f-aff5-63228ee13540.csv.gz"
         metadata = FileIO().read_file(test_json_file)
         msg["metadata"] = json.loads(metadata)
@@ -53,10 +49,9 @@ class TestFileToDataStream(unittest.TestCase):
 
         FileToDB(self.CC).file_processor(msg, test_dir_path, False)
 
-    # def test_02_get_data(self):
-    #     ds = Data(self.CC).get_stream("f28a97c6-b76a-3f96-ac78-5f142dd2d401", "24481117")
-    #     print(ds)
-        
+        # def test_02_get_data(self):
+        #     ds = Data(self.CC).get_stream("f28a97c6-b76a-3f96-ac78-5f142dd2d401", "24481117")
+        #     print(ds)
 
 
 if __name__ == '__main__':

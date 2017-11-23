@@ -24,14 +24,15 @@
 
 import json
 import os
-from cerebralcortex.kernel.datatypes.datastream import DataStream
 from datetime import datetime
-from cerebralcortex.kernel.utils.logging import cc_log
 
-from core import CC
+from cerebralcortex.kernel.datatypes.datastream import DataStream
+from cerebralcortex.kernel.utils.logging import cc_log
 from core.kafka_offset import storeOffsetRanges
 from pyspark.streaming.kafka import KafkaDStream
-from util.util import row_to_datapoint, chunks, get_gzip_file_contents, rename_file
+from util.util import row_to_datapoint, get_gzip_file_contents, rename_file
+
+from core import CC
 
 
 def verify_fields(msg: dict, data_path: str) -> bool:
@@ -54,7 +55,7 @@ def file_processor(msg: dict, data_path: str) -> DataStream:
     :return:
     """
     start = datetime.now()
-    if not isinstance(msg["metadata"],dict):
+    if not isinstance(msg["metadata"], dict):
         metadata_header = json.loads(msg["metadata"])
     else:
         metadata_header = msg["metadata"]
@@ -67,7 +68,7 @@ def file_processor(msg: dict, data_path: str) -> DataStream:
     if "annotations" in metadata_header:
         annotations = metadata_header["annotations"]
     else:
-        annotations={}
+        annotations = {}
     if "stream_type" in metadata_header:
         stream_type = metadata_header["stream_type"]
     else:
@@ -82,19 +83,20 @@ def file_processor(msg: dict, data_path: str) -> DataStream:
         end_time = datapoints[len(datapoints) - 1].end_time
 
         ds = DataStream(identifier,
-                          owner,
-                          name,
-                          data_descriptor,
-                          execution_context,
-                          annotations,
-                          stream_type,
-                          start_time,
-                          end_time,
-                          datapoints)
-        print("\n\nTotal time to process file: ", datetime.now()-start)
+                        owner,
+                        name,
+                        data_descriptor,
+                        execution_context,
+                        annotations,
+                        stream_type,
+                        start_time,
+                        end_time,
+                        datapoints)
+        print("\n\nTotal time to process file: ", datetime.now() - start)
         return ds
     except Exception as e:
-        error_log = "In Kafka preprocessor - Error in processing file: " + str(msg["filename"])+" Owner-ID: "+owner + "Stream Name: "+name + " - " + str(e)
+        error_log = "In Kafka preprocessor - Error in processing file: " + str(
+            msg["filename"]) + " Owner-ID: " + owner + "Stream Name: " + name + " - " + str(e)
         cc_log(error_log, "MISSING_DATA")
         datapoints = []
         return None
@@ -108,11 +110,11 @@ def store_stream(data: DataStream):
     if data:
         try:
             c1 = datetime.now()
-            CC.save_datastream(data,"datastream")
+            CC.save_datastream(data, "datastream")
             e1 = datetime.now()
             CC.save_datastream_to_influxdb(data)
             i1 = datetime.now()
-            print("Cassandra Time: ", e1-c1, " Influx Time: ",i1-e1, " Batch size: ",len(data.data))
+            print("Cassandra Time: ", e1 - c1, " Influx Time: ", i1 - e1, " Batch size: ", len(data.data))
         except:
             cc_log()
 

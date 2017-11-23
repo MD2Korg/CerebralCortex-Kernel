@@ -26,10 +26,10 @@
 import datetime
 import gzip
 import json
-from pympler import asizeof
 
 from cerebralcortex.kernel.datatypes.datastream import DataStream, DataPoint
 from dateutil.parser import parse
+from pympler import asizeof
 
 
 def get_gzip_file_contents(file_name: str) -> str:
@@ -54,13 +54,14 @@ def chunks(data: str, max_len: int) -> str:
     for i in range(0, len(data), max_len):
         yield data[i:i + max_len]
 
-def get_chunk_size(data):
 
+def get_chunk_size(data):
     if len(data) > 0:
-        chunk_size = 750000/(asizeof.asizeof(data)/len(data)) #0.75MB chunk size without metadata
+        chunk_size = 750000 / (asizeof.asizeof(data) / len(data))  # 0.75MB chunk size without metadata
         return round(chunk_size)
     else:
         return 100
+
 
 def row_to_datapoint(row: str) -> dict:
     """
@@ -90,7 +91,7 @@ def row_to_datapoint(row: str) -> dict:
     timezone = datetime.timezone(datetime.timedelta(milliseconds=offset))
     ts = datetime.datetime.fromtimestamp(ts, timezone)
     return DataPoint(start_time=ts, sample=values)
-    #return {'starttime': str(ts), 'value': values}
+    # return {'starttime': str(ts), 'value': values}
 
 
 def rename_file(old: str):

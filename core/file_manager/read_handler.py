@@ -26,11 +26,13 @@
 import datetime
 import gzip
 import json
+
 from pympler import asizeof
+
 from core.datatypes.datastream import DataStream, DataPoint
 from core.datatypes.stream_types import StreamTypes
-from core.util.data_types import convert_sample
 from core.util.debuging_decorators import log_execution_time
+
 
 class ReadHandler():
     def __init__(self):
@@ -53,7 +55,7 @@ class ReadHandler():
         :return:
         """
 
-        if not isinstance(msg["metadata"],dict):
+        if not isinstance(msg["metadata"], dict):
             metadata_header = json.loads(msg["metadata"])
         else:
             metadata_header = msg["metadata"]
@@ -66,7 +68,7 @@ class ReadHandler():
         if "annotations" in metadata_header:
             annotations = metadata_header["annotations"]
         else:
-            annotations={}
+            annotations = {}
         if "stream_type" in metadata_header:
             stream_type = metadata_header["stream_type"]
         else:
@@ -75,7 +77,7 @@ class ReadHandler():
         try:
             gzip_file_content = self.get_gzip_file_contents(zip_filepath + msg["filename"])
             datapoints = list(map(lambda x: self.row_to_datapoint(x), gzip_file_content.splitlines()))
-            #self.rename_file(zip_filepath + msg["filename"])
+            # self.rename_file(zip_filepath + msg["filename"])
 
             start_time = datapoints[0].start_time
             end_time = datapoints[len(datapoints) - 1].end_time
@@ -92,7 +94,7 @@ class ReadHandler():
                             datapoints)
             return ds
         except Exception as e:
-            #print("In Kafka preprocessor - Error in processing file: " + str(msg["filename"])+" Owner-ID: "+owner + "Stream Name: "+name + " - " + str(e))
+            # print("In Kafka preprocessor - Error in processing file: " + str(msg["filename"])+" Owner-ID: "+owner + "Stream Name: "+name + " - " + str(e))
             print(e)
             return []
 
@@ -127,7 +129,7 @@ class ReadHandler():
     def get_chunk_size(self, data):
 
         if len(data) > 0:
-            chunk_size = 750000/(asizeof.asizeof(data)/len(data)) #0.75MB chunk size without metadata
+            chunk_size = 750000 / (asizeof.asizeof(data) / len(data))  # 0.75MB chunk size without metadata
             return round(chunk_size)
         else:
             return 0
@@ -141,4 +143,3 @@ class ReadHandler():
         # TODO: default yield value needs to be set
         for i in range(0, len(data), max_len):
             yield data[i:i + max_len]
-

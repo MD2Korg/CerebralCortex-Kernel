@@ -1,1 +1,54 @@
-{"annotations": [], "data_descriptor": [{"DATA_TYPE": "double", "NAME": "Raw Data", "DESCRIPTION": "Raw byte array", "MAX_VALUE": "100", "MIN_VALUE": "0", "UNIT": "percentage"}], "execution_context": {"application_metadata": {"VERSION_NUMBER": "12099", "NAME": "MotionSense", "DESCRIPTION": "Collects data from the motion sense. Sensors supported: [Accelerometer, Gyroscope, Battery, LED, DataQuality]", "VERSION_NAME": "0.1.20"}, "datasource_metadata": {"DATA_TYPE": "org.md2k.datakitapi.datatype.DataTypeDoubleArray", "NAME": "Raw", "DESCRIPTION": "Raw byte array"}, "platform_metadata": {"NAME": "MotionSenseHRV", "DEVICE_ID": "F2:27:C9:B5:23:C3"}, "processing_module": {"algorithm": [{"authors": [""], "description": "", "method": "", "reference": {"url": "http://md2k.org/"}, "version": ""}], "description": "", "input_parameters": {}, "input_streams": [], "name": "", "output_streams": []}}, "identifier": "f28a97c6-b76a-3f96-ac78-5f142dd2d401", "name": "RAW--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "owner": "fbf8d50c-7f1d-47aa-b958-9caeadc676bd", "type": "datastream"}
+{
+  "annotations": [],
+  "data_descriptor": [
+    {
+      "DATA_TYPE": "double",
+      "NAME": "Raw Data",
+      "DESCRIPTION": "Raw byte array",
+      "MAX_VALUE": "100",
+      "MIN_VALUE": "0",
+      "UNIT": "percentage"
+    }
+  ],
+  "execution_context": {
+    "application_metadata": {
+      "VERSION_NUMBER": "12099",
+      "NAME": "MotionSense",
+      "DESCRIPTION": "Collects data from the motion sense. Sensors supported: [Accelerometer, Gyroscope, Battery, LED, DataQuality]",
+      "VERSION_NAME": "0.1.20"
+    },
+    "datasource_metadata": {
+      "DATA_TYPE": "org.md2k.datakitapi.datatype.DataTypeDoubleArray",
+      "NAME": "Raw",
+      "DESCRIPTION": "Raw byte array"
+    },
+    "platform_metadata": {
+      "NAME": "MotionSenseHRV",
+      "DEVICE_ID": "F2:27:C9:B5:23:C3"
+    },
+    "processing_module": {
+      "algorithm": [
+        {
+          "authors": [
+            ""
+          ],
+          "description": "",
+          "method": "",
+          "reference": {
+            "url": "http://md2k.org/"
+          },
+          "version": ""
+        }
+      ],
+      "description": "",
+      "input_parameters": {},
+      "input_streams": [],
+      "name": "",
+      "output_streams": []
+    }
+  },
+  "identifier": "f28a97c6-b76a-3f96-ac78-5f142dd2d401",
+  "name": "RAW--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST",
+  "owner": "fbf8d50c-7f1d-47aa-b958-9caeadc676bd",
+  "type": "datastream"
+}

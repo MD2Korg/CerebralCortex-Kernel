@@ -27,7 +27,6 @@ import yaml
 
 
 class ConfigHandler():
-
     def load_file(self, filepath: str):
         """
         Helper function to load a yaml file

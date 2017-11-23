@@ -22,17 +22,19 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import datetime
 import json
 
-from core import CC
-from pyspark.streaming.kafka import KafkaDStream
-from core.kafka_offset import storeOffsetRanges
 from cerebralcortex.kernel.utils.logging import cc_log
-import datetime
+from core.kafka_offset import storeOffsetRanges
+from pyspark.streaming.kafka import KafkaDStream
+
+from core import CC
+
 
 def verify_fields(msg):
     if "metadata" in msg and "data" in msg:
-#        print("Batch size " + str(len(msg["data"])))
+        #        print("Batch size " + str(len(msg["data"])))
         return True
     return False
 
@@ -42,7 +44,7 @@ def store_streams(data):
         st = datetime.datetime.now()
         CC.save_datastream_to_influxdb(data)
         CC.save_datastream(data, "json")
-        print("Stream Saved: ", data['filename'], (datetime.datetime.now()-st))
+        print("Stream Saved: ", data['filename'], (datetime.datetime.now() - st))
     except:
         cc_log()
 

@@ -23,21 +23,21 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import uuid
-import random
-import os
 import gzip
+import random
 
 
 def gen_raw_data(filepath):
     with gzip.open(filepath, 'wb') as output:
-        for row in range(1,1000000):
-            sample = random.random(),random.random(),random.random(),random.random(),random.random()
-            start_time = str(15112000134512+row*10)
-            r = (start_time+", -21600000, "+str(sample)+"\n").encode()
+        for row in range(1, 1000000):
+            sample = random.random(), random.random(), random.random(), random.random(), random.random()
+            start_time = str(15112000134512 + row * 10)
+            r = (start_time + ", -21600000, " + str(sample) + "\n").encode()
 
             output.write(r)
         output.close()
         print(r)
 
-gen_raw_data("/home/ali/IdeaProjects/CerebralCortex-2.0/core/test_suite/sample_data/6ff7c2ff-deaf-4c2f-aff5-63228ee13540.csv.gz")
+
+gen_raw_data(
+    "/home/ali/IdeaProjects/CerebralCortex-2.0/core/test_suite/sample_data/6ff7c2ff-deaf-4c2f-aff5-63228ee13540.csv.gz")

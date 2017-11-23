@@ -25,25 +25,18 @@
 
 
 import datetime
-import json
-import os
-import unittest
-import json
-from core.util.data_types import convert_sample
-from pytz import timezone
 import random
-from cerebralcortex import CerebralCortex
-from core.file_manager.file_io import FileIO
-from core.data_manager.raw.file_to_db import FileToDB
-from core.data_manager.raw.data import Data
+import unittest
+
+from core.util.data_types import convert_sample
+
 
 class TestFileToDataStream(unittest.TestCase):
-
     sample_data = {}
     sample_data["string"] = 'some-string'
     sample_data["float"] = 123.0
-    sample_data["tuple"] = (1,2,3,4)
-    sample_data["list"] = [1,2,3,4]
+    sample_data["tuple"] = (1, 2, 3, 4)
+    sample_data["list"] = [1, 2, 3, 4]
     sample_data["string_array"] = 'string1, string2, string3'
     sample_data["string_tuple"] = '(1,2,3,4)'
     sample_data["string_list"] = '[1,2,3,4]'
@@ -61,10 +54,11 @@ class TestFileToDataStream(unittest.TestCase):
 
     def test_02_stress_test(self):
         st = datetime.datetime.now()
-        for i in range(1,1000000):
-            sample = random.random(),random.random(),random.random(),random.random(),random.random()
+        for i in range(1, 1000000):
+            sample = random.random(), random.random(), random.random(), random.random(), random.random()
             convert_sample(str(sample))
-        print("\n\nTime took to process all samples: ", datetime.datetime.now()-st)
+        print("\n\nTime took to process all samples: ", datetime.datetime.now() - st)
+
 
 if __name__ == '__main__':
     unittest.main()

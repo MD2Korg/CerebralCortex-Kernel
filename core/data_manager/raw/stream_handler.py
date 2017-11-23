@@ -23,15 +23,16 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import json
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from enum import Enum
 from typing import List
 
 from cassandra.cluster import Cluster
-from cassandra.query import BatchStatement, ConsistencyLevel, SimpleStatement, BatchType
+from cassandra.query import BatchStatement, SimpleStatement, BatchType
 from pytz import timezone
-import json
+
 from core.data_manager.sql.data import Data
 from core.datatypes.datapoint import DataPoint
 from core.datatypes.datastream import DataStream
@@ -81,7 +82,7 @@ class StreamHandler():
 
         if data_type == DataSet.COMPLETE:
             dps = self.load_cassandra_data(where_clause)
-            #data = self.row_to_datapoints(dps)
+            # data = self.row_to_datapoints(dps)
             stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps)
         elif data_type == DataSet.ONLY_DATA:
             dps = self.load_cassandra_data(where_clause)
@@ -94,7 +95,7 @@ class StreamHandler():
         return stream
 
     @staticmethod
-    def map_datapoint_and_metadata_to_datastream(stream_id: int, datastream_info:dict, data: object) -> DataStream:
+    def map_datapoint_and_metadata_to_datastream(stream_id: int, datastream_info: dict, data: object) -> DataStream:
         """
         This method will map the datapoint and metadata to datastream object
         :param stream_id:
@@ -129,7 +130,7 @@ class StreamHandler():
         data = []
         for row in session.execute(statement):
             data += self.parse_row(row)
-            #data.append(row)
+            # data.append(row)
 
         session.shutdown()
         cluster.shutdown()
@@ -142,7 +143,7 @@ class StreamHandler():
             rows = json.loads(row[2])
             for r in rows:
                 offset = r[1]
-                #timezone = datetime.timezone(datetime.timedelta(milliseconds=offset))
+                # timezone = datetime.timezone(datetime.timedelta(milliseconds=offset))
                 start_time = datetime.fromtimestamp(r[0])
 
                 sample = convert_sample(r[2])
@@ -150,6 +151,7 @@ class StreamHandler():
             return updated_rows
         except Exception as e:
             print(e)
+
     def get_stream_samples(self, stream_id, day, start_time=None, end_time=None) -> List[DataPoint]:
         """
         returns list of DataPoint objects
@@ -279,14 +281,13 @@ class StreamHandler():
             stream_id = uuid.UUID(stream_id)
 
         for data_block in self.datapoints_to_cassandra_sql_batch(stream_id, datapoints, qry_without_endtime,
-                                                               qry_with_endtime):
+                                                                 qry_with_endtime):
             st = datetime.now()
             session.execute_async(data_block)
             data_block.clear()
-            print("Total time to insert batch ",len(data_block), datetime.now()-st)
+            print("Total time to insert batch ", len(data_block), datetime.now() - st)
         session.shutdown();
         cluster.shutdown();
-
 
     def datapoints_to_cassandra_sql_batch(self, stream_id: uuid, datapoints: DataPoint, qry_without_endtime: str,
                                           qry_with_endtime: str):
