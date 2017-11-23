@@ -30,10 +30,10 @@ def convert_sample(sample):
     if "\x00" in sample:
         sample = sample.replace("\x00", "")
 
-    if isinstance(sample, list):
-        values = sample
-    elif isinstance(sample, tuple):
+    if isinstance(sample, tuple):
         values = list(sample)
+    elif isinstance(sample, list):
+        values = sample
     else:
         try:
             values = json.loads(sample)
