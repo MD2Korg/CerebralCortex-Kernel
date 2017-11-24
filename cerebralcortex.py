@@ -23,26 +23,19 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import json
 import uuid
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import datetime
 from typing import List
 
-from cassandra.cluster import Cluster
-from cassandra.query import BatchStatement, SimpleStatement, BatchType
-from pytz import timezone
-
-from core.data_manager.sql.data import SqlData
-from core.datatypes.datapoint import DataPoint
-from core.datatypes.datastream import DataStream
-from core.util.data_types import convert_sample
-from core.util.debuging_decorators import log_execution_time
 from core.config_manager.config import Configuration
+from core.data_manager.object.data import ObjectData
 from core.data_manager.raw.data import RawData
 from core.data_manager.raw.stream_handler import DataSet
 from core.data_manager.sql.data import SqlData
 from core.data_manager.time_series.data import TimeSeriesData
+from core.datatypes.datapoint import DataPoint
+from core.datatypes.datastream import DataStream
+from core.file_manager.file_io import FileIO
 
 
 class CerebralCortex:
@@ -51,15 +44,16 @@ class CerebralCortex:
         self.config = Configuration(configuration_file).config
         self.timezone = timezone
 
-        self.RawData = RawData(self.config)
-        self.SqlData = SqlData(self.config)
-        self.TimeSeriesData = TimeSeriesData(self.config)
+        self.RawData = RawData(self)
+        self.SqlData = SqlData(self)
+        self.ObjectData = ObjectData(self)
+        self.TimeSeriesData = TimeSeriesData(self)
+        self.FileIO = FileIO()
 
     ###########################################################################
     ############### RAW DATA MANAGER METHODS ##################################
     ###########################################################################
     def save_stream(self, datastream: DataStream):
-
         """
         Saves datastream raw data in Cassandra and metadata in MySQL.
         :param datastream:
@@ -68,7 +62,6 @@ class CerebralCortex:
 
     def get_stream(self, stream_id: uuid, day, start_time: datetime = None, end_time: datetime = None,
                    data_type=DataSet.COMPLETE) -> DataStream:
-
         """
 
         :param stream_id:
@@ -91,15 +84,13 @@ class CerebralCortex:
         """
         return self.RawData.get_stream_samples(stream_id, day, start_time, end_time)
 
-
     ###########################################################################
     ############### SQL DATA MANAGER METHODS ##################################
     ###########################################################################
 
     ################### STREAM RELATED METHODS ################################
 
-    def is_stream(self, stream_id: uuid)->bool:
-
+    def is_stream(self, stream_id: uuid) -> bool:
         """
 
         :param stream_id:
@@ -148,7 +139,6 @@ class CerebralCortex:
         return self.SqlData.get_user_streams_metadata(user_id)
 
     def get_user_streams(self, user_id: uuid) -> dict:
-
         """
 
         :param user_id:
@@ -157,7 +147,6 @@ class CerebralCortex:
         return self.SqlData.get_user_streams(user_id)
 
     def get_all_users(self, study_name: str) -> dict:
-
         """
 
         :param study_name:
@@ -223,7 +212,6 @@ class CerebralCortex:
 
     def update_auth_token(self, username: str, auth_token: str, auth_token_issued_time: datetime,
                           auth_token_expiry_time: datetime) -> str:
-
         """
 
         :param username:
@@ -252,7 +240,6 @@ class CerebralCortex:
     ################### KAFKA RELATED METHODS ##################################
 
     def store_or_update_Kafka_offset(self, topic: str, topic_partition: str, offset_start: str, offset_until: str):
-
         """
 
         :param topic:
@@ -263,7 +250,6 @@ class CerebralCortex:
         self.SqlData.store_or_update_Kafka_offset(topic, topic_partition, offset_start, offset_until)
 
     def get_kafka_offsets(self, topic: str) -> dict:
-
         """
 
         :param topic:
@@ -271,16 +257,102 @@ class CerebralCortex:
         """
         return self.SqlData.get_kafka_offsets(topic)
 
-
     ###########################################################################
     ############### OBJECTS DATA MANAGER METHODS ##############################
     ###########################################################################
+
+    def create_bucket(self, bucket_name: str) -> bool:
+        """
+        creates a bucket
+        :param bucket_name:
+        """
+        return self.ObjectData.create_bucket(bucket_name)
+
+    def upload_object(self, bucket_name: str, object_name: str, object_filepath: object) -> bool:
+        """
+        Uploads an object to Minio storage
+        :param bucket_name:
+        :param object_name:
+        :param object_filepath: it shall contain full path of a file with file name (e.g., /home/nasir/obj.zip)
+        :return: True/False, in case of an error {"error": str}
+        """
+        return self.ObjectData.upload_object(bucket_name, object_name, object_filepath)
+
+    def get_buckets(self) -> List:
+        """
+        returns all available buckets in Minio storage
+        :return: [{bucket-name: str, last_modified: str}], in case of an error [{"error": str}]
+        """
+        return self.ObjectData.get_buckets()
+
+    def get_bucket_objects(self, bucket_name: str) -> List:
+        """
+        returns a list of all objects stored in the specified Minio bucket
+        :param bucket_name:
+        :return:{object-name:{stat1:str, stat2, str}},  in case of an error [{"error": str}]
+        """
+        return self.get_bucket_objects(bucket_name)
+
+    def get_object_stats(self, bucket_name: str, object_name: str) -> dict:
+        """
+        Returns properties (e.g., object type, last modified etc.) of an object stored in a specified bucket
+        :param bucket_name:
+        :param object_name:
+        :return: {stat1:str, stat2, str},  in case of an error {"error": str}
+        """
+        return self.ObjectData.get_object_stats(bucket_name, object_name)
+
+    def get_object(self, bucket_name: str, object_name: str) -> dict:
+        """
+        Returns stored object (HttpResponse)
+        :param bucket_name:
+        :param object_name:
+        :return: object (HttpResponse), in case of an error {"error": str}
+        """
+        return self.ObjectData.get_object(bucket_name, object_name)
+
+    def is_bucket(self, bucket_name: str) -> bool:
+        """
+
+        :param bucket_name:
+        :return: True/False, in case of an error {"error": str}
+        """
+        self.ObjectData.is_bucket(bucket_name)
 
     ###########################################################################
     ############### TIME SERIES DATA MANAGER METHODS ##########################
     ###########################################################################
 
+    def store_data_to_influxdb(self, datastream: DataStream):
+        """
+        :param datastream:
+        """
+        self.TimeSeriesData.store_data_to_influxdb(datastream)
+
     ###########################################################################
     ############### IO MANAGER METHODS ########################################
     ###########################################################################
 
+    def read_file(self, filepath: str) -> str:
+        """
+
+        :param filepath:
+        :return:
+        """
+        return self.FileIO.read_file(filepath)
+
+    def file_processor(self, msg: dict, zip_filepath: str) -> DataStream:
+        """
+        :param msg:
+        :param zip_filepath:
+        :return:
+        """
+        return self.FileIO.file_processor(msg, zip_filepath)
+
+    def get_gzip_file_contents(self, filepath: str) -> str:
+        """
+        Read and return gzip compressed file contents
+        :param filepath:
+        :return:
+        """
+        self.FileIO.get_gzip_file_contents(filepath)

@@ -38,7 +38,12 @@ class ReadHandler():
     def __init__(self):
         pass
 
-    def read_file(self, filepath):
+    def read_file(self, filepath: str) -> str:
+        """
+
+        :param filepath:
+        :return:
+        """
         if not filepath:
             return None
 
@@ -114,13 +119,13 @@ class ReadHandler():
         return DataPoint(start_time=ts, sample=values)
 
     @log_execution_time
-    def get_gzip_file_contents(self, file_name: str) -> str:
+    def get_gzip_file_contents(self, filepath: str) -> str:
         """
         Read and return gzip compressed file contents
-        :param file_name:
+        :param filepath:
         :return:
         """
-        fp = gzip.open(file_name)
+        fp = gzip.open(filepath)
         gzip_file_content = fp.read()
         fp.close()
         gzip_file_content = gzip_file_content.decode('utf-8')

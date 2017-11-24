@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from core.data_manager.object.minio_handler import MinioHandler
-
+from minio import Minio
 
 class ObjectData(MinioHandler):
     def __init__(self, CC):
@@ -36,3 +36,6 @@ class ObjectData(MinioHandler):
         self.access_key = self.configuration['minio']['access_key'],
         self.secret_key = self.configuration['minio']['secret_key'],
         self.secure = self.configuration['minio']['secure']
+
+        db_url = self.host + ":" + self.port
+        self.minioClient = Minio(db_url, access_key=self.access_key, secret_key=self.secret_key, secure=self.secure)

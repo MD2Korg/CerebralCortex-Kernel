@@ -27,14 +27,13 @@ import json
 import os
 from typing import List
 
-from minio import Minio
+
 from minio.error import ResponseError
 
 
 class MinioHandler():
     def __init__(self):
-        db_url = self.host + ":" + self.port
-        self.minioClient = Minio(db_url, access_key=self.access_key, secret_key=self.secret_key, secure=self.secure)
+        pass
 
     ###################################################################
     ################## GET DATA METHODS ###############################
@@ -98,11 +97,9 @@ class MinioHandler():
         :param object_name:
         :return: object (HttpResponse), in case of an error {"error": str}
         """
-        obj = {}
         try:
             if self.bucket_exist(bucket_name):
-                obj = self.minioClient.get_object(bucket_name, object_name)
-                return obj
+                return self.minioClient.get_object(bucket_name, object_name)
             else:
                 return {"error": "Bucket does not exist"}
 
