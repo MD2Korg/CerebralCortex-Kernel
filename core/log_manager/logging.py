@@ -25,3 +25,9 @@
 
 
 # ERRORS, WARNING, MISSING-DATA
+from core.log_manager.log_handler import LogHandler
+
+
+class CCLogging(LogHandler):
+    def __init__(self, log_path):
+        self.log_path = log_path

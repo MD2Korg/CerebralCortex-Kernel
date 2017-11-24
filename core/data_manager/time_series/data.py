@@ -29,7 +29,7 @@ from core.data_manager.time_series.influxdb_handler import InfluxdbHandler
 class TimeSeriesData(InfluxdbHandler):
     def __init__(self, CC):
         self.CC = CC
-        self.configuration = CC.configuration
+        self.configuration = CC.config
 
         self.influxdbIP = self.configuration['influxdb']['host']
         self.influxdbPort = self.configuration['influxdb']['port']

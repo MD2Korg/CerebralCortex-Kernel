@@ -36,6 +36,9 @@ minio:
   secret_key: 'VSUFrJaovzdurcbUWsPteLs0SO857pkw29FoHDjd'
   secure: False #ssl
 
+logging:
+  log_path: ''
+
 kafkaserver:
   host: 127.0.0.1
   port: 9092

@@ -24,13 +24,16 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from core.data_manager.raw.stream_handler import StreamHandler
-
+from core.log_manager.logging import LogHandler
+from core.log_manager.log_handler import LogTypes
 
 class RawData(StreamHandler):
     def __init__(self, CC):
         self.CC = CC
         self.config = CC.config
 
+        self.logging = LogHandler(self.config['logging']['log_path'])
+        self.logtypes = LogTypes()
         self.host_ip = self.config['cassandra']['host']
         self.host_port = self.config['cassandra']['port']
         self.keyspace_name = self.config['cassandra']['keyspace']

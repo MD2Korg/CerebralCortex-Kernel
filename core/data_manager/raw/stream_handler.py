@@ -91,11 +91,11 @@ class StreamHandler():
         elif data_type == DataSet.ONLY_METADATA:
             stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, None)
         else:
-            raise ValueError("Failed to get data stream. Invalid type parameter.")
+            self.logging.log(error_message="STREAM ID: "+stream_id+"Failed to get data stream. Invalid type parameter.", error_type=self.logtypes.DEBUG)
+            return None
         return stream
 
-    @staticmethod
-    def map_datapoint_and_metadata_to_datastream(stream_id: int, datastream_info: dict, data: object) -> DataStream:
+    def map_datapoint_and_metadata_to_datastream(self, stream_id: int, datastream_info: dict, data: object) -> DataStream:
         """
         This method will map the datapoint and metadata to datastream object
         :param stream_id:
@@ -103,16 +103,19 @@ class StreamHandler():
         :return: datastream object
         """
 
-        ownerID = datastream_info[0]["owner"]
-        name = datastream_info[0]["name"]
-        data_descriptor = json.loads(datastream_info[0]["data_descriptor"])
-        execution_context = json.loads(datastream_info[0]["execution_context"])
-        annotations = json.loads(datastream_info[0]["annotations"])
-        stream_type = datastream_info[0]["type"]
-        start_time = datastream_info[0]["start_time"]
-        end_time = datastream_info[0]["end_time"]
-        return DataStream(stream_id, ownerID, name, data_descriptor, execution_context, annotations,
-                          stream_type, start_time, end_time, data)
+        try:
+            ownerID = datastream_info[0]["owner"]
+            name = datastream_info[0]["name"]
+            data_descriptor = json.loads(datastream_info[0]["data_descriptor"])
+            execution_context = json.loads(datastream_info[0]["execution_context"])
+            annotations = json.loads(datastream_info[0]["annotations"])
+            stream_type = datastream_info[0]["type"]
+            start_time = datastream_info[0]["start_time"]
+            end_time = datastream_info[0]["end_time"]
+            return DataStream(stream_id, ownerID, name, data_descriptor, execution_context, annotations,
+                              stream_type, start_time, end_time, data)
+        except Exception as e:
+            self.logging.log(error_message="STREAM ID: "+stream_id+" - Error in mapping datapoints and metadata to datastream. "+str(e), error_type=self.logtypes.CRITICAL)
 
     def load_cassandra_data(self, where_clause=None) -> List:
         """
@@ -121,23 +124,30 @@ class StreamHandler():
         :param datapoints:
         :param batch_size:
         """
-        cluster = Cluster([self.host_ip], port=self.host_port)
+        try:
+            cluster = Cluster([self.host_ip], port=self.host_port)
 
-        session = cluster.connect(self.keyspace_name)
+            session = cluster.connect(self.keyspace_name)
 
-        query = "SELECT start_time,end_time, sample FROM " + self.datapoint_table + " " + where_clause
-        statement = SimpleStatement(query)
-        data = []
-        for row in session.execute(statement):
-            data += self.parse_row(row)
-            # data.append(row)
+            query = "SELECT start_time,end_time, sample FROM " + self.datapoint_table + " " + where_clause
+            statement = SimpleStatement(query)
+            data = []
+            for row in session.execute(statement):
+                data += self.parse_row(row)
+            session.shutdown()
+            cluster.shutdown()
 
-        session.shutdown()
-        cluster.shutdown()
+            return data
+        except Exception as e:
+            self.logging.log(error_message="WHERE CLAUSE:"+where_clause+" - Error in loading cassandra data. "+str(e), error_type=self.logtypes.CRITICAL)
+            return None
 
-        return data
+    def parse_row(self, row: str) -> List:
+        """
 
-    def parse_row(self, row):
+        :param row:
+        :return:
+        """
         updated_rows = []
         try:
             rows = json.loads(row[2])
@@ -150,7 +160,8 @@ class StreamHandler():
                 updated_rows.append(DataPoint(start_time=start_time, sample=sample))
             return updated_rows
         except Exception as e:
-            print(e)
+            self.logging.log(error_message="Row: "+row+" - Cannot parse row. "+str(e), error_type=self.logtypes.CRITICAL)
+            return None
 
     def get_stream_samples(self, stream_id, day, start_time=None, end_time=None) -> List[DataPoint]:
         """
@@ -161,27 +172,31 @@ class StreamHandler():
         :param end_time:
         :return:
         """
-        cluster = Cluster([self.hostIP], port=self.hostPort)
-        session = cluster.connect(self.keyspaceName)
+        try:
+            cluster = Cluster([self.hostIP], port=self.hostPort)
+            session = cluster.connect(self.keyspaceName)
 
-        if start_time and end_time:
-            qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "' and start_time>='" + str(
-                start_time) + "' and start_time<='" + str(end_time) + "' ALLOW FILTERING"
-        elif start_time and not end_time:
-            qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "' and start_time>='" + str(
-                start_time) + "' ALLOW FILTERING"
-        elif not start_time and end_time:
-            qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "' and start_time<='" + str(
-                end_time) + "' ALLOW FILTERING"
-        else:
-            qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "'"
+            if start_time and end_time:
+                qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "' and start_time>='" + str(
+                    start_time) + "' and start_time<='" + str(end_time) + "' ALLOW FILTERING"
+            elif start_time and not end_time:
+                qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "' and start_time>='" + str(
+                    start_time) + "' ALLOW FILTERING"
+            elif not start_time and end_time:
+                qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "' and start_time<='" + str(
+                    end_time) + "' ALLOW FILTERING"
+            else:
+                qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "'"
 
-        rows = session.execute(qry)
-        dps = self.row_to_datapoints(rows)
+            rows = session.execute(qry)
+            dps = self.row_to_datapoints(rows)
 
-        session.shutdown()
-        cluster.shutdown()
-        return dps
+            session.shutdown()
+            cluster.shutdown()
+            return dps
+        except Exception as e:
+            self.logging.log(error_message="ID: "+stream_id+" - Cannot get stream samples. "+str(e), error_type=self.logtypes.CRITICAL)
+            return None
 
     def row_to_datapoints(self, rows: object) -> List[DataPoint]:
         """
@@ -190,24 +205,28 @@ class StreamHandler():
         :return:
         """
         dps = []
-        if rows:
-            for row in rows:
-                sample = convert_sample(row[2])
-                # Caasandra timezone is already in UTC. Adding timezone again would double the timezone value
-                if self.CC.timezone != 'UTC':
-                    localtz = timezone(self.CC.timezone)
-                    if row[0]:
-                        start_time = localtz.localize(row[0])
-                    if row[1]:
-                        end_time = localtz.localize(row[1])
-                else:
-                    if row[0]:
-                        start_time = row[0]
-                    if row[1]:
-                        end_time = row[1]
+        try:
+            if rows:
+                for row in rows:
+                    sample = convert_sample(row[2])
+                    # Caasandra timezone is already in UTC. Adding timezone again would double the timezone value
+                    if self.CC.timezone != 'UTC':
+                        localtz = timezone(self.CC.timezone)
+                        if row[0]:
+                            start_time = localtz.localize(row[0])
+                        if row[1]:
+                            end_time = localtz.localize(row[1])
+                    else:
+                        if row[0]:
+                            start_time = row[0]
+                        if row[1]:
+                            end_time = row[1]
 
-                dps.append(DataPoint(start_time, end_time, sample))
-        return dps
+                    dps.append(DataPoint(start_time, end_time, sample))
+            return dps
+        except Exception as e:
+            self.logging.log(error_message="ROW: "+row+" - Cannot convert row to datapoints. "+str(e), error_type=self.logtypes.CRITICAL)
+            return None
 
     ###################################################################
     ################## STORE DATA METHODS #############################
@@ -219,46 +238,50 @@ class StreamHandler():
         Saves datastream raw data in Cassandra and metadata in MySQL.
         :param datastream:
         """
-        owner_id = datastream.owner
-        stream_name = datastream.name
-        data_descriptor = datastream.data_descriptor
-        execution_context = datastream.execution_context
-        annotations = datastream.annotations
-        stream_type = datastream.datastream_type
-        data = datastream.data
+        try:
+            owner_id = datastream.owner
+            stream_name = datastream.name
+            data_descriptor = datastream.data_descriptor
+            execution_context = datastream.execution_context
+            annotations = datastream.annotations
+            stream_type = datastream.datastream_type
+            data = datastream.data
 
-        # get start and end time of a stream
-        if data:
-            if isinstance(data, list):
-                total_dp = len(data) - 1
-                if not datastream.start_time:
-                    new_start_time = data[0].start_time
+            # get start and end time of a stream
+            if data:
+                if isinstance(data, list):
+                    total_dp = len(data) - 1
+                    if not datastream.start_time:
+                        new_start_time = data[0].start_time
+                    else:
+                        new_start_time = datastream.start_time
+                    if not datastream.end_time:
+                        new_end_time = data[total_dp].start_time
+                    else:
+                        new_end_time = datastream.end_time
                 else:
-                    new_start_time = datastream.start_time
-                if not datastream.end_time:
-                    new_end_time = data[total_dp].start_time
-                else:
-                    new_end_time = datastream.end_time
-            else:
-                if not datastream.start_time:
-                    new_start_time = data.start_time
-                else:
-                    new_start_time = datastream.start_time
-                if not datastream.end_time:
-                    new_end_time = data.start_time
-                else:
-                    new_end_time = datastream.end_time
+                    if not datastream.start_time:
+                        new_start_time = data.start_time
+                    else:
+                        new_start_time = datastream.start_time
+                    if not datastream.end_time:
+                        new_end_time = data.start_time
+                    else:
+                        new_end_time = datastream.end_time
 
-            stream_id = datastream.identifier
+                stream_id = datastream.identifier
 
-            # save metadata in SQL store
-            SqlData(self.CC).save_stream_metadata(stream_id, stream_name, owner_id,
-                                                  data_descriptor, execution_context,
-                                                  annotations,
-                                                  stream_type, new_start_time, new_end_time)
+                # save metadata in SQL store
+                SqlData(self.CC).save_stream_metadata(stream_id, stream_name, owner_id,
+                                                      data_descriptor, execution_context,
+                                                      annotations,
+                                                      stream_type, new_start_time, new_end_time)
 
-            # save raw sensor data in Cassandra
-            self.save_raw_data(stream_id, data)
+                # save raw sensor data in Cassandra
+                self.save_raw_data(stream_id, data)
+        except Exception as e:
+            self.logging.log(error_message="STREAM ID: "+stream_id+" - Cannot save stream. "+str(e), error_type=self.logtypes.CRITICAL)
+
 
     @log_execution_time
     def save_raw_data(self, stream_id: uuid, datapoints: DataPoint):
@@ -268,26 +291,30 @@ class StreamHandler():
         :param stream_id:
         :param datapoints:
         """
-        cluster = Cluster([self.host_ip], port=self.host_port)
+        try:
+            cluster = Cluster([self.host_ip], port=self.host_port)
 
-        session = cluster.connect(self.keyspace_name)
+            session = cluster.connect(self.keyspace_name)
 
-        qry_without_endtime = session.prepare(
-            "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, sample) VALUES (?, ?, ?, ?)")
-        qry_with_endtime = session.prepare(
-            "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, sample) VALUES (?, ?, ?, ?, ?)")
+            qry_without_endtime = session.prepare(
+                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, sample) VALUES (?, ?, ?, ?)")
+            qry_with_endtime = session.prepare(
+                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, sample) VALUES (?, ?, ?, ?, ?)")
 
-        if isinstance(stream_id, str):
-            stream_id = uuid.UUID(stream_id)
+            if isinstance(stream_id, str):
+                stream_id = uuid.UUID(stream_id)
 
-        for data_block in self.datapoints_to_cassandra_sql_batch(stream_id, datapoints, qry_without_endtime,
-                                                                 qry_with_endtime):
-            st = datetime.now()
-            session.execute_async(data_block)
-            data_block.clear()
-            print("Total time to insert batch ", len(data_block), datetime.now() - st)
-        session.shutdown();
-        cluster.shutdown();
+            for data_block in self.datapoints_to_cassandra_sql_batch(stream_id, datapoints, qry_without_endtime,
+                                                                     qry_with_endtime):
+                st = datetime.now()
+                session.execute_async(data_block)
+                data_block.clear()
+                print("Total time to insert batch ", len(data_block), datetime.now() - st)
+            session.shutdown();
+            cluster.shutdown();
+        except Exception as e:
+            self.logging.log(error_message="STREAM ID: "+stream_id+" - Cannot save raw data. "+str(e), error_type=self.logtypes.CRITICAL)
+            return None
 
     def datapoints_to_cassandra_sql_batch(self, stream_id: uuid, datapoints: DataPoint, qry_without_endtime: str,
                                           qry_with_endtime: str):

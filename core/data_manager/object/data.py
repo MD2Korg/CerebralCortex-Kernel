@@ -25,17 +25,17 @@
 
 from core.data_manager.object.minio_handler import MinioHandler
 from minio import Minio
-
+from core.log_manager.logging import LogHandler
 class ObjectData(MinioHandler):
     def __init__(self, CC):
         self.CC = CC
-        self.configuration = CC.configuration
-
-        self.host = self.configuration['minio']['host']
-        self.port = self.configuration['minio']['port']
-        self.access_key = self.configuration['minio']['access_key'],
-        self.secret_key = self.configuration['minio']['secret_key'],
-        self.secure = self.configuration['minio']['secure']
+        self.config = CC.configuration
+        self.logging = LogHandler(self.config['logging']['log_path'])
+        self.host = self.config['minio']['host']
+        self.port = self.config['minio']['port']
+        self.access_key = self.config['minio']['access_key'],
+        self.secret_key = self.config['minio']['secret_key'],
+        self.secure = self.config['minio']['secure']
 
         db_url = self.host + ":" + self.port
         self.minioClient = Minio(db_url, access_key=self.access_key, secret_key=self.secret_key, secure=self.secure)
