@@ -26,7 +26,7 @@
 from core.data_manager.raw.stream_handler import StreamHandler
 
 
-class Data(StreamHandler):
+class RawData(StreamHandler):
     def __init__(self, CC):
         self.CC = CC
         self.config = CC.config

@@ -30,6 +30,7 @@ class KafkaOffsetsHandler:
     def store_or_update_Kafka_offset(self, topic: str, topic_partition: str, offset_start: str, offset_until: str):
 
         """
+
         :param topic:
         :param topic_partition:
         :param offset_start:
@@ -44,7 +45,9 @@ class KafkaOffsetsHandler:
         self.dbConnection.commit()
 
     def get_kafka_offsets(self, topic: str) -> dict:
+
         """
+
         :param topic:
         :return:
         """

@@ -25,8 +25,6 @@
 
 from pyspark.streaming.kafka import KafkaUtils, KafkaDStream, TopicAndPartition
 
-from core import CC
-
 
 def spark_kafka_consumer(kafka_topic: str, ssc, broker, consumer_group_id) -> KafkaDStream:
     """

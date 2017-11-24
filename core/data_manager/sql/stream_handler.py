@@ -41,27 +41,32 @@ class StreamHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_stream_metadata(self, stream_id) -> List:
+    def get_stream_metadata(self, stream_id: uuid) -> dict:
+        """
+
+        :param stream_id:
+        :return:
+        """
         qry = "SELECT * from " + self.datastreamTable + " where identifier=%(identifier)s"
-        vals = {"identifier": stream_id}
+        vals = {"identifier": str(stream_id)}
         self.cursor.execute(qry, vals)
         return self.cursor.fetchall()
 
-    def get_streams_by_owner(self, owner_id: uuid, stream_name: str = None, start_time: datetime = None,
-                             end_time: datetime = None) -> List:
+    def get_stream_names_ids_by_user(self, user_id: uuid, stream_name: str = None, start_time: datetime = None,
+                                     end_time: datetime = None) -> List:
         """
         Returns all the stream ids and name that belongs to an owner-id
-        :param owner_id:
+        :param user_id:
         :return:
         """
         stream_ids_names = {}
         v1, v2, v3, v4 = None, None, None, None
-        if not owner_id:
+        if not user_id:
             return None
 
         qry = "SELECT identifier, name from " + self.datastreamTable
         where_clause = "where owner=%s"
-        v1 = owner_id
+        v1 = user_id
         if stream_name:
             where_clause += " and name=%s "
             v2 = stream_name
@@ -100,7 +105,7 @@ class StreamHandler():
         else:
             return {"start_time": rows[0]["start_time"], "end_time": rows[0]["end_time"]}
 
-    def get_all_participants(self, study_name: str) -> dict:
+    def get_all_users(self, study_name: str) -> dict:
 
         """
 
@@ -123,18 +128,18 @@ class StreamHandler():
                 results.append(row)
             return results
 
-    def get_participant_streams(self, participant_id: uuid) -> dict:
+    def get_user_streams(self, user_id: uuid) -> dict:
 
         """
 
-        :param participant_id:
+        :param user_id:
         :return:
         """
-        if not participant_id:
+        if not user_id:
             return None
         result = {}
         qry = 'SELECT * FROM ' + self.datastreamTable + ' where owner=%(owner)s'
-        vals = {'owner': str(participant_id)}
+        vals = {'owner': str(user_id)}
 
         self.cursor.execute(qry, vals)
         rows = self.cursor.fetchall()
@@ -146,17 +151,17 @@ class StreamHandler():
                 result[row["name"]] = row
             return result
 
-    def get_participant_streams_metadata(self, owner_id: str) -> uuid:
+    def get_user_streams_metadata(self, user_id: str) -> uuid:
         """
 
-        :param owner_id:
+        :param user_id:
         :return:
         """
-        if not owner_id:
+        if not user_id:
             return None
         result = {}
         qry = "select data_descriptor,execution_context,annotations, start_time, end_time from " + self.datastreamTable + " where owner = %(owner)s"
-        vals = {'owner': str(owner_id)}
+        vals = {'owner': str(user_id)}
 
         self.cursor.execute(qry, vals)
         rows = self.cursor.fetchall()
@@ -168,17 +173,17 @@ class StreamHandler():
                 result[row["name"]] = row
             return result
 
-    def get_participant_name(self, owner_id: uuid) -> str:
+    def get_user_name(self, user_id: uuid) -> str:
         """
 
-        :param owner_id:
+        :param user_id:
         :return:
         """
-        if not owner_id:
+        if not user_id:
             return None
 
         qry = "select username from " + self.userTable + " where identifier = %(identifier)s"
-        vals = {'identifier': str(owner_id)}
+        vals = {'identifier': str(user_id)}
 
         self.cursor.execute(qry, vals)
         rows = self.cursor.fetchall()
@@ -188,17 +193,17 @@ class StreamHandler():
         else:
             return rows[0]["username"]
 
-    def get_participant_id(self, owner_name: str) -> uuid:
+    def get_user_id(self, user_name: str) -> str:
         """
 
-        :param owner_id:
+        :param user_name:
         :return:
         """
-        if not owner_name:
+        if not user_name:
             return None
 
         qry = "select identifier from " + self.userTable + " where username = %(username)s"
-        vals = {'username': str(owner_name)}
+        vals = {'username': str(user_name)}
 
         self.cursor.execute(qry, vals)
         rows = self.cursor.fetchall()
@@ -248,13 +253,11 @@ class StreamHandler():
         else:
             return rows[0]["name"]
 
-    def is_stream(self, stream_id: uuid):
+    def is_stream(self, stream_id: uuid)->bool:
 
         """
 
         :param stream_id:
-        :param stream_name:
-        :param owner_id:
         :return:
         """
         qry = "SELECT * from " + self.datastreamTable + " where identifier = %(identifier)s"

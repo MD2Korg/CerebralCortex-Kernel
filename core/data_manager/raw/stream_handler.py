@@ -33,7 +33,7 @@ from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, SimpleStatement, BatchType
 from pytz import timezone
 
-from core.data_manager.sql.data import Data
+from core.data_manager.sql.data import SqlData
 from core.datatypes.datapoint import DataPoint
 from core.datatypes.datastream import DataStream
 from core.util.data_types import convert_sample
@@ -53,7 +53,7 @@ class StreamHandler():
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
-    @log_execution_time
+
     def get_stream(self, stream_id: uuid, day, start_time: datetime = None, end_time: datetime = None,
                    data_type=DataSet.COMPLETE) -> DataStream:
 
@@ -78,7 +78,7 @@ class StreamHandler():
             where_clause += " and start_time<=cast('" + end_time + "' as timestamp)"
 
         # query datastream(mysql) for metadata
-        datastream_metadata = Data(self.CC).get_stream_metadata(stream_id)
+        datastream_metadata = SqlData(self.CC).get_stream_metadata(stream_id)
 
         if data_type == DataSet.COMPLETE:
             dps = self.load_cassandra_data(where_clause)
@@ -252,10 +252,10 @@ class StreamHandler():
             stream_id = datastream.identifier
 
             # save metadata in SQL store
-            Data(self.CC).save_stream_metadata(stream_id, stream_name, owner_id,
-                                               data_descriptor, execution_context,
-                                               annotations,
-                                               stream_type, new_start_time, new_end_time)
+            SqlData(self.CC).save_stream_metadata(stream_id, stream_name, owner_id,
+                                                  data_descriptor, execution_context,
+                                                  annotations,
+                                                  stream_type, new_start_time, new_end_time)
 
             # save raw sensor data in Cassandra
             self.save_raw_data(stream_id, data)

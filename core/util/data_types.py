@@ -58,15 +58,21 @@ def convert_sample(sample):
 def convert_sample_short(sample):
     try:
         values = json.loads(sample)
+        if not isinstance(values, list) and not isinstance(values, dict):
+            values = [values]
+            return  values
     except:
         try:
-            values = list(
-                map(float, sample.replace("[", "").replace("]", "").replace("(", "").replace(")", "").split(',')))
+            if isinstance(sample, str) and "," in sample:
+                return list(
+                    map(float, sample[1:-1].split(',')))
         except:
             try:
-                values = [float(sample)]
+                return [float(sample)]
             except:
-                values = [sample]
-    return values
+                return [sample]
 
-    # convert_sample('(0.0024687682368556008, 0.17776913487103307, 0.2295764062106903, 0.09898929381168664, 0.5109892310134816)')
+
+    return sample
+
+# convert_sample('(0.0024687682368556008, 0.17776913487103307, 0.2295764062106903, 0.09898929381168664, 0.5109892310134816)')

@@ -26,6 +26,7 @@
 import hashlib
 import random
 import string
+import uuid
 from datetime import datetime
 from typing import List
 
@@ -40,7 +41,7 @@ class UserHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_user_info(self, user_id=None, username: str = None) -> List:
+    def get_user_metadata(self, user_id:uuid, username: str = None) -> List:
         """
 
         :param user_id:
@@ -51,14 +52,14 @@ class UserHandler():
             return None
 
         if user_id and not username:
-            qry = "select user_metadata from user where identifier=%s"
-            vals = user_id
+            qry = "select user_metadata from user where identifier=%(identifier)s"
+            vals = {"identifier": str(user_id)}
         elif not user_id and username:
-            qry = "select user_metadata from user where username=%s"
-            vals = username
+            qry = "select user_metadata from user where username=%(username)s"
+            vals = {"username":str(username)}
         else:
             qry = "select user_metadata from user where identifier=%s and username=%s"
-            vals = user_id, username
+            vals = str(user_id), str(username)
 
         self.cursor.execute(qry, vals)
         rows = self.cursor.fetchall()

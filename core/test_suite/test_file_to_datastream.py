@@ -50,7 +50,7 @@ class TestFileToDataStream(unittest.TestCase):
         FileToDB(self.CC).file_processor(msg, test_dir_path, False)
 
         # def test_02_get_data(self):
-        #     ds = Data(self.CC).get_stream("f28a97c6-b76a-3f96-ac78-5f142dd2d401", "24481117")
+        #     ds = SqlData(self.CC).get_stream("f28a97c6-b76a-3f96-ac78-5f142dd2d401", "24481117")
         #     print(ds)
 
 

@@ -26,7 +26,7 @@
 from core.data_manager.object.minio_handler import MinioHandler
 
 
-class Data(MinioHandler):
+class ObjectData(MinioHandler):
     def __init__(self, CC):
         self.CC = CC
         self.configuration = CC.configuration

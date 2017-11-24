@@ -156,7 +156,7 @@ class DataStream:
         :return:
         """
         # annotation_stream_id = Metadata.get_annotation_id(self.identifier, annotation_stream_name)
-        # return Data.get_annotation_stream(annotation_stream_id, self.identifier, annotation, start_time, end_time)
+        # return SqlData.get_annotation_stream(annotation_stream_id, self.identifier, annotation, start_time, end_time)
 
     @classmethod
     def from_datastream(cls, input_streams: List):

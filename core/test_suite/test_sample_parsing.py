@@ -28,7 +28,7 @@ import datetime
 import random
 import unittest
 
-from core.util.data_types import convert_sample
+from core.util.data_types import convert_sample,convert_sample_short
 
 
 class TestFileToDataStream(unittest.TestCase):
@@ -41,6 +41,7 @@ class TestFileToDataStream(unittest.TestCase):
     sample_data["string_tuple"] = '(1,2,3,4)'
     sample_data["string_list"] = '[1,2,3,4]'
     sample_data["string_float"] = '123.0'
+    sample_data["string_json"] = '{"k1": "v1", "k2": "v2"}'
 
     def test_01_simple_parsing(self):
         self.assertListEqual(convert_sample(self.sample_data["string"]), ['some-string'])
@@ -51,13 +52,25 @@ class TestFileToDataStream(unittest.TestCase):
         self.assertListEqual(convert_sample(self.sample_data["string_tuple"]), [1, 2, 3, 4])
         self.assertListEqual(convert_sample(self.sample_data["string_list"]), [1, 2, 3, 4])
         self.assertListEqual(convert_sample(self.sample_data["string_float"]), [123.0])
+        self.assertEqual(convert_sample(self.sample_data["string_json"]), {"k1": "v1", "k2": "v2"})
 
-    def test_02_stress_test(self):
-        st = datetime.datetime.now()
-        for i in range(1, 1000000):
-            sample = random.random(), random.random(), random.random(), random.random(), random.random()
-            convert_sample(str(sample))
-        print("\n\nTime took to process all samples: ", datetime.datetime.now() - st)
+    def test_02_simple_parsing(self):
+        self.assertEqual(convert_sample_short(self.sample_data["string"]), 'some-string')
+        self.assertEqual(convert_sample_short(self.sample_data["float"]), 123.0)
+        self.assertTupleEqual(convert_sample_short(self.sample_data["tuple"]), [1, 2, 3, 4])
+        self.assertListEqual(convert_sample_short(self.sample_data["list"]), [1, 2, 3, 4])
+        self.assertListEqual(convert_sample_short(self.sample_data["string_array"]), ['string1, string2, string3'])
+        self.assertListEqual(convert_sample_short(self.sample_data["string_tuple"]), [1, 2, 3, 4])
+        self.assertListEqual(convert_sample_short(self.sample_data["string_list"]), [1, 2, 3, 4])
+        self.assertListEqual(convert_sample_short(self.sample_data["string_float"]), [123.0])
+        self.assertListEqual(convert_sample_short(self.sample_data["string_json"]), {"k1": "v1", "k2": "v2"})
+
+    # def test_03_stress_test(self):
+    #     st = datetime.datetime.now()
+    #     for i in range(1, 1000000):
+    #         sample = random.random(), random.random(), random.random(), random.random(), random.random()
+    #         convert_sample_short(str(sample))
+    #     print("\n\nTime took to process all samples: ", datetime.datetime.now() - st)
 
 
 if __name__ == '__main__':

@@ -31,7 +31,7 @@ from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, BatchType
 from influxdb import InfluxDBClient
 
-from core.data_manager.sql.data import Data as metadata
+from core.data_manager.sql.data import SqlData as metadata
 from core.datatypes.datapoint import DataPoint
 from core.datatypes.datastream import DataStream
 from core.datatypes.stream_types import StreamTypes

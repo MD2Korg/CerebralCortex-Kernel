@@ -1,4 +1,5 @@
 # Copyright (c) 2017, MD2K Center of Excellence
+# - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -23,10 +24,28 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-def storeOffsetRanges(rdd, CC):
-    offsetRanges = rdd.offsetRanges()
-    for offsets in offsetRanges:
-        try:
-            CC.store_or_update_Kafka_offset(offsets.topic, offsets.partition, offsets.fromOffset, offsets.untilOffset)
-        except Exception as e:
-            print(e)
+def get_or_create_sc(type="sparkContext", master=None, name=None):
+    from pyspark.sql import SQLContext
+    from pyspark.sql import SparkSession
+
+    ss = SparkSession.builder
+    if name:
+        ss.appName(name)
+    if master:
+        ss.master(master)
+
+    sparkSession = ss.getOrCreate()
+
+    sc = sparkSession.sparkContext
+
+    sqlContext = SQLContext(sc)
+    if type=="SparkSessionBuilder":
+        return sc
+    elif type=="sparkContext":
+        return sc
+    elif type=="sparkSession":
+        return ss
+    elif type=="sqlContext":
+        return sqlContext
+    else:
+        raise ValueError("Unknown type.")

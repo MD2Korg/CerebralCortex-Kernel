@@ -24,30 +24,49 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
-
-from core.kafka_consumer import spark_kafka_consumer
-from core.kafka_producer import kafka_file_to_json_producer
+import os
+import argparse
+from extensions.kafka_handler.core.kafka_consumer import spark_kafka_consumer
+from extensions.kafka_handler.core.kafka_producer import kafka_file_to_json_producer
 from pyspark.streaming import StreamingContext
+from core.util.spark_helper import get_or_create_sc
 
-from core import CC
+def run():
+    parser = argparse.ArgumentParser(description='CerebralCortex Kafka Message Handler.')
+    parser.add_argument("-d", "--data_dir", help="Directory path where all the gz files are stored by API-Server", required=True)
+    parser.add_argument("-bd", "--batch_duration", help="How frequent kafka messages shall be checked (duration in seconds)", required=False)
+    parser.add_argument("-b", "--broker_list", help="Kafka brokers ip:port. Use comma if there are more than one broker. (e.g., 127.0.0.1:9092)", required=False)
 
-# Kafka Consumer Configs
-batch_duration = 5  # seconds
-ssc = StreamingContext(CC.getOrCreateSC(type="sparkContext"), batch_duration)
-CC.getOrCreateSC(type="sparkContext").setLogLevel("WARN")
-broker = "localhost:9092"  # multiple brokers can be passed as comma separated values
-consumer_group_id = "md2k-test"
+    args = vars(parser.parse_args())
 
-data_path = sys.argv[1]
-if (data_path[-1] != '/'):
-    data_path += '/'
+    if not str(args["data_dir"]).strip():
+        raise ValueError("SqlData dir path cannot be empty.")
+    else:
+        data_path = str(args["data_dir"]).strip()
+        if (data_path[-1] != '/'):
+            data_path += '/'
 
-kafka_files_stream = spark_kafka_consumer(["filequeue"], ssc, broker, consumer_group_id)
-kafka_files_stream.foreachRDD(lambda rdd: kafka_file_to_json_producer(rdd, data_path))
+    if not str(args["batch_duration"]).strip():
+        batch_duration = 5  # seconds
+    else:
+        batch_duration = str(args["batch_duration"]).strip()
 
-# kafka_processed_stream = spark_kafka_consumer(["processed_stream"], ssc, broker, consumer_group_id)
-# kafka_processed_stream.foreachRDD(kafka_to_db)
+    if not str(args["broker_list"]).strip():
+        broker = "localhost:9092"  # multiple brokers can be passed as comma separated values
+    else:
+        broker = str(args["broker_list"]).strip()
 
+    # Kafka Consumer Configs
+    ssc = StreamingContext(get_or_create_sc(type="sparkContext"), batch_duration)
+    get_or_create_sc(type="sparkContext").setLogLevel("WARN")
+    consumer_group_id = "md2k-test"
 
-ssc.start()
-ssc.awaitTermination()
+    kafka_files_stream = spark_kafka_consumer(["filequeue"], ssc, broker, consumer_group_id)
+    kafka_files_stream.foreachRDD(lambda rdd: kafka_file_to_json_producer(rdd, data_path))
+
+    ssc.start()
+    ssc.awaitTermination()
+
+if __name__=="__main__":
+    run()
+

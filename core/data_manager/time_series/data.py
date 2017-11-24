@@ -26,7 +26,7 @@
 from core.data_manager.time_series.influxdb_handler import InfluxdbHandler
 
 
-class Data(InfluxdbHandler):
+class TimeSeriesData(InfluxdbHandler):
     def __init__(self, CC):
         self.CC = CC
         self.configuration = CC.configuration
