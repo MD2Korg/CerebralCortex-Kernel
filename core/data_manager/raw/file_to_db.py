@@ -62,7 +62,7 @@ class FileToDB():
         self.sample_group_size = 99
 
     @log_execution_time
-    def file_processor(self, msg: dict, zip_filepath: str, influxdb=True) -> DataStream:
+    def file_processor(self, msg: dict, zip_filepath: str, influxdb=True):
         """
         :param msg:
         :param zip_filepath:

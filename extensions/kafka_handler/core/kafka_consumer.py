@@ -26,7 +26,7 @@
 from pyspark.streaming.kafka import KafkaUtils, KafkaDStream, TopicAndPartition
 
 
-def spark_kafka_consumer(kafka_topic: str, ssc, broker, consumer_group_id) -> KafkaDStream:
+def spark_kafka_consumer(kafka_topic: str, ssc, broker, consumer_group_id, CC) -> KafkaDStream:
     """
     supports only one topic at a time
     :param kafka_topic:

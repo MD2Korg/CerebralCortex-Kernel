@@ -23,19 +23,27 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
-import os
 import argparse
+
+from pyspark.streaming import StreamingContext
+
+from cerebralcortex import CerebralCortex
+from core.data_manager.raw.file_to_db import FileToDB
+from core.util.spark_helper import get_or_create_sc
 from extensions.kafka_handler.core.kafka_consumer import spark_kafka_consumer
 from extensions.kafka_handler.core.kafka_producer import kafka_file_to_json_producer
-from pyspark.streaming import StreamingContext
-from core.util.spark_helper import get_or_create_sc
+
 
 def run():
     parser = argparse.ArgumentParser(description='CerebralCortex Kafka Message Handler.')
-    parser.add_argument("-d", "--data_dir", help="Directory path where all the gz files are stored by API-Server", required=True)
-    parser.add_argument("-bd", "--batch_duration", help="How frequent kafka messages shall be checked (duration in seconds)", required=False)
-    parser.add_argument("-b", "--broker_list", help="Kafka brokers ip:port. Use comma if there are more than one broker. (e.g., 127.0.0.1:9092)", required=False)
+    parser.add_argument("-c", "--config_filepath", help="Configuration file path", required=True)
+    parser.add_argument("-d", "--data_dir", help="Directory path where all the gz files are stored by API-Server",
+                        required=True)
+    parser.add_argument("-bd", "--batch_duration",
+                        help="How frequent kafka messages shall be checked (duration in seconds)", required=False)
+    parser.add_argument("-b", "--broker_list",
+                        help="Kafka brokers ip:port. Use comma if there are more than one broker. (e.g., 127.0.0.1:9092)",
+                        required=False)
 
     args = vars(parser.parse_args())
 
@@ -45,6 +53,11 @@ def run():
         data_path = str(args["data_dir"]).strip()
         if (data_path[-1] != '/'):
             data_path += '/'
+
+    if not str(args["config_filepath"]).strip():
+        raise ValueError("Configuration file path cannot be empty")
+    else:
+        config_filepath = str(args["config_filepath"]).strip()
 
     if not str(args["batch_duration"]).strip():
         batch_duration = 5  # seconds
@@ -61,12 +74,15 @@ def run():
     get_or_create_sc(type="sparkContext").setLogLevel("WARN")
     consumer_group_id = "md2k-test"
 
-    kafka_files_stream = spark_kafka_consumer(["filequeue"], ssc, broker, consumer_group_id)
-    kafka_files_stream.foreachRDD(lambda rdd: kafka_file_to_json_producer(rdd, data_path))
+    CC = CerebralCortex(config_filepath)
+    file_to_db = FileToDB(CC)
+
+    kafka_files_stream = spark_kafka_consumer(["filequeue"], ssc, broker, consumer_group_id, CC)
+    kafka_files_stream.foreachRDD(lambda rdd: kafka_file_to_json_producer(rdd, data_path, file_to_db))
 
     ssc.start()
     ssc.awaitTermination()
 
-if __name__=="__main__":
-    run()
 
+if __name__ == "__main__":
+    run()

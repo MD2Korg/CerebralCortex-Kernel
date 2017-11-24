@@ -39,9 +39,9 @@ from core.file_manager.file_io import FileIO
 
 
 class CerebralCortex:
-    def __init__(self, configuration_file, timezone='UTC'):
-        self.config_filepath = configuration_file
-        self.config = Configuration(configuration_file).config
+    def __init__(self, configuration_filepath, timezone='UTC'):
+        self.config_filepath = configuration_filepath
+        self.config = Configuration(configuration_filepath).config
         self.timezone = timezone
 
         self.RawData = RawData(self)
