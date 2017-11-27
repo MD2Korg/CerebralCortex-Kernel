@@ -1,0 +1,381 @@
+# Copyright (c) 2017, MD2K Center of Excellence
+# - Nasir Ali <nasir.ali08@gmail.com>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import json
+import uuid
+from datetime import datetime
+from typing import List
+
+from pytz import timezone
+
+from cerebralcortex.core.util.debuging_decorators import log_execution_time
+
+
+class StreamHandler():
+    def __init__(self):
+        pass
+
+    ###################################################################
+    ################## GET DATA METHODS ###############################
+    ###################################################################
+
+    def get_stream_metadata(self, stream_id: uuid) -> dict:
+        """
+
+        :param stream_id:
+        :return:
+        """
+        qry = "SELECT * from " + self.datastreamTable + " where identifier=%(identifier)s"
+        vals = {"identifier": str(stream_id)}
+        self.cursor.execute(qry, vals)
+        return self.cursor.fetchall()
+
+    def get_stream_names_ids_by_user(self, user_id: uuid, stream_name: str = None, start_time: datetime = None,
+                                     end_time: datetime = None) -> List:
+        """
+        Returns all the stream ids and name that belongs to an owner-id
+        :param user_id:
+        :return:
+        """
+        stream_ids_names = {}
+        v1, v2, v3, v4 = None, None, None, None
+        if not user_id:
+            return None
+
+        qry = "SELECT identifier, name from " + self.datastreamTable
+        where_clause = "where owner=%s"
+        v1 = user_id
+        if stream_name:
+            where_clause += " and name=%s "
+            v2 = stream_name
+        if start_time:
+            where_clause += " and start_time<=%s "
+            v3 = start_time
+        if end_time:
+            where_clause += " and end_time>=%s "
+            v4 = end_time
+        vals = filter(None, (v1, v2, v3, v4))
+
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+        for row in rows:
+            stream_ids_names[row["name"]] = row["identifier"]
+        return stream_ids_names
+
+    def get_stream_duration(self, stream_id: uuid) -> dict:
+        """
+
+        :param stream_id:
+        :param time_type: acceptable parameters are start_time OR end_time
+        :return:
+        """
+        if not stream_id:
+            return None
+
+        qry = "select start_time, end_time from " + self.datastreamTable + " where identifier = %(identifier)s"
+        vals = {'identifier': str(stream_id)}
+
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+
+        if len(rows) == 0:
+            return {"start_time": None, "end_time": None}
+        else:
+            return {"start_time": rows[0]["start_time"], "end_time": rows[0]["end_time"]}
+
+    def get_all_users(self, study_name: str) -> dict:
+
+        """
+
+        :param study_name:
+        :return:
+        """
+        if not study_name:
+            return None
+        results = []
+        qry = 'SELECT identifier, username FROM ' + self.userTable + ' where user_metadata->"$.study_name"=%(study_name)s'
+        vals = {'study_name': str(study_name)}
+
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+
+        if len(rows) == 0:
+            return None
+        else:
+            for row in rows:
+                results.append(row)
+            return results
+
+    def get_user_streams(self, user_id: uuid) -> dict:
+
+        """
+
+        :param user_id:
+        :return:
+        """
+        if not user_id:
+            return None
+        result = {}
+        qry = 'SELECT * FROM ' + self.datastreamTable + ' where owner=%(owner)s'
+        vals = {'owner': str(user_id)}
+
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+
+        if len(rows) == 0:
+            return []
+        else:
+            for row in rows:
+                result[row["name"]] = row
+            return result
+
+    def get_user_streams_metadata(self, user_id: str) -> uuid:
+        """
+
+        :param user_id:
+        :return:
+        """
+        if not user_id:
+            return None
+        result = {}
+        qry = "select data_descriptor,execution_context,annotations, start_time, end_time from " + self.datastreamTable + " where owner = %(owner)s"
+        vals = {'owner': str(user_id)}
+
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+
+        if len(rows) == 0:
+            return []
+        else:
+            for row in rows:
+                result[row["name"]] = row
+            return result
+
+    def get_user_name(self, user_id: uuid) -> str:
+        """
+
+        :param user_id:
+        :return:
+        """
+        if not user_id:
+            return None
+
+        qry = "select username from " + self.userTable + " where identifier = %(identifier)s"
+        vals = {'identifier': str(user_id)}
+
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+
+        if len(rows) == 0:
+            return None
+        else:
+            return rows[0]["username"]
+
+    def get_user_id(self, user_name: str) -> str:
+        """
+
+        :param user_name:
+        :return:
+        """
+        if not user_name:
+            return None
+
+        qry = "select identifier from " + self.userTable + " where username = %(username)s"
+        vals = {'username': str(user_name)}
+
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+
+        if len(rows) == 0:
+            return None
+        else:
+            return rows[0]["identifier"]
+
+    def get_stream_id(self, stream_name: str) -> str:
+        """
+
+        :param stream_name:
+        :return:
+        """
+        if not stream_name:
+            return None
+
+        qry = "select identifier from " + self.datastreamTable + " where name = %(name)s"
+        vals = {'name': str(stream_name)}
+
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+
+        if len(rows) == 0:
+            return None
+        else:
+            return rows[0]["identifier"]
+
+    def get_stream_name(self, stream_id: uuid) -> str:
+        """
+
+        :param stream_id:
+        :return:
+        """
+        if not stream_id:
+            return None
+
+        qry = "select name from " + self.datastreamTable + " where name = %(identifier)s"
+        vals = {'identifier': str(stream_id)}
+
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+
+        if len(rows) == 0:
+            return None
+        else:
+            return rows[0]["name"]
+
+    def is_stream(self, stream_id: uuid)->bool:
+
+        """
+
+        :param stream_id:
+        :return:
+        """
+        qry = "SELECT * from " + self.datastreamTable + " where identifier = %(identifier)s"
+        vals = {'identifier': str(stream_id)}
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+
+        if rows:
+            return True
+        else:
+            return False
+
+    ###################################################################
+    ################## STORE DATA METHODS #############################
+    ###################################################################
+
+    @log_execution_time
+    def save_stream_metadata(self, stream_id: uuid, stream_name: str, owner_id: uuid,
+                             data_descriptor: dict,
+                             execution_context: dict,
+                             annotations: dict, stream_type: str, start_time: datetime, end_time: datetime):
+
+        """
+        Update a record if stream already exists, insert a new record otherwise.
+        :param stream_id:
+        :param owner_id:
+        :param stream_name:
+        :param data_descriptor:
+        :param execution_context:
+        :param annotations:
+        :param stream_type:
+        """
+        isQueryReady = 0
+        if stream_id:
+            stream_id = str(stream_id)
+
+        if self.is_stream(stream_id=stream_id):
+            stream_end_time = self.check_end_time(stream_id, end_time)
+            annotation_status = self.annotations_status(stream_id, owner_id, annotations)
+        else:
+            stream_end_time = None
+            annotation_status = "new"
+
+        if stream_end_time != "unchanged" and annotation_status == "changed":
+            # update annotations and end-time
+            qry = "UPDATE " + self.datastreamTable + " set annotations=JSON_ARRAY_APPEND(annotations, '$.annotations',  CAST(%s AS JSON)), end_time=%s where identifier=%s"
+            vals = json.dumps(annotations), stream_end_time, str(stream_id)
+            isQueryReady = 1
+        elif stream_end_time != "unchanged" and annotation_status == "unchanged":
+            # update only end-time
+            qry = "UPDATE " + self.datastreamTable + " set end_time=%s where identifier=%s"
+            vals = end_time, str(stream_id)
+            isQueryReady = 1
+        elif stream_end_time == "unchanged" and annotation_status == "changed":
+            # update only annotations
+            qry = "UPDATE " + self.datastreamTable + " set annotations=JSON_ARRAY_APPEND(annotations, '$.annotations',  CAST(%s AS JSON)) where identifier=%s"
+            vals = json.dumps(annotations), str(stream_id)
+            isQueryReady = 1
+
+        elif (annotation_status == "new"):
+            qry = "INSERT INTO " + self.datastreamTable + " (identifier, owner, name, data_descriptor, execution_context, annotations, type, start_time, end_time) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+            vals = str(stream_id), str(owner_id), str(stream_name), json.dumps(
+                data_descriptor), json.dumps(execution_context), json.dumps(
+                annotations), stream_type, start_time, end_time
+            isQueryReady = 1
+
+        # if nothing is changed then isQueryReady would be 0 and no database transaction would be performed
+        if isQueryReady == 1:
+            self.cursor.execute(qry, vals)
+            self.dbConnection.commit()
+
+    def annotations_status(self, stream_id: uuid, owner_id: uuid, annotations: dict) -> str:
+        """
+        This method will check if the stream already exist with the same data (as provided in params) except annotations.
+        :param stream_id:
+        :param owner_id:
+        :param name:
+        :param data_descriptor:
+        :param execution_context:
+        :param stream_type:
+        """
+        qry = "select annotations from " + self.datastreamTable + " where identifier = %s and owner=%s"
+        vals = stream_id, owner_id
+        self.cursor.execute(qry, vals)
+        result = self.cursor.fetchall()
+
+        if result:
+            if json.loads(result[0]["annotations"]) == annotations:
+                return "unchanged"
+            else:
+                return "changed"
+        else:
+            return "new"
+
+    def check_end_time(self, stream_id: uuid, end_time: datetime):
+        """
+
+        :param stream_id:
+        :param end_time:
+        :return:
+        """
+        localtz = timezone(self.CC.timezone)
+
+        qry = "SELECT end_time from " + self.datastreamTable + " where identifier = %(identifier)s"
+        vals = {'identifier': str(stream_id)}
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+
+        if rows:
+            old_end_time = rows[0]["end_time"]
+            if end_time.tzinfo is None:
+                end_time = localtz.localize(end_time)
+            if old_end_time.tzinfo is None:
+                old_end_time = localtz.localize(old_end_time)
+
+            if old_end_time <= end_time:
+                return end_time
+            else:
+                return "unchanged"
+        else:
+            print("No record found for stream ID: ", str(stream_id))
