@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cerebralcortex.core.log_manager.log_handler import LogTypes
-from cerebralcortex.core.log_manager.logging import LogHandler
+from cerebralcortex.core.log_manager.logging import CCLogging
 
 from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
 
@@ -34,7 +34,7 @@ class RawData(StreamHandler):
         self.CC = CC
         self.config = CC.config
 
-        self.logging = LogHandler(self.config['logging']['log_path'])
+        self.logging = CCLogging(self.config['logging']['log_path'])
         self.logtypes = LogTypes()
         self.host_ip = self.config['cassandra']['host']
         self.host_port = self.config['cassandra']['port']

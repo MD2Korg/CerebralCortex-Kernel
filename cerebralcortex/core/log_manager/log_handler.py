@@ -30,7 +30,7 @@ import os
 from enum import Enum
 
 
-class LogTypes(Enum):
+class LogTypes():
     EXCEPTION = 1,
     CRITICAL = 2,
     ERROR = 3,

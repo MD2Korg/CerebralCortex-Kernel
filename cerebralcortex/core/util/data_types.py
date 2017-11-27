@@ -26,7 +26,7 @@
 import json
 
 
-def convert_sample(sample):
+def convert_sample_simple(sample):
     if isinstance(sample, str) and "\x00" in sample:
         sample = sample.replace("\x00", "")
 
@@ -73,17 +73,21 @@ def convert_sample_short(sample):
                 return [sample]
     return sample
 
-def convert_sample_simple(sample):
-    if sample.startswith("[") or sample.startswith("("):
-        return list(
-            map(float, sample[1:-1].split(',')))
-    elif sample.startswith("{"):
-        return json.loads(sample)
-    elif isinstance(sample, str) and "," in sample:
-        return list([x.strip() for x in sample.split(',')])
-    else:
-        try:
-            return float(sample)
-        except:
-            return sample
+
+def convert_sample(sample):
+    try:
+        if sample.startswith("[") or sample.startswith("("):
+            return list(
+                map(float, sample[1:-1].split(',')))
+        elif sample.startswith("{"):
+            return json.loads(sample)
+        elif isinstance(sample, str) and "," in sample:
+            return list([x.strip() for x in sample.split(',')])
+        else:
+            try:
+                return float(sample)
+            except:
+                return sample
+    except:
+        return sample
 # convert_sample('(0.0024687682368556008, 0.17776913487103307, 0.2295764062106903, 0.09898929381168664, 0.5109892310134816)')

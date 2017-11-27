@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cerebralcortex.core.log_manager.logging import LogHandler
+from cerebralcortex.core.log_manager.logging import CCLogging
 from minio import Minio
 
 from cerebralcortex.core.data_manager.object.minio_handler import MinioHandler
@@ -32,13 +32,13 @@ from cerebralcortex.core.data_manager.object.minio_handler import MinioHandler
 class ObjectData(MinioHandler):
     def __init__(self, CC):
         self.CC = CC
-        self.config = CC.configuration
-        self.logging = LogHandler(self.config['logging']['log_path'])
+        self.config = CC.config
+        self.logging = CCLogging(self.config['logging']['log_path'])
         self.host = self.config['minio']['host']
         self.port = self.config['minio']['port']
         self.access_key = self.config['minio']['access_key'],
         self.secret_key = self.config['minio']['secret_key'],
         self.secure = self.config['minio']['secure']
 
-        db_url = self.host + ":" + self.port
+        db_url = str(self.host) + ":" + str(self.port)
         self.minioClient = Minio(db_url, access_key=self.access_key, secret_key=self.secret_key, secure=self.secure)

@@ -41,10 +41,10 @@ from cerebralcortex.core.data_manager.raw.data import RawData
 
 
 class CerebralCortex:
-    def __init__(self, configuration_filepath, timezone='UTC'):
+    def __init__(self, configuration_filepath=None, timezone='UTC'):
 
         if not configuration_filepath:
-            configuration_filepath = os.path.join(os.path.dirname(__file__), 'resources/cc_configuration.yml')
+            configuration_filepath = os.path.join(os.path.dirname(__file__), 'core/resources/cc_configuration.yml')
         self.config_filepath = configuration_filepath
         self.config = Configuration(configuration_filepath).config
         self.timezone = timezone
@@ -76,7 +76,7 @@ class CerebralCortex:
         :param data_type:
         :return:
         """
-        self.RawData.get_stream(stream_id, day, start_time, end_time, data_type)
+        return self.RawData.get_stream(stream_id, day, start_time, end_time, data_type)
 
     def get_stream_samples(self, stream_id, day, start_time=None, end_time=None) -> List[DataPoint]:
         """
