@@ -24,12 +24,17 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cerebralcortex.core.data_manager.time_series.influxdb_handler import InfluxdbHandler
+from cerebralcortex.core.data_manager.sql.data import SqlData
 
 
 class TimeSeriesData(InfluxdbHandler):
     def __init__(self, CC):
-        self.CC = CC
+
         self.configuration = CC.config
+
+        self.sql_data = SqlData(CC)
+
+        self.time_zone = CC.timezone
 
         self.influxdbIP = self.configuration['influxdb']['host']
         self.influxdbPort = self.configuration['influxdb']['port']

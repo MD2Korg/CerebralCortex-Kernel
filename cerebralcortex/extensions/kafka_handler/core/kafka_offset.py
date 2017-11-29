@@ -23,7 +23,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-def storeOffsetRanges(rdd, CC):
+def store_offset_ranges(rdd, CC):
     offsetRanges = rdd.offsetRanges()
     for offsets in offsetRanges:
         try:

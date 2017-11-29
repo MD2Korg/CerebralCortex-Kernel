@@ -40,4 +40,4 @@ def gen_raw_data(filepath):
 
 
 gen_raw_data(
-    "/home/ali/IdeaProjects/CerebralCortex-2.0/core/test_suite/sample_data/6ff7c2ff-deaf-4c2f-aff5-63228ee13540.csv.gz")
+    "/home/ali/IdeaProjects/CerebralCortex-2.0/core/test_suite/sample_data/6ff7c2ff-deaf-4c2f-aff5-63228ee13540.gz")

@@ -26,7 +26,7 @@
 import json
 from datetime import datetime
 
-from cerebralcortex.core.data_manager.sql.data import SqlData
+
 from influxdb import InfluxDBClient
 
 from cerebralcortex.core.datatypes.datastream import DataStream
@@ -51,7 +51,7 @@ class InfluxdbHandler():
         datapoints = datastream.data
         stream_identifier = datastream.identifier
         stream_owner_id = datastream.owner
-        stream_owner_name = SqlData(self.CC).get_user_name(stream_owner_id)
+        stream_owner_name = self.sql_data.get_user_name(stream_owner_id)
         stream_name = datastream.name
 
         if datastream.data_descriptor:

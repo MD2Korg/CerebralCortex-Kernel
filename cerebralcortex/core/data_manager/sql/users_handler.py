@@ -109,7 +109,7 @@ class UserHandler():
             return False
         else:
             token_expiry_time = rows[0]["token_expiry"]
-            localtz = timezone(self.CC_obj.time_zone)
+            localtz = timezone(self.time_zone)
             token_expiry_time = localtz.localize(token_expiry_time)
 
             if token_expiry_time < auth_token_expiry_time:

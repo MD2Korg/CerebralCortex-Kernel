@@ -29,7 +29,7 @@ import uuid
 
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, BatchType
-from cerebralcortex.core.data_manager.sql.data import SqlData as metadata
+from cerebralcortex.core.data_manager.sql.data import SqlData
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
 from cerebralcortex.core.file_manager.read_handler import ReadHandler
@@ -43,9 +43,9 @@ This class is only for CC internal use.'''
 
 class FileToDB():
     def __init__(self, CC):
-        self.CC = CC
         self.config = CC.config
 
+        self.sql_data = SqlData(CC)
         self.host_ip = self.config['cassandra']['host']
         self.host_port = self.config['cassandra']['port']
         self.keyspace_name = self.config['cassandra']['keyspace']
@@ -60,14 +60,14 @@ class FileToDB():
         self.batch_size = 999
         self.sample_group_size = 99
 
-    @log_execution_time
     def file_processor(self, msg: dict, zip_filepath: str, influxdb=True):
         """
         :param msg:
         :param zip_filepath:
         :return:
         """
-
+        if not msg:
+            return []
         if not isinstance(msg["metadata"], dict):
             metadata_header = json.loads(msg["metadata"])
         else:
@@ -119,12 +119,13 @@ class FileToDB():
 
             for data_block in self.line_to_batch_block(stream_id, all_data["samples"], qry_with_endtime):
                 session.execute(data_block)
-            session.shutdown();
-            cluster.shutdown();
 
-            metadata(self.CC).save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
-                                                   annotations, StreamTypes.DATASTREAM, all_data["samples"][0][0],
-                                                   all_data["samples"][len(all_data["samples"]) - 1][1])
+            session.shutdown()
+            cluster.shutdown()
+
+            self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                               annotations, StreamTypes.DATASTREAM, all_data["samples"][0][0],
+                                               all_data["samples"][len(all_data["samples"]) - 1][1])
         except Exception as e:
             print(e)
             return []

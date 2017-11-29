@@ -28,43 +28,32 @@ import datetime
 import random
 import unittest
 
-from cerebralcortex.core.util.data_types import convert_sample_simple, convert_sample
+from cerebralcortex.core.util.data_types import  convert_sample
 
 
 class TestFileToDataStream(unittest.TestCase):
     sample_data = {}
     sample_data["string"] = 'some-string'
     sample_data["string_array"] = 'string1, string2, string3'
-    sample_data["string_tuple"] = '(1,2,3,4)' #maybe
+    sample_data["string_tuple"] = ' [1, 2, 3, 4]' #maybe
     sample_data["string_list"] = '[1,2,3,4]' #maybe
     sample_data["string_float"] = '123.0'
     sample_data["string_json"] = '{"k1": "v1", "k2": "v2"}'
     sample_data["list_of_dict"] = '[{"k1": "v1", "k2": "v2"}, {"k11": "v12"}]'
 
-    # def test_01_simple_parsing(self):
-    #     self.assertListEqual(convert_sample(self.sample_data["string"]), ['some-string'])
-    #     self.assertListEqual(convert_sample(self.sample_data["float"]), [123.0])
-    #     self.assertListEqual(convert_sample(self.sample_data["tuple"]), [1, 2, 3, 4])
-    #     self.assertListEqual(convert_sample(self.sample_data["list"]), [1, 2, 3, 4])
-    #     self.assertListEqual(convert_sample(self.sample_data["string_array"]), ['string1, string2, string3'])
-    #     self.assertListEqual(convert_sample(self.sample_data["string_tuple"]), [1, 2, 3, 4])
-    #     self.assertListEqual(convert_sample(self.sample_data["string_list"]), [1, 2, 3, 4])
-    #     self.assertListEqual(convert_sample(self.sample_data["string_float"]), [123.0])
-    #     self.assertEqual(convert_sample(self.sample_data["string_json"]), {"k1": "v1", "k2": "v2"})
-
-    def test_02_simple_parsing(self):
-        self.assertEqual(convert_sample_simple(self.sample_data["string"]), 'some-string')
-        self.assertListEqual(convert_sample_simple(self.sample_data["string_array"]), ['string1', 'string2', 'string3'])
-        self.assertListEqual(convert_sample_simple(self.sample_data["string_tuple"]), [1, 2, 3, 4])
-        self.assertListEqual(convert_sample_simple(self.sample_data["string_list"]), [1, 2, 3, 4])
-        self.assertEqual(convert_sample_simple(self.sample_data["string_float"]), 123.0)
-        self.assertEqual(convert_sample_simple(self.sample_data["string_json"]), {"k1": "v1", "k2": "v2"})
+    def test_01_simple_parsing(self):
+        self.assertEqual(convert_sample(self.sample_data["string"]), 'some-string')
+        self.assertListEqual(convert_sample(self.sample_data["string_array"]), ['string1', 'string2', 'string3'])
+        self.assertListEqual(convert_sample(self.sample_data["string_tuple"]), [1, 2, 3, 4])
+        self.assertListEqual(convert_sample(self.sample_data["string_list"]), [1, 2, 3, 4])
+        self.assertEqual(convert_sample(self.sample_data["string_float"]), 123.0)
+        self.assertEqual(convert_sample(self.sample_data["string_json"]), {"k1": "v1", "k2": "v2"})
 
     def test_03_stress_test(self):
         st = datetime.datetime.now()
         for i in range(1, 1000000):
             #sample = random.random(), random.random(), random.random(), random.random(), random.random()
-            convert_sample_simple(str((1.2, 32.23, 43.23, 1.2, 23.34234, 12, 5454)))
+            convert_sample('1.2, 32.23, 43.23, 1.2, 23.34234, 12, 5454')
         print("\n\nTime took to process all samples: ", datetime.datetime.now() - st)
 
 

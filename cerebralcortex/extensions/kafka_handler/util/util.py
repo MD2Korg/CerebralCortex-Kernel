@@ -27,7 +27,7 @@ import datetime
 import gzip
 import json
 
-from cerebralcortex.kernel.datatypes.datastream import DataStream, DataPoint
+from cerebralcortex.core.datatypes.datastream import DataStream, DataPoint
 from dateutil.parser import parse
 from pympler import asizeof
 

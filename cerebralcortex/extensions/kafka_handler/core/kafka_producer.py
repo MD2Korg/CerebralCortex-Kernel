@@ -24,10 +24,14 @@
 
 import json
 import os
-
+from cerebralcortex.cerebralcortex import CerebralCortex
+from cerebralcortex.core.data_manager.raw.file_to_db import FileToDB
 from pyspark.streaming.kafka import KafkaDStream
+from cerebralcortex.extensions.kafka_handler.core.kafka_offset import store_offset_ranges
 
-from cerebralcortex.extensions import storeOffsetRanges
+
+CC = CerebralCortex("/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/core/resources/cc_configuration.yml")
+file_to_db = FileToDB(CC)
 
 
 def verify_fields(msg: dict, data_path: str) -> bool:
@@ -43,7 +47,10 @@ def verify_fields(msg: dict, data_path: str) -> bool:
     return False
 
 
-def kafka_file_to_json_producer(message: KafkaDStream, data_path, file_to_db):
+def save_data(msg, data_path):
+    file_to_db.file_processor(msg, data_path)
+
+def kafka_file_to_json_producer(message: KafkaDStream, data_path):
     """
     Read convert gzip file data into json object and publish it on Kafka
     :param message:
@@ -51,8 +58,8 @@ def kafka_file_to_json_producer(message: KafkaDStream, data_path, file_to_db):
 
     records = message.map(lambda r: json.loads(r[1]))
     valid_records = records.filter(lambda rdd: verify_fields(rdd, data_path))
-    results = valid_records.map(lambda msg: file_to_db.file_processor(msg, data_path))
+    results = valid_records.map(lambda msg: save_data(msg, data_path))
 
     print("File Iteration count:", results.count())
 
-    storeOffsetRanges(message)
+    store_offset_ranges(message, CC)

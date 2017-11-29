@@ -26,7 +26,7 @@
 import json
 
 
-def convert_sample_simple(sample):
+def convert_sample_complete(sample):
     if isinstance(sample, str) and "\x00" in sample:
         sample = sample.replace("\x00", "")
 
@@ -76,6 +76,7 @@ def convert_sample_short(sample):
 
 def convert_sample(sample):
     try:
+        sample = sample.strip()
         if sample.startswith("[") or sample.startswith("("):
             return list(
                 map(float, sample[1:-1].split(',')))

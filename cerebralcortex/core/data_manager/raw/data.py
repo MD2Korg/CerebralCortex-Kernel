@@ -25,14 +25,17 @@
 
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
-
+from cerebralcortex.core.data_manager.sql.data import SqlData
 from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
 
 
 class RawData(StreamHandler):
     def __init__(self, CC):
-        self.CC = CC
+
         self.config = CC.config
+        self.sql_data = SqlData(CC)
+
+        self.time_zone = CC.timezone
 
         self.logging = CCLogging(self.config['logging']['log_path'])
         self.logtypes = LogTypes()

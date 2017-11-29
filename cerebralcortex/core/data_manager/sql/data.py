@@ -32,8 +32,11 @@ from cerebralcortex.core.data_manager.sql.kafka_offsets_handler import KafkaOffs
 
 class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
     def __init__(self, CC):
-        self.CC = CC
+
         self.config = CC.config
+
+        self.time_zone = CC.timezone
+
         self.hostIP = self.config['mysql']['host']
         self.hostPort = self.config['mysql']['port']
         self.database = self.config['mysql']['database']

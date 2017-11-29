@@ -31,7 +31,7 @@ from typing import List
 
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, SimpleStatement, BatchType
-from cerebralcortex.core.data_manager.sql.data import SqlData
+
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.util.data_types import convert_sample
@@ -78,7 +78,7 @@ class StreamHandler():
             where_clause += " and start_time<=cast('" + end_time + "' as timestamp)"
 
         # query datastream(mysql) for metadata
-        datastream_metadata = SqlData(self.CC).get_stream_metadata(stream_id)
+        datastream_metadata = self.sql_data.get_stream_metadata(stream_id)
 
         if data_type == DataSet.COMPLETE:
             dps = self.load_cassandra_data(where_clause)
@@ -156,7 +156,7 @@ class StreamHandler():
                 # timezone = datetime.timezone(datetime.timedelta(milliseconds=offset))
                 start_time = datetime.fromtimestamp(r[0])
 
-                sample = convert_sample(r[2])
+                sample = convert_sample(r[2].strip())
                 updated_rows.append(DataPoint(start_time=start_time, sample=sample))
             return updated_rows
         except Exception as e:
@@ -210,8 +210,8 @@ class StreamHandler():
                 for row in rows:
                     sample = convert_sample(row[2])
                     # Caasandra timezone is already in UTC. Adding timezone again would double the timezone value
-                    if self.CC.timezone != 'UTC':
-                        localtz = timezone(self.CC.timezone)
+                    if self.time_zone != 'UTC':
+                        localtz = timezone(self.time_zone)
                         if row[0]:
                             start_time = localtz.localize(row[0])
                         if row[1]:
@@ -272,7 +272,7 @@ class StreamHandler():
                 stream_id = datastream.identifier
 
                 # save metadata in SQL store
-                SqlData(self.CC).save_stream_metadata(stream_id, stream_name, owner_id,
+                self.sql_data.save_stream_metadata(stream_id, stream_name, owner_id,
                                                       data_descriptor, execution_context,
                                                       annotations,
                                                       stream_type, new_start_time, new_end_time)

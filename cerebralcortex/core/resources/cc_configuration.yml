@@ -39,14 +39,6 @@ minio:
 logging:
   log_path: ''
 
-kafkaserver:
-  host: 127.0.0.1
-  port: 9092
-  batch_duration: 5 #in seconds
-  consumer_group_id: "md2k-cc"
-  #topics
-  filequeue: "filequeue"
-  processed_stream: "processed_stream"
 
 #########################################################################
 ################ CerebralCortex kafka_handler Config ####################
