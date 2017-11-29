@@ -16,12 +16,12 @@ export PYSPARK_SUBMIT_ARGS="--packages org.apache.spark:spark-streaming-kafka-0-
 export PATH=$SPARK_HOME/bin:$PATH
 
 # path of cc configuration path
-CC_CONFIG_FILEPATH = "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/core/resources/cc_configuration.yml"
+CC_CONFIG_FILEPATH="/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/core/resources/cc_configuration.yml"
 # data directory where all gz and json files are stored
-DATA_DIR = "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/core/test_suite/sample_data/"
+DATA_DIR="/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/core/test_suite/sample_data/"
 # how often CC-kafka shall check for new messages (in seconds)
-BATCH_DURATION = "5"
+BATCH_DURATION="5"
 # kafka broker ip with port, more than one brokers shale be separated by command
-KAFKA_BROKER = "127.0.0.1:9092"
+KAFKA_BROKER="127.0.0.1:9092"
 
 spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.2.0,com.datastax.spark:spark-cassandra-connector_2.11:2.0.1 main.py -c $CC_CONFIG_FILEPATH -d $DATA_DIR -b $KAFKA_BROKER -bd $BATCH_DURATION

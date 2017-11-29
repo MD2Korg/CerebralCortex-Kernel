@@ -62,7 +62,7 @@ def run():
     if not args["batch_duration"]:
         batch_duration = 5  # seconds
     else:
-        batch_duration = str(args["batch_duration"]).strip()
+        batch_duration = int(args["batch_duration"])
 
     if not args["broker_list"]:
         broker = "localhost:9092"  # multiple brokers can be passed as comma separated values

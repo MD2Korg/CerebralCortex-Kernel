@@ -49,6 +49,7 @@ def verify_fields(msg: dict, data_path: str) -> bool:
 def save_data(msg, data_path, config_filepath):
     CC = CerebralCortex(config_filepath)
     file_to_db = FileToDB(CC)
+    # Note: to bypass influxdb, set influxdb=False
     file_to_db.file_processor(msg, data_path)
 
 
