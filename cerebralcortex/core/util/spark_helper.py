@@ -33,6 +33,8 @@ def get_or_create_sc(type="sparkContext", master=None, name=None):
         ss.appName(name)
     if master:
         ss.master(master)
+    else:
+        ss.master("local[*]")
 
     sparkSession = ss.getOrCreate()
 

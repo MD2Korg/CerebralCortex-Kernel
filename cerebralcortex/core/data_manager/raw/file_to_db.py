@@ -34,7 +34,7 @@ from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
 from cerebralcortex.core.file_manager.read_handler import ReadHandler
 from influxdb import InfluxDBClient
-
+from cerebralcortex.core.util.data_types import convert_sample
 from cerebralcortex.core.util.debuging_decorators import log_execution_time
 
 '''It is responsible to read .gz files and insert data in Cassandra and Influx. 
@@ -59,6 +59,7 @@ class FileToDB():
 
         self.batch_size = 999
         self.sample_group_size = 99
+        self.influx_batch_size = 10000
 
     def file_processor(self, msg: dict, zip_filepath: str, influxdb=True):
         """
@@ -73,15 +74,8 @@ class FileToDB():
         else:
             metadata_header = msg["metadata"]
 
-        cluster = Cluster([self.host_ip], port=self.host_port)
-
-        session = cluster.connect(self.keyspace_name)
-
         influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort, username=self.influxdbUser,
                                          password=self.influxdbPassword, database=self.influxdbDatabase)
-
-        qry_with_endtime = session.prepare(
-            "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, sample) VALUES (?, ?, ?, ?, ?)")
 
         stream_id = metadata_header["identifier"]
         owner = metadata_header["owner"]
@@ -117,6 +111,12 @@ class FileToDB():
                 except Exception as e:
                     print(e)
 
+            # connect to cassandra
+            cluster = Cluster([self.host_ip], port=self.host_port)
+            session = cluster.connect(self.keyspace_name)
+            qry_with_endtime = session.prepare(
+                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, sample) VALUES (?, ?, ?, ?, ?)")
+
             for data_block in self.line_to_batch_block(stream_id, all_data["samples"], qry_with_endtime):
                 session.execute(data_block)
 
@@ -128,7 +128,6 @@ class FileToDB():
                                                all_data["samples"][len(all_data["samples"]) - 1][1])
         except Exception as e:
             print(e)
-            return []
 
     def line_to_batch_block(self, stream_id: uuid, lines: DataPoint, insert_qry: str):
 
@@ -236,7 +235,7 @@ class FileToDB():
             try:
                 object['fields'] = {}
                 # TODO: This method is SUPER slow
-                # values = convert_sample(values)
+                values = convert_sample(values)
                 if isinstance(values, list):
                     for i, sample_val in enumerate(values):
                         if len(values) == total_dd_columns:
@@ -260,12 +259,13 @@ class FileToDB():
                     object['fields']['value_0'] = values
                 except:
                     object['fields']['value_0'] = str(values)
-            if influx_counter > 10000:
+            if influx_counter > self.influx_batch_size:
                 influx_batch.append(influx_data)
             else:
                 influx_data.append(object)
             ############### END INFLUXDB BLOCK
 
+            ############### START OF CASSANDRA DATA BLOCK
             if line_number == 1:
                 sample_batch = []
                 first_start_time = datetime.datetime.fromtimestamp(start_time)
@@ -279,5 +279,7 @@ class FileToDB():
                 sample_batch.append([start_time, offset, sample])
                 line_number += 1
         grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
+        ############### END OF CASSANDRA DATA BLOCK
+
         influx_batch.append(influx_data)
         return {"samples": grouped_samples, "influxdb": influx_batch}
