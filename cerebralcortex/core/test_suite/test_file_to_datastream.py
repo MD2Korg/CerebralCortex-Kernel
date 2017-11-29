@@ -29,7 +29,7 @@ import os
 import unittest
 from dateutil import parser
 from cerebralcortex.core.file_manager.file_io import FileIO
-
+from cerebralcortex.core.data_manager.raw.file_to_db import FileToDB
 from cerebralcortex.cerebralcortex import CerebralCortex
 
 class TestFileToDataStream(unittest.TestCase):
@@ -40,12 +40,12 @@ class TestFileToDataStream(unittest.TestCase):
         msg = {}
         test_dir_path = "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/core/test_suite/sample_data/"
         test_json_file = test_dir_path + "6ff7c2ff-deaf-4c2f-aff5-63228ee13540.json"
-        test_gz_file = "6ff7c2ff-deaf-4c2f-aff5-63228ee13540.csv.gz"
+        test_gz_file = "6ff7c2ff-deaf-4c2f-aff5-63228ee13540.gz"
         metadata = FileIO().read_file(test_json_file)
         msg["metadata"] = json.loads(metadata)
         msg["filename"] = test_gz_file
 
-        #FileToDB(self.CC).file_processor(msg, test_dir_path, False)
+        FileToDB(self.CC).file_processor(msg, test_dir_path, False)
 
     def test_02_get_data(self):
         ds = self.CC.get_stream("f28a97c6-b76a-3f96-ac78-5f142dd2d401", "24481117")

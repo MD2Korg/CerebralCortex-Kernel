@@ -26,7 +26,7 @@
 import datetime
 import json
 import uuid
-
+import traceback
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, BatchType
 from cerebralcortex.core.data_manager.sql.data import SqlData
@@ -57,8 +57,8 @@ class FileToDB():
         self.influxdbUser = self.config['influxdb']['db_user']
         self.influxdbPassword = self.config['influxdb']['db_pass']
 
-        self.batch_size = 999
-        self.sample_group_size = 99
+        self.batch_size = 1000
+        self.sample_group_size = 100
         self.influx_batch_size = 10000
 
     def file_processor(self, msg: dict, zip_filepath: str, influxdb=True):
@@ -110,6 +110,7 @@ class FileToDB():
                     print("Time took to insert in Influxdb: ", datetime.datetime.now() - st)
                 except Exception as e:
                     print(e)
+                    print(traceback.format_exc())
 
             # connect to cassandra
             cluster = Cluster([self.host_ip], port=self.host_port)
@@ -128,6 +129,7 @@ class FileToDB():
                                                all_data["samples"][len(all_data["samples"]) - 1][1])
         except Exception as e:
             print(e)
+            print(traceback.format_exc())
 
     def line_to_batch_block(self, stream_id: uuid, lines: DataPoint, insert_qry: str):
 
@@ -173,7 +175,7 @@ class FileToDB():
 
         sample_batch = []
         grouped_samples = []
-        line_number = 0
+        line_number = 1
         for line in lines:
             ts, offset, sample = line.split(',', 2)
             start_time = int(ts) / 1000.0
@@ -206,7 +208,7 @@ class FileToDB():
 
         sample_batch = []
         grouped_samples = []
-        line_number = 0
+        line_number = 1
         influx_batch = []
         influx_counter = 0
         influx_data = []

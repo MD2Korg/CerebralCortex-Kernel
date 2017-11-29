@@ -359,7 +359,7 @@ class StreamHandler():
         :param end_time:
         :return:
         """
-        localtz = timezone(self.CC.timezone)
+        localtz = timezone(self.time_zone)
 
         qry = "SELECT end_time from " + self.datastreamTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(stream_id)}
