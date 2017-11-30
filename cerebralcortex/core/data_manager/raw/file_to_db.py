@@ -61,6 +61,7 @@ class FileToDB():
         self.sample_group_size = 99
         self.influx_batch_size = 10000
 
+    @log_execution_time
     def file_processor(self, msg: dict, zip_filepath: str, influxdb=True):
         """
         :param msg:
@@ -162,7 +163,6 @@ class FileToDB():
                 line_number += 1
         yield batch
 
-    @log_execution_time
     def line_to_sample(self, lines):
 
         """
@@ -175,7 +175,9 @@ class FileToDB():
 
         sample_batch = []
         grouped_samples = []
+        last_start_time =  None
         line_number = 1
+        current_day = None # used to check boundry condition. For example, if half of the sample belong to next day
         for line in lines:
             ts, offset, sample = line.split(',', 2)
             start_time = int(ts) / 1000.0
@@ -185,14 +187,19 @@ class FileToDB():
                 first_start_time = datetime.datetime.fromtimestamp(start_time)
                 # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
                 start_day = first_start_time.strftime("%Y%m%d")
+                current_day = int(start_time/86400)
             if line_number > self.sample_group_size:
                 last_start_time = datetime.datetime.fromtimestamp(start_time)
                 sample_batch.append([start_time, offset, sample])
                 grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
                 line_number = 1
             else:
+                if (int(start_time/86400))>current_day:
+                    start_day = datetime.datetime.fromtimestamp(start_time).strftime("%Y%m%d")
                 sample_batch.append([start_time, offset, sample])
                 line_number += 1
+        if not last_start_time:
+            last_start_time = start_time
         grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
         return {"samples": grouped_samples}
 
@@ -213,6 +220,7 @@ class FileToDB():
         influx_batch = []
         influx_counter = 0
         influx_data = []
+        current_day = None # used to check boundry condition. For example, if half of the sample belong to next day
         last_start_time = None
 
         if data_descriptor:
@@ -275,16 +283,19 @@ class FileToDB():
                 first_start_time = datetime.datetime.fromtimestamp(start_time)
                 # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
                 start_day = first_start_time.strftime("%Y%m%d")
+                current_day = int(start_time/86400)
             if line_number > self.sample_group_size:
                 last_start_time = datetime.datetime.fromtimestamp(start_time)
                 sample_batch.append([start_time, offset, sample])
                 grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
                 line_number = 1
             else:
+                if (int(start_time/86400))>current_day:
+                    start_day = datetime.datetime.fromtimestamp(start_time).strftime("%Y%m%d")
                 sample_batch.append([start_time, offset, sample])
                 line_number += 1
         if not last_start_time:
-            pass
+            last_start_time = start_time
         grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
         ############### END OF CASSANDRA DATA BLOCK
 

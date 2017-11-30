@@ -45,7 +45,7 @@ class TestFileToDataStream(unittest.TestCase):
         msg["metadata"] = json.loads(metadata)
         msg["filename"] = test_gz_file
 
-        FileToDB(self.CC).file_processor(msg, test_dir_path)
+        FileToDB(self.CC).file_processor(msg, test_dir_path, False)
 
     def test_02_get_data(self):
         ds = self.CC.get_stream("f28a97c6-b76a-3f96-ac78-5f142dd2d401", "24481117")
