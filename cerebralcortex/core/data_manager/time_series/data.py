@@ -25,7 +25,8 @@
 
 from cerebralcortex.core.data_manager.time_series.influxdb_handler import InfluxdbHandler
 from cerebralcortex.core.data_manager.sql.data import SqlData
-
+from cerebralcortex.core.log_manager.log_handler import LogTypes
+from cerebralcortex.core.log_manager.logging import CCLogging
 
 class TimeSeriesData(InfluxdbHandler):
     def __init__(self, CC):
@@ -35,6 +36,9 @@ class TimeSeriesData(InfluxdbHandler):
         self.sql_data = SqlData(CC)
 
         self.time_zone = CC.timezone
+
+        self.logging = CCLogging(self.config['logging']['log_path'])
+        self.logtypes = LogTypes()
 
         self.influxdbIP = self.configuration['influxdb']['host']
         self.influxdbPort = self.configuration['influxdb']['port']

@@ -26,7 +26,7 @@
 import datetime
 import gzip
 import json
-
+import traceback
 from cerebralcortex.core.datatypes.datastream import DataStream, DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
 from pympler import asizeof
@@ -99,8 +99,7 @@ class ReadHandler():
                             datapoints)
             return ds
         except Exception as e:
-            # print("In Kafka preprocessor - Error in processing file: " + str(msg["filename"])+" Owner-ID: "+owner + "Stream Name: "+name + " - " + str(e))
-            print(e)
+            print("In Kafka preprocessor - Error in processing file: " + str(msg["filename"])+" Owner-ID: "+owner + "Stream Name: "+name + " - " + str(traceback.format_exc()))
             return []
 
     def row_to_datapoint(self, row: str) -> dict:

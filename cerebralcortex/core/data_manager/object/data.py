@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cerebralcortex.core.log_manager.logging import CCLogging
+from cerebralcortex.core.log_manager.log_handler import LogTypes
 from minio import Minio
 
 from cerebralcortex.core.data_manager.object.minio_handler import MinioHandler
@@ -33,7 +34,10 @@ class ObjectData(MinioHandler):
     def __init__(self, CC):
         self.CC = CC
         self.config = CC.config
+
         self.logging = CCLogging(self.config['logging']['log_path'])
+        self.logtypes = LogTypes()
+
         self.host = self.config['minio']['host']
         self.port = self.config['minio']['port']
         self.access_key = self.config['minio']['access_key'],

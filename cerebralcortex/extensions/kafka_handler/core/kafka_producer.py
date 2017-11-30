@@ -30,9 +30,6 @@ from pyspark.streaming.kafka import KafkaDStream
 from cerebralcortex.extensions.kafka_handler.core.kafka_offset import store_offset_ranges
 
 
-
-
-
 def verify_fields(msg: dict, data_path: str) -> bool:
     """
     Verify whether msg contains file name and metadata

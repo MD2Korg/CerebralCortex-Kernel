@@ -24,10 +24,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cerebralcortex.core.file_manager.read_handler import ReadHandler
-
+from cerebralcortex.core.log_manager.log_handler import LogTypes
+from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.file_manager.write_handler import WriteHandler
 
 
 class FileIO(ReadHandler, WriteHandler):
     def __init__(self):
-        pass
+        self.logging = CCLogging(self.config['logging']['log_path'])
+        self.logtypes = LogTypes()

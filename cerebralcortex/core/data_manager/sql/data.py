@@ -24,9 +24,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import mysql.connector
+from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.data_manager.sql.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.sql.users_handler import UserHandler
-
+from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.data_manager.sql.kafka_offsets_handler import KafkaOffsetsHandler
 
 
@@ -36,6 +37,9 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
         self.config = CC.config
 
         self.time_zone = CC.timezone
+
+        self.logging = CCLogging(self.config['logging']['log_path'])
+        self.logtypes = LogTypes()
 
         self.hostIP = self.config['mysql']['host']
         self.hostPort = self.config['mysql']['port']

@@ -36,6 +36,8 @@ from cerebralcortex.core.file_manager.read_handler import ReadHandler
 from influxdb import InfluxDBClient
 from cerebralcortex.core.util.data_types import convert_sample
 from cerebralcortex.core.util.debuging_decorators import log_execution_time
+from cerebralcortex.core.log_manager.logging import CCLogging
+from cerebralcortex.core.log_manager.log_handler import LogTypes
 
 '''It is responsible to read .gz files and insert data in Cassandra and Influx. 
 This class is only for CC internal use.'''
@@ -50,6 +52,9 @@ class FileToDB():
         self.host_port = self.config['cassandra']['port']
         self.keyspace_name = self.config['cassandra']['keyspace']
         self.datapoint_table = self.config['cassandra']['datapoint_table']
+
+        self.logging = CCLogging(self.config['logging']['log_path'])
+        self.logtypes = LogTypes()
 
         self.influxdbIP = self.config['influxdb']['host']
         self.influxdbPort = self.config['influxdb']['port']
@@ -107,11 +112,8 @@ class FileToDB():
                     st = datetime.datetime.now()
                     for influx_batch in all_data["influxdb"]:
                         influxdb_client.write_points(influx_batch)
-
-                    print("Time took to insert in Influxdb: ", datetime.datetime.now() - st)
                 except Exception as e:
-                    print(e)
-                    print(traceback.format_exc())
+                    self.logging.log(error_message="STREAM ID: "+stream_id+" - Error in processing data for influxdb. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
             # connect to cassandra
             cluster = Cluster([self.host_ip], port=self.host_port)
@@ -128,9 +130,8 @@ class FileToDB():
             self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
                                                annotations, StreamTypes.DATASTREAM, all_data["samples"][0][0],
                                                all_data["samples"][len(all_data["samples"]) - 1][1])
-        except Exception as e:
-            print(e)
-            print(traceback.format_exc())
+        except:
+            self.logging.log(error_message="STREAM ID: "+stream_id+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
     def line_to_batch_block(self, stream_id: uuid, lines: DataPoint, insert_qry: str):
 

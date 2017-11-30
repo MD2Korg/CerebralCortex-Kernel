@@ -39,6 +39,7 @@ class RawData(StreamHandler):
 
         self.logging = CCLogging(self.config['logging']['log_path'])
         self.logtypes = LogTypes()
+
         self.host_ip = self.config['cassandra']['host']
         self.host_port = self.config['cassandra']['port']
         self.keyspace_name = self.config['cassandra']['keyspace']

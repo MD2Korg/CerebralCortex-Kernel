@@ -25,7 +25,7 @@
 
 import json
 from datetime import datetime
-
+import traceback
 
 from influxdb import InfluxDBClient
 
@@ -101,5 +101,5 @@ class InfluxdbHandler():
 
         try:
             client.write_points(influx_data)
-        except Exception as e:
-            print(e)
+        except:
+            self.logging.log(error_message="STREAM ID: "+stream_identifier+" - Cannot save raw data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)

@@ -30,4 +30,5 @@ from cerebralcortex.core.metadata_manager.annotations import Annotations
 
 
 class Metadata(Annotations, DataDescriptor, ExecutionContext):
-    pass
+    def __init__(self):
+        pass

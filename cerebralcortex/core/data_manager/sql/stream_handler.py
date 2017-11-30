@@ -27,7 +27,7 @@ import json
 import uuid
 from datetime import datetime
 from typing import List
-
+import traceback
 from pytz import timezone
 
 from cerebralcortex.core.util.debuging_decorators import log_execution_time
@@ -378,4 +378,4 @@ class StreamHandler():
             else:
                 return "unchanged"
         else:
-            print("No record found for stream ID: ", str(stream_id))
+            self.logging.log(error_message="STREAM ID: "+stream_id+" - No record found. "+str(traceback.format_exc()), error_type=self.logtypes.DEBUG)
