@@ -58,7 +58,7 @@ class FileToDB():
         self.influxdbPassword = self.config['influxdb']['db_pass']
 
         self.batch_size = 1000
-        self.sample_group_size = 100
+        self.sample_group_size = 99
         self.influx_batch_size = 10000
 
     def file_processor(self, msg: dict, zip_filepath: str, influxdb=True):
@@ -187,6 +187,7 @@ class FileToDB():
                 start_day = first_start_time.strftime("%Y%m%d")
             if line_number > self.sample_group_size:
                 last_start_time = datetime.datetime.fromtimestamp(start_time)
+                sample_batch.append([start_time, offset, sample])
                 grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
                 line_number = 1
             else:
@@ -212,6 +213,7 @@ class FileToDB():
         influx_batch = []
         influx_counter = 0
         influx_data = []
+        last_start_time = None
 
         if data_descriptor:
             total_dd_columns = len(data_descriptor)
@@ -275,11 +277,14 @@ class FileToDB():
                 start_day = first_start_time.strftime("%Y%m%d")
             if line_number > self.sample_group_size:
                 last_start_time = datetime.datetime.fromtimestamp(start_time)
+                sample_batch.append([start_time, offset, sample])
                 grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
                 line_number = 1
             else:
                 sample_batch.append([start_time, offset, sample])
                 line_number += 1
+        if not last_start_time:
+            pass
         grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
         ############### END OF CASSANDRA DATA BLOCK
 

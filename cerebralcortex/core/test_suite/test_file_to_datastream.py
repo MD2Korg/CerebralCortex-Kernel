@@ -45,11 +45,11 @@ class TestFileToDataStream(unittest.TestCase):
         msg["metadata"] = json.loads(metadata)
         msg["filename"] = test_gz_file
 
-        FileToDB(self.CC).file_processor(msg, test_dir_path, False)
+        FileToDB(self.CC).file_processor(msg, test_dir_path)
 
     def test_02_get_data(self):
         ds = self.CC.get_stream("f28a97c6-b76a-3f96-ac78-5f142dd2d401", "24481117")
-        self.assertEqual(len(ds.data), 989999)
+        self.assertEqual(len(ds.data), 999999)
 
         # metadata
         self.assertEqual(ds.owner,'fbf8d50c-7f1d-47aa-b958-9caeadc676bd')
@@ -63,7 +63,7 @@ class TestFileToDataStream(unittest.TestCase):
         self.assertEqual(ds.execution_context['processing_module'], {'input_parameters': {}, 'name': '', 'algorithm': [{'method': '', 'authors': [''], 'description': '', 'version': '', 'reference': {'url': 'http://md2k.org/'}}], 'input_streams': [], 'output_streams': [], 'description': ''})
 
         # first data point
-        self.assertEqual(ds.data[0].start_time, parser.parse('2448-11-17 03:48:54.532000'))
+        self.assertEqual(ds.data[0].start_time, parser.parse('2448-11-17 3:48:54.521999'))
         self.assertEqual(len(ds.data[0].sample),5)
 
         # last data point
