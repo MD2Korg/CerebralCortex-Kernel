@@ -8,7 +8,7 @@ cassandra:
   keyspace: cerebralcortex
   db_user: ""
   db_pass: ""
-  datapoint_table: data2
+  datapoint_table: data
 
 influxdb:
   host: 127.0.0.1
@@ -37,4 +37,4 @@ minio:
   secure: False #ssl
 
 logging:
-  log_path: ''
+  log_path: '/var/log/cerebralcortex/' # make sure directory is writeable by current OS user

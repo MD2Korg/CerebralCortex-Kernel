@@ -28,7 +28,7 @@ import uuid
 from datetime import datetime, timezone
 from enum import Enum
 from typing import List
-
+import traceback
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, SimpleStatement, BatchType
 
@@ -54,6 +54,7 @@ class StreamHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
+    @log_execution_time
     def get_stream(self, stream_id: uuid, day, start_time: datetime = None, end_time: datetime = None,
                    data_type=DataSet.COMPLETE) -> DataStream:
 
@@ -115,7 +116,7 @@ class StreamHandler():
             return DataStream(stream_id, ownerID, name, data_descriptor, execution_context, annotations,
                               stream_type, start_time, end_time, data)
         except Exception as e:
-            self.logging.log(error_message="STREAM ID: "+stream_id+" - Error in mapping datapoints and metadata to datastream. "+str(e), error_type=self.logtypes.CRITICAL)
+            self.logging.log(error_message="STREAM ID: "+stream_id+" - Error in mapping datapoints and metadata to datastream. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
     def load_cassandra_data(self, where_clause=None) -> List:
         """
@@ -136,11 +137,12 @@ class StreamHandler():
                 data += self.parse_row(row)
             session.shutdown()
             cluster.shutdown()
-
+            if not data:
+                return []
             return data
         except Exception as e:
-            self.logging.log(error_message="WHERE CLAUSE:"+where_clause+" - Error in loading cassandra data. "+str(e), error_type=self.logtypes.CRITICAL)
-            return None
+            self.logging.log(error_message="WHERE CLAUSE:"+where_clause+" - Error in loading cassandra data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            return []
 
     def parse_row(self, row: str) -> List:
         """
@@ -160,8 +162,8 @@ class StreamHandler():
                 updated_rows.append(DataPoint(start_time=start_time, sample=sample))
             return updated_rows
         except Exception as e:
-            self.logging.log(error_message="Row: "+row+" - Cannot parse row. "+str(e), error_type=self.logtypes.CRITICAL)
-            return None
+            self.logging.log(error_message="Row: "+row+" - Cannot parse row. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            return []
 
     def get_stream_samples(self, stream_id, day, start_time=None, end_time=None) -> List[DataPoint]:
         """
@@ -195,8 +197,8 @@ class StreamHandler():
             cluster.shutdown()
             return dps
         except Exception as e:
-            self.logging.log(error_message="ID: "+stream_id+" - Cannot get stream samples. "+str(e), error_type=self.logtypes.CRITICAL)
-            return None
+            self.logging.log(error_message="ID: "+stream_id+" - Cannot get stream samples. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            return []
 
     def row_to_datapoints(self, rows: object) -> List[DataPoint]:
         """
@@ -225,8 +227,8 @@ class StreamHandler():
                     dps.append(DataPoint(start_time, end_time, sample))
             return dps
         except Exception as e:
-            self.logging.log(error_message="ROW: "+row+" - Cannot convert row to datapoints. "+str(e), error_type=self.logtypes.CRITICAL)
-            return None
+            self.logging.log(error_message="ROW: "+row+" - Cannot convert row to datapoints. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            return []
 
     ###################################################################
     ################## STORE DATA METHODS #############################
@@ -280,7 +282,7 @@ class StreamHandler():
                 # save raw sensor data in Cassandra
                 self.save_raw_data(stream_id, data)
         except Exception as e:
-            self.logging.log(error_message="STREAM ID: "+stream_id+" - Cannot save stream. "+str(e), error_type=self.logtypes.CRITICAL)
+            self.logging.log(error_message="STREAM ID: "+stream_id+" - Cannot save stream. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
 
     @log_execution_time
@@ -306,15 +308,12 @@ class StreamHandler():
 
             for data_block in self.datapoints_to_cassandra_sql_batch(stream_id, datapoints, qry_without_endtime,
                                                                      qry_with_endtime):
-                st = datetime.now()
                 session.execute_async(data_block)
                 data_block.clear()
-                print("Total time to insert batch ", len(data_block), datetime.now() - st)
             session.shutdown();
             cluster.shutdown();
         except Exception as e:
-            self.logging.log(error_message="STREAM ID: "+stream_id+" - Cannot save raw data. "+str(e), error_type=self.logtypes.CRITICAL)
-            return None
+            self.logging.log(error_message="STREAM ID: "+stream_id+" - Cannot save raw data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
     def datapoints_to_cassandra_sql_batch(self, stream_id: uuid, datapoints: DataPoint, qry_without_endtime: str,
                                           qry_with_endtime: str):
