@@ -308,8 +308,9 @@ class StreamHandler():
 
             for data_block in self.datapoints_to_cassandra_sql_batch(stream_id, datapoints, qry_without_endtime,
                                                                      qry_with_endtime):
-                session.execute_async(data_block)
+                session.execute(data_block)
                 data_block.clear()
+
             session.shutdown();
             cluster.shutdown();
         except Exception as e:

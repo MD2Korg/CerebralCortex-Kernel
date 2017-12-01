@@ -109,11 +109,9 @@ class FileToDB():
                 # FOR INFLUXDB+CASSANDRA
                 all_data = self.line_to_sample_influxdb(lines, stream_id, owner, "test", name, data_descriptor)
                 try:
-                    st = datetime.datetime.now()
-                    for influx_batch in all_data["influxdb"]:
-                        influxdb_client.write_points(influx_batch)
-                except Exception as e:
-                    self.logging.log(error_message="STREAM ID: "+stream_id+" - Error in processing data for influxdb. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+                    influxdb_client.write_points(all_data["influxdb"], batch_size=self.influx_batch_size)
+                except:
+                    self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Error in processing data for influxdb. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
             # connect to cassandra
             cluster = Cluster([self.host_ip], port=self.host_port)
@@ -131,7 +129,7 @@ class FileToDB():
                                                annotations, StreamTypes.DATASTREAM, all_data["samples"][0][0],
                                                all_data["samples"][len(all_data["samples"]) - 1][1])
         except:
-            self.logging.log(error_message="STREAM ID: "+stream_id+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
     def line_to_batch_block(self, stream_id: uuid, lines: DataPoint, insert_qry: str):
 
@@ -204,6 +202,7 @@ class FileToDB():
         grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
         return {"samples": grouped_samples}
 
+    @log_execution_time
     def line_to_sample_influxdb(self, lines, stream_id, stream_owner_id, stream_owner_name, stream_name,
                                 data_descriptor):
 
@@ -218,8 +217,6 @@ class FileToDB():
         sample_batch = []
         grouped_samples = []
         line_number = 1
-        influx_batch = []
-        influx_counter = 0
         influx_data = []
         current_day = None # used to check boundry condition. For example, if half of the sample belong to next day
         last_start_time = None
@@ -272,10 +269,9 @@ class FileToDB():
                     object['fields']['value_0'] = values
                 except:
                     object['fields']['value_0'] = str(values)
-            if influx_counter > self.influx_batch_size:
-                influx_batch.append(influx_data)
-            else:
-                influx_data.append(object)
+
+            influx_data.append(object)
+
             ############### END INFLUXDB BLOCK
 
             ############### START OF CASSANDRA DATA BLOCK
@@ -300,5 +296,4 @@ class FileToDB():
         grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
         ############### END OF CASSANDRA DATA BLOCK
 
-        influx_batch.append(influx_data)
-        return {"samples": grouped_samples, "influxdb": influx_batch}
+        return {"samples": grouped_samples, "influxdb": influx_data}
