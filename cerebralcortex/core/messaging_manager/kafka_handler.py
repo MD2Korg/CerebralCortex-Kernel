@@ -22,3 +22,33 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+class KafkaHandler():
+
+    def produce_message(self, topic: str, msg: str):
+        """
+
+        :param topic:
+        :param msg:
+        """
+
+        if not topic and not msg:
+            raise ValueError("Topic and Message are required parameters.")
+
+        self.producer.send(topic, msg)
+        self.producer.flush()
+
+    def subscribe_to_topic(self, topic: str):
+        """
+
+        :param topic:
+        """
+
+        if not topic:
+            raise ValueError("Topic parameter is missing.")
+
+        self.consumer.subscribe(topic)
+        for message in self.consumer:
+            # json.loads(message.value.decode('utf8').replace("'", '"'))
+            return message

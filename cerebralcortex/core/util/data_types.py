@@ -89,7 +89,7 @@ def convert_sample(sample):
         if sample.startswith("[") or sample.startswith("{"):
             return json.loads(sample)
         elif isinstance(sample, str) and "," in sample:
-            return list([x.strip() for x in sample.split(',')])
+            return list([float(x.strip()) for x in sample.split(',')])
         else:
             try:
                 return float(sample)

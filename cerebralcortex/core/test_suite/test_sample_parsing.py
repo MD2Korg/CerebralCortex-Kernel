@@ -53,7 +53,7 @@ class TestFileToDataStream(unittest.TestCase):
         st = datetime.datetime.now()
         for i in range(1, 1000000):
             #sample = random.random(), random.random(), random.random(), random.random(), random.random()
-            convert_sample('1.2, 32.23, 43.23, 1.2, 23.34234, 12, 5454')
+            convert_sample("1.2, 32.23, 43.23, 1.2, 23.34234, 12, 5454")
         print("\n\nTime took to process all samples: ", datetime.datetime.now() - st)
 
 

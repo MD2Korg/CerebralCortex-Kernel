@@ -38,7 +38,7 @@ from cerebralcortex.core.file_manager.file_io import FileIO
 
 from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 from cerebralcortex.core.data_manager.raw.data import RawData
-
+from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
 
 class CerebralCortex:
     def __init__(self, configuration_filepath=None, timezone='UTC'):
@@ -53,6 +53,7 @@ class CerebralCortex:
         self.SqlData = SqlData(self)
         self.ObjectData = ObjectData(self)
         self.TimeSeriesData = TimeSeriesData(self)
+        self.MessagingQueue = MessagingQueue(self)
         self.FileIO = FileIO()
 
     ###########################################################################
@@ -361,3 +362,23 @@ class CerebralCortex:
         :return:
         """
         self.FileIO.get_gzip_file_contents(filepath)
+
+    #################################################
+    #   Kafka consumer producer
+    #################################################
+
+    def kafka_produce_message(self, topic: str, msg: str):
+        """
+
+        :param topic:
+        :param msg:
+        """
+        self.MessagingQueue.produce_message(topic, msg)
+
+    def kafka_subscribe_to_topic(self, topic: str, auto_offset_reset: str="largest"):
+        """
+
+        :param topic:
+        :param auto_offset_reset:
+        """
+        return self.MessagingQueue.subscribe_to_topic(topic)

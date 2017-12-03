@@ -42,3 +42,19 @@ logging:
 data_ingestion:
   cassandra_in: True
   influxdb_in: False
+
+#########################################################################
+################ CerebralCortex API SERVER Config #######################
+#########################################################################
+
+apiserver:
+  host: 0.0.0.0
+  port: 8088
+  secret_key: 'super-secret'
+  token_expire_time: 40000 #seconds
+  debug: True
+
+routes:
+  auth: "auth"
+  stream: "stream"
+  object: "object"
