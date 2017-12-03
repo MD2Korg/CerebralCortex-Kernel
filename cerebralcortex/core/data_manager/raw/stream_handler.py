@@ -298,7 +298,7 @@ class StreamHandler():
         :param datapoints:
         """
         try:
-            cluster = Cluster([self.host_ip], port=self.host_port)
+            cluster = Cluster([self.host_ip], port=self.host_port, protocol_version=4)
 
             session = cluster.connect(self.keyspace_name)
 
