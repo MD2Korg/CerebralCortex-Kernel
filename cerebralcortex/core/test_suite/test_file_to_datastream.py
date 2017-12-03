@@ -28,6 +28,7 @@ import json
 import os
 import unittest
 from dateutil import parser
+from datetime import datetime
 from cerebralcortex.core.file_manager.file_io import FileIO
 from cerebralcortex.core.data_manager.raw.file_to_db import FileToDB
 from cerebralcortex.cerebralcortex import CerebralCortex
@@ -45,31 +46,33 @@ class TestFileToDataStream(unittest.TestCase):
         msg["metadata"] = json.loads(metadata)
         msg["filename"] = test_gz_file
 
-        FileToDB(self.CC).file_processor(msg, test_dir_path, True)
+        FileToDB(self.CC).file_processor(msg, test_dir_path, False)
 
-    # def test_02_get_data(self):
-    #     ds = self.CC.get_stream("f28a97c6-b76a-3f96-ac78-5f142dd2d401", "24481117")
-    #     self.assertEqual(len(ds.data), 999999)
-    #
-    #     # metadata
-    #     self.assertEqual(ds.owner,'fbf8d50c-7f1d-47aa-b958-9caeadc676bd')
-    #     self.assertEqual(ds.name, 'RAW--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST')
-    #     self.assertEqual(ds.datastream_type, '1')
-    #     self.assertEqual(ds.data_descriptor, [{'DATA_TYPE': 'double', 'UNIT': 'percentage', 'NAME': 'Raw Data', 'MIN_VALUE': '0', 'MAX_VALUE': '100', 'DESCRIPTION': 'Raw byte array'}])
-    #     self.assertEqual(ds.annotations, [])
-    #     self.assertEqual(ds.execution_context['application_metadata'], {'VERSION_NUMBER': '12099', 'NAME': 'MotionSense', 'VERSION_NAME': '0.1.20', 'DESCRIPTION': 'Collects data from the motion sense. Sensors supported: [Accelerometer, Gyroscope, Battery, LED, DataQuality]'})
-    #     self.assertEqual(ds.execution_context['datasource_metadata'], {'DATA_TYPE': 'org.md2k.datakitapi.datatype.DataTypeDoubleArray', 'NAME': 'Raw', 'DESCRIPTION': 'Raw byte array'})
-    #     self.assertEqual(ds.execution_context['platform_metadata'], {'NAME': 'MotionSenseHRV', 'DEVICE_ID': 'F2:27:C9:B5:23:C3'})
-    #     self.assertEqual(ds.execution_context['processing_module'], {'input_parameters': {}, 'name': '', 'algorithm': [{'method': '', 'authors': [''], 'description': '', 'version': '', 'reference': {'url': 'http://md2k.org/'}}], 'input_streams': [], 'output_streams': [], 'description': ''})
-    #
-    #     # first data point
-    #     self.assertEqual(ds.data[0].start_time, parser.parse('2448-11-17 3:48:54.521999'))
-    #     self.assertEqual(len(ds.data[0].sample),5)
-    #
-    #     # last data point
-    #     self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse('2448-11-17 06:35:34.502001'))
-    #     self.assertEqual(len(ds.data[len(ds.data)-1].sample),5)
-    #     print("Completed")
+    def test_02_get_data(self):
+        st = datetime.now()
+        ds = self.CC.get_stream("f28a97c6-b76a-3f96-ac78-5f142dd2d401", "24481117")
+        print("Total time to parse: ", datetime.now()-st)
+        self.assertEqual(len(ds.data), 999999)
+
+        # metadata
+        # self.assertEqual(ds.owner,'fbf8d50c-7f1d-47aa-b958-9caeadc676bd')
+        # self.assertEqual(ds.name, 'RAW--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST')
+        # self.assertEqual(ds.datastream_type, '1')
+        # self.assertEqual(ds.data_descriptor, [{'DATA_TYPE': 'double', 'UNIT': 'percentage', 'NAME': 'Raw Data', 'MIN_VALUE': '0', 'MAX_VALUE': '100', 'DESCRIPTION': 'Raw byte array'}])
+        # self.assertEqual(ds.annotations, [])
+        # self.assertEqual(ds.execution_context['application_metadata'], {'VERSION_NUMBER': '12099', 'NAME': 'MotionSense', 'VERSION_NAME': '0.1.20', 'DESCRIPTION': 'Collects data from the motion sense. Sensors supported: [Accelerometer, Gyroscope, Battery, LED, DataQuality]'})
+        # self.assertEqual(ds.execution_context['datasource_metadata'], {'DATA_TYPE': 'org.md2k.datakitapi.datatype.DataTypeDoubleArray', 'NAME': 'Raw', 'DESCRIPTION': 'Raw byte array'})
+        # self.assertEqual(ds.execution_context['platform_metadata'], {'NAME': 'MotionSenseHRV', 'DEVICE_ID': 'F2:27:C9:B5:23:C3'})
+        # self.assertEqual(ds.execution_context['processing_module'], {'input_parameters': {}, 'name': '', 'algorithm': [{'method': '', 'authors': [''], 'description': '', 'version': '', 'reference': {'url': 'http://md2k.org/'}}], 'input_streams': [], 'output_streams': [], 'description': ''})
+        #
+        # # first data point
+        # self.assertEqual(ds.data[0].start_time, parser.parse('2448-11-17 3:48:54.521999'))
+        # self.assertEqual(len(ds.data[0].sample),5)
+        #
+        # # last data point
+        # self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse('2448-11-17 06:35:34.502001'))
+        # self.assertEqual(len(ds.data[len(ds.data)-1].sample),5)
+        print("Completed")
 
 
 if __name__ == '__main__':

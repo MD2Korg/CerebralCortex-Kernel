@@ -38,3 +38,7 @@ minio:
 
 logging:
   log_path: '/var/log/cerebralcortex/' # make sure directory is writeable by current OS user
+
+data_ingestion:
+  cassandra_in: True
+  influxdb_in: False

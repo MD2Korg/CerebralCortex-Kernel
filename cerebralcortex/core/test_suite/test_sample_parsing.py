@@ -28,7 +28,7 @@ import datetime
 import random
 import unittest
 
-from cerebralcortex.core.util.data_types import  convert_sample
+from cerebralcortex.core.util.data_types import  convert_sample, convert_sample_type
 
 
 class TestFileToDataStream(unittest.TestCase):

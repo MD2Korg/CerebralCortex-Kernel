@@ -30,7 +30,7 @@ import random
 def gen_raw_data(filepath):
     with gzip.open(filepath, 'wb') as output:
         for row in range(1, 1000000):
-            sample = random.random(), random.random(), random.random(), random.random(), random.random()
+            sample = str(random.random())+","+ str(random.random())+","+ str(random.random())+","+ str(random.random())+","+ str(random.random())
             start_time = str(15112000134512 + row * 10)
             r = (start_time + ", -21600000, " + str(sample) + "\n").encode()
 
@@ -40,4 +40,4 @@ def gen_raw_data(filepath):
 
 
 gen_raw_data(
-    "/home/ali/IdeaProjects/CerebralCortex-2.0/core/test_suite/sample_data/6ff7c2ff-deaf-4c2f-aff5-63228ee13540.gz")
+    "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/core/test_suite/sample_data/6ff7c2ff-deaf-4c2f-aff5-63228ee13540.gz")

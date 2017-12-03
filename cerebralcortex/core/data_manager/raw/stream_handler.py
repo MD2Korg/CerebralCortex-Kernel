@@ -25,7 +25,7 @@
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import List
 import traceback
@@ -35,7 +35,7 @@ from cassandra.query import BatchStatement, SimpleStatement, BatchType
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.util.data_types import convert_sample
-from pytz import timezone
+from pytz import timezone as pytimezone
 
 from cerebralcortex.core.util.debuging_decorators import log_execution_time
 
@@ -83,12 +83,10 @@ class StreamHandler():
 
         if data_type == DataSet.COMPLETE:
             dps = self.load_cassandra_data(where_clause)
-            # data = self.row_to_datapoints(dps)
             stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps)
         elif data_type == DataSet.ONLY_DATA:
             dps = self.load_cassandra_data(where_clause)
-            data = self.row_to_datapoints(dps)
-            return data
+            return dps
         elif data_type == DataSet.ONLY_METADATA:
             stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, None)
         else:
@@ -126,15 +124,17 @@ class StreamHandler():
         :param batch_size:
         """
         try:
-            cluster = Cluster([self.host_ip], port=self.host_port)
+            cluster = Cluster([self.host_ip], port=self.host_port, protocol_version=4)
 
             session = cluster.connect(self.keyspace_name)
 
             query = "SELECT start_time,end_time, sample FROM " + self.datapoint_table + " " + where_clause
-            statement = SimpleStatement(query)
+            statement = SimpleStatement(query, fetch_size=None)
             data = []
-            for row in session.execute(statement):
+            rows = session.execute(statement, timeout=None)
+            for row in rows:
                 data += self.parse_row(row)
+
             session.shutdown()
             cluster.shutdown()
             if not data:
@@ -154,11 +154,14 @@ class StreamHandler():
         try:
             rows = json.loads(row[2])
             for r in rows:
-                offset = r[1]
-                # timezone = datetime.timezone(datetime.timedelta(milliseconds=offset))
-                start_time = datetime.fromtimestamp(r[0])
-
-                sample = convert_sample(r[2].strip())
+                # Caasandra timezone is already in UTC. Adding timezone again would double the timezone value
+                if self.time_zone != 'UTC':
+                    localtz = pytimezone(self.time_zone)
+                    start_time = localtz.localize(datetime.fromtimestamp(r[0]))
+                else:
+                    sample_timezone = timezone(timedelta(milliseconds=r[1]))
+                    start_time = datetime.fromtimestamp(r[0],sample_timezone)
+                sample = convert_sample(r[2])
                 updated_rows.append(DataPoint(start_time=start_time, sample=sample))
             return updated_rows
         except Exception as e:
@@ -190,6 +193,7 @@ class StreamHandler():
             else:
                 qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "'"
 
+            # TODO: secure it
             rows = session.execute(qry)
             dps = self.row_to_datapoints(rows)
 
@@ -210,10 +214,10 @@ class StreamHandler():
         try:
             if rows:
                 for row in rows:
-                    sample = convert_sample(row[2])
+                    sample = row[2]
                     # Caasandra timezone is already in UTC. Adding timezone again would double the timezone value
                     if self.time_zone != 'UTC':
-                        localtz = timezone(self.time_zone)
+                        localtz = pytimezone(self.time_zone)
                         if row[0]:
                             start_time = localtz.localize(row[0])
                         if row[1]:
@@ -311,8 +315,8 @@ class StreamHandler():
                 session.execute(data_block)
                 data_block.clear()
 
-            session.shutdown();
-            cluster.shutdown();
+            session.shutdown()
+            cluster.shutdown()
         except Exception as e:
             self.logging.log(error_message="STREAM ID: "+stream_id+" - Cannot save raw data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 

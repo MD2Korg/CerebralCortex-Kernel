@@ -74,13 +74,19 @@ def convert_sample_short(sample):
     return sample
 
 
+def convert_sample_type(sample: str) -> object:
+    """
+    Convert a string to string-list format.
+    :param sample:
+    :return:
+    """
+    if not sample.startswith("[") or not sample.startswith("{"):
+        return "[%s]" % sample
+
+
 def convert_sample(sample):
     try:
-        sample = sample.strip()
-        if sample.startswith("[") or sample.startswith("("):
-            return list(
-                map(float, sample[1:-1].split(',')))
-        elif sample.startswith("{"):
+        if sample.startswith("[") or sample.startswith("{"):
             return json.loads(sample)
         elif isinstance(sample, str) and "," in sample:
             return list([x.strip() for x in sample.split(',')])
