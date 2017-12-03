@@ -35,7 +35,7 @@ class MessagingQueue(KafkaHandler):
 
         :param CC:
         """
-        self.configuration = CC.config
+        self.config = CC.config
         self.hostIP = self.config['kafkaserver']['host']
         self.hostPort = self.config['kafkaserver']['port']
         self.auto_offset_reset= auto_offset_reset
