@@ -26,6 +26,7 @@
 import datetime
 import json
 import uuid
+import sys
 import traceback
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, BatchType
@@ -130,7 +131,7 @@ class FileToDB():
                                                annotations, StreamTypes.DATASTREAM, all_data["cassandra_data"][0][0],
                                                all_data["cassandra_data"][len(all_data["cassandra_data"]) - 1][1])
         except:
-            self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - SIZE "+str(sys.getsizeof(data_block))+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
     def line_to_batch_block(self, stream_id: uuid, lines: DataPoint, insert_qry: str):
 
@@ -319,6 +320,7 @@ class FileToDB():
         last_start_time = None
         measurement_and_tags = ""
         line_protocol = ""
+        fields = ""
 
         if data_descriptor:
             total_dd_columns = len(data_descriptor)
@@ -336,32 +338,36 @@ class FileToDB():
             if influxdb_insert:
                 values = sample
                 measurement_and_tags = "%s,owner_id=%s,owner_name=%s,stream_id=%s" % (str(stream_name),str(stream_owner_id),str(stream_owner_name),str(stream_id))
+
                 try:
                     # TODO: This method is SUPER slow
+
                     values = convert_sample(values)
+
                     if isinstance(values, list):
                         for i, sample_val in enumerate(values):
                             if len(values) == total_dd_columns:
                                 dd = data_descriptor[i]
                                 if "NAME" in dd:
-                                    fields += "%s=%s," % (str(dd["NAME"]),str(sample_val))
+                                    fields += "%s=%s," % (str(dd["NAME"]).replace(" ","-"),str(sample_val).replace(" ","-"))
                                 else:
-                                    fields += "%s=%s," % ('value_'+str(i),str(sample_val))
+                                    fields += "%s=%s," % ('value_'+str(i),str(sample_val).replace(" ","-"))
                             else:
-                                fields += "%s=%s," % ('value_'+str(i),str(sample_val))
+                                fields += "%s=%s," % ('value_'+str(i),str(sample_val).replace(" ","-"))
                     else:
                         dd = data_descriptor[0]
 
                         if "NAME" in dd:
-                            fields = "%s=%s," % (str(dd["NAME"]),str(values))
+                            fields = "%s=%s," % (str(dd["NAME"]).replace(" ","-"),str(values).replace(" ","-"))
                         else:
-                            fields = "%s=%s," % ('value_0',str(values))
-                except:
+                            fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
+                except Exception as e:
+                    self.logging.log(error_message="Sample: "+str(values)+" - Cannot parse sample. "+str(traceback.format_exc()), error_type=self.logtypes.DEBUG)
                     try:
                         values = json.dumps(values)
-                        fields = "%s=%s," % ('value_0',values)
-                    except:
                         fields = "%s=%s," % ('value_0',str(values))
+                    except:
+                        fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
                 line_protocol +="%s %s %s\n" % (measurement_and_tags,fields.rstrip(","),ts)
                 measurement_and_tags = ""
                 fields = ""

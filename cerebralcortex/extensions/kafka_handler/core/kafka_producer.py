@@ -47,7 +47,7 @@ def save_data(msg, data_path, config_filepath):
     CC = CerebralCortex(config_filepath)
     file_to_db = FileToDB(CC)
     # Note: to bypass influxdb, set influxdb=False
-    file_to_db.file_processor(msg, data_path, influxdb_insert=False)
+    file_to_db.file_processor(msg, data_path, influxdb_insert=True)
 
 
 def kafka_file_to_json_producer(message: KafkaDStream, data_path, config_filepath, CC):

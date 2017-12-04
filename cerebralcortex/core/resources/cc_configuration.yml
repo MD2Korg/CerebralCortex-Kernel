@@ -32,8 +32,8 @@ mysql:
 minio:
   host: 127.0.0.1
   port: 9000
-  access_key: '1UFHXT9UXEBXJ9YZA4JV'
-  secret_key: 'VSUFrJaovzdurcbUWsPteLs0SO857pkw29FoHDjd'
+  access_key: 'ZngmrLWgbSfZUvgocyeH'
+  secret_key: 'IwUnI5w0f5Hf1v2qVwcr'
   secure: False #ssl
 
 logging:

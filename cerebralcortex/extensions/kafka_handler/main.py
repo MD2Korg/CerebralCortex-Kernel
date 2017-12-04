@@ -31,6 +31,7 @@ from cerebralcortex.extensions.kafka_handler.core.kafka_producer import kafka_fi
 from cerebralcortex.extensions.kafka_handler.core.kafka_consumer import spark_kafka_consumer
 import argparse
 
+
 def run():
 
     parser = argparse.ArgumentParser(description='CerebralCortex Kafka Message Handler.')
@@ -70,7 +71,7 @@ def run():
         broker = str(args["broker_list"]).strip()
 
     if not args["spark_master"]:
-        spark_master = "[*]"
+        spark_master = "local[*]"
     else:
         spark_master = args["spark_master"].strip()
 
