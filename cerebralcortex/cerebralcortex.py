@@ -120,6 +120,14 @@ class CerebralCortex:
         """
         return self.SqlData.get_stream_id(stream_name)
 
+    def is_user(self, user_id: uuid=None, user_name:uuid=None) -> str:
+        """
+
+        :param user_id:
+        :return:
+        """
+        return self.SqlData.is_user(user_id, user_name)
+
     def get_user_id(self, user_name: str) -> str:
         """
 

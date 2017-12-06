@@ -65,7 +65,7 @@ class FileToDB():
         self.influxdbUser = self.config['influxdb']['db_user']
         self.influxdbPassword = self.config['influxdb']['db_pass']
 
-        self.batch_size = 1000
+        self.batch_size = 10
         self.sample_group_size = 99
         self.influx_batch_size = 10000
 

@@ -192,6 +192,32 @@ class StreamHandler():
             return None
         else:
             return rows[0]["username"]
+        
+    def is_user(self, user_id: uuid=None, user_name:uuid=None) -> str:
+        """
+
+        :param user_id:
+        :return:
+        """
+        if user_id and user_name:
+            qry = "select username from " + self.userTable + " where identifier = %s and username=%s"
+            vals = str(user_id), user_name
+        elif user_id and not user_name:
+            qry = "select username from " + self.userTable + " where identifier = %(identifier)s"
+            vals = {'identifier': str(user_id)}
+        elif not user_id and user_name:
+            qry = "select username from " + self.userTable + " where username = %(username)s"
+            vals = {'username': str(user_name)}
+        else:
+            return False
+        
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+
+        if len(rows) == 0:
+            return False
+        else:
+            return True
 
     def get_user_id(self, user_name: str) -> str:
         """
