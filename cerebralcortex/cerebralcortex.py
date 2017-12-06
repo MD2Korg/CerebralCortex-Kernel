@@ -66,7 +66,7 @@ class CerebralCortex:
         """
         self.RawData.save_stream(datastream)
 
-    def get_stream(self, stream_id: uuid, day, start_time: datetime = None, end_time: datetime = None,
+    def get_stream(self, stream_id: uuid, day:str, start_time: datetime = None, end_time: datetime = None,
                    data_type=DataSet.COMPLETE) -> DataStream:
         """
 
@@ -172,7 +172,6 @@ class CerebralCortex:
         """
 
         :param stream_id:
-        :param time_type: acceptable parameters are start_time OR end_time
         :return:
         """
         return self.SqlData.get_stream_duration(stream_id)

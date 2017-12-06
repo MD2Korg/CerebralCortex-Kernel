@@ -88,7 +88,6 @@ class StreamHandler():
         """
 
         :param stream_id:
-        :param time_type: acceptable parameters are start_time OR end_time
         :return:
         """
         if not stream_id:
