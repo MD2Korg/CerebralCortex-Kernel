@@ -26,7 +26,7 @@
 import datetime
 import json
 import uuid
-import sys
+
 import traceback
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, BatchType
@@ -65,7 +65,7 @@ class FileToDB():
         self.influxdbUser = self.config['influxdb']['db_user']
         self.influxdbPassword = self.config['influxdb']['db_pass']
 
-        self.batch_size = 10
+        self.batch_size = 1000
         self.sample_group_size = 99
         self.influx_batch_size = 10000
 
@@ -131,7 +131,7 @@ class FileToDB():
                                                annotations, StreamTypes.DATASTREAM, all_data["cassandra_data"][0][0],
                                                all_data["cassandra_data"][len(all_data["cassandra_data"]) - 1][1])
         except:
-            self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - SIZE "+str(sys.getsizeof(data_block))+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
     def line_to_batch_block(self, stream_id: uuid, lines: DataPoint, insert_qry: str):
 
