@@ -1,5 +1,5 @@
 # CerebralCortex-2.0
-
+CerebralCortex core provides an interface to retrieve/store mobile sensor raw data and metadata.
 ## How to run?
 ### Setup environment
 Minimum requirements:
