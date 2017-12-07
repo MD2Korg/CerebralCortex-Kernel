@@ -25,7 +25,7 @@
 
 import gzip
 import random
-
+import argparse
 
 def gen_raw_data(filepath):
     with gzip.open(filepath, 'wb') as output:
@@ -39,5 +39,9 @@ def gen_raw_data(filepath):
         print(r)
 
 
-gen_raw_data(
-    "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/core/test_suite/sample_data/6ff7c2ff-deaf-4c2f-aff5-63228ee13540.gz")
+if __name__=="__main__":
+    parser = argparse.ArgumentParser(description="Generate sample data to test CerebralCortex")
+    parser.add_argument("-of", "--output_filepath", help="Output file path, e.g., /home/ali/test.gz", required=True)
+    args = vars(parser.parse_args())
+
+    gen_raw_data(args["output_filepath"])
