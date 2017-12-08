@@ -304,7 +304,7 @@ class CerebralCortex:
         :param bucket_name:
         :return:{object-name:{stat1:str, stat2, str}},  in case of an error [{"error": str}]
         """
-        return self.get_bucket_objects(bucket_name)
+        return self.ObjectData.get_bucket_objects(bucket_name)
 
     def get_object_stats(self, bucket_name: str, object_name: str) -> dict:
         """
