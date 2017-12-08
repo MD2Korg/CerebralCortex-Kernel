@@ -67,6 +67,24 @@ class UserHandler():
             return []
         else:
             return rows[0]["user_metadata"]
+    def get_user_uuid(self, username: str) -> str:
+
+        """
+
+        :param username:
+        :return:
+        """
+
+        qry = "SELECT identifier from " + self.userTable + " where username = %(username)s"
+        vals = {'username': str(username)}
+        self.cursor.execute(qry, vals)
+        rows = self.cursor.fetchall()
+
+        if rows:
+            user_uuid = rows[0]["identifier"]
+            return user_uuid
+        else:
+            return False
 
     def login_user(self, username: str, password: str) -> bool:
         """
