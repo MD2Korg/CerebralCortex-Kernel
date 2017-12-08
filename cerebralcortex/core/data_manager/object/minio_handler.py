@@ -58,18 +58,22 @@ class MinioHandler():
         :return:{object-name:{stat1:str, stat2, str}},  in case of an error [{"error": str}]
         """
         objects_in_bucket = {}
-        objects_list = []
         try:
             objects = self.minioClient.list_objects(bucket_name, recursive=True)
+            temp = []
+            bucket_objects = {}
             for obj in objects:
                 object_stat = self.minioClient.stat_object(obj.bucket_name, obj.object_name)
                 object_stat = json.dumps(object_stat, default=lambda o: o.__dict__)
                 object_stat = json.loads(object_stat)
+                temp.append(object_stat)
                 objects_in_bucket[obj.object_name] = object_stat
-                objects_list.append(objects_in_bucket)
-            return objects_list
+                object_stat.pop('metadata', None)
+            bucket_objects["bucket-objects"] = temp
+            return bucket_objects
         except Exception as e:
-            return [{"error": str(e)}]
+            objects_in_bucket["error"] = str(e)
+            return objects_in_bucket
 
     def get_object_stats(self, bucket_name: str, object_name: str) -> dict:
         """
