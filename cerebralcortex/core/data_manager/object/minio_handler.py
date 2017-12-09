@@ -26,7 +26,7 @@
 import json
 import os
 from typing import List
-
+import traceback
 
 from minio.error import ResponseError
 
@@ -72,7 +72,7 @@ class MinioHandler():
             bucket_objects["bucket-objects"] = temp
             return bucket_objects
         except Exception as e:
-            objects_in_bucket["error"] = str(e)
+            objects_in_bucket["error"] = str(e)+" \n - Trace: "+str(traceback.format_exc())
             return objects_in_bucket
 
     def get_object_stats(self, bucket_name: str, object_name: str) -> dict:

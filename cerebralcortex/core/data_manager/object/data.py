@@ -35,14 +35,14 @@ class ObjectData(MinioHandler):
         self.CC = CC
         self.config = CC.config
 
-        self.logging = CCLogging(self.config['logging']['log_path'])
+        self.logging = CCLogging(self.config["logging"]["log_path"])
         self.logtypes = LogTypes()
 
-        self.host = self.config['minio']['host']
-        self.port = self.config['minio']['port']
-        self.access_key = self.config['minio']['access_key'],
-        self.secret_key = self.config['minio']['secret_key'],
-        self.secure = self.config['minio']['secure']
+        self.host = self.config["minio"]["host"]
+        self.port = self.config["minio"]["port"]
+        self.access_key = self.config["minio"]["access_key"]
+        self.secret_key = self.config["minio"]["secret_key"]
+        self.secure = self.config["minio"]["secure"]
 
         db_url = str(self.host) + ":" + str(self.port)
         self.minioClient = Minio(db_url, access_key=self.access_key, secret_key=self.secret_key, secure=self.secure)
