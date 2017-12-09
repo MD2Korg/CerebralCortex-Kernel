@@ -46,8 +46,13 @@ class MinioHandler():
         """
         bucket_list = []
         try:
-            for bucket in self.minioClient.list_buckets():
-                bucket_list.append({"bucket-name": bucket.name, "last_modified": str(bucket.creation_date)})
+            temp = []
+            bucket_list = {}
+            buckets = self.minioClient.list_buckets()
+            for bucket in buckets:
+                temp.append({"bucket-name":bucket.name, "last_modified": str(bucket.creation_date)})
+            bucket_list["buckets-list"] = temp
+            return bucket_list
         except Exception as e:
             return [{"error": str(e)}]
 
@@ -83,7 +88,7 @@ class MinioHandler():
         :return: {stat1:str, stat2, str},  in case of an error {"error": str}
         """
         try:
-            if self.bucket_exist(bucket_name):
+            if self.is_bucket(bucket_name):
                 object_stat = self.minioClient.stat_object(bucket_name, object_name)
                 object_stat = json.dumps(object_stat, default=lambda o: o.__dict__)
                 object_stat = json.loads(object_stat)
@@ -102,7 +107,7 @@ class MinioHandler():
         :return: object (HttpResponse), in case of an error {"error": str}
         """
         try:
-            if self.bucket_exist(bucket_name):
+            if self.is_bucket(bucket_name):
                 return self.minioClient.get_object(bucket_name, object_name)
             else:
                 return {"error": "Bucket does not exist"}
