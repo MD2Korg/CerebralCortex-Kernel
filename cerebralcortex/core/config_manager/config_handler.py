@@ -32,14 +32,17 @@ class ConfigHandler():
         Helper function to load a yaml file
         :param filepath: path to a yml configuration file for Cerebral Cortex
         """
-        # TODO: find a better way to get public ip of the machine
-        public_ip = get('http://myip.dnsomatic.com').text
+
         with open(filepath, 'r') as ymlfile:
             self.config = yaml.load(ymlfile)
-            if public_ip:
-                self.config["cassandra"]["host"] = public_ip
-                self.config["influxdb"]["host"] = public_ip
-                self.config["mysql"]["host"] = public_ip
-                self.config["minio"]["host"] = public_ip
-                self.config["kafkaserver"]["host"] = public_ip
-                print(self.config)
+            # TODO: find a better way to get public ip of the machine
+            try:
+                public_ip = get('http://myip.dnsomatic.com').text
+                if public_ip:
+                    self.config["cassandra"]["host"] = public_ip
+                    self.config["influxdb"]["host"] = public_ip
+                    self.config["mysql"]["host"] = public_ip
+                    self.config["minio"]["host"] = public_ip
+                    self.config["kafkaserver"]["host"] = public_ip
+            except:
+                pass
