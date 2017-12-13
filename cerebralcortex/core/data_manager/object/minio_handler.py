@@ -157,7 +157,7 @@ class MinioHandler():
             file_stat = os.stat(object_filepath)
             file_data = open(object_filepath, 'rb')
             self.minioClient.put_object(bucket_name, object_name, file_data,
-                                        file_stat.st_size, content_type='application/csv')
+                                        file_stat.st_size, content_type='application/zip')
             return True
         except ResponseError as e:
             return {"error": str(e)}

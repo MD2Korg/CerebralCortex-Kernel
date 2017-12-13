@@ -330,7 +330,7 @@ class CerebralCortex:
         :param bucket_name:
         :return: True/False, in case of an error {"error": str}
         """
-        self.ObjectData.is_bucket(bucket_name)
+        return self.ObjectData.is_bucket(bucket_name)
 
     ###########################################################################
     ############### TIME SERIES DATA MANAGER METHODS ##########################
