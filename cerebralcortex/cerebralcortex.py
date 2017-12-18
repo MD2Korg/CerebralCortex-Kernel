@@ -53,8 +53,9 @@ class CerebralCortex:
         self.SqlData = SqlData(self)
         self.ObjectData = ObjectData(self)
         self.TimeSeriesData = TimeSeriesData(self)
-        self.MessagingQueue = MessagingQueue(self)
         self.FileIO = FileIO()
+        #TODO: disabled because uwsgi losses connection, need more investigation
+        #self.MessagingQueue = MessagingQueue(self)
 
     ###########################################################################
     ############### RAW DATA MANAGER METHODS ##################################
@@ -388,4 +389,4 @@ class CerebralCortex:
         :param topic:
         :param auto_offset_reset:
         """
-        return self.MessagingQueue.subscribe_to_topic(topic)
+        return MessagingQueue(self).subscribe_to_topic(topic)
