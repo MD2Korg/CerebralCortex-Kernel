@@ -380,7 +380,7 @@ class CerebralCortex:
         :param topic:
         :param msg:
         """
-        self.MessagingQueue.produce_message(topic, msg)
+        MessagingQueue(self).produce_message(topic, msg)
 
     def kafka_subscribe_to_topic(self, topic: str, auto_offset_reset: str="largest"):
         """
