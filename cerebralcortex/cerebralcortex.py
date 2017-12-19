@@ -55,7 +55,7 @@ class CerebralCortex:
         self.TimeSeriesData = TimeSeriesData(self)
         self.FileIO = FileIO()
         #TODO: disabled because uwsgi losses connection, need more investigation
-        #self.MessagingQueue = MessagingQueue(self)
+        self.MessagingQueue = MessagingQueue(self)
 
     ###########################################################################
     ############### RAW DATA MANAGER METHODS ##################################
@@ -381,7 +381,7 @@ class CerebralCortex:
         :param topic:
         :param msg:
         """
-        MessagingQueue(self).produce_message(topic, msg)
+        self.MessagingQueue.produce_message(topic, msg)
 
     def kafka_subscribe_to_topic(self, topic: str, auto_offset_reset: str="largest"):
         """
@@ -389,4 +389,4 @@ class CerebralCortex:
         :param topic:
         :param auto_offset_reset:
         """
-        return MessagingQueue(self).subscribe_to_topic(topic)
+        return self.MessagingQueue.subscribe_to_topic(topic)
