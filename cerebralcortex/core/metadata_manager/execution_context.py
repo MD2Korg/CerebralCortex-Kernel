@@ -26,7 +26,7 @@
 
 class ExecutionContext:
     def __init__(self,
-                 processing_module: int = None,
+                 processing_module: dict = None,
                  input_parameters: dict = None,
                  input_streams: dict = None,
                  metadata: dict = None):
@@ -34,3 +34,54 @@ class ExecutionContext:
         self._input_parameters = input_parameters
         self._input_streams = input_streams
         self._metadata = metadata
+
+    def get_execution_context(self, processing_module: dict, algorithm: dict) -> dict:
+        """
+        Please have a look at /kernel/schema/examples/ for schema and field details
+        :param processing_module:
+        :param algorithm:
+        """
+        ec = {**processing_module, **algorithm}
+        execution_context = {"execution_context": ec}
+        return execution_context
+
+    def processing_module_schema(self, name, pm_description, input_params, input_streams):
+        if not name:
+            raise ValueError("Name is a mandatory field")
+        elif not pm_description:
+            raise ValueError("Processing module description is a mandatory field")
+        elif not input_params:
+            raise ValueError("Input params is mandatory field")
+        else:
+            processing_module = {
+                "processing_module": {
+                    "name": name,
+                    "description": pm_description,
+                    "input_parameters": input_params,
+                    "input_streams": input_streams
+                }
+            }
+        return processing_module
+
+    def algorithm_schema(self, method, algo_description, authors, version, ref):
+
+        if not method:
+            raise ValueError("Complete path to the algorithm is mandatory field")
+        elif not algo_description:
+            raise ValueError("Algorithm description  is mandatory field")
+        elif not authors:
+            raise ValueError("Author(s) list  is mandatory field")
+        elif not version:
+            raise ValueError("Version is mandatory field")
+        else:
+            algo = {
+                "algorithm": {
+                    "method": method,
+                    "description": algo_description,
+                    "authors": authors,
+                    "version": version,
+                    "reference": ref
+                }
+            }
+
+        return algo

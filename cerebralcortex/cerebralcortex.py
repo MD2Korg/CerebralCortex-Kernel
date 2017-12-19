@@ -167,7 +167,7 @@ class CerebralCortex:
         :param study_name:
         :return:
         """
-        return self.get_all_users(study_name)
+        return self.SqlData.get_all_users(study_name)
 
     def get_stream_duration(self, stream_id: uuid) -> dict:
         """
