@@ -37,16 +37,16 @@ class TestFileToDataStream(unittest.TestCase):
     CC = CerebralCortex()
     configuration = CC.config
 
-    def test_01_save_data(self):
-        msg = {}
-        test_dir_path = "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/core/test_suite/sample_data/"
-        test_json_file = test_dir_path + "6ff7c2ff-deaf-4c2f-aff5-63228ee13540.json"
-        test_gz_file = "6ff7c2ff-deaf-4c2f-aff5-63228ee13540.gz"
-        metadata = FileIO().read_file(test_json_file)
-        msg["metadata"] = json.loads(metadata)
-        msg["filename"] = test_gz_file
-
-        FileToDB(self.CC).file_processor(msg, test_dir_path, False)
+    # def test_01_save_data(self):
+    #     msg = {}
+    #     test_dir_path = "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/core/test_suite/sample_data/"
+    #     test_json_file = test_dir_path + "6ff7c2ff-deaf-4c2f-aff5-63228ee13540.json"
+    #     test_gz_file = "6ff7c2ff-deaf-4c2f-aff5-63228ee13540.gz"
+    #     metadata = FileIO().read_file(test_json_file)
+    #     msg["metadata"] = json.loads(metadata)
+    #     msg["filename"] = test_gz_file
+    #
+    #     FileToDB(self.CC).file_processor(msg, test_dir_path, False)
 
     def test_02_get_data(self):
         st = datetime.now()
@@ -70,7 +70,7 @@ class TestFileToDataStream(unittest.TestCase):
         self.assertEqual(len(ds.data[0].sample),5)
 
         # last data point
-        self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse('2448-11-17 06:35:34.502001'))
+        self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse('2448-11-17 06:35:33.521999'))
         self.assertEqual(len(ds.data[len(ds.data)-1].sample),5)
         print("Completed")
 

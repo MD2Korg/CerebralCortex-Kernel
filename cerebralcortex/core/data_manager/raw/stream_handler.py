@@ -34,7 +34,7 @@ from cassandra.query import BatchStatement, SimpleStatement, BatchType
 
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.datastream import DataStream
-from cerebralcortex.core.util.data_types import convert_sample
+from cerebralcortex.core.util.data_types import convert_sample, deserialize_obj
 from pytz import timezone as pytimezone
 
 from cerebralcortex.core.util.debuging_decorators import log_execution_time
@@ -128,7 +128,7 @@ class StreamHandler():
 
             session = cluster.connect(self.keyspace_name)
 
-            query = "SELECT start_time,end_time, sample FROM " + self.datapoint_table + " " + where_clause
+            query = "SELECT start_time,end_time, blob_obj FROM " + self.datapoint_table + " " + where_clause
             statement = SimpleStatement(query, fetch_size=None)
             data = []
             rows = session.execute(statement, timeout=None)
@@ -152,6 +152,19 @@ class StreamHandler():
         """
         updated_rows = []
         try:
+            return deserialize_obj(row[2])
+        except Exception as e:
+            self.logging.log(error_message="Row: "+row+" - Cannot parse row. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            return []
+
+    def parse_row_raw_sample(self, row: str) -> List:
+        """
+
+        :param row:
+        :return:
+        """
+        updated_rows = []
+        try:
             rows = json.loads(row[2])
             for r in rows:
                 # Caasandra timezone is already in UTC. Adding timezone again would double the timezone value
@@ -167,6 +180,7 @@ class StreamHandler():
         except Exception as e:
             self.logging.log(error_message="Row: "+row+" - Cannot parse row. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
             return []
+
 
     def get_stream_samples(self, stream_id, day, start_time=None, end_time=None) -> List[DataPoint]:
         """

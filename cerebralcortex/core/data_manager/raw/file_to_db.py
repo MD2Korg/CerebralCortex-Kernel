@@ -26,7 +26,7 @@
 import datetime
 import json
 import uuid
-
+import pickle
 import traceback
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, BatchType
@@ -35,7 +35,7 @@ from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
 from cerebralcortex.core.file_manager.read_handler import ReadHandler
 from influxdb import InfluxDBClient
-from cerebralcortex.core.util.data_types import convert_sample,convert_sample_type
+from cerebralcortex.core.util.data_types import convert_sample, serialize_obj
 from cerebralcortex.core.util.debuging_decorators import log_execution_time
 from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.log_manager.log_handler import LogTypes
@@ -119,7 +119,7 @@ class FileToDB():
             cluster = Cluster([self.host_ip], port=self.host_port)
             session = cluster.connect(self.keyspace_name)
             qry_with_endtime = session.prepare(
-                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, sample) VALUES (?, ?, ?, ?, ?)")
+                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, sample, blob_obj) VALUES (?, ?, ?, ?, ?, ?)")
 
             for data_block in self.line_to_batch_block(stream_id, all_data["cassandra_data"], qry_with_endtime):
                 session.execute(data_block)
@@ -151,16 +151,17 @@ class FileToDB():
             end_time = line[1]
             day = line[2]
             sample = line[3]
+            blob_obj = line[4]
 
             if line_number > self.batch_size:
                 yield batch
                 batch = BatchStatement(batch_type=BatchType.UNLOGGED)
                 # just to make sure batch does not have any existing entries.
                 batch.clear()
-                batch.add(insert_qry.bind([stream_id, day, start_time, end_time, sample]))
+                batch.add(insert_qry.bind([stream_id, day, start_time, end_time, sample, blob_obj]))
                 line_number = 1
             else:
-                batch.add(insert_qry.bind([stream_id, day, start_time, end_time, sample]))
+                batch.add(insert_qry.bind([stream_id, day, start_time, end_time, sample, blob_obj]))
                 line_number += 1
         yield batch
 
@@ -315,10 +316,9 @@ class FileToDB():
         sample_batch = []
         grouped_samples = []
         line_number = 1
-        influx_data = []
         current_day = None # used to check boundry condition. For example, if half of the sample belong to next day
         last_start_time = None
-        measurement_and_tags = ""
+        datapoints = []
         line_protocol = ""
         fields = ""
 
@@ -375,8 +375,12 @@ class FileToDB():
             ############### END INFLUXDB BLOCK
 
             ############### START OF CASSANDRA DATA BLOCK
+            if not influxdb_insert:
+                values = convert_sample(sample)
+
             if line_number == 1:
                 sample_batch = []
+                datapoints = []
                 first_start_time = datetime.datetime.fromtimestamp(start_time)
                 # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
                 start_day = first_start_time.strftime("%Y%m%d")
@@ -384,16 +388,21 @@ class FileToDB():
             if line_number > self.sample_group_size:
                 last_start_time = datetime.datetime.fromtimestamp(start_time)
                 sample_batch.append([start_time, offset, sample])
-                grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
+                datapoints.append(DataPoint(first_start_time, last_start_time, values))
+                grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch), serialize_obj(datapoints)])
+
                 line_number = 1
             else:
                 if (int(start_time/86400))>current_day:
                     start_day = datetime.datetime.fromtimestamp(start_time).strftime("%Y%m%d")
                 sample_batch.append([start_time, offset, sample])
+                datapoints.append(DataPoint(first_start_time, last_start_time, values))
                 line_number += 1
         if not last_start_time:
             last_start_time = start_time
-        grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch)])
+        grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch), serialize_obj(datapoints)])
         ############### END OF CASSANDRA DATA BLOCK
 
         return {"cassandra_data": grouped_samples, "influxdb_data": line_protocol}
+
+

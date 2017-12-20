@@ -24,6 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
+import pickle
+from cerebralcortex.core.datatypes.datapoint import DataPoint
 
 
 def convert_sample_complete(sample):
@@ -97,3 +99,14 @@ def convert_sample(sample):
                 return sample
     except:
         return sample
+
+
+def serialize_obj(datapoints:DataPoint):
+    #rest = b"some some"
+    res = pickle.dumps(datapoints)
+    return res
+
+
+def deserialize_obj(picked_obj):
+    res = pickle.loads(picked_obj)
+    return res
