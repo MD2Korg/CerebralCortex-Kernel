@@ -316,6 +316,17 @@ class StreamHandler():
         :param stream_type:
         """
         isQueryReady = 0
+
+        # if start_time:
+        #     try:
+        #         start_time = int(start_time)
+        #     except:
+        #         pass
+        # if end_time:
+        #     try:
+        #         end_time = int(end_time)
+        #     except:
+        #         pass
         if stream_id:
             stream_id = str(stream_id)
 
@@ -351,9 +362,12 @@ class StreamHandler():
 
         # if nothing is changed then isQueryReady would be 0 and no database transaction would be performed
         if isQueryReady == 1:
-            self.cursor.execute(qry, vals)
-            self.dbConnection.commit()
-
+            try:
+                self.cursor.execute(qry, vals)
+                self.dbConnection.commit()
+            except:
+                self.logging.log(error_message="Query: "+str(qry)+" - cannot be processed. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+                
     def annotations_status(self, stream_id: uuid, owner_id: uuid, annotations: dict) -> str:
         """
         This method will check if the stream already exist with the same data (as provided in params) except annotations.

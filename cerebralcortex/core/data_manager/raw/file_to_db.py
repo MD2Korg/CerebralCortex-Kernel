@@ -65,13 +65,13 @@ class FileToDB():
         self.influxdbUser = self.config['influxdb']['db_user']
         self.influxdbPassword = self.config['influxdb']['db_pass']
 
-        self.batch_size = 1000
+        self.batch_size = 100
         self.sample_group_size = 99
         self.influx_batch_size = 10000
 
 
     @log_execution_time
-    def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert=True):
+    def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert:bool=True):
         """
         :param msg:
         :param zip_filepath:
@@ -109,7 +109,7 @@ class FileToDB():
 
             all_data = self.line_to_sample(lines, stream_id, owner, owner_name, name, data_descriptor, influxdb_insert)
 
-            if all_data["influxdb_data"] != "" and all_data["influxdb_data"]!=None:
+            if influxdb_insert and all_data["influxdb_data"] != "" and all_data["influxdb_data"]!=None:
                 try:
                     influxdb_client.write_points(all_data["influxdb_data"], protocol="line")
                 except:
@@ -133,7 +133,7 @@ class FileToDB():
         except:
             self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
-    def line_to_batch_block(self, stream_id: uuid, lines: DataPoint, insert_qry: str):
+    def line_to_batch_block(self, stream_id: uuid, lines: str, insert_qry: str):
 
         """
 
@@ -399,7 +399,7 @@ class FileToDB():
                 datapoints.append(DataPoint(first_start_time, last_start_time, values))
                 line_number += 1
         if not last_start_time:
-            last_start_time = start_time
+            last_start_time = datetime.datetime.fromtimestamp(start_time)
         grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch), serialize_obj(datapoints)])
         ############### END OF CASSANDRA DATA BLOCK
 
