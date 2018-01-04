@@ -130,6 +130,10 @@ class FileToDB():
             self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
                                                annotations, StreamTypes.DATASTREAM, all_data["cassandra_data"][0][0],
                                                all_data["cassandra_data"][len(all_data["cassandra_data"]) - 1][1])
+            self.sql_data.cursor.close()
+            self.sql_data.dbConnection.close()
+
+
         except:
             self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
