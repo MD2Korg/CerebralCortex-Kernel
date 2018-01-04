@@ -365,6 +365,8 @@ class StreamHandler():
             try:
                 self.cursor.execute(qry, vals)
                 self.dbConnection.commit()
+                self.cursor.close()
+                self.dbConnection.close()
             except:
                 self.logging.log(error_message="Query: "+str(qry)+" - cannot be processed. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
                 
