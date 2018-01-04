@@ -40,7 +40,7 @@ logging:
   log_path: '/var/log/cerebralcortex/' # make sure directory is writeable by current OS user
 
 data_ingestion:
-  cassandra_in: True
+  cassandra_in: True # for now, this cannot be False
   influxdb_in: False
 
 
@@ -66,6 +66,3 @@ routes:
   stream: "stream"
   object: "object"
 
-#################### TESTING PARAMS ########################
-mode:
-  run: "test"
