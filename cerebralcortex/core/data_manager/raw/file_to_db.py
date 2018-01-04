@@ -130,8 +130,8 @@ class FileToDB():
             self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
                                                annotations, StreamTypes.DATASTREAM, all_data["cassandra_data"][0][0],
                                                all_data["cassandra_data"][len(all_data["cassandra_data"]) - 1][1])
-            self.sql_data.cursor.close()
-            self.sql_data.dbConnection.close()
+            #self.sql_data.cursor.close()
+            #self.sql_data.dbConnection.close()
 
 
         except:
