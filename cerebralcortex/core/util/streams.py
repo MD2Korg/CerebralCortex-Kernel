@@ -28,19 +28,19 @@ import uuid
 from datetime import timedelta
 from cerebralcortex.cerebralcortex import CerebralCortex
 
-def get_stream_days(raw_stream_id: uuid, dd_stream_id: uuid, CC: CerebralCortex) -> List:
+
+def get_stream_days(stream_id: uuid, CC: CerebralCortex) -> List:
     """
     Returns a list of days (string format: YearMonthDay (e.g., 20171206)
-    :param raw_stream_id:
+    :param stream_id:
     :param dd_stream_id:
     """
-    dd_stream_days = CC.get_stream_duration(dd_stream_id)["end_time"]
+    stream_days = []
+    if stream_id:
+        stream_duration = CC.get_stream_duration(stream_id)
+        if stream_duration["start_time"] is not None and stream_duration["end_time"] is not None:
+            days = stream_duration["end_time"] - stream_duration["start_time"]
+            for day in range(days.days + 1):
+                stream_days.append((stream_duration["start_time"] + timedelta(days=day)).strftime('%Y%m%d'))
 
-    if not dd_stream_days:
-        stream_days = CC.get_stream_duration(raw_stream_id)
-        days = stream_days["end_time"]-stream_days["start_time"]
-        for day in range(days.days+1):
-            stream_days.append((stream_days["start_time"]+timedelta(days=day)).strftime('%Y%m%d'))
-    else:
-        stream_days = [(dd_stream_days+timedelta(days=1)).strftime('%Y%m%d')]
     return stream_days
