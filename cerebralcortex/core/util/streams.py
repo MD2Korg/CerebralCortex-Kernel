@@ -40,7 +40,11 @@ def get_stream_days(stream_id: uuid, CC: CerebralCortex) -> List:
         stream_duration = CC.get_stream_duration(stream_id)
         if stream_duration["start_time"] is not None and stream_duration["end_time"] is not None:
             days = stream_duration["end_time"] - stream_duration["start_time"]
-            for day in range(days.days + 1):
+            if days.seconds>60:
+                total_days = days.days+2
+            else:
+                total_days = days.days+1
+            for day in range(total_days):
                 stream_days.append((stream_duration["start_time"] + timedelta(days=day)).strftime('%Y%m%d'))
 
     return stream_days
