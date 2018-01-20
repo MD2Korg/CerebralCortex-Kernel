@@ -359,12 +359,13 @@ class FileToDB():
                             else:
                                 fields += "%s=%s," % ('value_'+str(i),str(sample_val).replace(" ","-"))
                     else:
-                        dd = data_descriptor[0]
+                        if len(data_descriptor)>0:
+                            dd = data_descriptor[0]
 
-                        if "NAME" in dd:
-                            fields = "%s=%s," % (str(dd["NAME"]).replace(" ","-"),str(values).replace(" ","-"))
-                        else:
-                            fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
+                            if "NAME" in dd:
+                                fields = "%s=%s," % (str(dd["NAME"]).replace(" ","-"),str(values).replace(" ","-"))
+                            else:
+                                fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
                 except Exception as e:
                     self.logging.log(error_message="Sample: "+str(values)+" - Cannot parse sample. "+str(traceback.format_exc()), error_type=self.logtypes.DEBUG)
                     try:
