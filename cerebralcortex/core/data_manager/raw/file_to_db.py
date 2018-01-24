@@ -130,12 +130,9 @@ class FileToDB():
             self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
                                                annotations, StreamTypes.DATASTREAM, all_data["cassandra_data"][0][0],
                                                all_data["cassandra_data"][len(all_data["cassandra_data"]) - 1][1])
-            #self.sql_data.cursor.close()
-            #self.sql_data.dbConnection.close()
-
 
         except:
-            self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.MISSING_DATA)
 
     def line_to_batch_block(self, stream_id: uuid, lines: str, insert_qry: str):
 
@@ -154,18 +151,18 @@ class FileToDB():
             start_time = line[0]
             end_time = line[1]
             day = line[2]
-            sample = line[3]
-            blob_obj = line[4]
+            #sample = line[3]
+            blob_obj = line[3]
 
             if line_number > self.batch_size:
                 yield batch
                 batch = BatchStatement(batch_type=BatchType.UNLOGGED)
                 # just to make sure batch does not have any existing entries.
                 batch.clear()
-                batch.add(insert_qry.bind([stream_id, day, start_time, end_time, sample, blob_obj]))
+                batch.add(insert_qry.bind([stream_id, day, start_time, end_time, blob_obj]))
                 line_number = 1
             else:
-                batch.add(insert_qry.bind([stream_id, day, start_time, end_time, sample, blob_obj]))
+                batch.add(insert_qry.bind([stream_id, day, start_time, end_time, blob_obj]))
                 line_number += 1
         yield batch
 
@@ -317,7 +314,7 @@ class FileToDB():
         :param qry_with_endtime:
         """
 
-        sample_batch = []
+        #sample_batch = []
         grouped_samples = []
         line_number = 1
         current_day = None # used to check boundry condition. For example, if half of the sample belong to next day
@@ -334,78 +331,85 @@ class FileToDB():
             total_dd_columns = 0
 
         for line in lines:
-            ts, offset, sample = line.split(',', 2)
-            start_time = int(ts) / 1000.0
-            offset = int(offset)
+            try:
+                ts, offset, sample = line.split(',', 2)
+                bad_row = 0 # if line is not properly formatted then rest of the code shall not be executed
+            except:
+                bad_row = 1
 
-            ############### START INFLUXDB BLOCK
-            if influxdb_insert:
-                values = sample
-                measurement_and_tags = "%s,owner_id=%s,owner_name=%s,stream_id=%s" % (str(stream_name),str(stream_owner_id),str(stream_owner_name),str(stream_id))
+            if bad_row==0:
+                start_time = int(ts) / 1000.0
+                offset = int(offset)
 
-                try:
-                    # TODO: This method is SUPER slow
+                ############### START INFLUXDB BLOCK
+                if influxdb_insert:
+                    values = sample
+                    measurement_and_tags = "%s,owner_id=%s,owner_name=%s,stream_id=%s" % (str(stream_name),str(stream_owner_id),str(stream_owner_name),str(stream_id))
 
-                    values = convert_sample(values)
+                    try:
+                        # TODO: This method is SUPER slow
 
-                    if isinstance(values, list):
-                        for i, sample_val in enumerate(values):
-                            if len(values) == total_dd_columns:
-                                dd = data_descriptor[i]
-                                if "NAME" in dd:
-                                    fields += "%s=%s," % (str(dd["NAME"]).replace(" ","-"),str(sample_val).replace(" ","-"))
+                        values = convert_sample(values)
+
+                        if isinstance(values, list):
+                            for i, sample_val in enumerate(values):
+                                if len(values) == total_dd_columns:
+                                    dd = data_descriptor[i]
+                                    if "NAME" in dd:
+                                        fields += "%s=%s," % (str(dd["NAME"]).replace(" ","-"),str(sample_val).replace(" ","-"))
+                                    else:
+                                        fields += "%s=%s," % ('value_'+str(i),str(sample_val).replace(" ","-"))
                                 else:
                                     fields += "%s=%s," % ('value_'+str(i),str(sample_val).replace(" ","-"))
-                            else:
-                                fields += "%s=%s," % ('value_'+str(i),str(sample_val).replace(" ","-"))
-                    else:
-                        if len(data_descriptor)>0:
-                            dd = data_descriptor[0]
+                        else:
+                            if len(data_descriptor)>0:
+                                dd = data_descriptor[0]
 
-                            if "NAME" in dd:
-                                fields = "%s=%s," % (str(dd["NAME"]).replace(" ","-"),str(values).replace(" ","-"))
-                            else:
-                                fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
-                except Exception as e:
-                    self.logging.log(error_message="Sample: "+str(values)+" - Cannot parse sample. "+str(traceback.format_exc()), error_type=self.logtypes.DEBUG)
-                    try:
-                        values = json.dumps(values)
-                        fields = "%s=%s," % ('value_0',str(values))
-                    except:
-                        fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
-                line_protocol +="%s %s %s\n" % (measurement_and_tags,fields.rstrip(","),ts)
-                measurement_and_tags = ""
-                fields = ""
+                                if "NAME" in dd:
+                                    fields = "%s=%s," % (str(dd["NAME"]).replace(" ","-"),str(values).replace(" ","-"))
+                                else:
+                                    fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
+                    except Exception as e:
+                        self.logging.log(error_message="Sample: "+str(values)+" - Cannot parse sample. "+str(traceback.format_exc()), error_type=self.logtypes.DEBUG)
+                        try:
+                            values = json.dumps(values)
+                            fields = "%s=%s," % ('value_0',str(values))
+                        except:
+                            fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
+                    line_protocol +="%s %s %s\n" % (measurement_and_tags,fields.rstrip(","),ts)
+                    measurement_and_tags = ""
+                    fields = ""
 
-            ############### END INFLUXDB BLOCK
+                ############### END INFLUXDB BLOCK
 
-            ############### START OF CASSANDRA DATA BLOCK
-            if not influxdb_insert:
-                values = convert_sample(sample)
+                ############### START OF CASSANDRA DATA BLOCK
+                if not influxdb_insert:
+                    values = convert_sample(sample)
 
-            if line_number == 1:
-                sample_batch = []
-                datapoints = []
-                first_start_time = datetime.datetime.fromtimestamp(start_time)
-                # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
-                start_day = first_start_time.strftime("%Y%m%d")
-                current_day = int(start_time/86400)
-            if line_number > self.sample_group_size:
+                if line_number == 1:
+                    #sample_batch = []
+                    datapoints = []
+                    first_start_time = datetime.datetime.fromtimestamp(start_time)
+                    # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
+                    start_day = first_start_time.strftime("%Y%m%d")
+                    current_day = int(start_time/86400)
+                if line_number > self.sample_group_size:
+                    last_start_time = datetime.datetime.fromtimestamp(start_time)
+                    #sample_batch.append([start_time, offset, sample])
+                    datapoints.append(DataPoint(first_start_time, last_start_time, offset, values))
+                    grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
+                    line_number = 1
+                else:
+                    if (int(start_time/86400))>current_day:
+                        start_day = datetime.datetime.fromtimestamp(start_time).strftime("%Y%m%d")
+                    #sample_batch.append([start_time, offset, sample])
+                    datapoints.append(DataPoint(first_start_time, last_start_time, offset, values))
+                    line_number += 1
+
+        if len(datapoints)>0:
+            if not last_start_time:
                 last_start_time = datetime.datetime.fromtimestamp(start_time)
-                sample_batch.append([start_time, offset, sample])
-                datapoints.append(DataPoint(first_start_time, last_start_time, values))
-                grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch), serialize_obj(datapoints)])
-
-                line_number = 1
-            else:
-                if (int(start_time/86400))>current_day:
-                    start_day = datetime.datetime.fromtimestamp(start_time).strftime("%Y%m%d")
-                sample_batch.append([start_time, offset, sample])
-                datapoints.append(DataPoint(first_start_time, last_start_time, values))
-                line_number += 1
-        if not last_start_time:
-            last_start_time = datetime.datetime.fromtimestamp(start_time)
-        grouped_samples.append([first_start_time, last_start_time, start_day, json.dumps(sample_batch), serialize_obj(datapoints)])
+            grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
         ############### END OF CASSANDRA DATA BLOCK
 
         return {"cassandra_data": grouped_samples, "influxdb_data": line_protocol}
