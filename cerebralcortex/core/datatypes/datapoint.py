@@ -31,9 +31,11 @@ class DataPoint:
     def __init__(self,
                  start_time: datetime = None,
                  end_time: datetime = None,
+                 offset: str=None,
                  sample: Any = None):
         self._start_time = start_time
         self._end_time = end_time
+        self._offset = offset
         self._sample = sample
 
     @property
@@ -59,6 +61,14 @@ class DataPoint:
     @end_time.setter
     def end_time(self, val):
         self._end_time = val
+
+    @property
+    def offset(self):
+        return self._offset
+
+    @offset.setter
+    def offset(self, val):
+        self._offset = val
 
     @classmethod
     def from_tuple(cls, start_time: datetime, sample: Any, end_time: datetime = None):
