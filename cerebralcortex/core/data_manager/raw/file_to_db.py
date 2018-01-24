@@ -119,7 +119,7 @@ class FileToDB():
             cluster = Cluster([self.host_ip], port=self.host_port)
             session = cluster.connect(self.keyspace_name)
             qry_with_endtime = session.prepare(
-                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, sample, blob_obj) VALUES (?, ?, ?, ?, ?, ?)")
+                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
 
             for data_block in self.line_to_batch_block(stream_id, all_data["cassandra_data"], qry_with_endtime):
                 session.execute(data_block)
