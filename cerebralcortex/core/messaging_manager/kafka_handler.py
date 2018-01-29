@@ -35,9 +35,11 @@ class KafkaHandler():
 
         if not topic and not msg:
             raise ValueError("Topic and Message are required parameters.")
-
-        self.producer.send(topic, msg)
-        self.producer.flush()
+        try:
+            self.producer.send(topic, msg)
+            self.producer.flush()
+        except:
+            print("Error publishing message. Topic: "+str(topic)+" - "+str(msg))
 
     def subscribe_to_topic(self, topic: str):
         """
