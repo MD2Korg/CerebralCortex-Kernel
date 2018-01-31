@@ -48,7 +48,7 @@ class FileToDB():
     def __init__(self, CC):
         self.config = CC.config
 
-        self.sql_data = SqlData(CC)
+        self.sql_data = CC.SqlData
         self.host_ip = self.config['cassandra']['host']
         self.host_port = self.config['cassandra']['port']
         self.keyspace_name = self.config['cassandra']['keyspace']
