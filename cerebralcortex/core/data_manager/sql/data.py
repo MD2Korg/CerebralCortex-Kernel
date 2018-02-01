@@ -103,7 +103,7 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
         """
         # get connection form connection pool instead of create one.
         conn = self.pool.get_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
         if args:
             cursor.execute(sql, args)
         else:
