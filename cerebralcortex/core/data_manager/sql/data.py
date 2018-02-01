@@ -50,8 +50,8 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
         self.datastreamTable = self.config['mysql']['datastream_table']
         self.kafkaOffsetsTable = self.config['mysql']['kafka_offsets_table']
         self.userTable = self.config['mysql']['user_table']
-        self.poolName = "CC_Pool"
-        self.poolSize = 10
+        self.poolName = self.config['mysql']['connection_pool_name']
+        self.poolSize = self.config['mysql']['connection_pool_size']
         self.pool = self.create_pool(pool_name=self.poolName, pool_size=self.poolSize)
 
         # self.dbConnection = mysql.connector.connect(host=self.hostIP, port=self.hostPort, user=self.dbUser,
