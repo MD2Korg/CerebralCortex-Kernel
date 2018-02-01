@@ -89,8 +89,11 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
         :param cursor:
         :return:
         """
-        cursor.close()
-        conn.close()
+        try:
+            cursor.close()
+            conn.close()
+        except Exception as exp:
+            self.logging.log(error_message="Cannot close connection: "+str(exp), error_type=self.logtypes.DEBUG)
 
     def execute(self, sql, args=None, commit=False):
         """
