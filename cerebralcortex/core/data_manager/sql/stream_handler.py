@@ -34,8 +34,6 @@ from cerebralcortex.core.util.debuging_decorators import log_execution_time
 
 
 class StreamHandler():
-    def __init__(self):
-        pass
 
     ###################################################################
     ################## GET DATA METHODS ###############################
@@ -49,8 +47,8 @@ class StreamHandler():
         """
         qry = "SELECT * from " + self.datastreamTable + " where identifier=%(identifier)s"
         vals = {"identifier": str(stream_id)}
-        self.cursor.execute(qry, vals)
-        return self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        return rows
 
     def get_stream_names_ids_by_user(self, user_id: uuid, stream_name: str = None, start_time: datetime = None,
                                      end_time: datetime = None) -> List:
@@ -78,8 +76,8 @@ class StreamHandler():
             v4 = end_time
         vals = filter(None, (v1, v2, v3, v4))
 
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
         for row in rows:
             stream_ids_names[row["name"]] = row["identifier"]
         return stream_ids_names
@@ -96,8 +94,8 @@ class StreamHandler():
         qry = "select start_time, end_time from " + self.datastreamTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(stream_id)}
 
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.cursor.execute(qry, vals)
+        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
             return {"start_time": None, "end_time": None}
@@ -117,8 +115,8 @@ class StreamHandler():
         qry = 'SELECT identifier, username FROM ' + self.userTable + ' where user_metadata->"$.study_name"=%(study_name)s'
         vals = {'study_name': str(study_name)}
 
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
             return None
@@ -140,8 +138,8 @@ class StreamHandler():
         qry = 'SELECT * FROM ' + self.datastreamTable + ' where owner=%(owner)s'
         vals = {'owner': str(user_id)}
 
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
             return []
@@ -162,8 +160,8 @@ class StreamHandler():
         qry = "select data_descriptor,execution_context,annotations, start_time, end_time from " + self.datastreamTable + " where owner = %(owner)s"
         vals = {'owner': str(user_id)}
 
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
             return []
@@ -184,8 +182,8 @@ class StreamHandler():
         qry = "select username from " + self.userTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(user_id)}
 
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
             return None
@@ -209,9 +207,9 @@ class StreamHandler():
             vals = {'username': str(user_name)}
         else:
             return False
-        
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
             return False
@@ -230,8 +228,8 @@ class StreamHandler():
         qry = "select identifier from " + self.userTable + " where username = %(username)s"
         vals = {'username': str(user_name)}
 
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
             return None
@@ -250,8 +248,8 @@ class StreamHandler():
         qry = "select identifier from " + self.datastreamTable + " where name = %(name)s"
         vals = {'name': str(stream_name)}
 
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
             return None
@@ -270,8 +268,8 @@ class StreamHandler():
         qry = "select name from " + self.datastreamTable + " where name = %(identifier)s"
         vals = {'identifier': str(stream_id)}
 
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
             return None
@@ -287,8 +285,8 @@ class StreamHandler():
         """
         qry = "SELECT * from " + self.datastreamTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(stream_id)}
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
 
         if rows:
             return True
@@ -363,10 +361,10 @@ class StreamHandler():
         # if nothing is changed then isQueryReady would be 0 and no database transaction would be performed
         if isQueryReady == 1:
             try:
-                self.cursor.execute(qry, vals)
-                self.dbConnection.commit()
-                self.cursor.close()
-                self.dbConnection.close()
+                self.execute(qry, vals, commit=True)
+                #self.dbConnection.commit()
+                #self.cursor.close()
+                #self.dbConnection.close()
             except:
                 self.logging.log(error_message="Query: "+str(qry)+" - cannot be processed. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
                 
@@ -382,8 +380,8 @@ class StreamHandler():
         """
         qry = "select annotations from " + self.datastreamTable + " where identifier = %s and owner=%s"
         vals = stream_id, owner_id
-        self.cursor.execute(qry, vals)
-        result = self.cursor.fetchall()
+        result = self.execute(qry, vals)
+        #result = self.cursor.fetchall()
 
         if result:
             if json.loads(result[0]["annotations"]) == annotations:
@@ -404,8 +402,8 @@ class StreamHandler():
 
         qry = "SELECT end_time from " + self.datastreamTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(stream_id)}
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
 
         if rows:
             old_end_time = rows[0]["end_time"]

@@ -49,8 +49,8 @@ class CerebralCortex:
         self.config = Configuration(configuration_filepath).config
         self.timezone = timezone
 
-        self.RawData = RawData(self)
         self.SqlData = SqlData(self)
+        self.RawData = RawData(self)
         self.ObjectData = ObjectData(self)
         self.TimeSeriesData = TimeSeriesData(self)
         self.FileIO = FileIO()

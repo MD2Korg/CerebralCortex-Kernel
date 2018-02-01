@@ -34,8 +34,6 @@ from pytz import timezone
 
 
 class UserHandler():
-    def __init__(self):
-        pass
 
     ###################################################################
     ################## GET DATA METHODS ###############################
@@ -61,8 +59,8 @@ class UserHandler():
             qry = "select user_metadata from user where identifier=%s and username=%s"
             vals = str(user_id), str(username)
 
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
         if len(rows) == 0:
             return []
         else:
@@ -77,8 +75,8 @@ class UserHandler():
 
         qry = "SELECT identifier from " + self.userTable + " where username = %(username)s"
         vals = {'username': str(username)}
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.cexecute(qry, vals)
+        #rows = self.cursor.fetchall()
 
         if rows:
             user_uuid = rows[0]["identifier"]
@@ -99,8 +97,8 @@ class UserHandler():
         qry = "select * from user where username=%s and password=%s"
         vals = username, password
 
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
         if len(rows) == 0:
             return False
         else:
@@ -120,8 +118,8 @@ class UserHandler():
         qry = "select * from user where token=%s and username=%s"
         vals = auth_token, token_owner
 
-        self.cursor.execute(qry, vals)
-        rows = self.cursor.fetchall()
+        rows = self.execute(qry, vals)
+        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
             return False
@@ -158,8 +156,8 @@ class UserHandler():
 
         user_uuid = self.get_user_uuid(username)
 
-        self.cursor.execute(qry, vals)
-        self.dbConnection.commit()
+        self.execute(qry, vals, commit=True)
+        #self.dbConnection.commit()
 
         return user_uuid
 
