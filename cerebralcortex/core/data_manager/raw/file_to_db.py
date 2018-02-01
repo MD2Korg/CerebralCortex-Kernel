@@ -248,7 +248,8 @@ class FileToDB():
                 ############### START OF CASSANDRA DATA BLOCK
                 if not influxdb_insert:
                     values = convert_sample(sample)
-
+                start_time_dt = datetime.datetime.fromtimestamp(start_time) #TODO: this is a workaround. Update code to only have on start_time var
+                
                 if line_number == 1:
                     #sample_batch = []
                     datapoints = []
@@ -259,14 +260,14 @@ class FileToDB():
                 if line_number > self.sample_group_size:
                     last_start_time = datetime.datetime.fromtimestamp(start_time)
                     #sample_batch.append([start_time, offset, sample])
-                    datapoints.append(DataPoint(first_start_time, last_start_time, offset, values))
+                    datapoints.append(DataPoint(start_time_dt, None, offset, values))
                     grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
                     line_number = 1
                 else:
                     if (int(start_time/86400))>current_day:
                         start_day = datetime.datetime.fromtimestamp(start_time).strftime("%Y%m%d")
                     #sample_batch.append([start_time, offset, sample])
-                    datapoints.append(DataPoint(first_start_time, last_start_time, offset, values))
+                    datapoints.append(DataPoint(start_time_dt, None, offset, values))
                     line_number += 1
 
         if len(datapoints)>0:
