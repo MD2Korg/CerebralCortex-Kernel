@@ -26,11 +26,9 @@
 import datetime
 import json
 import uuid
-import pickle
 import traceback
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, BatchType
-from cerebralcortex.core.data_manager.sql.data import SqlData
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
 from cerebralcortex.core.file_manager.read_handler import ReadHandler

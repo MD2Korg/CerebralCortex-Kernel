@@ -49,11 +49,95 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
         self.datastreamTable = self.config['mysql']['datastream_table']
         self.kafkaOffsetsTable = self.config['mysql']['kafka_offsets_table']
         self.userTable = self.config['mysql']['user_table']
+        self.poolName = "CC_Pool"
+        self.poolSize = 10
+        self.pool = self.create_pool(pool_name=self.poolName, pool_size=self.poolSize)
 
-        self.dbConnection = mysql.connector.connect(host=self.hostIP, port=self.hostPort, user=self.dbUser,
-                                                    password=self.dbPassword, database=self.database)
-        self.cursor = self.dbConnection.cursor(dictionary=True)
+        # self.dbConnection = mysql.connector.connect(host=self.hostIP, port=self.hostPort, user=self.dbUser,
+        #                                             password=self.dbPassword, database=self.database)
+        # self.cursor = self.dbConnection.cursor(dictionary=True)
 
-    def __del__(self):
-        if self.dbConnection:
-            self.dbConnection.close()
+    def create_pool(self, pool_name="CC_Pool", pool_size=10):
+        """
+        Create a connection pool, after created, the request of connecting
+        MySQL could get a connection from this pool instead of request to
+        create a connection.
+        :param pool_name: the name of pool, default is "CC_Pool"
+        :param pool_size: the size of pool, default is 10
+        :return: connection pool
+        """
+        dbconfig = {
+            "host":self.hostIP,
+            "port":self.hostPort,
+            "user":self.dbUser,
+            "password":self.dbPassword,
+            "database":self.database,
+        }
+
+        pool = mysql.connector.pooling.MySQLConnectionPool(
+            pool_name=pool_name,
+            pool_size=pool_size,
+            pool_reset_session=True,
+            **dbconfig)
+        return pool
+
+    def close(self, conn, cursor):
+        """
+        close connection of mysql.
+        :param conn:
+        :param cursor:
+        :return:
+        """
+        cursor.close()
+        conn.close()
+
+    def execute(self, sql, args=None, commit=False):
+        """
+        Execute a sql, it could be with args and with out args. The usage is
+        similar with execute() function in module pymysql.
+        :param sql: sql clause
+        :param args: args need by sql clause
+        :param commit: whether to commit
+        :return: if commit, return None, else, return result
+        """
+        # get connection form connection pool instead of create one.
+        conn = self.pool.get_connection()
+        cursor = conn.cursor()
+        if args:
+            cursor.execute(sql, args)
+        else:
+            cursor.execute(sql)
+        if commit is True:
+            conn.commit()
+            self.close(conn, cursor)
+            return None
+        else:
+            res = cursor.fetchall()
+            self.close(conn, cursor)
+            return res
+
+    # def executemany(self, sql, args, commit=False):
+    #     """
+    #     Execute with many args. Similar with executemany() function in pymysql.
+    #     args should be a sequence.
+    #     :param sql: sql clause
+    #     :param args: args
+    #     :param commit: commit or not.
+    #     :return: if commit, return None, else, return result
+    #     """
+    #     # get connection form connection pool instead of create one.
+    #     conn = self.pool.get_connection()
+    #     cursor = conn.cursor()
+    #     cursor.executemany(sql, args)
+    #     if commit is True:
+    #         conn.commit()
+    #         self.close(conn, cursor)
+    #         return None
+    #     else:
+    #         res = cursor.fetchall()
+    #         self.close(conn, cursor)
+    #         return res
+
+    # def __del__(self):
+    #     if self.dbConnection:
+    #         self.dbConnection.close()
