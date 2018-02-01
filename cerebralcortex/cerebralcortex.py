@@ -36,6 +36,7 @@ from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.file_manager.file_io import FileIO
 from cerebralcortex.core.log_manager.logging import CCLogging
+from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 from cerebralcortex.core.data_manager.raw.data import RawData
 from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
@@ -49,6 +50,7 @@ class CerebralCortex:
         self.config = Configuration(configuration_filepath).config
         self.timezone = timezone
         self.logging = CCLogging(self.config['logging']['log_path'])
+        self.logtypes = LogTypes()
         self.SqlData = SqlData(self)
         self.RawData = RawData(self)
         self.ObjectData = ObjectData(self)
