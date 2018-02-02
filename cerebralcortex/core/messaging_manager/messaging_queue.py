@@ -30,7 +30,7 @@ from kafka import KafkaConsumer
 
 
 class MessagingQueue(KafkaHandler):
-    def __init__(self, CC: object, auto_offset_reset: str="largest"):
+    def __init__(self, CC: object, auto_offset_reset: str="latest"):
         """
 
         :param CC:
