@@ -75,7 +75,7 @@ class UserHandler():
 
         qry = "SELECT identifier from " + self.userTable + " where username = %(username)s"
         vals = {'username': str(username)}
-        rows = self.cexecute(qry, vals)
+        rows = self.execute(qry, vals)
         #rows = self.cursor.fetchall()
 
         if rows:
