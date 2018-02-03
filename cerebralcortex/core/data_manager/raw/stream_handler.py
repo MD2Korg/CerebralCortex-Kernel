@@ -415,7 +415,7 @@ class StreamHandler():
                 line_number = 1
             else:
                 if (int(start_time.timestamp() / 86400)) > current_day:
-                    start_day = datetime.fromtimestamp(start_time).strftime("%Y%m%d")
+                    start_day = start_time.strftime("%Y%m%d")
                 datapoints.append(DataPoint(start_time, None, dp.offset, dp.sample))
                 line_number += 1
 
