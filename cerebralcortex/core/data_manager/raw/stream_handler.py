@@ -414,7 +414,7 @@ class StreamHandler():
                 grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
                 line_number = 1
             else:
-                if (int(start_time / 86400)) > current_day:
+                if (int(start_time.timestamp() / 86400)) > current_day:
                     start_day = datetime.fromtimestamp(start_time).strftime("%Y%m%d")
                 datapoints.append(DataPoint(start_time, None, dp.offset, dp.sample))
                 line_number += 1
