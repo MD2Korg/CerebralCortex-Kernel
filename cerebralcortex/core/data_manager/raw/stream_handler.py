@@ -346,7 +346,7 @@ class StreamHandler():
             cluster.shutdown()
         except Exception as e:
             self.logging.log(
-                error_message="STREAM ID: " + stream_id + " - Cannot save raw data. " + str(traceback.format_exc()),
+                error_message="STREAM ID: " + str(stream_id) + " - Cannot save raw data. " + str(traceback.format_exc()),
                 error_type=self.logtypes.CRITICAL)
 
     def datapoints_to_cassandra_sql_batch(self, stream_id: uuid, datapoints: DataPoint, qry_without_endtime: str,
