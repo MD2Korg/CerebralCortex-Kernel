@@ -330,9 +330,9 @@ class StreamHandler():
             session = cluster.connect(self.keyspace_name)
 
             qry_without_endtime = session.prepare(
-                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, sample) VALUES (?, ?, ?, ?)")
+                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, blob_obj) VALUES (?, ?, ?, ?)")
             qry_with_endtime = session.prepare(
-                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, sample) VALUES (?, ?, ?, ?, ?)")
+                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
 
             if isinstance(stream_id, str):
                 stream_id = uuid.UUID(stream_id)
