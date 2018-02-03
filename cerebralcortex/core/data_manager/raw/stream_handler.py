@@ -403,12 +403,12 @@ class StreamHandler():
 
             if line_number == 1:
                 datapoints = []
-                first_start_time = datetime.fromtimestamp(start_time)
+                first_start_time = start_time
                 # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
                 start_day = first_start_time.strftime("%Y%m%d")
                 current_day = int(start_time / 86400)
             if line_number > self.sample_group_size:
-                last_start_time = datetime.fromtimestamp(start_time)
+                last_start_time = start_time
                 datapoints.append(DataPoint(start_time, None, dp.offset, dp.sample))
                 grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
                 line_number = 1
@@ -420,7 +420,7 @@ class StreamHandler():
 
         if len(datapoints) > 0:
             if not last_start_time:
-                last_start_time = datetime.fromtimestamp(start_time)
+                last_start_time = start_time
             grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
 
         return grouped_samples
