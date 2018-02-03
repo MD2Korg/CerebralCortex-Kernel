@@ -400,6 +400,7 @@ class StreamHandler():
         for dp in data:
 
             start_time = dp.start_time
+            end_time = dp.end_time
 
             if line_number == 1:
                 datapoints = []
@@ -410,13 +411,13 @@ class StreamHandler():
                 current_day = int(start_time.timestamp() / 86400)
             if line_number > self.sample_group_size:
                 last_start_time = start_time
-                datapoints.append(DataPoint(start_time, None, dp.offset, dp.sample))
+                datapoints.append(DataPoint(start_time, end_time, dp.offset, dp.sample))
                 grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
                 line_number = 1
             else:
                 if (int(start_time.timestamp() / 86400)) > current_day:
                     start_day = start_time.strftime("%Y%m%d")
-                datapoints.append(DataPoint(start_time, None, dp.offset, dp.sample))
+                datapoints.append(DataPoint(start_time, end_time, dp.offset, dp.sample))
                 line_number += 1
 
         if len(datapoints) > 0:
