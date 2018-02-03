@@ -377,7 +377,7 @@ class StreamHandler():
                 batch.clear()
                 dp_number = 1
             else:
-                if dp.end_time:
+                if dp[1]:
                     batch.add(insert_qry, (stream_id, day, dp[0], dp[1], sample))
                 else:
                     batch.add(insert_qry, (stream_id, day, dp[0], sample))
