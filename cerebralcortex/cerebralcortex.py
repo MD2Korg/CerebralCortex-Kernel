@@ -59,7 +59,7 @@ class CerebralCortex:
         #TODO: disabled because uwsgi losses connection, need more investigation
         self.MessagingQueue = MessagingQueue(self)
 
-        self.logging.log(error_message="Object created: ", error_type=self.logtypes.DEBUG)
+        #self.logging.log(error_message="Object created: ", error_type=self.logtypes.DEBUG)
 
     ###########################################################################
     ############### RAW DATA MANAGER METHODS ##################################

@@ -63,7 +63,7 @@ class FileToDB():
         self.influxdbUser = self.config['influxdb']['db_user']
         self.influxdbPassword = self.config['influxdb']['db_pass']
 
-        self.batch_size = 100
+        self.batch_size = 500
         self.sample_group_size = 99
         self.influx_batch_size = 10000
 
@@ -75,6 +75,8 @@ class FileToDB():
         :param zip_filepath:
         :return:
         """
+        #TODO: support to process 1 file in list
+
         if not msg:
             return []
         if not isinstance(msg["metadata"], dict):
@@ -98,39 +100,83 @@ class FileToDB():
             stream_type = metadata_header["stream_type"]
         else:
             stream_type = StreamTypes.DATASTREAM
+
         owner_name = self.sql_data.get_user_id(owner)
-        try:
-            if isinstance(stream_id, str):
-                stream_id = uuid.UUID(stream_id)
-            gzip_file_content = ReadHandler().get_gzip_file_contents(zip_filepath + msg["filename"])
-            lines = gzip_file_content.splitlines()
 
-            all_data = self.line_to_sample(lines, stream_id, owner, owner_name, name, data_descriptor, influxdb_insert)
+        filenames = msg["filename"].split(",")
 
-            if influxdb_insert and all_data["influxdb_data"] != "" and all_data["influxdb_data"]!=None:
-                try:
-                    influxdb_client.write_points(all_data["influxdb_data"], protocol="line")
-                except:
-                    self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Error in processing data for influxdb. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+        influxdb_data = []
+        cassandra_data = []
+        if isinstance(stream_id, str):
+            stream_id = uuid.UUID(stream_id)
+        for filename in filenames:
+            # if "4f2d6378-43fd-3c51-b418-d71beb72daa0" in filename:
+            #     self.logging.log(error_message="File: "+str(filename), error_type=self.logtypes.WARNING)
+            try:
+                gzip_file_content = ReadHandler().get_gzip_file_contents(zip_filepath + filename)
+            except:
+                self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.MISSING_DATA)
+            if gzip_file_content:
+                lines = gzip_file_content.splitlines()
+                all_data = self.line_to_sample(lines, stream_id, owner, owner_name, name, data_descriptor, influxdb_insert)
+                influxdb_data =  list(all_data["influxdb_data"]) + influxdb_data
+                cassandra_data = list(all_data["cassandra_data"]) + cassandra_data
 
-            # connect to cassandra
-            cluster = Cluster([self.host_ip], port=self.host_port)
-            session = cluster.connect(self.keyspace_name)
-            qry_with_endtime = session.prepare(
-                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
+        if influxdb_insert and len(influxdb_data) >0 and influxdb_data is not None:
+            try:
+                influxdb_client.write_points(influxdb_data, protocol="line")
+            except:
+                self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Error in writing data to influxdb. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
-            for data_block in self.line_to_batch_block(stream_id, all_data["cassandra_data"], qry_with_endtime):
-                session.execute(data_block)
+        # connect to cassandra
+        cluster = Cluster([self.host_ip], port=self.host_port)
+        session = cluster.connect(self.keyspace_name)
+        qry_with_endtime = session.prepare(
+            "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
 
-            session.shutdown()
-            cluster.shutdown()
+        for data_block in self.line_to_batch_block(stream_id, cassandra_data, qry_with_endtime):
+            session.execute(data_block)
 
-            self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
-                                               annotations, StreamTypes.DATASTREAM, all_data["cassandra_data"][0][0],
-                                               all_data["cassandra_data"][len(all_data["cassandra_data"]) - 1][1])
 
-        except:
-            self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.MISSING_DATA)
+        self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                           annotations, stream_type, cassandra_data[0][0],
+                                           cassandra_data[len(cassandra_data) - 1][1])
+
+        session.shutdown()
+        cluster.shutdown()
+        # try:
+        #     if isinstance(stream_id, str):
+        #         stream_id = uuid.UUID(stream_id)
+        #     gzip_file_content = ReadHandler().get_gzip_file_contents(zip_filepath + msg["filename"])
+        #     lines = gzip_file_content.splitlines()
+        #
+        #     all_data = self.line_to_sample(lines, stream_id, owner, owner_name, name, data_descriptor, influxdb_insert)
+        #
+        #     if influxdb_insert and len(influxdb_data) >0 and influxdb_data is not None:
+        #         try:
+        #             influxdb_client.write_points(all_data["influxdb_data"], protocol="line")
+        #         except:
+        #             self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Error in writing data to influxdb. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+        #
+        #     # connect to cassandra
+        #     cluster = Cluster([self.host_ip], port=self.host_port)
+        #     session = cluster.connect(self.keyspace_name)
+        #     qry_with_endtime = session.prepare(
+        #         "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
+        #
+        #     for data_block in self.line_to_batch_block(stream_id, all_data["cassandra_data"], qry_with_endtime):
+        #         session.execute(data_block)
+        #
+        #
+        #     self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+        #                                        annotations, StreamTypes.DATASTREAM, all_data["cassandra_data"][0][0],
+        #                                        all_data["cassandra_data"][len(all_data["cassandra_data"]) - 1][1])
+        #
+        # except:
+        #     self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.MISSING_DATA)
+        #
+        # session.shutdown()
+        # cluster.shutdown()
 
     def line_to_batch_block(self, stream_id: uuid, lines: str, insert_qry: str):
 
