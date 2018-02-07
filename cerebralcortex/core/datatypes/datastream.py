@@ -142,7 +142,7 @@ class DataStream:
     def data(self, value):
         result = []
         for dp in value:
-            result.append(DataPoint(dp.start_time, dp.end_time, dp.sample))
+            result.append(DataPoint(start_time=dp.start_time, end_time=dp.end_time, offset=dp.offset, sample=dp.sample))
         self._data = result
 
     # TODO- cannot use it due to circular dependencies. Moving it to CC class

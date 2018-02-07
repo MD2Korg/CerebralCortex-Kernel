@@ -71,8 +71,8 @@ class DataPoint:
         self._offset = val
 
     @classmethod
-    def from_tuple(cls, start_time: datetime, sample: Any, end_time: datetime = None):
-        return cls(start_time, end_time, sample)
+    def from_tuple(cls, start_time: datetime, sample: Any, end_time: datetime = None, offset: str=None):
+        return cls(start_time=start_time, end_time=end_time, offset=offset, sample=sample)
 
     def __str__(self):
         return str(self.start_time) + " - " + str(self.sample)
