@@ -297,7 +297,7 @@ class StreamHandler():
     ################## STORE DATA METHODS #############################
     ###################################################################
 
-    @log_execution_time
+    #@log_execution_time
     def save_stream_metadata(self, stream_id: uuid, stream_name: str, owner_id: uuid,
                              data_descriptor: dict,
                              execution_context: dict,

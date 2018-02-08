@@ -62,8 +62,8 @@ class FileToDB():
         self.influxdbDatabase = self.config['influxdb']['database']
         self.influxdbUser = self.config['influxdb']['db_user']
         self.influxdbPassword = self.config['influxdb']['db_pass']
-
-        self.batch_size = 500
+        self.influx_blacklist = self.config["influxdb_blacklist"]
+        self.batch_size = 100
         self.sample_group_size = 99
         self.influx_batch_size = 10000
 
@@ -104,14 +104,12 @@ class FileToDB():
         owner_name = self.sql_data.get_user_id(owner)
 
         filenames = msg["filename"].split(",")
-
         influxdb_data = []
         cassandra_data = []
+        gzip_file_content = None
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
         for filename in filenames:
-            # if "4f2d6378-43fd-3c51-b418-d71beb72daa0" in filename:
-            #     self.logging.log(error_message="File: "+str(filename), error_type=self.logtypes.WARNING)
             try:
                 gzip_file_content = ReadHandler().get_gzip_file_contents(zip_filepath + filename)
             except:
@@ -128,22 +126,23 @@ class FileToDB():
             except:
                 self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Error in writing data to influxdb. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
-        # connect to cassandra
-        cluster = Cluster([self.host_ip], port=self.host_port)
-        session = cluster.connect(self.keyspace_name)
-        qry_with_endtime = session.prepare(
-            "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
+        if len(cassandra_data)>0:
+            # connect to cassandra
+            cluster = Cluster([self.host_ip], port=self.host_port)
+            session = cluster.connect(self.keyspace_name)
+            qry_with_endtime = session.prepare(
+                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
 
-        for data_block in self.line_to_batch_block(stream_id, cassandra_data, qry_with_endtime):
-            session.execute(data_block)
+            for data_block in self.line_to_batch_block(stream_id, cassandra_data, qry_with_endtime):
+                session.execute(data_block)
 
 
-        self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
-                                           annotations, stream_type, cassandra_data[0][0],
-                                           cassandra_data[len(cassandra_data) - 1][1])
+            self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                               annotations, stream_type, cassandra_data[0][0],
+                                               cassandra_data[len(cassandra_data) - 1][1])
 
-        session.shutdown()
-        cluster.shutdown()
+            session.shutdown()
+            cluster.shutdown()
         # try:
         #     if isinstance(stream_id, str):
         #         stream_id = uuid.UUID(stream_id)
@@ -211,7 +210,6 @@ class FileToDB():
         yield batch
 
 
-    @log_execution_time
     def line_to_sample(self, lines, stream_id, stream_owner_id, stream_owner_name, stream_name,
                        data_descriptor, influxdb_insert):
 
@@ -231,6 +229,9 @@ class FileToDB():
         datapoints = []
         line_protocol = ""
         fields = ""
+
+        if self.influx_blacklist:
+            blacklist_streams = self.influx_blacklist.values()
 
         if data_descriptor:
             total_dd_columns = len(data_descriptor)
@@ -252,73 +253,74 @@ class FileToDB():
 
                 ############### START INFLUXDB BLOCK
                 if influxdb_insert:
-                    values = sample
-                    measurement_and_tags = "%s,owner_id=%s,owner_name=%s,stream_id=%s" % (str(stream_name),str(stream_owner_id),str(stream_owner_name),str(stream_id))
+                    if stream_name not in blacklist_streams:
+                        values = sample
+                        measurement_and_tags = "%s,owner_id=%s,owner_name=%s,stream_id=%s" % (str(stream_name),str(stream_owner_id),str(stream_owner_name),str(stream_id))
 
-                    try:
-                        # TODO: This method is SUPER slow
+                        try:
+                            # TODO: This method is SUPER slow
 
-                        values = convert_sample(values)
+                            values = convert_sample(values)
 
-                        if isinstance(values, list):
-                            for i, sample_val in enumerate(values):
-                                if len(values) == total_dd_columns:
-                                    dd = data_descriptor[i]
-                                    if "NAME" in dd:
-                                        fields += "%s=%s," % (str(dd["NAME"]).replace(" ","-"),str(sample_val).replace(" ","-"))
+                            if isinstance(values, list):
+                                for i, sample_val in enumerate(values):
+                                    if len(values) == total_dd_columns:
+                                        dd = data_descriptor[i]
+                                        if "NAME" in dd:
+                                            fields += "%s=%s," % (str(dd["NAME"]).replace(" ","-"),str(sample_val).replace(" ","-"))
+                                        else:
+                                            fields += "%s=%s," % ('value_'+str(i),str(sample_val).replace(" ","-"))
                                     else:
                                         fields += "%s=%s," % ('value_'+str(i),str(sample_val).replace(" ","-"))
-                                else:
-                                    fields += "%s=%s," % ('value_'+str(i),str(sample_val).replace(" ","-"))
-                        else:
-                            if len(data_descriptor)>0:
-                                dd = data_descriptor[0]
+                            else:
+                                if len(data_descriptor)>0:
+                                    dd = data_descriptor[0]
 
-                                if "NAME" in dd:
-                                    fields = "%s=%s," % (str(dd["NAME"]).replace(" ","-"),str(values).replace(" ","-"))
-                                else:
-                                    fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
-                    except Exception as e:
-                        self.logging.log(error_message="Sample: "+str(values)+" - Cannot parse sample. "+str(traceback.format_exc()), error_type=self.logtypes.DEBUG)
-                        try:
-                            values = json.dumps(values)
-                            fields = "%s=%s," % ('value_0',str(values))
-                        except:
-                            fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
-                    line_protocol +="%s %s %s\n" % (measurement_and_tags,fields.rstrip(","),ts)
-                    measurement_and_tags = ""
-                    fields = ""
+                                    if "NAME" in dd:
+                                        fields = "%s=%s," % (str(dd["NAME"]).replace(" ","-"),str(values).replace(" ","-"))
+                                    else:
+                                        fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
+                        except Exception as e:
+                            self.logging.log(error_message="Sample: "+str(values)+" - Cannot parse sample. "+str(traceback.format_exc()), error_type=self.logtypes.DEBUG)
+                            try:
+                                values = json.dumps(values)
+                                fields = "%s=%s," % ('value_0',str(values))
+                            except:
+                                fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
+                        line_protocol +="%s %s %s\n" % (measurement_and_tags,fields.rstrip(","),ts)
+                        measurement_and_tags = ""
+                        fields = ""
 
                 ############### END INFLUXDB BLOCK
 
                 ############### START OF CASSANDRA DATA BLOCK
                 if not influxdb_insert:
                     values = convert_sample(sample)
-                start_time_dt = datetime.datetime.fromtimestamp(start_time) #TODO: this is a workaround. Update code to only have on start_time var
-                
+                start_time_dt = datetime.datetime.utcfromtimestamp(start_time) #TODO: this is a workaround. Update code to only have on start_time var
+
                 if line_number == 1:
                     #sample_batch = []
                     datapoints = []
-                    first_start_time = datetime.datetime.fromtimestamp(start_time)
+                    first_start_time = datetime.datetime.utcfromtimestamp(start_time)
                     # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
                     start_day = first_start_time.strftime("%Y%m%d")
                     current_day = int(start_time/86400)
                 if line_number > self.sample_group_size:
-                    last_start_time = datetime.datetime.fromtimestamp(start_time)
+                    last_start_time = datetime.datetime.utcfromtimestamp(start_time)
                     #sample_batch.append([start_time, offset, sample])
                     datapoints.append(DataPoint(start_time_dt, None, offset, values))
                     grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
                     line_number = 1
                 else:
                     if (int(start_time/86400))>current_day:
-                        start_day = datetime.datetime.fromtimestamp(start_time).strftime("%Y%m%d")
+                        start_day = datetime.datetime.utcfromtimestamp(start_time).strftime("%Y%m%d")
                     #sample_batch.append([start_time, offset, sample])
                     datapoints.append(DataPoint(start_time_dt, None, offset, values))
                     line_number += 1
 
         if len(datapoints)>0:
             if not last_start_time:
-                last_start_time = datetime.datetime.fromtimestamp(start_time)
+                last_start_time = datetime.datetime.utcfromtimestamp(start_time)
             grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
         ############### END OF CASSANDRA DATA BLOCK
 

@@ -21,7 +21,7 @@ mysql:
   host: 127.0.0.1
   port: 3306
   connection_pool_name: "CC_Pool"
-  connection_pool_size: 30
+  connection_pool_size: 1
   database: cerebralcortex
   db_user: root
   db_pass: random_root_password
@@ -45,6 +45,24 @@ data_ingestion:
   cassandra_in: True # for now, this cannot be False
   influxdb_in: False
 
+influxdb_blacklist: # influxdb data ingestion pipeline will not process stream names defined here
+  motionsense_hrv_accel_right: "ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST"
+  motionsense_hrv_accel_left: "ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST"
+  motionsense_hrv_gyro_right: "GYROSCOPE--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST"
+  motionsense_hrv_gyro_left: "GYROSCOPE--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST"
+  motionsense_hrv_led_quality_right: "DATA_QUALITY--LED--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST"
+  motionsense_hrv_led_quality_left: "DATA_QUALITY--LED--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST"
+  motionsense_hrv_led_right: "LED--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST"
+  motionsense_hrv_led_left: "LED--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST"
+  phone_accel: "ACCELEROMETER--org.md2k.phonesensor--PHONE"
+  phone_gyro: "GYROSCOPE--org.md2k.phonesensor--PHONE"
+  autosense_battery: "BATTERY--org.md2k.autosense"
+  autosense_ecg: "ECG--org.md2k.autosense"
+  autosense_rip: "RIP--org.md2k.autosense"
+  autosense_accel_x: "ACCELEROMETER-X--org.md2k.autosense"
+  autosense_accel_x: "ACCELEROMETER-Y--org.md2k.autosense"
+  autosense_accel_x: "ACCELEROMETER-Z--org.md2k.autosense"
+  autosense_gyro: "GYRO--org.md2k.autosense"
 
 #########################################################################
 ########################### KAFKA Config ################################
