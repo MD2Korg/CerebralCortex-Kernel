@@ -246,6 +246,7 @@ class FileToDB():
                 bad_row = 0 # if line is not properly formatted then rest of the code shall not be executed
             except:
                 bad_row = 1
+                bad_row = 1
 
             if bad_row==0:
                 start_time = int(ts) / 1000.0
@@ -287,7 +288,7 @@ class FileToDB():
                                 fields = "%s=%s," % ('value_0',str(values))
                             except:
                                 fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
-                        line_protocol +="%s %s %s\n" % (measurement_and_tags,fields.rstrip(","),ts)
+                        line_protocol +="%s %s %s\n" % (measurement_and_tags,fields.rstrip(","),str(int(ts)*1000000))
                         measurement_and_tags = ""
                         fields = ""
 
