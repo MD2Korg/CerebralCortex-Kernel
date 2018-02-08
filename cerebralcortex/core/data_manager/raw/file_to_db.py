@@ -269,7 +269,7 @@ class FileToDB():
                         datapoints = []
                         first_start_time = datetime.datetime.utcfromtimestamp(start_time)
                         # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
-                        start_day = first_start_time.strftime("%Y%m%d")
+                        start_day = first_start_time.strftime("%Y%m%d%H")
                         current_day = int(start_time/86400)
                     if line_number > self.sample_group_size:
                         last_start_time = datetime.datetime.utcfromtimestamp(start_time)
@@ -278,7 +278,7 @@ class FileToDB():
                         line_number = 1
                     else:
                         if (int(start_time/86400))>current_day:
-                            start_day = datetime.datetime.utcfromtimestamp(start_time).strftime("%Y%m%d")
+                            start_day = datetime.datetime.utcfromtimestamp(start_time).strftime("%Y%m%d%H")
                         datapoints.append(DataPoint(start_time_dt, None, offset, values))
                         line_number += 1
 
