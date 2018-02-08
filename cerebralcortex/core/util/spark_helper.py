@@ -24,17 +24,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-def get_or_create_sc(type="sparkContext", master=None, name=None):
+def get_or_create_sc(type="sparkContext", name=None):
     from pyspark.sql import SQLContext
     from pyspark.sql import SparkSession
 
     ss = SparkSession.builder
     if name:
         ss.appName(name)
-    if master:
-        ss.master(master)
-    else:
-        ss.master("local[*]")
 
     sparkSession = ss.getOrCreate()
 

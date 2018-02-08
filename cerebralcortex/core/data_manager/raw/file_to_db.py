@@ -69,13 +69,12 @@ class FileToDB():
 
 
     @log_execution_time
-    def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert:bool=True):
+    def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert:bool=True, nosql_insert:bool=True):
         """
         :param msg:
         :param zip_filepath:
         :return:
         """
-        #TODO: support to process 1 file in list
 
         if not msg:
             return []
@@ -83,9 +82,6 @@ class FileToDB():
             metadata_header = json.loads(msg["metadata"])
         else:
             metadata_header = msg["metadata"]
-
-        influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort, username=self.influxdbUser,
-                                         password=self.influxdbPassword, database=self.influxdbDatabase)
 
         stream_id = metadata_header["identifier"]
         owner = metadata_header["owner"]
@@ -116,17 +112,19 @@ class FileToDB():
                 self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.MISSING_DATA)
             if gzip_file_content:
                 lines = gzip_file_content.splitlines()
-                all_data = self.line_to_sample(lines, stream_id, owner, owner_name, name, data_descriptor, influxdb_insert)
+                all_data = self.line_to_sample(lines, stream_id, owner, owner_name, name, data_descriptor, influxdb_insert, nosql_insert)
                 influxdb_data =  list(all_data["influxdb_data"]) + influxdb_data
                 cassandra_data = list(all_data["cassandra_data"]) + cassandra_data
 
         if influxdb_insert and len(influxdb_data) >0 and influxdb_data is not None:
             try:
+                influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort, username=self.influxdbUser,
+                                                 password=self.influxdbPassword, database=self.influxdbDatabase)
                 influxdb_client.write_points(influxdb_data, protocol="line")
             except:
                 self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Error in writing data to influxdb. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
-        if len(cassandra_data)>0:
+        if nosql_insert and len(cassandra_data)>0:
             # connect to cassandra
             cluster = Cluster([self.host_ip], port=self.host_port)
             session = cluster.connect(self.keyspace_name)
@@ -178,7 +176,7 @@ class FileToDB():
 
 
     def line_to_sample(self, lines, stream_id, stream_owner_id, stream_owner_name, stream_name,
-                       data_descriptor, influxdb_insert):
+                       data_descriptor, influxdb_insert, nosql_insert):
 
         """
         Converts a gz file lines into sample values format and influxdb object
@@ -262,28 +260,29 @@ class FileToDB():
                 ############### END INFLUXDB BLOCK
 
                 ############### START OF CASSANDRA DATA BLOCK
-                if not influxdb_insert:
-                    values = convert_sample(sample)
-                start_time_dt = datetime.datetime.utcfromtimestamp(start_time) #TODO: this is a workaround. Update code to only have on start_time var
+                if nosql_insert:
+                    if not influxdb_insert:
+                        values = convert_sample(sample)
+                    start_time_dt = datetime.datetime.utcfromtimestamp(start_time) #TODO: this is a workaround. Update code to only have on start_time var
 
-                if line_number == 1:
-                    datapoints = []
-                    first_start_time = datetime.datetime.utcfromtimestamp(start_time)
-                    # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
-                    start_day = first_start_time.strftime("%Y%m%d")
-                    current_day = int(start_time/86400)
-                if line_number > self.sample_group_size:
-                    last_start_time = datetime.datetime.utcfromtimestamp(start_time)
-                    datapoints.append(DataPoint(start_time_dt, None, offset, values))
-                    grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
-                    line_number = 1
-                else:
-                    if (int(start_time/86400))>current_day:
-                        start_day = datetime.datetime.utcfromtimestamp(start_time).strftime("%Y%m%d")
-                    datapoints.append(DataPoint(start_time_dt, None, offset, values))
-                    line_number += 1
+                    if line_number == 1:
+                        datapoints = []
+                        first_start_time = datetime.datetime.utcfromtimestamp(start_time)
+                        # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
+                        start_day = first_start_time.strftime("%Y%m%d")
+                        current_day = int(start_time/86400)
+                    if line_number > self.sample_group_size:
+                        last_start_time = datetime.datetime.utcfromtimestamp(start_time)
+                        datapoints.append(DataPoint(start_time_dt, None, offset, values))
+                        grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
+                        line_number = 1
+                    else:
+                        if (int(start_time/86400))>current_day:
+                            start_day = datetime.datetime.utcfromtimestamp(start_time).strftime("%Y%m%d")
+                        datapoints.append(DataPoint(start_time_dt, None, offset, values))
+                        line_number += 1
 
-        if len(datapoints)>0:
+        if nosql_insert and len(datapoints)>0:
             if not last_start_time:
                 last_start_time = datetime.datetime.utcfromtimestamp(start_time)
             grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
