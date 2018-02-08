@@ -143,39 +143,7 @@ class FileToDB():
 
             session.shutdown()
             cluster.shutdown()
-        # try:
-        #     if isinstance(stream_id, str):
-        #         stream_id = uuid.UUID(stream_id)
-        #     gzip_file_content = ReadHandler().get_gzip_file_contents(zip_filepath + msg["filename"])
-        #     lines = gzip_file_content.splitlines()
-        #
-        #     all_data = self.line_to_sample(lines, stream_id, owner, owner_name, name, data_descriptor, influxdb_insert)
-        #
-        #     if influxdb_insert and len(influxdb_data) >0 and influxdb_data is not None:
-        #         try:
-        #             influxdb_client.write_points(all_data["influxdb_data"], protocol="line")
-        #         except:
-        #             self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Error in writing data to influxdb. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
-        #
-        #     # connect to cassandra
-        #     cluster = Cluster([self.host_ip], port=self.host_port)
-        #     session = cluster.connect(self.keyspace_name)
-        #     qry_with_endtime = session.prepare(
-        #         "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
-        #
-        #     for data_block in self.line_to_batch_block(stream_id, all_data["cassandra_data"], qry_with_endtime):
-        #         session.execute(data_block)
-        #
-        #
-        #     self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
-        #                                        annotations, StreamTypes.DATASTREAM, all_data["cassandra_data"][0][0],
-        #                                        all_data["cassandra_data"][len(all_data["cassandra_data"]) - 1][1])
-        #
-        # except:
-        #     self.logging.log(error_message="STREAM ID: "+str(stream_id)+" - Cannot process file data. "+str(traceback.format_exc()), error_type=self.logtypes.MISSING_DATA)
-        #
-        # session.shutdown()
-        # cluster.shutdown()
+
 
     def line_to_batch_block(self, stream_id: uuid, lines: str, insert_qry: str):
 
@@ -194,7 +162,6 @@ class FileToDB():
             start_time = line[0]
             end_time = line[1]
             day = line[2]
-            #sample = line[3]
             blob_obj = line[3]
 
             if line_number > self.batch_size:
@@ -288,7 +255,7 @@ class FileToDB():
                                 fields = "%s=%s," % ('value_0',str(values))
                             except:
                                 fields = "%s=%s," % ('value_0',str(values).replace(" ","-"))
-                        line_protocol +="%s %s %s\n" % (measurement_and_tags,fields.rstrip(","),str(int(ts)*1000000))
+                        line_protocol +="%s %s %s\n" % (measurement_and_tags,fields.rstrip(","),str(int(ts)*1000000)) #line protocol requires nanoseconds accuracy for timestamp
                         measurement_and_tags = ""
                         fields = ""
 
@@ -300,7 +267,6 @@ class FileToDB():
                 start_time_dt = datetime.datetime.utcfromtimestamp(start_time) #TODO: this is a workaround. Update code to only have on start_time var
 
                 if line_number == 1:
-                    #sample_batch = []
                     datapoints = []
                     first_start_time = datetime.datetime.utcfromtimestamp(start_time)
                     # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
@@ -308,14 +274,12 @@ class FileToDB():
                     current_day = int(start_time/86400)
                 if line_number > self.sample_group_size:
                     last_start_time = datetime.datetime.utcfromtimestamp(start_time)
-                    #sample_batch.append([start_time, offset, sample])
                     datapoints.append(DataPoint(start_time_dt, None, offset, values))
                     grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
                     line_number = 1
                 else:
                     if (int(start_time/86400))>current_day:
                         start_day = datetime.datetime.utcfromtimestamp(start_time).strftime("%Y%m%d")
-                    #sample_batch.append([start_time, offset, sample])
                     datapoints.append(DataPoint(start_time_dt, None, offset, values))
                     line_number += 1
 
