@@ -3,28 +3,36 @@
 #########################################################################
 
 cassandra:
-  host: kashyyyk10dot.memphis.edu
+  host: 127.0.0.1
   port: 9042
   keyspace: cerebralcortex
   db_user: ""
   db_pass: ""
   datapoint_table: data
 
+hdfs:
+  host: 127.0.0.1
+  port: 9009
+  raw_files_dir: ""
+  hdfs_user: ""
+  hdfs_kerb_ticket: ""
+
+
 influxdb:
-  host: dagobah10dot.memphis.edu
+  host: 127.0.0.1
   port: 8086
   database: cerebralcortex_raw
   db_user: ""
   db_pass: ""
 
 mysql:
-  host: 10.40.40.46
+  host: 127.0.0.1
   port: 3306
   connection_pool_name: "CC_Pool"
   connection_pool_size: 1
   database: cerebralcortex
   db_user: root
-  db_pass: mEm62$%YsoK*88!
+  db_pass: random_root_password
   datastream_table: stream
   kafka_offsets_table: kafka_offsets
   processing_module_table: processing_module
@@ -42,9 +50,9 @@ logging:
   log_path: '/var/log/cerebralcortex/' # make sure directory is writeable by current OS user
 
 data_ingestion:
-  cassandra_in: True # for now, this cannot be False
   influxdb_in: False
-  nosql_store: cassandra # acceptable parameters are: cassandra, scylladb, hdfs
+  nosql_in: True # for now, this cannot be False
+  nosql_store: "hdfs" # acceptable parameters are: cassandra, scylladb, hdfs
 
 influxdb_blacklist: # influxdb data ingestion pipeline will not process stream names defined here
   motionsense_hrv_accel_right: "ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST"
@@ -69,7 +77,7 @@ influxdb_blacklist: # influxdb data ingestion pipeline will not process stream n
 ########################### KAFKA Config ################################
 #########################################################################
 kafkaserver:
-  host: dagobah10dot.memphis.edu
+  host: 127.0.0.1
   port: 9092
 #########################################################################
 ################ CerebralCortex API SERVER Config #######################

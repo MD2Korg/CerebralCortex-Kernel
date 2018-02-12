@@ -53,7 +53,7 @@ class FileToDB():
         self.host_port = self.config['cassandra']['port']
         self.keyspace_name = self.config['cassandra']['keyspace']
         self.datapoint_table = self.config['cassandra']['datapoint_table']
-        self.nosql_ingestion = self.config['data_ingestion']['cassandra_in']
+        self.nosql_ingestion = self.config['data_ingestion']['nosql_in']
         self.influxdb_ingestion = self.config['data_ingestion']['influxdb_in']
 
         self.hdfs_ip = self.config['hdfs']['host']
@@ -106,7 +106,7 @@ class FileToDB():
             stream_type = StreamTypes.DATASTREAM
 
         owner_name = self.sql_data.get_user_id(owner)
-        day = msg["day"]
+        day = "20181109"
         filenames = msg["filename"].split(",")
         influxdb_data = []
         nosql_data = []
@@ -157,7 +157,7 @@ class FileToDB():
             self.write_hdfs_file(owner, stream_id, day, nosql_data)
 
     def write_hdfs_file(self, participant_id, stream_id, day, data):
-        filename = participant_id+"/"+stream_id+"/"+day+".obj"
+        filename = str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".obj"
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         picked_data = pickle.dumps(data)
