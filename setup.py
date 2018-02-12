@@ -58,6 +58,7 @@ setup(
         'console_scripts': [
             'main=main:main'
         ]
-    }
+    },
 
+    data_files=[('/etc/rsyslog.d', ['cerebralcortex/data/20-cerebralcortex.conf']),]
 )
