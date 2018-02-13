@@ -107,7 +107,7 @@ class FileToDB():
         else:
             stream_type = StreamTypes.DATASTREAM
 
-        owner_name = self.sql_data.get_user_id(owner)
+        owner_name = self.sql_data.get_user_name(owner)
 
         filenames = msg["filename"].split(",")
         influxdb_data = ""
