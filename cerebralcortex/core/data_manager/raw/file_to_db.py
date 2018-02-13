@@ -106,7 +106,7 @@ class FileToDB():
             stream_type = StreamTypes.DATASTREAM
 
         owner_name = self.sql_data.get_user_id(owner)
-        day = "20181109"
+        day = "20181109" # TODO: get day from kafka msg
         filenames = msg["filename"].split(",")
         influxdb_data = []
         nosql_data = []
@@ -124,6 +124,7 @@ class FileToDB():
                 all_data = self.line_to_sample(lines, stream_id, owner, owner_name, name, data_descriptor,
                                                influxdb_insert, nosql_insert)
                 influxdb_data = list(all_data["influxdb_data"]) + influxdb_data
+
                 nosql_data = list(all_data["nosql_data"]) + nosql_data
 
         if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
@@ -157,12 +158,30 @@ class FileToDB():
             self.write_hdfs_file(owner, stream_id, day, nosql_data)
 
     def write_hdfs_file(self, participant_id, stream_id, day, data):
-        filename = str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".obj"
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
-        picked_data = pickle.dumps(data)
-        with hdfs.open(filename, "wb") as f:
-            f.write(picked_data)
+        day = None
+        chunked_data = []
+
+        # if the data appeared in a different day then this shall put that day in correct day
+        for row in data:
+            if day is None:
+                day = row[2]
+                chunked_data.append(row)
+            elif day!=row[2]:
+                filename = str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".obj"
+                picked_data = pickle.dumps(chunked_data)
+                with hdfs.open(filename, "wb") as f:
+                    f.write(picked_data)
+                day = row[2]
+                chunked_data =[]
+                chunked_data.append(row)
+            else:
+                day = row[2]
+                chunked_data.append(row)
+
+
+
 
 
     def line_to_batch_block(self, stream_id: uuid, lines: str, insert_qry: str):
@@ -297,7 +316,7 @@ class FileToDB():
                         datapoints = []
                         first_start_time = datetime.datetime.utcfromtimestamp(start_time)
                         # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
-                        start_day = first_start_time.strftime("%Y%m%d%H")
+                        start_day = first_start_time.strftime("%Y%m%d")
                         current_day = int(start_time / 86400)
                     if line_number > self.sample_group_size:
                         last_start_time = datetime.datetime.utcfromtimestamp(start_time)
@@ -307,7 +326,7 @@ class FileToDB():
                         line_number = 1
                     else:
                         if (int(start_time / 86400)) > current_day:
-                            start_day = datetime.datetime.utcfromtimestamp(start_time).strftime("%Y%m%d%H")
+                            start_day = datetime.datetime.utcfromtimestamp(start_time).strftime("%Y%m%d")
                         datapoints.append(DataPoint(start_time_dt, None, offset, values))
                         line_number += 1
 
