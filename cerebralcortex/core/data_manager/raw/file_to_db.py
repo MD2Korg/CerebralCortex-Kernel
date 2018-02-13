@@ -27,6 +27,8 @@ import datetime
 import json
 import uuid
 import traceback
+import gzip
+import os.path
 import pyarrow
 import pickle
 from cassandra.cluster import Cluster
@@ -106,58 +108,61 @@ class FileToDB():
             stream_type = StreamTypes.DATASTREAM
 
         owner_name = self.sql_data.get_user_id(owner)
-        day = "20181109" # TODO: get day from kafka msg
+
         filenames = msg["filename"].split(",")
         influxdb_data = []
         nosql_data = []
         gzip_file_content = None
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
-        for filename in filenames:
-            try:
-                gzip_file_content = ReadHandler().get_gzip_file_contents(zip_filepath + filename)
-            except:
-                self.logging.log(error_message="STREAM ID: " + str(stream_id) + " - Cannot process file data. " + str(
-                    traceback.format_exc()), error_type=self.logtypes.MISSING_DATA)
-            if gzip_file_content:
-                lines = gzip_file_content.splitlines()
-                all_data = self.line_to_sample(lines, stream_id, owner, owner_name, name, data_descriptor,
-                                               influxdb_insert, nosql_insert)
-                influxdb_data = list(all_data["influxdb_data"]) + influxdb_data
+        if influxdb_insert or nosql_insert:
+            for filename in filenames:
+                # if os.path.exists(zip_filepath + filename)
+                #     gzip_file_content = ReadHandler().get_gzip_file_contents(zip_filepath + filename)
+                # else:
+                #     self.logging.log(error_message="STREAM ID: " + str(stream_id) + " - Cannot process file data. " + str(
+                #         traceback.format_exc()), error_type=self.logtypes.MISSING_DATA)
+                if os.path.exists(zip_filepath + filename):
+                    #lines = gzip_file_content.splitlines()
+                    all_data = self.line_to_sample(zip_filepath + filename, stream_id, owner, owner_name, name, data_descriptor,
+                                                   influxdb_insert, nosql_insert)
+                    influxdb_data = list(all_data["influxdb_data"]) + influxdb_data
 
-                nosql_data = list(all_data["nosql_data"]) + nosql_data
+                    nosql_data = list(all_data["nosql_data"]) + nosql_data
 
-        if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
-            try:
-                influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort,
-                                                 username=self.influxdbUser,
-                                                 password=self.influxdbPassword, database=self.influxdbDatabase)
-                influxdb_client.write_points(influxdb_data, protocol="line")
-            except:
-                self.logging.log(
-                    error_message="STREAM ID: " + str(stream_id) + " - Error in writing data to influxdb. " + str(
-                        traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
+                try:
+                    influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort,
+                                                     username=self.influxdbUser,
+                                                     password=self.influxdbPassword, database=self.influxdbDatabase)
+                    influxdb_client.write_points(influxdb_data, protocol="line")
+                except:
+                    self.logging.log(
+                        error_message="STREAM ID: " + str(stream_id) + " - Error in writing data to influxdb. " + str(
+                            traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
-        if (nosql_insert and len(nosql_data) > 0) and (nosql_store=="cassandra" or nosql_store=="scylladb"):
-            # connect to cassandra
-            cluster = Cluster([self.host_ip], port=self.host_port)
-            session = cluster.connect(self.keyspace_name)
-            qry_with_endtime = session.prepare(
-                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
+            if (nosql_insert and len(nosql_data) > 0) and (nosql_store=="cassandra" or nosql_store=="scylladb"):
+                # connect to cassandra
+                cluster = Cluster([self.host_ip], port=self.host_port)
+                session = cluster.connect(self.keyspace_name)
+                qry_with_endtime = session.prepare(
+                    "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
 
-            for data_block in self.line_to_batch_block(stream_id, nosql_data, qry_with_endtime):
-                session.execute(data_block)
+                for data_block in self.line_to_batch_block(stream_id, nosql_data, qry_with_endtime):
+                    session.execute(data_block)
 
-            self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
-                                               annotations, stream_type, nosql_data[0][0],
-                                               nosql_data[len(nosql_data) - 1][1])
+                self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                                   annotations, stream_type, nosql_data[0][0],
+                                                   nosql_data[len(nosql_data) - 1][1])
 
-            session.shutdown()
-            cluster.shutdown()
-        elif nosql_store=="hdfs":
-            self.write_hdfs_file(owner, stream_id, day, nosql_data)
+                session.shutdown()
+                cluster.shutdown()
+            elif (nosql_insert and len(nosql_data) > 0) and nosql_store=="hdfs":
+                #pass
+                self.write_hdfs_file(owner, stream_id,  nosql_data)
 
-    def write_hdfs_file(self, participant_id, stream_id, day, data):
+   # @log_execution_time
+    def write_hdfs_file(self, participant_id, stream_id, data):
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         day = None
@@ -179,9 +184,6 @@ class FileToDB():
             else:
                 day = row[2]
                 chunked_data.append(row)
-
-
-
 
 
     def line_to_batch_block(self, stream_id: uuid, lines: str, insert_qry: str):
@@ -214,8 +216,8 @@ class FileToDB():
                 batch.add(insert_qry.bind([stream_id, day, start_time, end_time, blob_obj]))
                 line_number += 1
         yield batch
-
-    def line_to_sample(self, lines, stream_id, stream_owner_id, stream_owner_name, stream_name,
+    #@log_execution_time
+    def line_to_sample(self, filename, stream_id, stream_owner_id, stream_owner_name, stream_name,
                        data_descriptor, influxdb_insert, nosql_insert):
 
         """
@@ -245,95 +247,100 @@ class FileToDB():
             data_descriptor = []
             total_dd_columns = 0
 
-        for line in lines:
-            try:
-                ts, offset, sample = line.split(',', 2)
-                bad_row = 0  # if line is not properly formatted then rest of the code shall not be executed
-            except:
-                bad_row = 1
-                bad_row = 1
+        try:
+            with gzip.open(filename) as lines:
+                for line in lines:
+                    line = line.decode('utf-8')
+                    try:
+                        ts, offset, sample = line.split(',', 2)
+                        bad_row = 0  # if line is not properly formatted then rest of the code shall not be executed
+                    except:
+                        bad_row = 1
 
-            if bad_row == 0:
-                start_time = int(ts) / 1000.0
-                offset = int(offset)
+                    if bad_row == 0:
+                        start_time = int(ts) / 1000.0
+                        offset = int(offset)
 
-                ############### START INFLUXDB BLOCK
-                if influxdb_insert:
-                    if stream_name not in blacklist_streams:
-                        values = sample
-                        measurement_and_tags = "%s,owner_id=%s,owner_name=%s,stream_id=%s" % (
-                        str(stream_name), str(stream_owner_id), str(stream_owner_name), str(stream_id))
+                        ############### START INFLUXDB BLOCK
+                        if influxdb_insert:
+                            if stream_name not in blacklist_streams:
+                                values = sample
+                                measurement_and_tags = "%s,owner_id=%s,owner_name=%s,stream_id=%s" % (
+                                str(stream_name), str(stream_owner_id), str(stream_owner_name), str(stream_id))
 
-                        try:
-                            # TODO: This method is SUPER slow
+                                try:
+                                    # TODO: This method is SUPER slow
 
-                            values = convert_sample(values)
+                                    values = convert_sample(values)
 
-                            if isinstance(values, list):
-                                for i, sample_val in enumerate(values):
-                                    if len(values) == total_dd_columns:
-                                        dd = data_descriptor[i]
-                                        if "NAME" in dd:
-                                            fields += "%s=%s," % (
-                                            str(dd["NAME"]).replace(" ", "-"), str(sample_val).replace(" ", "-"))
-                                        else:
-                                            fields += "%s=%s," % ('value_' + str(i), str(sample_val).replace(" ", "-"))
+                                    if isinstance(values, list):
+                                        for i, sample_val in enumerate(values):
+                                            if len(values) == total_dd_columns:
+                                                dd = data_descriptor[i]
+                                                if "NAME" in dd:
+                                                    fields += "%s=%s," % (
+                                                    str(dd["NAME"]).replace(" ", "-"), str(sample_val).replace(" ", "-"))
+                                                else:
+                                                    fields += "%s=%s," % ('value_' + str(i), str(sample_val).replace(" ", "-"))
+                                            else:
+                                                fields += "%s=%s," % ('value_' + str(i), str(sample_val).replace(" ", "-"))
                                     else:
-                                        fields += "%s=%s," % ('value_' + str(i), str(sample_val).replace(" ", "-"))
-                            else:
-                                if len(data_descriptor) > 0:
-                                    dd = data_descriptor[0]
+                                        if len(data_descriptor) > 0:
+                                            dd = data_descriptor[0]
 
-                                    if "NAME" in dd:
-                                        fields = "%s=%s," % (
-                                        str(dd["NAME"]).replace(" ", "-"), str(values).replace(" ", "-"))
-                                    else:
+                                            if "NAME" in dd:
+                                                fields = "%s=%s," % (
+                                                str(dd["NAME"]).replace(" ", "-"), str(values).replace(" ", "-"))
+                                            else:
+                                                fields = "%s=%s," % ('value_0', str(values).replace(" ", "-"))
+                                except Exception as e:
+                                    self.logging.log(error_message="Sample: " + str(values) + " - Cannot parse sample. " + str(
+                                        traceback.format_exc()), error_type=self.logtypes.DEBUG)
+                                    try:
+                                        values = json.dumps(values)
+                                        fields = "%s=%s," % ('value_0', str(values))
+                                    except:
                                         fields = "%s=%s," % ('value_0', str(values).replace(" ", "-"))
-                        except Exception as e:
-                            self.logging.log(error_message="Sample: " + str(values) + " - Cannot parse sample. " + str(
-                                traceback.format_exc()), error_type=self.logtypes.DEBUG)
-                            try:
-                                values = json.dumps(values)
-                                fields = "%s=%s," % ('value_0', str(values))
-                            except:
-                                fields = "%s=%s," % ('value_0', str(values).replace(" ", "-"))
-                        line_protocol += "%s %s %s\n" % (measurement_and_tags, fields.rstrip(","), str(
-                            int(ts) * 1000000))  # line protocol requires nanoseconds accuracy for timestamp
-                        measurement_and_tags = ""
-                        fields = ""
+                                line_protocol += "%s %s %s\n" % (measurement_and_tags, fields.rstrip(","), str(
+                                    int(ts) * 1000000))  # line protocol requires nanoseconds accuracy for timestamp
+                                measurement_and_tags = ""
+                                fields = ""
 
-                ############### END INFLUXDB BLOCK
+                        ############### END INFLUXDB BLOCK
 
-                ############### START OF NO-SQL DATA BLOCK
-                if nosql_insert:
-                    if not influxdb_insert:
-                        values = convert_sample(sample)
+                        ############### START OF NO-SQL DATA BLOCK
+                        if nosql_insert:
+                            if not influxdb_insert:
+                                values = convert_sample(sample)
 
-                    start_time_dt = datetime.datetime.utcfromtimestamp(
-                        start_time)  # TODO: this is a workaround. Update code to only have on start_time var
+                            start_time_dt = datetime.datetime.utcfromtimestamp(
+                                start_time)  # TODO: this is a workaround. Update code to only have on start_time var
 
-                    if line_number == 1:
-                        datapoints = []
-                        first_start_time = datetime.datetime.utcfromtimestamp(start_time)
-                        # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
-                        start_day = first_start_time.strftime("%Y%m%d")
-                        current_day = int(start_time / 86400)
-                    if line_number > self.sample_group_size:
+                            if line_number == 1:
+                                datapoints = []
+                                first_start_time = datetime.datetime.utcfromtimestamp(start_time)
+                                # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
+                                start_day = first_start_time.strftime("%Y%m%d")
+                                current_day = int(start_time / 86400)
+                            if line_number > self.sample_group_size:
+                                last_start_time = datetime.datetime.utcfromtimestamp(start_time)
+                                datapoints.append(DataPoint(start_time_dt, None, offset, values))
+                                grouped_samples.append(
+                                    [first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
+                                line_number = 1
+                            else:
+                                if (int(start_time / 86400)) > current_day:
+                                    start_day = datetime.datetime.utcfromtimestamp(start_time).strftime("%Y%m%d")
+                                datapoints.append(DataPoint(start_time_dt, None, offset, values))
+                                line_number += 1
+
+                if (nosql_insert and len(datapoints) > 0):
+                    if not last_start_time:
                         last_start_time = datetime.datetime.utcfromtimestamp(start_time)
-                        datapoints.append(DataPoint(start_time_dt, None, offset, values))
-                        grouped_samples.append(
-                            [first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
-                        line_number = 1
-                    else:
-                        if (int(start_time / 86400)) > current_day:
-                            start_day = datetime.datetime.utcfromtimestamp(start_time).strftime("%Y%m%d")
-                        datapoints.append(DataPoint(start_time_dt, None, offset, values))
-                        line_number += 1
+                    grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
+                    ############### END OF NO-SQL DATA BLOCK
 
-        if (nosql_insert and len(datapoints) > 0):
-            if not last_start_time:
-                last_start_time = datetime.datetime.utcfromtimestamp(start_time)
-            grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
-            ############### END OF NO-SQL DATA BLOCK
-
-        return {"nosql_data": grouped_samples, "influxdb_data": line_protocol}
+                return {"nosql_data": grouped_samples, "influxdb_data": line_protocol}
+        except:
+            self.logging.log(error_message="STREAM ID: " + str(stream_id) + " - Cannot process file data. " + str(traceback.format_exc()), error_type=self.logtypes.MISSING_DATA)
+            return {"nosql_data": grouped_samples, "influxdb_data": line_protocol}
