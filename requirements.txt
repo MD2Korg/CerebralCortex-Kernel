@@ -1,3 +1,4 @@
+wheel
 numpy
 scipy
 pytz==2017.2
