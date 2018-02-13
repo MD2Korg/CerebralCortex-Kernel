@@ -110,7 +110,7 @@ class FileToDB():
         owner_name = self.sql_data.get_user_id(owner)
 
         filenames = msg["filename"].split(",")
-        influxdb_data = []
+        influxdb_data = ""
         nosql_data = []
         gzip_file_content = None
         if isinstance(stream_id, str):
@@ -126,9 +126,10 @@ class FileToDB():
                     #lines = gzip_file_content.splitlines()
                     all_data = self.line_to_sample(zip_filepath + filename, stream_id, owner, owner_name, name, data_descriptor,
                                                    influxdb_insert, nosql_insert)
-                    influxdb_data = list(all_data["influxdb_data"]) + influxdb_data
-
-                    nosql_data = list(all_data["nosql_data"]) + nosql_data
+                    if influxdb_insert:
+                        influxdb_data = influxdb_data+all_data["influxdb_data"]
+                    if nosql_insert:
+                        nosql_data.extend(list(all_data["nosql_data"]))
 
             if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
                 try:
@@ -260,47 +261,45 @@ class FileToDB():
                     if bad_row == 0:
                         start_time = int(ts) / 1000.0
                         offset = int(offset)
+                        # TODO: improve the performance of sample parsing
+                        values = convert_sample(sample)
 
                         ############### START INFLUXDB BLOCK
                         if influxdb_insert:
                             if stream_name not in blacklist_streams:
-                                values = sample
                                 measurement_and_tags = "%s,owner_id=%s,owner_name=%s,stream_id=%s" % (
                                 str(stream_name), str(stream_owner_id), str(stream_owner_name), str(stream_id))
 
                                 try:
-                                    # TODO: This method is SUPER slow
-
-                                    values = convert_sample(values)
-
                                     if isinstance(values, list):
                                         for i, sample_val in enumerate(values):
                                             if len(values) == total_dd_columns:
                                                 dd = data_descriptor[i]
                                                 if "NAME" in dd:
-                                                    fields += "%s=%s," % (
+                                                    fields += '%s="%s",' % (
                                                     str(dd["NAME"]).replace(" ", "-"), str(sample_val).replace(" ", "-"))
                                                 else:
-                                                    fields += "%s=%s," % ('value_' + str(i), str(sample_val).replace(" ", "-"))
+                                                    fields += '%s="%s",' % ('value_' + str(i), str(sample_val).replace(" ", "-"))
                                             else:
-                                                fields += "%s=%s," % ('value_' + str(i), str(sample_val).replace(" ", "-"))
-                                    else:
-                                        if len(data_descriptor) > 0:
+                                                fields += '%s="%s",' % ('value_' + str(i), str(sample_val).replace(" ", "-"))
+                                    elif len(data_descriptor) > 0:
                                             dd = data_descriptor[0]
 
                                             if "NAME" in dd:
-                                                fields = "%s=%s," % (
+                                                fields = '%s="%s",' % (
                                                 str(dd["NAME"]).replace(" ", "-"), str(values).replace(" ", "-"))
                                             else:
-                                                fields = "%s=%s," % ('value_0', str(values).replace(" ", "-"))
+                                                fields = '%s="%s",' % ('value_0', str(values).replace(" ", "-"))
+                                    else:
+                                        fields = '%s="%s",' % ('value_0', str(values).replace(" ", "-"))
                                 except Exception as e:
                                     self.logging.log(error_message="Sample: " + str(values) + " - Cannot parse sample. " + str(
                                         traceback.format_exc()), error_type=self.logtypes.DEBUG)
                                     try:
-                                        values = json.dumps(values)
-                                        fields = "%s=%s," % ('value_0', str(values))
+                                        values = json.loads(values)
+                                        fields = '%s="%s",' % ('value_0', str(values))
                                     except:
-                                        fields = "%s=%s," % ('value_0', str(values).replace(" ", "-"))
+                                        fields = '%s="%s",' % ('value_0', str(values).replace(" ", "-"))
                                 line_protocol += "%s %s %s\n" % (measurement_and_tags, fields.rstrip(","), str(
                                     int(ts) * 1000000))  # line protocol requires nanoseconds accuracy for timestamp
                                 measurement_and_tags = ""
@@ -310,8 +309,8 @@ class FileToDB():
 
                         ############### START OF NO-SQL DATA BLOCK
                         if nosql_insert:
-                            if not influxdb_insert:
-                                values = convert_sample(sample)
+                            # if not influxdb_insert:
+                            #     values = convert_sample(sample)
 
                             start_time_dt = datetime.datetime.utcfromtimestamp(
                                 start_time)  # TODO: this is a workaround. Update code to only have on start_time var
