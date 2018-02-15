@@ -26,7 +26,6 @@
 import datetime
 import json
 import uuid
-import gc
 import traceback
 import gzip
 import os.path
@@ -36,7 +35,6 @@ from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, BatchType
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
-from cerebralcortex.core.file_manager.read_handler import ReadHandler
 from influxdb import InfluxDBClient
 from cerebralcortex.core.util.data_types import convert_sample, serialize_obj
 from cerebralcortex.core.util.debuging_decorators import log_execution_time
@@ -125,7 +123,7 @@ class FileToDB():
                         influxdb_data = influxdb_data+all_data["influxdb_data"]
                     if nosql_insert:
                         nosql_data.extend(list(all_data["nosql_data"]))
-
+            del nosql_data[:]
             if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
                 try:
                     influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort,
@@ -134,7 +132,7 @@ class FileToDB():
                     influxdb_client.write_points(influxdb_data, protocol="line")
                 except:
                     self.logging.log(
-                        error_message="STREAM ID: " + str(stream_id) + " - Error in writing data to influxdb. " + str(
+                        error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(owner)+ "Files: " + str(msg["filename"]) + " - Error in writing data to influxdb. " + str(
                             traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
             if (nosql_insert and len(nosql_data) > 0) and (nosql_store=="cassandra" or nosql_store=="scylladb"):
@@ -156,8 +154,8 @@ class FileToDB():
             elif (nosql_insert and len(nosql_data) > 0) and nosql_store=="hdfs":
                 pass
                 #self.write_hdfs_file(owner, stream_id,  nosql_data)
-        del nosql_data[:]
-        #nosql_data = []
+        #del nosql_data[:]
+
 
     def write_hdfs_file(self, participant_id, stream_id, data):
         # Using libhdfs
@@ -267,7 +265,7 @@ class FileToDB():
                         ############### START INFLUXDB BLOCK
                         if influxdb_insert and line_count<self.influx_day_datapoints_limit:
                             if stream_name not in blacklist_streams:
-                                measurement_and_tags = "%s,owner_id=%s,owner_name=%s,stream_id=%s" % (
+                                measurement_and_tags = '%s,owner_id=%s,owner_name=%s,stream_id=%s' % (
                                 str(stream_name), str(stream_owner_id), str(stream_owner_name), str(stream_id))
 
                                 try:

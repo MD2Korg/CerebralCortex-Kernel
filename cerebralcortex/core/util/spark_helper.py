@@ -33,7 +33,7 @@ def get_or_create_sc(type="sparkContext", name=None):
         ss.appName(name)
 
     sparkSession = ss.getOrCreate()
-
+    sparkSession.catalog.clearCache()
     sc = sparkSession.sparkContext
 
     sqlContext = SQLContext(sc)
