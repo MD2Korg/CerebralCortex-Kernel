@@ -259,13 +259,13 @@ class FileToDB():
                         start_time = int(ts) / 1000.0
                         offset = int(offset)
                         # TODO: improve the performance of sample parsing
-                        if influxdb_insert==True and stream_name not in blacklist_streams:
+                        if influxdb_insert==True and stream_name not in blacklist_streams and line_count<self.influx_day_datapoints_limit:
                             values = convert_sample(sample)
                         elif nosql_insert==True:
                             values = convert_sample(sample)
 
                         ############### START INFLUXDB BLOCK
-                        if influxdb_insert:
+                        if influxdb_insert and line_count<self.influx_day_datapoints_limit:
                             if stream_name not in blacklist_streams:
                                 measurement_and_tags = "%s,owner_id=%s,owner_name=%s,stream_id=%s" % (
                                 str(stream_name), str(stream_owner_id), str(stream_owner_name), str(stream_id))
