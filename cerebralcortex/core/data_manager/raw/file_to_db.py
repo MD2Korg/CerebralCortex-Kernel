@@ -259,9 +259,9 @@ class FileToDB():
                         start_time = int(ts) / 1000.0
                         offset = int(offset)
                         # TODO: improve the performance of sample parsing
-                        if nosql_insert==False and influxdb_insert==True and stream_name not in blacklist_streams:
+                        if influxdb_insert==True and stream_name not in blacklist_streams:
                             values = convert_sample(sample)
-                        else:
+                        elif nosql_insert==True:
                             values = convert_sample(sample)
 
                         ############### START INFLUXDB BLOCK
@@ -281,11 +281,11 @@ class FileToDB():
                                                 dd = data_descriptor[i]
                                                 if "NAME" in dd:
                                                     fields += ptrn % (
-                                                    str(dd["NAME"]).replace(" ", "-"), sample_val.replace(" ", "-"))
+                                                    str(dd["NAME"]).replace(" ", "-"), sample_val)
                                                 else:
-                                                    fields += ptrn % ('value_' + str(i), sample_val.replace(" ", "-"))
+                                                    fields += ptrn % ('value_' + str(i), sample_val)
                                             else:
-                                                fields += ptrn % ('value_' + str(i), sample_val.replace(" ", "-"))
+                                                fields += ptrn % ('value_' + str(i), sample_val)
                                     elif len(data_descriptor) > 0:
                                             dd = data_descriptor[0]
                                             if isinstance(values, str):
@@ -294,27 +294,27 @@ class FileToDB():
                                                 ptrn = '%s=%s,'
                                             if "NAME" in dd:
                                                 fields = ptrn % (
-                                                str(dd["NAME"]).replace(" ", "-"), str(values).replace(" ", "-"))
+                                                str(dd["NAME"]).replace(" ", "-"), values)
                                             else:
-                                                fields = ptrn % ('value_0', str(values).replace(" ", "-"))
+                                                fields = ptrn % ('value_0', values)
                                     else:
                                         if isinstance(values, str):
                                             ptrn = '%s="%s",'
                                         else:
                                             ptrn = '%s=%s,'
-                                        fields = ptrn % ('value_0', str(values).replace(" ", "-"))
+                                        fields = ptrn % ('value_0', values)
                                 except Exception as e:
                                     self.logging.log(error_message="Sample: " + str(values) + " - Cannot parse sample. " + str(
                                         traceback.format_exc()), error_type=self.logtypes.DEBUG)
                                     try:
                                         values = json.loads(values)
-                                        fields = '%s="%s",' % ('value_0', str(values))
-                                    except:
+                                        fields = '%s="%s",' % ('value_0', values)
+                                    except Exception as e:
                                         if isinstance(values, str):
                                             ptrn = '%s="%s",'
                                         else:
                                             ptrn = '%s=%s,'
-                                        fields = ptrn % ('value_0', str(values).replace(" ", "-"))
+                                        fields = ptrn % ('value_0', values)
                                 line_protocol += "%s %s %s\n" % (measurement_and_tags, fields.rstrip(","), str(
                                     int(ts) * 1000000))  # line protocol requires nanoseconds accuracy for timestamp
                                 measurement_and_tags = ""
