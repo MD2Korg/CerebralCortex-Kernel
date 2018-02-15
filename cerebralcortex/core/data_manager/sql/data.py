@@ -55,5 +55,5 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
         self.cursor = self.dbConnection.cursor(dictionary=True)
 
     def __del__(self):
-        if self.dbConnection:
+        if self.dbConnection and self.dbConnection.is_connected():
             self.dbConnection.close()
