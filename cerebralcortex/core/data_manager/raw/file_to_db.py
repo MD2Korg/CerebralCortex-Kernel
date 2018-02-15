@@ -26,6 +26,7 @@
 import datetime
 import json
 import uuid
+import gc
 import traceback
 import gzip
 import os.path
@@ -76,6 +77,7 @@ class FileToDB():
         self.batch_size = 100
         self.sample_group_size = 99
         self.influx_batch_size = 10000
+        self.influx_day_datapoints_limit = 100000
 
     @log_execution_time
     def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert: bool = True, nosql_insert: bool = True,
@@ -112,18 +114,11 @@ class FileToDB():
         filenames = msg["filename"].split(",")
         influxdb_data = ""
         nosql_data = []
-        gzip_file_content = None
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
         if influxdb_insert or nosql_insert:
             for filename in filenames:
-                # if os.path.exists(zip_filepath + filename)
-                #     gzip_file_content = ReadHandler().get_gzip_file_contents(zip_filepath + filename)
-                # else:
-                #     self.logging.log(error_message="STREAM ID: " + str(stream_id) + " - Cannot process file data. " + str(
-                #         traceback.format_exc()), error_type=self.logtypes.MISSING_DATA)
                 if os.path.exists(zip_filepath + filename):
-                    #lines = gzip_file_content.splitlines()
                     all_data = self.line_to_sample(zip_filepath + filename, stream_id, owner, owner_name, name, data_descriptor,
                                                    influxdb_insert, nosql_insert)
                     if influxdb_insert:
@@ -159,10 +154,11 @@ class FileToDB():
                 session.shutdown()
                 cluster.shutdown()
             elif (nosql_insert and len(nosql_data) > 0) and nosql_store=="hdfs":
-                #pass
-                self.write_hdfs_file(owner, stream_id,  nosql_data)
+                pass
+                #self.write_hdfs_file(owner, stream_id,  nosql_data)
+        del nosql_data[:]
+        #nosql_data = []
 
-   # @log_execution_time
     def write_hdfs_file(self, participant_id, stream_id, data):
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
@@ -217,7 +213,7 @@ class FileToDB():
                 batch.add(insert_qry.bind([stream_id, day, start_time, end_time, blob_obj]))
                 line_number += 1
         yield batch
-    #@log_execution_time
+
     def line_to_sample(self, filename, stream_id, stream_owner_id, stream_owner_name, stream_name,
                        data_descriptor, influxdb_insert, nosql_insert):
 
@@ -229,12 +225,12 @@ class FileToDB():
         :param qry_with_endtime:
         """
 
-        # sample_batch = []
         grouped_samples = []
         line_number = 1
         current_day = None  # used to check boundry condition. For example, if half of the sample belong to next day
         last_start_time = None
         datapoints = []
+        line_count = 0
         line_protocol = ""
         fields = ""
 
@@ -251,6 +247,7 @@ class FileToDB():
         try:
             with gzip.open(filename) as lines:
                 for line in lines:
+                    line_count += 1
                     line = line.decode('utf-8')
                     try:
                         ts, offset, sample = line.split(',', 2)
@@ -262,7 +259,10 @@ class FileToDB():
                         start_time = int(ts) / 1000.0
                         offset = int(offset)
                         # TODO: improve the performance of sample parsing
-                        values = convert_sample(sample)
+                        if nosql_insert==False and influxdb_insert==True and stream_name not in blacklist_streams:
+                            values = convert_sample(sample)
+                        else:
+                            values = convert_sample(sample)
 
                         ############### START INFLUXDB BLOCK
                         if influxdb_insert:
@@ -338,8 +338,11 @@ class FileToDB():
                         last_start_time = datetime.datetime.utcfromtimestamp(start_time)
                     grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
                     ############### END OF NO-SQL DATA BLOCK
-
+                if line_count > self.influx_day_datapoints_limit:
+                    line_protocol = ""
                 return {"nosql_data": grouped_samples, "influxdb_data": line_protocol}
         except:
             self.logging.log(error_message="STREAM ID: " + str(stream_id) + " - Cannot process file data. " + str(traceback.format_exc()), error_type=self.logtypes.MISSING_DATA)
+            if line_count > self.influx_day_datapoints_limit:
+                line_protocol = ""
             return {"nosql_data": grouped_samples, "influxdb_data": line_protocol}
