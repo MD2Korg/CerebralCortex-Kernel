@@ -302,8 +302,6 @@ class FileToDB():
                                             ptrn = '%s=%s,'
                                         fields = ptrn % ('value_0', values)
                                 except Exception as e:
-                                    self.logging.log(error_message="Sample: " + str(values) + " - Cannot parse sample. " + str(
-                                        traceback.format_exc()), error_type=self.logtypes.DEBUG)
                                     try:
                                         values = json.loads(values)
                                         fields = '%s="%s",' % ('value_0', values)
