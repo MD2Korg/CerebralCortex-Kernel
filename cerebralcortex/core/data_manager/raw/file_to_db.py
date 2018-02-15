@@ -273,25 +273,36 @@ class FileToDB():
                                 try:
                                     if isinstance(values, list):
                                         for i, sample_val in enumerate(values):
+                                            if isinstance(sample_val, str):
+                                                ptrn = '%s="%s",'
+                                            else:
+                                                ptrn = '%s=%s,'
                                             if len(values) == total_dd_columns:
                                                 dd = data_descriptor[i]
                                                 if "NAME" in dd:
-                                                    fields += '%s="%s",' % (
-                                                    str(dd["NAME"]).replace(" ", "-"), str(sample_val).replace(" ", "-"))
+                                                    fields += ptrn % (
+                                                    str(dd["NAME"]).replace(" ", "-"), sample_val.replace(" ", "-"))
                                                 else:
-                                                    fields += '%s="%s",' % ('value_' + str(i), str(sample_val).replace(" ", "-"))
+                                                    fields += ptrn % ('value_' + str(i), sample_val.replace(" ", "-"))
                                             else:
-                                                fields += '%s="%s",' % ('value_' + str(i), str(sample_val).replace(" ", "-"))
+                                                fields += ptrn % ('value_' + str(i), sample_val.replace(" ", "-"))
                                     elif len(data_descriptor) > 0:
                                             dd = data_descriptor[0]
-
+                                            if isinstance(values, str):
+                                                ptrn = '%s="%s",'
+                                            else:
+                                                ptrn = '%s=%s,'
                                             if "NAME" in dd:
-                                                fields = '%s="%s",' % (
+                                                fields = ptrn % (
                                                 str(dd["NAME"]).replace(" ", "-"), str(values).replace(" ", "-"))
                                             else:
-                                                fields = '%s="%s",' % ('value_0', str(values).replace(" ", "-"))
+                                                fields = ptrn % ('value_0', str(values).replace(" ", "-"))
                                     else:
-                                        fields = '%s="%s",' % ('value_0', str(values).replace(" ", "-"))
+                                        if isinstance(values, str):
+                                            ptrn = '%s="%s",'
+                                        else:
+                                            ptrn = '%s=%s,'
+                                        fields = ptrn % ('value_0', str(values).replace(" ", "-"))
                                 except Exception as e:
                                     self.logging.log(error_message="Sample: " + str(values) + " - Cannot parse sample. " + str(
                                         traceback.format_exc()), error_type=self.logtypes.DEBUG)
@@ -299,7 +310,11 @@ class FileToDB():
                                         values = json.loads(values)
                                         fields = '%s="%s",' % ('value_0', str(values))
                                     except:
-                                        fields = '%s="%s",' % ('value_0', str(values).replace(" ", "-"))
+                                        if isinstance(values, str):
+                                            ptrn = '%s="%s",'
+                                        else:
+                                            ptrn = '%s=%s,'
+                                        fields = ptrn % ('value_0', str(values).replace(" ", "-"))
                                 line_protocol += "%s %s %s\n" % (measurement_and_tags, fields.rstrip(","), str(
                                     int(ts) * 1000000))  # line protocol requires nanoseconds accuracy for timestamp
                                 measurement_and_tags = ""
@@ -309,8 +324,6 @@ class FileToDB():
 
                         ############### START OF NO-SQL DATA BLOCK
                         if nosql_insert:
-                            # if not influxdb_insert:
-                            #     values = convert_sample(sample)
 
                             start_time_dt = datetime.datetime.utcfromtimestamp(
                                 start_time)  # TODO: this is a workaround. Update code to only have on start_time var
