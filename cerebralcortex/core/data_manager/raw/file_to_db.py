@@ -75,7 +75,7 @@ class FileToDB():
         self.batch_size = 100
         self.sample_group_size = 99
         self.influx_batch_size = 10000
-        self.influx_day_datapoints_limit = 100000
+        self.influx_day_datapoints_limit = 37000
 
     @log_execution_time
     def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert: bool = True, nosql_insert: bool = True,
