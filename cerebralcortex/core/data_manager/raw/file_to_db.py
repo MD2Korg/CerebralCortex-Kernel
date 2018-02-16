@@ -28,7 +28,6 @@ import json
 import uuid
 import traceback
 import gzip
-import gc
 import os.path
 import pyarrow
 import pickle
@@ -113,7 +112,6 @@ class FileToDB():
         filenames = msg["filename"].split(",")
         influxdb_data = ""
         nosql_data = []
-
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
         if influxdb_insert or nosql_insert:
@@ -124,8 +122,26 @@ class FileToDB():
                     if influxdb_insert:
                         influxdb_data = influxdb_data+all_data["influxdb_data"]
                     if nosql_insert:
-                        nosql_data = self.append_nosql_data(all_data["nosql_data"])
-                        #nosql_data.extend(list(all_data["nosql_data"]))
+                        nosql_data = all_data["nosql_data"]
+
+                        if (nosql_insert and len(nosql_data) > 0) and (nosql_store=="cassandra" or nosql_store=="scylladb"):
+                            # connect to cassandra
+                            cluster = Cluster([self.host_ip], port=self.host_port)
+                            session = cluster.connect(self.keyspace_name)
+                            qry_with_endtime = session.prepare(
+                                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
+
+                            for data_block in self.line_to_batch_block(stream_id, nosql_data, qry_with_endtime):
+                                session.execute(data_block)
+
+                            self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                                               annotations, stream_type, nosql_data[0][0],
+                                                               nosql_data[len(nosql_data) - 1][1])
+
+                            session.shutdown()
+                            cluster.shutdown()
+                        elif (nosql_insert and len(nosql_data) > 0) and nosql_store=="hdfs":
+                            self.write_hdfs_file(owner, stream_id, filename, nosql_data)
 
             if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
                 try:
@@ -138,44 +154,20 @@ class FileToDB():
                         error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(owner)+ "Files: " + str(msg["filename"]) + " - Error in writing data to influxdb. " + str(
                             traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
-            if (nosql_insert and len(nosql_data) > 0) and (nosql_store=="cassandra" or nosql_store=="scylladb"):
-                # connect to cassandra
-                cluster = Cluster([self.host_ip], port=self.host_port)
-                session = cluster.connect(self.keyspace_name)
-                qry_with_endtime = session.prepare(
-                    "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
 
-                for data_block in self.line_to_batch_block(stream_id, nosql_data, qry_with_endtime):
-                    session.execute(data_block)
-
-                self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
-                                                   annotations, stream_type, nosql_data[0][0],
-                                                   nosql_data[len(nosql_data) - 1][1])
-
-                session.shutdown()
-                cluster.shutdown()
-            elif (nosql_insert and len(nosql_data) > 0) and nosql_store=="hdfs":
-                self.write_hdfs_file(owner, stream_id,  nosql_data)
-
-    def append_nosql_data(self, b):
-        # this is a temp method to avoid Spark memory leak.
-        v = []
-        v.extend(b)
-        return v
-
-    def write_hdfs_file(self, participant_id, stream_id, data):
+    def write_hdfs_file(self, participant_id, stream_id, filename, data):
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         day = None
         chunked_data = []
-
+        filename = filename.replace(".gz",".pickle")
         # if the data appeared in a different day then this shall put that day in correct day
         for row in data:
             if day is None:
                 day = row[2]
                 chunked_data.append(row)
             elif day!=row[2]:
-                filename = str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".obj"
+                #filename = str(participant_id)+"/"+str(stream_id)+"/"+str(day)+"/"+str(filename)
                 picked_data = pickle.dumps(chunked_data)
                 with hdfs.open(filename, "wb") as f:
                     f.write(picked_data)
