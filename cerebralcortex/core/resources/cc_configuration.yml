@@ -50,8 +50,8 @@ logging:
   log_path: '/var/log/cerebralcortex/' # make sure directory is writeable by current OS user
 
 data_ingestion:
-  influxdb_in: True
-  nosql_in: False
+  influxdb_in: False
+  nosql_in: True
   nosql_store: "hdfs" # acceptable parameters are: cassandra, scylladb, hdfs
 
 influxdb_blacklist: # influxdb data ingestion pipeline will not process stream names defined here

@@ -28,6 +28,7 @@ import json
 import uuid
 import traceback
 import gzip
+import gc
 import os.path
 import pyarrow
 import pickle
@@ -112,6 +113,7 @@ class FileToDB():
         filenames = msg["filename"].split(",")
         influxdb_data = ""
         nosql_data = []
+
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
         if influxdb_insert or nosql_insert:
@@ -122,8 +124,9 @@ class FileToDB():
                     if influxdb_insert:
                         influxdb_data = influxdb_data+all_data["influxdb_data"]
                     if nosql_insert:
-                        nosql_data.extend(list(all_data["nosql_data"]))
-            del nosql_data[:]
+                        nosql_data = self.append_nosql_data(all_data["nosql_data"])
+                        #nosql_data.extend(list(all_data["nosql_data"]))
+
             if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
                 try:
                     influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort,
@@ -152,10 +155,13 @@ class FileToDB():
                 session.shutdown()
                 cluster.shutdown()
             elif (nosql_insert and len(nosql_data) > 0) and nosql_store=="hdfs":
-                pass
-                #self.write_hdfs_file(owner, stream_id,  nosql_data)
-        #del nosql_data[:]
+                self.write_hdfs_file(owner, stream_id,  nosql_data)
 
+    def append_nosql_data(self, b):
+        # this is a temp method to avoid Spark memory leak.
+        v = []
+        v.extend(b)
+        return v
 
     def write_hdfs_file(self, participant_id, stream_id, data):
         # Using libhdfs
