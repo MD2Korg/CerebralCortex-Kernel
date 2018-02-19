@@ -111,7 +111,8 @@ class FileToDB():
 
         filenames = msg["filename"].split(",")
         influxdb_data = ""
-        #nosql_data = []
+        nosql_data = None
+        all_data = None
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
         if influxdb_insert or nosql_insert:
@@ -142,7 +143,6 @@ class FileToDB():
                             cluster.shutdown()
                         elif (nosql_insert and len(nosql_data) > 0) and nosql_store=="hdfs":
                             self.write_hdfs_file(owner, stream_id, filename, nosql_data)
-
 
             if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
                 try:
