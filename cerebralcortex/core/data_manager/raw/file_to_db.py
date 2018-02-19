@@ -190,11 +190,11 @@ class FileToDB():
                         existing_data = curfile.read()
                 if existing_data is not None:
                     existing_data = pickle.loads(existing_data)
-                    existing_data.extend(chunked_data)
-                picked_data = pickle.dumps(chunked_data)
+                    chunked_data.extend(existing_data)
+                #picked_data = pickle.dumps(chunked_data)
                 filename = self.raw_files_dir+filename
                 with hdfs.open(filename, "wb") as f:
-                    f.write(picked_data)
+                    pickle.dump(chunked_data, f)
                 day = row[2]
                 chunked_data =[]
                 chunked_data.append(row)
