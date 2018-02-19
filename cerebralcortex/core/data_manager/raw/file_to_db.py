@@ -189,9 +189,10 @@ class FileToDB():
                     with hdfs.open(filename, "rb") as curfile:
                         existing_data = curfile.read()
                 if existing_data is not None:
-                    existing_data = pickle.loads(existing_data)
+                    existing_data = pickle.load(existing_data)
                     existing_data.extend(chunked_data)
                 picked_data = pickle.dumps(chunked_data)
+                filename = self.raw_files_dir+filename
                 with hdfs.open(filename, "wb") as f:
                     f.write(picked_data)
                 day = row[2]
