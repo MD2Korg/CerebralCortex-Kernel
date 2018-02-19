@@ -142,8 +142,8 @@ class FileToDB():
                 session.shutdown()
                 cluster.shutdown()
             elif (nosql_insert and len(nosql_data) > 0) and nosql_store=="hdfs":
-                #self.write_hdfs_file(owner, stream_id, filename, nosql_data)
-                pass
+                self.write_hdfs_day_file(owner, stream_id, nosql_data)
+
 
             if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
                 try:
@@ -161,31 +161,45 @@ class FileToDB():
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         day = data[0][2]
+
         filename = str(participant_id)+"/"+str(stream_id)+"/"+str(day)+"/"+str(filename[-39:])
         filename = filename.replace(".gz",".pickle")
+
         filename = self.raw_files_dir+filename
         picked_data = pickle.dumps(data)
         with hdfs.open(filename, "wb") as f:
             f.write(picked_data)
 
-        # TODO: uncomment this code when spark memory leak is fixed to chunk/store files on per day basis
+    def write_hdfs_day_file(self, participant_id, stream_id, data):
+        # Using libhdfs
+        hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+        day = None
+
         # if the data appeared in a different day then this shall put that day in correct day
-        # chunked_data = []
-        # for row in data:
-        #     if day is None:
-        #         day = row[2]
-        #         chunked_data.append(row)
-        #     elif day!=row[2]:
-        #         #filename = str(participant_id)+"/"+str(stream_id)+"/"+str(day)+"/"+str(filename)
-        #         picked_data = pickle.dumps(chunked_data)
-        #         with hdfs.open(filename, "wb") as f:
-        #             f.write(picked_data)
-        #         day = row[2]
-        #         chunked_data =[]
-        #         chunked_data.append(row)
-        #     else:
-        #         day = row[2]
-        #         chunked_data.append(row)
+        chunked_data = []
+        existing_data = None
+        for row in data:
+            if day is None:
+                day = row[2]
+                chunked_data.append(row)
+            elif day!=row[2]:
+                filename = str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+                # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
+                if hdfs.exists(filename):
+                    with hdfs.open(filename, "rb") as curfile:
+                        existing_data = curfile.read()
+                if existing_data is not None:
+                    existing_data = pickle.loads(existing_data)
+                    existing_data.extend(chunked_data)
+                picked_data = pickle.dumps(chunked_data)
+                with hdfs.open(filename, "wb") as f:
+                    f.write(picked_data)
+                day = row[2]
+                chunked_data =[]
+                chunked_data.append(row)
+            else:
+                day = row[2]
+                chunked_data.append(row)
 
 
     def line_to_batch_block(self, stream_id: uuid, lines: str, insert_qry: str):
