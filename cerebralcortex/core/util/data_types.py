@@ -110,7 +110,7 @@ def convert_sample(sample):
 def serialize_obj(datapoints:DataPoint):
     #rest = b"some some"
     res = pickle.dumps(datapoints)
-    return res
+    return 0
 
 
 def deserialize_obj(picked_obj):
