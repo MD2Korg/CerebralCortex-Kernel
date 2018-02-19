@@ -111,8 +111,8 @@ class FileToDB():
 
         filenames = msg["filename"].split(",")
         influxdb_data = ""
-        nosql_data = None
-        all_data = None
+        nosql_data = []
+        all_data = []
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
         if influxdb_insert or nosql_insert:
@@ -123,26 +123,27 @@ class FileToDB():
                     if influxdb_insert:
                         influxdb_data = influxdb_data+all_data["influxdb_data"]
                     if nosql_insert:
-                        nosql_data = all_data["nosql_data"]
+                        nosql_data.extend(all_data["nosql_data"])
 
-                        if (nosql_insert and len(nosql_data) > 0) and (nosql_store=="cassandra" or nosql_store=="scylladb"):
-                            # connect to cassandra
-                            cluster = Cluster([self.host_ip], port=self.host_port)
-                            session = cluster.connect(self.keyspace_name)
-                            qry_with_endtime = session.prepare(
-                                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
+            if (nosql_insert and len(nosql_data) > 0) and (nosql_store=="cassandra" or nosql_store=="scylladb"):
+                # connect to cassandra
+                cluster = Cluster([self.host_ip], port=self.host_port)
+                session = cluster.connect(self.keyspace_name)
+                qry_with_endtime = session.prepare(
+                    "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
 
-                            for data_block in self.line_to_batch_block(stream_id, nosql_data, qry_with_endtime):
-                                session.execute(data_block)
+                for data_block in self.line_to_batch_block(stream_id, nosql_data, qry_with_endtime):
+                    session.execute(data_block)
 
-                            self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
-                                                               annotations, stream_type, nosql_data[0][0],
-                                                               nosql_data[len(nosql_data) - 1][1])
+                self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                                   annotations, stream_type, nosql_data[0][0],
+                                                   nosql_data[len(nosql_data) - 1][1])
 
-                            session.shutdown()
-                            cluster.shutdown()
-                        elif (nosql_insert and len(nosql_data) > 0) and nosql_store=="hdfs":
-                            self.write_hdfs_file(owner, stream_id, filename, nosql_data)
+                session.shutdown()
+                cluster.shutdown()
+            elif (nosql_insert and len(nosql_data) > 0) and nosql_store=="hdfs":
+                #self.write_hdfs_file(owner, stream_id, filename, nosql_data)
+                pass
 
             if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
                 try:
