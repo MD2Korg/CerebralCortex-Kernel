@@ -91,7 +91,13 @@ def convert_sample(sample):
         if sample.startswith("[") or sample.startswith("{"):
             return json.loads(sample)
         elif isinstance(sample, str) and "," in sample:
-            return list([float(x.strip()) for x in sample.split(',')])
+            tmp = []
+            for val in sample.split(','):
+                try:
+                    tmp.append(float(val))
+                except:
+                    tmp.append(val)
+            return tmp
         else:
             try:
                 return float(sample)
@@ -102,7 +108,6 @@ def convert_sample(sample):
 
 
 def serialize_obj(datapoints:DataPoint):
-    #rest = b"some some"
     res = pickle.dumps(datapoints)
     return res
 

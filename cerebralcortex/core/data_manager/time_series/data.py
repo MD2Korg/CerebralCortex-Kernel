@@ -33,7 +33,7 @@ class TimeSeriesData(InfluxdbHandler):
 
         self.configuration = CC.config
 
-        self.sql_data = SqlData(CC)
+        self.sql_data = CC.SqlData
 
         self.time_zone = CC.timezone
 

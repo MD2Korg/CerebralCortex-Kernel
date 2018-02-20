@@ -35,7 +35,8 @@ from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.file_manager.file_io import FileIO
-
+from cerebralcortex.core.log_manager.logging import CCLogging
+from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 from cerebralcortex.core.data_manager.raw.data import RawData
 from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
@@ -48,14 +49,17 @@ class CerebralCortex:
         self.config_filepath = configuration_filepath
         self.config = Configuration(configuration_filepath).config
         self.timezone = timezone
-
-        self.RawData = RawData(self)
+        self.logging = CCLogging(self.config['logging']['log_path'])
+        self.logtypes = LogTypes()
         self.SqlData = SqlData(self)
+        self.RawData = RawData(self)
         self.ObjectData = ObjectData(self)
         self.TimeSeriesData = TimeSeriesData(self)
         self.FileIO = FileIO()
         #TODO: disabled because uwsgi losses connection, need more investigation
         self.MessagingQueue = MessagingQueue(self)
+
+        #self.logging.log(error_message="Object created: ", error_type=self.logtypes.DEBUG)
 
     ###########################################################################
     ############### RAW DATA MANAGER METHODS ##################################
@@ -67,7 +71,7 @@ class CerebralCortex:
         """
         self.RawData.save_stream(datastream)
 
-    def get_stream(self, stream_id: uuid, day:str, start_time: datetime = None, end_time: datetime = None,
+    def get_stream(self, stream_id: uuid, user_id: uuid, day:str, start_time: datetime = None, end_time: datetime = None,
                    data_type=DataSet.COMPLETE) -> DataStream:
         """
 
@@ -78,7 +82,7 @@ class CerebralCortex:
         :param data_type:
         :return:
         """
-        return self.RawData.get_stream(stream_id, day, start_time, end_time, data_type)
+        return self.RawData.get_stream(stream_id, user_id, day, start_time, end_time, data_type)
 
     def get_stream_samples(self, stream_id, day, start_time=None, end_time=None) -> List[DataPoint]:
         """

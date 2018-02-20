@@ -117,7 +117,7 @@ class ReadHandler():
         ts = datetime.datetime.fromtimestamp(ts, timezone)
         return DataPoint(start_time=ts, sample=values)
 
-    @log_execution_time
+    #@log_execution_time
     def get_gzip_file_contents(self, filepath: str) -> str:
         """
         Read and return gzip compressed file contents

@@ -31,7 +31,7 @@ from typing import List
 import traceback
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, SimpleStatement, BatchType
-
+from cerebralcortex.core.util.data_types import serialize_obj
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.util.data_types import convert_sample, deserialize_obj
@@ -46,8 +46,7 @@ class DataSet(Enum):
 
 
 class StreamHandler():
-    def __init__(self):
-        pass
+
 
     ###################################################################
     ################## GET DATA METHODS ###############################
@@ -88,11 +87,14 @@ class StreamHandler():
         elif data_type == DataSet.ONLY_METADATA:
             stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, None)
         else:
-            self.logging.log(error_message="STREAM ID: "+stream_id+"Failed to get data stream. Invalid type parameter.", error_type=self.logtypes.DEBUG)
+            self.logging.log(
+                error_message="STREAM ID: " + stream_id + "Failed to get data stream. Invalid type parameter.",
+                error_type=self.logtypes.DEBUG)
             return None
         return stream
 
-    def map_datapoint_and_metadata_to_datastream(self, stream_id: int, datastream_info: dict, data: object) -> DataStream:
+    def map_datapoint_and_metadata_to_datastream(self, stream_id: int, datastream_info: dict,
+                                                 data: object) -> DataStream:
         """
         This method will map the datapoint and metadata to datastream object
         :param stream_id:
@@ -112,7 +114,9 @@ class StreamHandler():
             return DataStream(stream_id, ownerID, name, data_descriptor, execution_context, annotations,
                               stream_type, start_time, end_time, data)
         except Exception as e:
-            self.logging.log(error_message="STREAM ID: "+stream_id+" - Error in mapping datapoints and metadata to datastream. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            self.logging.log(
+                error_message="STREAM ID: " + stream_id + " - Error in mapping datapoints and metadata to datastream. " + str(
+                    traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
     def load_cassandra_data(self, where_clause=None) -> List:
         """
@@ -139,7 +143,9 @@ class StreamHandler():
                 return []
             return data
         except Exception as e:
-            self.logging.log(error_message="WHERE CLAUSE:"+where_clause+" - Error in loading cassandra data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            self.logging.log(
+                error_message="WHERE CLAUSE:" + where_clause + " - Error in loading cassandra data. " + str(
+                    traceback.format_exc()), error_type=self.logtypes.CRITICAL)
             return []
 
     def parse_row(self, row: str) -> List:
@@ -152,7 +158,8 @@ class StreamHandler():
         try:
             return deserialize_obj(row[2])
         except Exception as e:
-            self.logging.log(error_message="Row: "+row+" - Cannot parse row. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            self.logging.log(error_message="Row: " + row + " - Cannot parse row. " + str(traceback.format_exc()),
+                             error_type=self.logtypes.CRITICAL)
             return []
 
     def parse_row_raw_sample(self, row: str) -> List:
@@ -171,14 +178,14 @@ class StreamHandler():
                     start_time = localtz.localize(datetime.fromtimestamp(r[0]))
                 else:
                     sample_timezone = timezone(timedelta(milliseconds=r[1]))
-                    start_time = datetime.fromtimestamp(r[0],sample_timezone)
+                    start_time = datetime.fromtimestamp(r[0], sample_timezone)
                 sample = convert_sample(r[2])
                 updated_rows.append(DataPoint(start_time=start_time, sample=sample))
             return updated_rows
         except Exception as e:
-            self.logging.log(error_message="Row: "+row+" - Cannot parse row. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            self.logging.log(error_message="Row: " + row + " - Cannot parse row. " + str(traceback.format_exc()),
+                             error_type=self.logtypes.CRITICAL)
             return []
-
 
     def get_stream_samples(self, stream_id, day, start_time=None, end_time=None) -> List[DataPoint]:
         """
@@ -213,7 +220,9 @@ class StreamHandler():
             cluster.shutdown()
             return dps
         except Exception as e:
-            self.logging.log(error_message="ID: "+stream_id+" - Cannot get stream samples. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            self.logging.log(
+                error_message="ID: " + stream_id + " - Cannot get stream samples. " + str(traceback.format_exc()),
+                error_type=self.logtypes.CRITICAL)
             return []
 
     def row_to_datapoints(self, rows: object) -> List[DataPoint]:
@@ -243,7 +252,9 @@ class StreamHandler():
                     dps.append(DataPoint(start_time, end_time, sample))
             return dps
         except Exception as e:
-            self.logging.log(error_message="ROW: "+row+" - Cannot convert row to datapoints. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            self.logging.log(
+                error_message="ROW: " + row + " - Cannot convert row to datapoints. " + str(traceback.format_exc()),
+                error_type=self.logtypes.CRITICAL)
             return []
 
     ###################################################################
@@ -290,15 +301,16 @@ class StreamHandler():
 
                 # save metadata in SQL store
                 self.sql_data.save_stream_metadata(stream_id, stream_name, owner_id,
-                                                      data_descriptor, execution_context,
-                                                      annotations,
-                                                      stream_type, new_start_time, new_end_time)
+                                                   data_descriptor, execution_context,
+                                                   annotations,
+                                                   stream_type, new_start_time, new_end_time)
 
                 # save raw sensor data in Cassandra
                 self.save_raw_data(stream_id, data)
         except Exception as e:
-            self.logging.log(error_message="STREAM ID: "+stream_id+" - Cannot save stream. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
-
+            self.logging.log(
+                error_message="STREAM ID: " + stream_id + " - Cannot save stream. " + str(traceback.format_exc()),
+                error_type=self.logtypes.CRITICAL)
 
     def save_raw_data(self, stream_id: uuid, datapoints: DataPoint):
 
@@ -307,15 +319,16 @@ class StreamHandler():
         :param stream_id:
         :param datapoints:
         """
+        datapoints = self.serialize_datapoints_batch(datapoints)
         try:
             cluster = Cluster([self.host_ip], port=self.host_port, protocol_version=4)
 
             session = cluster.connect(self.keyspace_name)
 
             qry_without_endtime = session.prepare(
-                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, sample) VALUES (?, ?, ?, ?)")
+                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, blob_obj) VALUES (?, ?, ?, ?)")
             qry_with_endtime = session.prepare(
-                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, sample) VALUES (?, ?, ?, ?, ?)")
+                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
 
             if isinstance(stream_id, str):
                 stream_id = uuid.UUID(stream_id)
@@ -328,7 +341,9 @@ class StreamHandler():
             session.shutdown()
             cluster.shutdown()
         except Exception as e:
-            self.logging.log(error_message="STREAM ID: "+stream_id+" - Cannot save raw data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            self.logging.log(
+                error_message="STREAM ID: " + str(stream_id) + " - Cannot save raw data. " + str(traceback.format_exc()),
+                error_type=self.logtypes.CRITICAL)
 
     def datapoints_to_cassandra_sql_batch(self, stream_id: uuid, datapoints: DataPoint, qry_without_endtime: str,
                                           qry_with_endtime: str):
@@ -344,9 +359,9 @@ class StreamHandler():
         batch.clear()
         dp_number = 1
         for dp in datapoints:
-            day = dp.start_time.strftime("%Y%m%d")
-            sample = dp.sample
-            if dp.end_time:
+            day = dp[0].strftime("%Y%m%d")
+            sample = dp[3]
+            if dp[1]:
                 insert_qry = qry_with_endtime
             else:
                 insert_qry = qry_without_endtime
@@ -358,9 +373,52 @@ class StreamHandler():
                 batch.clear()
                 dp_number = 1
             else:
-                if dp.end_time:
-                    batch.add(insert_qry, (stream_id, day, dp.start_time, dp.end_time, sample))
+                if dp[1]:
+                    batch.add(insert_qry, (stream_id, day, dp[0], dp[1], sample))
                 else:
-                    batch.add(insert_qry, (stream_id, day, dp.start_time, sample.encode()))
+                    batch.add(insert_qry, (stream_id, day, dp[0], sample))
                 dp_number += 1
         yield batch
+
+    def serialize_datapoints_batch(self, data):
+
+        """
+        Converts list of datapoints into batches and pickle it
+        :param data:
+        """
+
+        grouped_samples = []
+        line_number = 1
+        current_day = None  # used to check boundry condition. For example, if half of the sample belong to next day
+        last_start_time = None
+        datapoints = []
+
+        for dp in data:
+
+            start_time = dp.start_time
+            end_time = dp.end_time
+
+            if line_number == 1:
+                datapoints = []
+                first_start_time = start_time
+                # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
+                start_day = first_start_time.strftime("%Y%m%d")
+
+                current_day = int(start_time.timestamp() / 86400)
+            if line_number > self.sample_group_size:
+                last_start_time = start_time
+                datapoints.append(DataPoint(start_time, end_time, dp.offset, dp.sample))
+                grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
+                line_number = 1
+            else:
+                if (int(start_time.timestamp() / 86400)) > current_day:
+                    start_day = start_time.strftime("%Y%m%d")
+                datapoints.append(DataPoint(start_time, end_time, dp.offset, dp.sample))
+                line_number += 1
+
+        if len(datapoints) > 0:
+            if not last_start_time:
+                last_start_time = start_time
+            grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
+
+        return grouped_samples

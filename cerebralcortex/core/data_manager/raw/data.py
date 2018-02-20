@@ -33,7 +33,7 @@ class RawData(StreamHandler):
     def __init__(self, CC):
 
         self.config = CC.config
-        self.sql_data = SqlData(CC)
+        self.sql_data = CC.SqlData
 
         self.time_zone = CC.timezone
 
@@ -45,3 +45,4 @@ class RawData(StreamHandler):
         self.keyspace_name = self.config['cassandra']['keyspace']
         self.datapoint_table = self.config['cassandra']['datapoint_table']
         self.batch_size = 64500
+        self.sample_group_size = 99

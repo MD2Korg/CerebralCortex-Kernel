@@ -24,17 +24,17 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-def get_or_create_sc(type="sparkContext", master=None, name=None):
+def get_or_create_sc(type="sparkContext", name=None):
     from pyspark.sql import SQLContext
     from pyspark.sql import SparkSession
 
     ss = SparkSession.builder
     if name:
         ss.appName(name)
-    if master:
-        ss.master(master)
-    else:
-        ss.master("local[*]")
+
+    ss.config("spark.streaming.backpressure.enabled", True)
+    ss.config("spark.streaming.backpressure.initialRate", 1)
+    ss.config("spark.streaming.kafka.maxRatePerPartition", 2)
 
     sparkSession = ss.getOrCreate()
 
