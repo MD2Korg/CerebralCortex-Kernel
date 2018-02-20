@@ -191,7 +191,8 @@ class FileToDB():
                 if existing_data is not None:
                     existing_data = pickle.loads(existing_data)
                     chunked_data.extend(existing_data)
-                #picked_data = pickle.dumps(chunked_data)
+                    existing_data = None
+                    #picked_data = pickle.dumps(chunked_data)
                 filename = self.raw_files_dir+filename
                 with hdfs.open(filename, "wb") as f:
                     pickle.dump(chunked_data, f)
