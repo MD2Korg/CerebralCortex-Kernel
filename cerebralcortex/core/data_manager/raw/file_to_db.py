@@ -189,9 +189,12 @@ class FileToDB():
                     with hdfs.open(filename, "rb") as curfile:
                         existing_data = curfile.read()
                 if existing_data is not None:
-                    existing_data = pickle.loads(existing_data)
-                    chunked_data.extend(existing_data)
-                    existing_data = None
+                    try:
+                        existing_data = pickle.loads(existing_data)
+                        chunked_data.extend(existing_data)
+                    except:
+                        print(existing_data)
+                        print("ERROR", filename)
                     #picked_data = pickle.dumps(chunked_data)
                 filename = self.raw_files_dir+filename
                 with hdfs.open(filename, "wb") as f:
@@ -202,6 +205,7 @@ class FileToDB():
             else:
                 day = row[2]
                 chunked_data.append(row)
+            existing_data = None
 
 
     def line_to_batch_block(self, stream_id: uuid, lines: str, insert_qry: str):
