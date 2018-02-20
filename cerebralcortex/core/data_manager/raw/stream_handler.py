@@ -53,7 +53,7 @@ class StreamHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_stream(self, stream_id: uuid, day, start_time: datetime = None, end_time: datetime = None,
+    def get_stream(self, stream_id: uuid=None, owner_id: uuid=None, day:str=None, start_time: datetime = None, end_time: datetime = None,
                    data_type=DataSet.COMPLETE) -> DataStream:
 
         """
@@ -65,9 +65,9 @@ class StreamHandler():
         :param data_type:
         :return:
         """
-        if not stream_id or not day:
+        if stream_id is None or day is None or owner_id is None:
             return None
-
+        
         where_clause = "where identifier=" + str(stream_id) + " and day='" + str(day) + "'"
 
         if start_time:
@@ -80,11 +80,16 @@ class StreamHandler():
         datastream_metadata = self.sql_data.get_stream_metadata(stream_id)
 
         if data_type == DataSet.COMPLETE:
-            dps = self.load_cassandra_data(where_clause)
+            if self.nosql_store=="hdfs":
+                dps = self.read_hdfs_day_file(owner_id, stream_id, day)
+            else:
+                dps = self.load_cassandra_data(where_clause)
             stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps)
         elif data_type == DataSet.ONLY_DATA:
-            dps = self.load_cassandra_data(where_clause)
-            return dps
+            if self.nosql_store=="hdfs":
+                return self.read_hdfs_day_file(owner_id, stream_id, day)
+            else:
+                return self.load_cassandra_data(where_clause)                
         elif data_type == DataSet.ONLY_METADATA:
             stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, None)
         else:
@@ -118,7 +123,27 @@ class StreamHandler():
             self.logging.log(
                 error_message="STREAM ID: " + stream_id + " - Error in mapping datapoints and metadata to datastream. " + str(
                     traceback.format_exc()), error_type=self.logtypes.CRITICAL)
-
+    
+    def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str):
+        # Using libhdfs
+        hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+        
+        datapoints = []
+        filename = str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+        with hdfs.open(filename, "rb") as curfile:
+            data = curfile.read()
+        if data is not None:
+            data = deserialize_obj(data)
+        try:
+            for dp in data:
+                datapoints.extend(deserialize_obj(dp[3]))
+            return datapoints
+        except Exception as e:
+            self.logging.log(error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc()),
+                             error_type=self.logtypes.CRITICAL)
+            return []
+        
+    
     def load_cassandra_data(self, where_clause=None) -> List:
         """
 

@@ -77,7 +77,6 @@ class FileToDB():
         self.influx_day_datapoints_limit = 37000
 
 
-    @log_execution_time
     def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert: bool = True, nosql_insert: bool = True,
                        nosql_store: str = "hdfs"):
 
