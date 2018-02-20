@@ -196,9 +196,13 @@ class FileToDB():
                     with hdfs.open(filename, "wb") as f:
                         pickle.dump(chunked_data, f)
                 except:
-                    self.logging.log(
-                        error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename) + " - Error in writing data to HDFS. " + str(
-                            traceback.format_exc()), error_type=self.logtypes.DEBUG)
+                    try:
+                        with hdfs.open(filename, "wb") as f:
+                            pickle.dump(chunked_data, f)
+                    except:
+                        self.logging.log(
+                            error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename) + " - Error in writing data to HDFS. " + str(
+                                traceback.format_exc()), error_type=self.logtypes.DEBUG)
                 day = row[2]
                 chunked_data =[]
                 chunked_data.append(row)
