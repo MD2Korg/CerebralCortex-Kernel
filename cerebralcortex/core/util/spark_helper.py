@@ -34,7 +34,7 @@ def get_or_create_sc(type="sparkContext", name=None):
 
     ss.config("spark.streaming.backpressure.enabled", True)
     ss.config("spark.streaming.backpressure.initialRate", 1)
-    ss.config("spark.streaming.kafka.maxRatePerPartition", 1)
+    ss.config("spark.streaming.kafka.maxRatePerPartition", 2)
 
     sparkSession = ss.getOrCreate()
 

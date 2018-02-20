@@ -191,18 +191,14 @@ class FileToDB():
                 if existing_data is not None:
                     existing_data = pickle.loads(existing_data)
                     chunked_data.extend(existing_data)
+                chunked_data = list(set(chunked_data)) # remove duplicate
                 filename = self.raw_files_dir+filename
                 try:
                     with hdfs.open(filename, "wb") as f:
                         pickle.dump(chunked_data, f)
-                except:
-                    try:
-                        with hdfs.open(filename, "wb") as f:
-                            pickle.dump(chunked_data, f)
-                    except:
-                        self.logging.log(
-                            error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename) + " - Error in writing data to HDFS. " + str(
-                                traceback.format_exc()), error_type=self.logtypes.DEBUG)
+                except Exception as ex:
+                    self.logging.log(
+                        error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
                 day = row[2]
                 chunked_data =[]
                 chunked_data.append(row)
