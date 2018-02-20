@@ -37,7 +37,6 @@ from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
 from influxdb import InfluxDBClient
 from cerebralcortex.core.util.data_types import convert_sample, serialize_obj
-from cerebralcortex.core.util.debuging_decorators import log_execution_time
 from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 
@@ -77,9 +76,11 @@ class FileToDB():
         self.influx_batch_size = 10000
         self.influx_day_datapoints_limit = 37000
 
+
     @log_execution_time
     def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert: bool = True, nosql_insert: bool = True,
                        nosql_store: str = "hdfs"):
+
         """
         :param msg:
         :param zip_filepath:
@@ -238,6 +239,7 @@ class FileToDB():
                 batch.add(insert_qry.bind([stream_id, day, start_time, end_time, blob_obj]))
                 line_number += 1
         yield batch
+
 
     def line_to_sample(self, filename, stream_id, stream_owner_id, stream_owner_name, stream_name,
                        data_descriptor, influxdb_insert, nosql_insert):

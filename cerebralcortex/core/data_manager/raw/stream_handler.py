@@ -37,7 +37,6 @@ from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.util.data_types import convert_sample, deserialize_obj
 from pytz import timezone as pytimezone
 
-from cerebralcortex.core.util.debuging_decorators import log_execution_time
 
 
 class DataSet(Enum):
@@ -53,7 +52,6 @@ class StreamHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    @log_execution_time
     def get_stream(self, stream_id: uuid, day, start_time: datetime = None, end_time: datetime = None,
                    data_type=DataSet.COMPLETE) -> DataStream:
 
@@ -262,7 +260,6 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    @log_execution_time
     def save_stream(self, datastream: DataStream):
 
         """
@@ -315,7 +312,6 @@ class StreamHandler():
                 error_message="STREAM ID: " + stream_id + " - Cannot save stream. " + str(traceback.format_exc()),
                 error_type=self.logtypes.CRITICAL)
 
-    @log_execution_time
     def save_raw_data(self, stream_id: uuid, datapoints: DataPoint):
 
         """

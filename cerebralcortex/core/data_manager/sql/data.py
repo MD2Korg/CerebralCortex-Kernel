@@ -58,6 +58,7 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
         #                                             password=self.dbPassword, database=self.database)
         # self.cursor = self.dbConnection.cursor(dictionary=True)
 
+
     def create_pool(self, pool_name="CC_Pool", pool_size=10):
         """
         Create a connection pool, after created, the request of connecting
@@ -145,3 +146,4 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
     # def __del__(self):
     #     if self.dbConnection:
     #         self.dbConnection.close()
+

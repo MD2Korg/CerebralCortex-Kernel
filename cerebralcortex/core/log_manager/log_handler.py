@@ -27,9 +27,10 @@
 import logging
 import inspect
 import os
+import syslog
 from enum import Enum
 
-
+syslog.openlog(ident="CerebralCortex")
 class LogTypes():
     EXCEPTION = 1,
     CRITICAL = 2,
@@ -40,11 +41,7 @@ class LogTypes():
 
 
 class LogHandler():
-
     def log(self, error_message="", error_type=LogTypes.EXCEPTION):
-
-        if not os.path.exists(self.log_path):
-            os.makedirs(self.log_path)
 
         FORMAT = '[%(asctime)s] - %(message)s'
 
@@ -56,30 +53,17 @@ class LogHandler():
         error_message = "[" + str(file_name) + " - " + str(method_name) + " - " + str(line_number) + "] - " + str(error_message)
 
         if error_type==LogTypes.CRITICAL:
-            logs_filename = self.log_path+"critical.log"
-            logging.basicConfig(filename=logs_filename,level=logging.CRITICAL, format=FORMAT)
-            logging.critical(error_message)
+            syslog.syslog(syslog.LOG_CRIT, error_message)
         elif error_type == LogTypes.ERROR:
-            logs_filename = self.log_path+"error.log"
-            logging.basicConfig(filename=logs_filename,level=logging.ERROR, format=FORMAT)
-            logging.error(error_message)
+            syslog.syslog(syslog.LOG_ERR, error_message)
         elif error_type == LogTypes.EXCEPTION:
-            logs_filename = self.log_path+"error.log"
-            logging.basicConfig(filename=logs_filename,level=logging.ERROR, format=FORMAT)
-            logging.exception(error_message)
+            syslog.syslog(syslog.LOG_ERR, error_message)
         elif error_type == LogTypes.WARNING:
-            logs_filename = self.log_path+"warning.log"
-            logging.basicConfig(filename=logs_filename,level=logging.WARNING, format=FORMAT)
-            logging.warning(error_message)
+            syslog.syslog(syslog.LOG_WARNING, error_message)
         elif error_type == LogTypes.DEBUG:
-            logs_filename = self.log_path+"debug.log"
-            logging.basicConfig(filename=logs_filename,level=logging.DEBUG, format=FORMAT)
-            logging.debug(error_message)
+            syslog.syslog(syslog.LOG_DEBUG, error_message)
         elif error_type == LogTypes.MISSING_DATA:
-            logs_filename = self.log_path+"missing_data.log"
-            logging.basicConfig(filename=logs_filename,level=logging.WARNING, format=FORMAT)
-            logging.warning(error_message)
+            error_message = 'MISSING_DATA ' + error_messasge
+            syslog.syslog(syslog.LOG_ERROR, error_message)
         else:
-            logs_filename = self.log_path+"info.log"
-            logging.basicConfig(filename=logs_filename,level=logging.INFO, format=FORMAT)
-            logging.info(error_message)
+            syslog.syslog(syslog.LOG_INFO, error_message)
