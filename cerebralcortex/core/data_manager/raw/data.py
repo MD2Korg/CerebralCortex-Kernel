@@ -46,3 +46,11 @@ class RawData(StreamHandler):
         self.datapoint_table = self.config['cassandra']['datapoint_table']
         self.batch_size = 64500
         self.sample_group_size = 99
+
+        self.hdfs_ip = self.config['hdfs']['host']
+        self.hdfs_port = self.config['hdfs']['port']
+        self.hdfs_user = self.config['hdfs']['hdfs_user']
+        self.hdfs_kerb_ticket = self.config['hdfs']['hdfs_kerb_ticket']
+        self.raw_files_dir = self.config['hdfs']['raw_files_dir']
+        
+        self.nosql_store = self.config['data_ingestion']['nosql_store']

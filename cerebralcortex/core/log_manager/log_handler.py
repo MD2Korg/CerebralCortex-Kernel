@@ -43,8 +43,6 @@ class LogTypes():
 class LogHandler():
     def log(self, error_message="", error_type=LogTypes.EXCEPTION):
 
-        FORMAT = '[%(asctime)s] - %(message)s'
-
         execution_stats = inspect.stack()
         method_name = execution_stats[1][3]
         file_name = execution_stats[1][1]

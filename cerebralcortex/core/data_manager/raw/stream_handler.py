@@ -25,6 +25,7 @@
 
 import json
 import uuid
+import pyarrow
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import List
@@ -304,13 +305,62 @@ class StreamHandler():
                                                    data_descriptor, execution_context,
                                                    annotations,
                                                    stream_type, new_start_time, new_end_time)
-
-                # save raw sensor data in Cassandra
-                self.save_raw_data(stream_id, data)
+                if self.nosql_store=="hdfs":
+                    self.write_hdfs_day_file(owner_id, stream_id, data)
+                else:
+                    # save raw sensor data in Cassandra
+                    self.save_raw_data(stream_id, data)
         except Exception as e:
             self.logging.log(
                 error_message="STREAM ID: " + stream_id + " - Cannot save stream. " + str(traceback.format_exc()),
                 error_type=self.logtypes.CRITICAL)
+
+
+    def write_hdfs_day_file(self, participant_id: uuid, stream_id: uuid, data: DataPoint):
+        """
+
+        :param participant_id:
+        :param stream_id:
+        :param data:
+        """
+        # Using libhdfs
+        hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+
+        data = self.serialize_datapoints_batch(data)
+
+        day = None
+
+        # if the data appeared in a different day then this shall put that day in correct day
+        chunked_data = []
+        existing_data = None
+        for row in data:
+            if day is None:
+                day = row[2]
+                chunked_data.append(row)
+            elif day!=row[2]:
+                filename = str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+                # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
+                if hdfs.exists(filename):
+                    with hdfs.open(filename, "rb") as curfile:
+                        existing_data = curfile.read()
+                if existing_data is not None:
+                    existing_data = serialize_obj(existing_data)
+                    chunked_data.extend(existing_data)
+                chunked_data = list(set(chunked_data)) # remove duplicate
+                filename = self.raw_files_dir+filename
+                try:
+                    with hdfs.open(filename, "wb") as f:
+                        serialize_obj(chunked_data, f)
+                except Exception as ex:
+                    self.logging.log(
+                        error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+                day = row[2]
+                chunked_data =[]
+                chunked_data.append(row)
+            else:
+                day = row[2]
+                chunked_data.append(row)
+            existing_data = None
 
     def save_raw_data(self, stream_id: uuid, datapoints: DataPoint):
 

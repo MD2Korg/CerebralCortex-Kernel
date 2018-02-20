@@ -158,7 +158,7 @@ class FileToDB():
                             traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
 
-    def write_hdfs_file(self, participant_id, stream_id, filename, data):
+    def write_hdfs_stream_file(self, participant_id, stream_id, filename, data):
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         day = data[0][2]
