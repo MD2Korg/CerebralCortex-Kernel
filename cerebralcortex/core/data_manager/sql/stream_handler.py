@@ -236,25 +236,24 @@ class StreamHandler():
         else:
             return rows[0]["identifier"]
 
-    def get_stream_id(self, stream_name: str) -> str:
+    def get_stream_id(self, user_id:uuid, stream_name: str) -> List:
         """
-
+        :param user_id
         :param stream_name:
         :return:
         """
-        if not stream_name:
-            return None
+        if not stream_name or not user_id:
+            return []
 
-        qry = "select identifier from " + self.datastreamTable + " where name = %(name)s"
-        vals = {'name': str(stream_name)}
+        qry = "select identifier from " + self.datastreamTable + " where owner=%s and name = %s"
+        vals = str(user_id),str(stream_name)
 
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
-            return None
+            return []
         else:
-            return rows[0]["identifier"]
+            return rows
 
     def get_stream_name(self, stream_id: uuid) -> str:
         """
