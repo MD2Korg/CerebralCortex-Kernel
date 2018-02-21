@@ -62,6 +62,6 @@ class LogHandler():
             syslog.syslog(syslog.LOG_DEBUG, error_message)
         elif error_type == LogTypes.MISSING_DATA:
             error_message = 'MISSING_DATA ' + error_message
-            syslog.syslog(syslog.LOG_ERROR, error_message)
+            syslog.syslog(syslog.LOG_ERR, error_message)
         else:
             syslog.syslog(syslog.LOG_INFO, error_message)
