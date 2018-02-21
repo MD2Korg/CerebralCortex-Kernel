@@ -130,6 +130,8 @@ class StreamHandler():
         
         datapoints = []
         filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+        if not hdfs.exists(filename):
+            return []
         with hdfs.open(filename, "rb") as curfile:
             data = curfile.read()
         if data is not None:
