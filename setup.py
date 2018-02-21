@@ -60,5 +60,5 @@ setup(
         ]
     },
 
-    data_files=[('/etc/rsyslog.d', ['cerebralcortex/data/20-cerebralcortex.conf']), ('/etc/logrotate.d', ['cerebralcortex/data/cerebralcortex']),]
+    data_files=[('/etc/rsyslog.d', ['cerebralcortex/resources/20-cerebralcortex.conf']), ('/etc/logrotate.d', ['cerebralcortex/resources/cerebralcortex']),]
 )
