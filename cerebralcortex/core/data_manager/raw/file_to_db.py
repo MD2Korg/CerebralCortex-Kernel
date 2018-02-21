@@ -191,7 +191,7 @@ class FileToDB():
                 if existing_data is not None:
                     existing_data = pickle.loads(existing_data)
                     chunked_data.extend(existing_data)
-                chunked_data = list(set(chunked_data)) # remove duplicate
+                chunked_data = chunked_data # TODO: remove duplicate
                 filename = self.raw_files_dir+filename
                 try:
                     with hdfs.open(filename, "wb") as f:
