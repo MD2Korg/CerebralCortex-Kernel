@@ -129,7 +129,7 @@ class StreamHandler():
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         
         datapoints = []
-        filename = str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+        filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
         with hdfs.open(filename, "rb") as curfile:
             data = curfile.read()
         if data is not None:
@@ -363,7 +363,7 @@ class StreamHandler():
                 day = row[2]
                 chunked_data.append(row)
             elif day!=row[2]:
-                filename = str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+                filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
                 # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
                 if hdfs.exists(filename):
                     with hdfs.open(filename, "rb") as curfile:
@@ -372,7 +372,6 @@ class StreamHandler():
                     existing_data = serialize_obj(existing_data)
                     chunked_data.extend(existing_data)
                 chunked_data = list(set(chunked_data)) # remove duplicate
-                filename = self.raw_files_dir+filename
                 try:
                     with hdfs.open(filename, "wb") as f:
                         serialize_obj(chunked_data, f)

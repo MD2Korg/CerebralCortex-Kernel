@@ -183,7 +183,7 @@ class FileToDB():
                 day = row[2]
                 chunked_data.append(row)
             elif day!=row[2]:
-                filename = str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+                filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
                 # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
                 if hdfs.exists(filename):
                     with hdfs.open(filename, "rb") as curfile:
@@ -192,7 +192,7 @@ class FileToDB():
                     existing_data = pickle.loads(existing_data)
                     chunked_data.extend(existing_data)
                 chunked_data = chunked_data # TODO: remove duplicate
-                filename = self.raw_files_dir+filename
+
                 try:
                     with hdfs.open(filename, "wb") as f:
                         pickle.dump(chunked_data, f)
