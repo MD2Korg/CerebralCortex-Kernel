@@ -94,7 +94,7 @@ class StreamHandler():
         qry = "select start_time, end_time from " + self.datastreamTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(stream_id)}
 
-        rows = self.cursor.execute(qry, vals)
+        rows = self.execute(qry, vals)
         #rows = self.cursor.fetchall()
 
         if len(rows) == 0:

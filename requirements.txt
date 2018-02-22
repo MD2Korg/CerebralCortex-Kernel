@@ -8,5 +8,5 @@ minio==2.2.4
 cassandra-driver==3.12.0
 kafka
 influxdb==5.0.0
-pyarrow
+pyarrow==0.8.0
 pympler
