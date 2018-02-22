@@ -368,6 +368,12 @@ class StreamHandler():
                 if len(data)==1:
                     filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
                     try:
+                        if hdfs.exists(filename):
+                            with hdfs.open(filename, "rb") as curfile:
+                                existing_data = curfile.read()
+                        if existing_data is not None:
+                            existing_data = deserialize_obj(existing_data)
+                            chunked_data.extend(existing_data)
                         with hdfs.open(filename, "wb") as f:
                             pickle.dump(chunked_data, f)
                     except Exception as ex:
@@ -380,7 +386,7 @@ class StreamHandler():
                     with hdfs.open(filename, "rb") as curfile:
                         existing_data = curfile.read()
                 if existing_data is not None:
-                    existing_data = serialize_obj(existing_data)
+                    existing_data = deserialize_obj(existing_data)
                     chunked_data.extend(existing_data)
                 #chunked_data = list(set(chunked_data)) # remove duplicate
                 try:
