@@ -26,6 +26,7 @@
 import json
 import uuid
 import pyarrow
+import pickle
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import List
@@ -364,6 +365,14 @@ class StreamHandler():
             if day is None:
                 day = row[2]
                 chunked_data.append(row)
+                if len(data)==1:
+                    filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+                    try:
+                        with hdfs.open(filename, "wb") as f:
+                            pickle.dump(chunked_data, f)
+                    except Exception as ex:
+                        self.logging.log(error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+
             elif day!=row[2]:
                 filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
                 # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
@@ -373,13 +382,14 @@ class StreamHandler():
                 if existing_data is not None:
                     existing_data = serialize_obj(existing_data)
                     chunked_data.extend(existing_data)
-                chunked_data = list(set(chunked_data)) # remove duplicate
+                #chunked_data = list(set(chunked_data)) # remove duplicate
                 try:
                     with hdfs.open(filename, "wb") as f:
-                        serialize_obj(chunked_data, f)
+                        pickle.dump(chunked_data, f)
                 except Exception as ex:
                     self.logging.log(
                         error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+
                 day = row[2]
                 chunked_data =[]
                 chunked_data.append(row)
