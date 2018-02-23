@@ -46,9 +46,6 @@ minio:
   secret_key: '4W6gs8eyOEMmVIj1pBhc'
   secure: False #ssl
 
-logging:
-  log_path: '/var/log/cerebralcortex/' # make sure directory is writeable by current OS user
-
 data_ingestion:
   influxdb_in: False
   nosql_in: True

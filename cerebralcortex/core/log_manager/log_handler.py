@@ -24,13 +24,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import logging
 import inspect
-import os
 import syslog
-from enum import Enum
 
 syslog.openlog(ident="CerebralCortex")
+
 class LogTypes():
     EXCEPTION = 1,
     CRITICAL = 2,

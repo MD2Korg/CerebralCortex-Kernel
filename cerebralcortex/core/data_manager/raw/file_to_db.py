@@ -36,6 +36,7 @@ from cassandra.query import BatchStatement, BatchType
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
 from influxdb import InfluxDBClient
+from cerebralcortex.core.util.debuging_decorators import log_execution_time
 from cerebralcortex.core.util.data_types import convert_sample, serialize_obj
 from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.log_manager.log_handler import LogTypes
@@ -62,7 +63,8 @@ class FileToDB():
         self.hdfs_kerb_ticket = self.config['hdfs']['hdfs_kerb_ticket']
         self.raw_files_dir = self.config['hdfs']['raw_files_dir']
 
-        self.logging = CCLogging(self.config['logging']['log_path'])
+        self.nosql_store = self.config["data_ingestion"]["nosql_store"]
+        self.logging = CCLogging()
         self.logtypes = LogTypes()
 
         self.influxdbIP = self.config['influxdb']['host']
@@ -76,9 +78,8 @@ class FileToDB():
         self.influx_batch_size = 10000
         self.influx_day_datapoints_limit = 37000
 
-
-    def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert: bool = True, nosql_insert: bool = True,
-                       nosql_store: str = "hdfs"):
+    @log_execution_time
+    def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert: bool = True, nosql_insert: bool = True):
 
         """
         :param msg:
@@ -125,7 +126,7 @@ class FileToDB():
                     if nosql_insert:
                         nosql_data.extend(all_data["nosql_data"])
 
-            if (nosql_insert and len(nosql_data) > 0) and (nosql_store=="cassandra" or nosql_store=="scylladb"):
+            if (nosql_insert and len(nosql_data) > 0) and (self.nosql_store=="cassandra" or self.nosql_store=="scylladb"):
                 # connect to cassandra
                 cluster = Cluster([self.host_ip], port=self.host_port)
                 session = cluster.connect(self.keyspace_name)
@@ -141,7 +142,7 @@ class FileToDB():
 
                 session.shutdown()
                 cluster.shutdown()
-            elif (nosql_insert and len(nosql_data) > 0) and nosql_store=="hdfs":
+            elif (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="hdfs":
                 self.write_hdfs_day_file(owner, stream_id, nosql_data)
 
 
@@ -174,38 +175,94 @@ class FileToDB():
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         day = None
-
         # if the data appeared in a different day then this shall put that day in correct day
         chunked_data = []
         existing_data = None
-        for row in data:
-            if day is None:
-                day = row[2]
-                chunked_data.append(row)
-            elif day!=row[2]:
-                filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-                # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
+        if len(data)==1:
+            day = data[0].start_time.strftime("%Y%m%d")
+            filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+            try:
                 if hdfs.exists(filename):
                     with hdfs.open(filename, "rb") as curfile:
                         existing_data = curfile.read()
                 if existing_data is not None:
                     existing_data = pickle.loads(existing_data)
                     chunked_data.extend(existing_data)
-                chunked_data = chunked_data # TODO: remove duplicate
+                    #TODO: remove duplicate data
+                with hdfs.open(filename, "wb") as f:
+                    pickle.dump(data, f)
+            except Exception as ex:
+                self.logging.log(
+                    error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+        else:
+            current_day = None
+            for row in data:
+                current_day = row.start_time.strftime("%Y%m%d")
+                if day is None:
+                    day = row.start_time.strftime("%Y%m%d")
+                    chunked_data.append(row)
+                elif day!=current_day:
+                    filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+                    # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
+                    if hdfs.exists(filename):
+                        with hdfs.open(filename, "rb") as curfile:
+                            existing_data = curfile.read()
+                    if existing_data is not None:
+                        existing_data = pickle.loads(existing_data)
+                        chunked_data.extend(existing_data)
+                    # TODO: remove duplicate
 
-                try:
-                    with hdfs.open(filename, "wb") as f:
-                        pickle.dump(chunked_data, f)
-                except Exception as ex:
-                    self.logging.log(
-                        error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
-                day = row[2]
-                chunked_data =[]
-                chunked_data.append(row)
-            else:
-                day = row[2]
-                chunked_data.append(row)
-            existing_data = None
+                    try:
+                        with hdfs.open(filename, "wb") as f:
+                            pickle.dump(chunked_data, f)
+                    except Exception as ex:
+                        self.logging.log(
+                            error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+
+                    day = row.start_time.strftime("%Y%m%d")
+                    chunked_data =[]
+                    chunked_data.append(row)
+                else:
+                    day = row.start_time.strftime("%Y%m%d")
+                    chunked_data.append(row)
+                existing_data = None
+
+    # def write_hdfs_day_file(self, participant_id, stream_id, data):
+    #     # Using libhdfs
+    #     hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+    #     day = None
+    #
+    #     # if the data appeared in a different day then this shall put that day in correct day
+    #     chunked_data = []
+    #     existing_data = None
+    #     for row in data:
+    #         if day is None:
+    #             day = row[2]
+    #             chunked_data.append(row)
+    #         elif day!=row[2]:
+    #             filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+    #             # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
+    #             if hdfs.exists(filename):
+    #                 with hdfs.open(filename, "rb") as curfile:
+    #                     existing_data = curfile.read()
+    #             if existing_data is not None:
+    #                 existing_data = pickle.loads(existing_data)
+    #                 chunked_data.extend(existing_data)
+    #             chunked_data = chunked_data # TODO: remove duplicate
+    #
+    #             try:
+    #                 with hdfs.open(filename, "wb") as f:
+    #                     pickle.dump(chunked_data, f)
+    #             except Exception as ex:
+    #                 self.logging.log(
+    #                     error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+    #             day = row[2]
+    #             chunked_data =[]
+    #             chunked_data.append(row)
+    #         else:
+    #             day = row[2]
+    #             chunked_data.append(row)
+    #         existing_data = None
 
 
     def line_to_batch_block(self, stream_id: uuid, lines: str, insert_qry: str):
@@ -346,11 +403,21 @@ class FileToDB():
 
                         ############### END INFLUXDB BLOCK
 
-                        ############### START OF NO-SQL DATA BLOCK
-                        if nosql_insert:
+                        ############### START OF NO-SQL (HDFS) DATA BLOCK
+                        if nosql_insert and self.nosql_store=="hdfs":
 
                             start_time_dt = datetime.datetime.utcfromtimestamp(
-                                start_time)  # TODO: this is a workaround. Update code to only have on start_time var
+                                start_time)
+
+                            grouped_samples.append(DataPoint(start_time_dt, None, offset, values))
+
+                        ############### END OF NO-SQL (HDFS) DATA BLOCK
+
+                        ############### START OF NO-SQL (Cassandra/ScyllaDB) DATA BLOCK
+                        elif nosql_insert and self.nosql_store!="hdfs":
+
+                            start_time_dt = datetime.datetime.utcfromtimestamp(
+                                start_time)
 
                             if line_number == 1:
                                 datapoints = []
@@ -370,11 +437,12 @@ class FileToDB():
                                 datapoints.append(DataPoint(start_time_dt, None, offset, values))
                                 line_number += 1
 
-                if (nosql_insert and len(datapoints) > 0):
+                if (nosql_insert and len(datapoints) > 0) and self.nosql_store!="hdfs":
                     if not last_start_time:
                         last_start_time = datetime.datetime.utcfromtimestamp(start_time)
                     grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
                     ############### END OF NO-SQL DATA BLOCK
+
                 if line_count > self.influx_day_datapoints_limit:
                     line_protocol = ""
                 return {"nosql_data": grouped_samples, "influxdb_data": line_protocol}
