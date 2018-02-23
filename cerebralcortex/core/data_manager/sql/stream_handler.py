@@ -349,14 +349,13 @@ class StreamHandler():
             qry = "UPDATE " + self.datastreamTable + " set annotations=JSON_ARRAY_APPEND(annotations, '$.annotations',  CAST(%s AS JSON)) where identifier=%s"
             vals = json.dumps(annotations), str(stream_id)
             isQueryReady = 1
-
+        
         elif (annotation_status == "new"):
             qry = "INSERT INTO " + self.datastreamTable + " (identifier, owner, name, data_descriptor, execution_context, annotations, type, start_time, end_time) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
             vals = str(stream_id), str(owner_id), str(stream_name), json.dumps(
                 data_descriptor), json.dumps(execution_context), json.dumps(
                 annotations), stream_type, start_time, end_time
-            isQueryReady = 1
-
+            isQueryReady = 1        
         # if nothing is changed then isQueryReady would be 0 and no database transaction would be performed
         if isQueryReady == 1:
             try:

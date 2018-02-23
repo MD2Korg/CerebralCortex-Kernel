@@ -144,7 +144,9 @@ class FileToDB():
                 cluster.shutdown()
             elif (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="hdfs":
                 self.write_hdfs_day_file(owner, stream_id, nosql_data)
-
+                self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                                   annotations, stream_type, nosql_data[0].start_time,
+                                                   nosql_data[len(nosql_data) - 1].start_time)
 
             if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
                 try:
