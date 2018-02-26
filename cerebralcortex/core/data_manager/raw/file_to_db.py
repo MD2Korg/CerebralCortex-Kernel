@@ -109,7 +109,7 @@ class FileToDB():
             stream_type = StreamTypes.DATASTREAM
 
         owner_name = self.sql_data.get_user_name(owner)
-
+        stream_day = msg["day"]
         filenames = msg["filename"].split(",")
         influxdb_data = ""
         nosql_data = []
@@ -133,13 +133,14 @@ class FileToDB():
                 qry_with_endtime = session.prepare(
                     "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
 
-                for data_block in self.line_to_batch_block(stream_id, nosql_data, qry_with_endtime):
+                for data_block in self.line_to_batch_block(stream_id, owner, nosql_data, qry_with_endtime):
                     session.execute(data_block)
 
                 self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
                                                    annotations, stream_type, nosql_data[0][0],
                                                    nosql_data[len(nosql_data) - 1][1])
-
+                # mark day as processed in data_replay table
+                self.mark_processed_day(owner, stream_id, stream_day)
                 session.shutdown()
                 cluster.shutdown()
             elif (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="hdfs":
@@ -147,6 +148,8 @@ class FileToDB():
                 self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
                                                    annotations, stream_type, nosql_data[0].start_time,
                                                    nosql_data[len(nosql_data) - 1].start_time)
+                # mark day as processed in data_replay table
+                self.sql_data.mark_processed_day(owner, stream_id, stream_day)
 
             if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
                 try:
@@ -270,7 +273,7 @@ class FileToDB():
     #         existing_data = None
 
 
-    def line_to_batch_block(self, stream_id: uuid, lines: str, insert_qry: str):
+    def line_to_batch_block(self, stream_id: uuid, owner_id: uuid, lines: str, insert_qry: str):
 
         """
 

@@ -416,3 +416,9 @@ class StreamHandler():
                 return "unchanged"
         else:
             self.logging.log(error_message="STREAM ID: "+stream_id+" - No record found. "+str(traceback.format_exc()), error_type=self.logtypes.DEBUG)
+
+
+    def mark_processed_day(self, owner_id, stream_id, day):
+        qry = "UPDATE "+self.dataReplayTable+" set processed=1 where owner_id=%s and stream_id=%s and day=%s"
+        vals = str(owner_id), str(stream_id), str(day)
+        self.execute(qry, vals, commit=True)

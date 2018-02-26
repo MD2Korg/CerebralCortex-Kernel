@@ -24,7 +24,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import yaml
-from requests import get
 
 class ConfigHandler():
     def load_file(self, filepath: str):
