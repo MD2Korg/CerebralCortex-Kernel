@@ -189,8 +189,9 @@ class FileToDB():
                         existing_data = curfile.read()
                 if existing_data is not None:
                     existing_data = pickle.loads(existing_data)
-                    chunked_data.extend(existing_data)
-                    #TODO: remove duplicate data
+                    existing_data.extend(data)
+                    # remove duplicate data
+                    data = [ii for n,ii in enumerate(existing_data) if ii not in existing_data[:n]]
                 with hdfs.open(filename, "wb") as f:
                     pickle.dump(data, f)
             except Exception as ex:
@@ -202,7 +203,8 @@ class FileToDB():
                 current_day = row.start_time.strftime("%Y%m%d")
                 if day is None:
                     day = row.start_time.strftime("%Y%m%d")
-                    chunked_data.append(row)
+                    if row not in chunked_data:
+                        chunked_data.append(row)
                 elif day!=current_day:
                     filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
                     # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
@@ -211,8 +213,7 @@ class FileToDB():
                             existing_data = curfile.read()
                     if existing_data is not None:
                         existing_data = pickle.loads(existing_data)
-                        chunked_data.extend(existing_data)
-                    # TODO: remove duplicate
+                        existing_data.extend(chunked_data)
 
                     try:
                         with hdfs.open(filename, "wb") as f:
@@ -223,10 +224,12 @@ class FileToDB():
 
                     day = row.start_time.strftime("%Y%m%d")
                     chunked_data =[]
-                    chunked_data.append(row)
+                    if row not in chunked_data:
+                        chunked_data.append(row)
                 else:
                     day = row.start_time.strftime("%Y%m%d")
-                    chunked_data.append(row)
+                    if row not in chunked_data:
+                        chunked_data.append(row)
                 existing_data = None
 
     # def write_hdfs_day_file(self, participant_id, stream_id, data):
