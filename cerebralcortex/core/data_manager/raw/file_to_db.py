@@ -217,13 +217,14 @@ class FileToDB():
                     if existing_data is not None and existing_data!="":
                         existing_data = pickle.loads(existing_data)
                         existing_data.extend(chunked_data)
-
-                    try:
-                        with hdfs.open(filename, "wb") as f:
-                            pickle.dump(chunked_data, f)
-                    except Exception as ex:
-                        self.logging.log(
-                            error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+                        chunked_data = [ii for n,ii in enumerate(existing_data) if ii not in existing_data[:n]]
+                    if len(chunked_data)>0:
+                        try:
+                            with hdfs.open(filename, "wb") as f:
+                                pickle.dump(chunked_data, f)
+                        except Exception as ex:
+                            self.logging.log(
+                                error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
 
                     day = row.start_time.strftime("%Y%m%d")
                     chunked_data =[]
