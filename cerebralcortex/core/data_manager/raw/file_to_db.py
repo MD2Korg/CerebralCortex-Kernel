@@ -214,7 +214,7 @@ class FileToDB():
                     if hdfs.exists(filename):
                         with hdfs.open(filename, "rb") as curfile:
                             existing_data = curfile.read()
-                    if existing_data is not None:
+                    if existing_data is not None and existing_data!="":
                         existing_data = pickle.loads(existing_data)
                         existing_data.extend(chunked_data)
 
