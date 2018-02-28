@@ -79,7 +79,7 @@ class FileToDB():
         self.influx_day_datapoints_limit = 37000
 
     @log_execution_time
-    def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert: bool = True, nosql_insert: bool = True):
+    def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert: bool = False, nosql_insert: bool = True):
 
         """
         :param msg:
@@ -126,41 +126,42 @@ class FileToDB():
                     if nosql_insert:
                         nosql_data.extend(all_data["nosql_data"])
 
-            if (nosql_insert and len(nosql_data) > 0) and (self.nosql_store=="cassandra" or self.nosql_store=="scylladb"):
-                # connect to cassandra
-                cluster = Cluster([self.host_ip], port=self.host_port)
-                session = cluster.connect(self.keyspace_name)
-                qry_with_endtime = session.prepare(
-                    "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
+            if  self.sql_data.is_day_processed(owner, stream_id, stream_day):
+                if (nosql_insert and len(nosql_data) > 0) and (self.nosql_store=="cassandra" or self.nosql_store=="scylladb"):
+                    # connect to cassandra
+                    cluster = Cluster([self.host_ip], port=self.host_port)
+                    session = cluster.connect(self.keyspace_name)
+                    qry_with_endtime = session.prepare(
+                        "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
 
-                for data_block in self.line_to_batch_block(stream_id, owner, nosql_data, qry_with_endtime):
-                    session.execute(data_block)
+                    for data_block in self.line_to_batch_block(stream_id, owner, nosql_data, qry_with_endtime):
+                        session.execute(data_block)
 
-                self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
-                                                   annotations, stream_type, nosql_data[0][0],
-                                                   nosql_data[len(nosql_data) - 1][1])
-                # mark day as processed in data_replay table
-                self.mark_processed_day(owner, stream_id, stream_day)
-                session.shutdown()
-                cluster.shutdown()
-            elif (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="hdfs":
-                self.write_hdfs_day_file(owner, stream_id, nosql_data)
-                self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
-                                                   annotations, stream_type, nosql_data[0].start_time,
-                                                   nosql_data[len(nosql_data) - 1].start_time)
-                # mark day as processed in data_replay table
-                self.sql_data.mark_processed_day(owner, stream_id, stream_day)
+                    self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                                       annotations, stream_type, nosql_data[0][0],
+                                                       nosql_data[len(nosql_data) - 1][1])
+                    # mark day as processed in data_replay table
+                    self.sql_data.mark_processed_day(owner, stream_id, stream_day)
+                    session.shutdown()
+                    cluster.shutdown()
+                elif (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="hdfs":
+                    self.write_hdfs_day_file(owner, stream_id, nosql_data)
+                    self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                                       annotations, stream_type, nosql_data[0].start_time,
+                                                       nosql_data[len(nosql_data) - 1].start_time)
+                    # mark day as processed in data_replay table
+                    self.sql_data.mark_processed_day(owner, stream_id, stream_day)
 
-            if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
-                try:
-                    influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort,
-                                                     username=self.influxdbUser,
-                                                     password=self.influxdbPassword, database=self.influxdbDatabase)
-                    influxdb_client.write_points(influxdb_data, protocol="line")
-                except:
-                    self.logging.log(
-                        error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(owner)+ "Files: " + str(msg["filename"]) + " - Error in writing data to influxdb. " + str(
-                            traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+                if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
+                    try:
+                        influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort,
+                                                         username=self.influxdbUser,
+                                                         password=self.influxdbPassword, database=self.influxdbDatabase)
+                        influxdb_client.write_points(influxdb_data, protocol="line")
+                    except:
+                        self.logging.log(
+                            error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(owner)+ "Files: " + str(msg["filename"]) + " - Error in writing data to influxdb. " + str(
+                                traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
 
     def write_hdfs_stream_file(self, participant_id, stream_id, filename, data):
@@ -179,12 +180,19 @@ class FileToDB():
     def write_hdfs_day_file(self, participant_id, stream_id, data):
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
-        day = None
-        # if the data appeared in a different day then this shall put that day in correct day
-        chunked_data = []
         existing_data = None
-        if len(data)==1:
-            day = data[0].start_time.strftime("%Y%m%d")
+        outputdata = {}
+
+        #Data Processing loop
+        for row in data:
+            day = row.start_time.strftime("%Y%m%d")
+            if day not in outputdata:
+                outputdata[day] = []
+
+            outputdata[day].append(row)
+
+        #Data Write loop
+        for day, dps in outputdata.items():
             filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
             try:
                 if hdfs.exists(filename):
@@ -192,49 +200,76 @@ class FileToDB():
                         existing_data = curfile.read()
                 if existing_data is not None:
                     existing_data = pickle.loads(existing_data)
-                    existing_data.extend(data)
+                    existing_data.extend(dps)
                     # remove duplicate data
-                    data = [ii for n,ii in enumerate(existing_data) if ii not in existing_data[:n]]
+                    #dps = list(set(existing_data))
+                    #dps = [ii for n,ii in enumerate(existing_data) if ii not in existing_data[:n]]
                 with hdfs.open(filename, "wb") as f:
-                    pickle.dump(data, f)
+                    pickle.dump(dps, f)
             except Exception as ex:
                 self.logging.log(
                     error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
-        else:
-            current_day = None
-            for row in data:
-                current_day = row.start_time.strftime("%Y%m%d")
-                if day is None:
-                    day = row.start_time.strftime("%Y%m%d")
-                    if row not in chunked_data:
-                        chunked_data.append(row)
-                elif day!=current_day:
-                    filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-                    # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
-                    if hdfs.exists(filename):
-                        with hdfs.open(filename, "rb") as curfile:
-                            existing_data = curfile.read()
-                    if existing_data is not None and existing_data!="":
-                        existing_data = pickle.loads(existing_data)
-                        existing_data.extend(chunked_data)
-                        chunked_data = [ii for n,ii in enumerate(existing_data) if ii not in existing_data[:n]]
-                    if len(chunked_data)>0:
-                        try:
-                            with hdfs.open(filename, "wb") as f:
-                                pickle.dump(chunked_data, f)
-                        except Exception as ex:
-                            self.logging.log(
-                                error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
 
-                    day = row.start_time.strftime("%Y%m%d")
-                    chunked_data =[]
-                    if row not in chunked_data:
-                        chunked_data.append(row)
-                else:
-                    day = row.start_time.strftime("%Y%m%d")
-                    if row not in chunked_data:
-                        chunked_data.append(row)
-                existing_data = None
+
+    # def write_hdfs_day_file(self, participant_id, stream_id, data):
+    #     # Using libhdfs
+    #     hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+    #     day = None
+    #     # if the data appeared in a different day then this shall put that day in correct day
+    #     chunked_data = []
+    #     existing_data = None
+    #     if len(data)==1:
+    #         day = data[0].start_time.strftime("%Y%m%d")
+    #         filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+    #         try:
+    #             if hdfs.exists(filename):
+    #                 with hdfs.open(filename, "rb") as curfile:
+    #                     existing_data = curfile.read()
+    #             if existing_data is not None:
+    #                 existing_data = pickle.loads(existing_data)
+    #                 existing_data.extend(data)
+    #                 # remove duplicate data
+    #                 data = [ii for n,ii in enumerate(existing_data) if ii not in existing_data[:n]]
+    #             with hdfs.open(filename, "wb") as f:
+    #                 pickle.dump(data, f)
+    #         except Exception as ex:
+    #             self.logging.log(
+    #                 error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+    #     else:
+    #         current_day = None
+    #         for row in data:
+    #             current_day = row.start_time.strftime("%Y%m%d")
+    #             if day is None:
+    #                 day = row.start_time.strftime("%Y%m%d")
+    #                 if row not in chunked_data:
+    #                     chunked_data.append(row)
+    #             elif day!=current_day:
+    #                 filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+    #                 # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
+    #                 if hdfs.exists(filename):
+    #                     with hdfs.open(filename, "rb") as curfile:
+    #                         existing_data = curfile.read()
+    #                 if existing_data is not None and existing_data!="":
+    #                     existing_data = pickle.loads(existing_data)
+    #                     existing_data.extend(chunked_data)
+    #                     chunked_data = [ii for n,ii in enumerate(existing_data) if ii not in existing_data[:n]]
+    #                 if len(chunked_data)>0:
+    #                     try:
+    #                         with hdfs.open(filename, "wb") as f:
+    #                             pickle.dump(chunked_data, f)
+    #                     except Exception as ex:
+    #                         self.logging.log(
+    #                             error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+    #
+    #                 day = row.start_time.strftime("%Y%m%d")
+    #                 chunked_data =[]
+    #                 if row not in chunked_data:
+    #                     chunked_data.append(row)
+    #             else:
+    #                 day = row.start_time.strftime("%Y%m%d")
+    #                 if row not in chunked_data:
+    #                     chunked_data.append(row)
+    #             existing_data = None
 
     # def write_hdfs_day_file(self, participant_id, stream_id, data):
     #     # Using libhdfs

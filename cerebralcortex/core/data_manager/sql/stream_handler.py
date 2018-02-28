@@ -422,3 +422,12 @@ class StreamHandler():
         qry = "UPDATE "+self.dataReplayTable+" set processed=1 where owner_id=%s and stream_id=%s and day=%s"
         vals = str(owner_id), str(stream_id), str(day)
         self.execute(qry, vals, commit=True)
+
+    def is_day_processed(self, owner_id, stream_id, day):
+        qry = "SELECT processed from "+self.dataReplayTable+" where owner_id=%s and stream_id=%s and day=%s"
+        vals = str(owner_id), str(stream_id), str(day)
+        rows = self.execute(qry, vals)
+        if rows[0]["processed"]==1:
+            return True
+        else:
+            return False
