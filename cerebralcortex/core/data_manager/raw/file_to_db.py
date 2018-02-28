@@ -126,7 +126,7 @@ class FileToDB():
                     if nosql_insert:
                         nosql_data.extend(all_data["nosql_data"])
 
-            if  self.sql_data.is_day_processed(owner, stream_id, stream_day):
+            if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
                 if (nosql_insert and len(nosql_data) > 0) and (self.nosql_store=="cassandra" or self.nosql_store=="scylladb"):
                     # connect to cassandra
                     cluster = Cluster([self.host_ip], port=self.host_port)
