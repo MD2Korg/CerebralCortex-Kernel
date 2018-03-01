@@ -134,8 +134,8 @@ class FileToDB():
                                                                annotations, stream_type, nosql_data[0].start_time,
                                                                nosql_data[len(nosql_data) - 1].start_time)
 
-                            # mark day as processed in data_replay table
-                            self.sql_data.mark_processed_day(owner, stream_id, stream_day)
+            # mark day as processed in data_replay table
+            self.sql_data.mark_processed_day(owner, stream_id, stream_day)
 
             if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
                 if (nosql_insert and len(nosql_data) > 0) and (self.nosql_store=="cassandra" or self.nosql_store=="scylladb"):
