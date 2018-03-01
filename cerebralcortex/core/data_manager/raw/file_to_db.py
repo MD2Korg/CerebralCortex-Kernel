@@ -128,13 +128,14 @@ class FileToDB():
                         influxdb_data = influxdb_data+all_data["influxdb_data"]
                     if nosql_insert:
                         nosql_data = all_data["nosql_data"]
-                        self.write_hdfs_day_file(owner, stream_id, nosql_data)
-                        self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
-                                                           annotations, stream_type, nosql_data[0].start_time,
-                                                           nosql_data[len(nosql_data) - 1].start_time)
+                        if len(nosql_data)>0:
+                            self.write_hdfs_day_file(owner, stream_id, nosql_data)
+                            self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                                               annotations, stream_type, nosql_data[0].start_time,
+                                                               nosql_data[len(nosql_data) - 1].start_time)
 
-                        # mark day as processed in data_replay table
-                        self.sql_data.mark_processed_day(owner, stream_id, stream_day)
+                            # mark day as processed in data_replay table
+                            self.sql_data.mark_processed_day(owner, stream_id, stream_day)
 
             if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
                 if (nosql_insert and len(nosql_data) > 0) and (self.nosql_store=="cassandra" or self.nosql_store=="scylladb"):
