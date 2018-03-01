@@ -431,3 +431,14 @@ class StreamHandler():
             return True
         else:
             return False
+
+    def get_replay_batch(self, record_limit:int=5000):
+        qry = "SELECT day, files_list, metadata from "+self.dataReplayTable+" where processed=0 LIMIT "+str(record_limit)
+        rows = self.execute(qry)
+        msgs = []
+        if len(rows)>0:
+            for row in rows:
+                msgs.append({"metadata": json.loads(row["metadata"]), "day":row["day"], "filename":json.loads(row["files_list"])})
+            return msgs
+        else:
+            return []

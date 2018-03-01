@@ -110,7 +110,11 @@ class FileToDB():
 
         owner_name = self.sql_data.get_user_name(owner)
         stream_day = msg["day"]
-        filenames = msg["filename"].split(",")
+        if isinstance(msg["filename"], str):
+            filenames = msg["filename"].split(",")
+        else:
+            filenames = msg["filename"]
+
         influxdb_data = ""
         nosql_data = []
         all_data = []
