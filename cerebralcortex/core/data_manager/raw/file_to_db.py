@@ -214,6 +214,7 @@ class FileToDB():
                 if existing_data is not None:
                     existing_data = pickle.loads(existing_data)
                     existing_data.extend(dps)
+                    dps = existing_data
                     # remove duplicate data
                     #dps = list(set(existing_data))
                     #dps = [ii for n,ii in enumerate(existing_data) if ii not in existing_data[:n]]
