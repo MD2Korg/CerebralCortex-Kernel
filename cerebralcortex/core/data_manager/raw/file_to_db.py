@@ -78,7 +78,7 @@ class FileToDB():
         self.influx_batch_size = 10000
         self.influx_day_datapoints_limit = 37000
 
-    @log_execution_time
+    #@log_execution_time
     def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert: bool = False, nosql_insert: bool = True):
 
         """
@@ -175,7 +175,7 @@ class FileToDB():
                         self.logging.log(
                             error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(owner)+ "Files: " + str(msg["filename"]) + " - Error in writing data to influxdb. " + str(
                                 traceback.format_exc()), error_type=self.logtypes.CRITICAL)
-
+            print("PROCESSED (owner, stream, day): ", owner, stream_id, stream_day)
 
     def write_hdfs_stream_file(self, participant_id, stream_id, filename, data):
         # Using libhdfs
