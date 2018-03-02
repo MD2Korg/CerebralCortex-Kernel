@@ -27,7 +27,6 @@
 import inspect
 import syslog
 
-syslog.openlog(ident="CerebralCortex")
 
 class LogTypes():
     EXCEPTION = 1,
@@ -39,6 +38,11 @@ class LogTypes():
 
 
 class LogHandler():
+    def logsyslog(self,loglevel,message):
+        syslog.openlog(ident="CerebralCortex")
+        syslog.syslog(loglevel, message)
+        syslog.closelog()
+
     def log(self, error_message="", error_type=LogTypes.EXCEPTION):
 
         execution_stats = inspect.stack()
@@ -49,17 +53,17 @@ class LogHandler():
         error_message = "[" + str(file_name) + " - " + str(method_name) + " - " + str(line_number) + "] - " + str(error_message)
 
         if error_type==LogTypes.CRITICAL:
-            syslog.syslog(syslog.LOG_CRIT, error_message)
+            self.logsyslog(syslog.LOG_CRIT, error_message)
         elif error_type == LogTypes.ERROR:
-            syslog.syslog(syslog.LOG_ERR, error_message)
+            self.logsyslog(syslog.LOG_ERR, error_message)
         elif error_type == LogTypes.EXCEPTION:
-            syslog.syslog(syslog.LOG_ERR, error_message)
+            self.logsyslog(syslog.LOG_ERR, error_message)
         elif error_type == LogTypes.WARNING:
-            syslog.syslog(syslog.LOG_WARNING, error_message)
+            self.logsyslog(syslog.LOG_WARNING, error_message)
         elif error_type == LogTypes.DEBUG:
-            syslog.syslog(syslog.LOG_DEBUG, error_message)
+            self.logsyslog(syslog.LOG_DEBUG, error_message)
         elif error_type == LogTypes.MISSING_DATA:
             error_message = 'MISSING_DATA ' + error_message
-            syslog.syslog(syslog.LOG_ERR, error_message)
+            self.logsyslog(syslog.LOG_ERR, error_message)
         else:
-            syslog.syslog(syslog.LOG_INFO, error_message)
+            self.logsyslog(syslog.LOG_INFO, error_message)
