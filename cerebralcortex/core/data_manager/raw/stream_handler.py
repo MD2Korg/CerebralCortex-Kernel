@@ -131,17 +131,26 @@ class StreamHandler():
         
         filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
         if not hdfs.exists(filename):
+            print("File does not exist.")
             return []
 
         try:
             with hdfs.open(filename, "rb") as curfile:
                 data = curfile.read()
             if data is not None:
-                return deserialize_obj(data)
+                return self.filter_hdfs_file(data)
         except Exception as e:
             self.logging.log(error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc()),
                              error_type=self.logtypes.CRITICAL)
             return []
+
+    def filter_hdfs_file(self, data):
+        data = deserialize_obj(data)
+        clean_data = []
+        for row in data:
+            if row not in clean_data:
+                clean_data.append(row)
+        return clean_data
 
     # def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str):
     #     # Using libhdfs

@@ -130,3 +130,21 @@ routes:
   auth: "auth"
   stream: "stream"
   object: "object"
+
+
+#########################################################################
+###################### DATA REPLAY CONFIGS ##############################
+#########################################################################
+data_replay:
+  replay_type: "mydb" # acceptable parameters are filez OR mydb
+  data_dir: "/home/ali/IdeaProjects/MD2K_DATA/data/"
+
+users:
+  uuids: "" # if no UUID specified then all users data will be replayed
+
+blacklist: #only works for "mydb" replay_type
+  regzex: # mysql supported regex only
+    re1: '^BEACON--org.md2k.beacon--BEACON--([0-9A-F]+:){5}[0-9A-F]+$'
+  txt_match:  #partial string matching, multiple are allowed
+    tm1: 'RAW--org.md2k.%'
+    tm2: 'CU_AUDIO_FEATURE--%'

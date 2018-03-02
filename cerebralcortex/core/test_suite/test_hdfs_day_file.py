@@ -39,12 +39,12 @@ class TestFileToDataStream(unittest.TestCase):
         with open("test_data/kafka_msg.txt") as f:
             self.kafka_msg = json.loads(f.read())
 
-    def test_01_save_data(self):
-        self.filetodb.file_processor(self.kafka_msg, self.data_dir, False, True)
+    # def test_01_save_data(self):
+    #     self.filetodb.file_processor(self.kafka_msg, self.data_dir, False, True)
 
-    # def test_02_get_data(self):
-    #     ds = self.CC.get_stream("7c75c079-af50-3ae1-a952-f61a6be32a8a", "00ab666c-afb8-476e-9872-6472b4e66b68", "20171122")
-    #     print(ds)
+    def test_02_get_data(self):
+        ds = self.CC.get_stream("04d5aae6-fe0b-377c-8daa-78b548a4dfe6", "00162d05-3248-4b7d-b4f6-8593b4faaa63", "20171113")
+        print(ds)
 
     
 

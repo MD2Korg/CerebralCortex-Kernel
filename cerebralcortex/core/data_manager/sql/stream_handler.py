@@ -433,7 +433,16 @@ class StreamHandler():
             return False
 
     def get_replay_batch(self, record_limit:int=5000):
-        qry = "SELECT day, files_list, metadata from "+self.dataReplayTable+" where stream_name NOT REGEXP '^BEACON--org.md2k.beacon--BEACON--([0-9A-F]+:){5}[0-9A-F]+$' and stream_name not like 'RAW--org.md2k.motionsense--%' and stream_name not like 'CU_AUDIO_FEATURE--%' and processed=0"
+        blacklist_regex = self.config["blacklist"]
+        regex_cols = "" #regex match on columns
+        like_cols = "" # like operator on columns
+        for breg in blacklist_regex["regzex"]:
+            regex_cols += '%s NOT REGEXP "%s" and ' % ("stream_name", blacklist_regex["regzex"][breg])
+
+        for btm in blacklist_regex["txt_match"]:
+            like_cols += '%s not like "%s" and ' % ("stream_name", blacklist_regex["txt_match"][btm])
+
+        qry = "SELECT day, files_list, metadata from "+self.dataReplayTable+" where " + regex_cols +" "+like_cols+"  processed=0"
         rows = self.execute(qry)
         msgs = []
         if len(rows)>0:
