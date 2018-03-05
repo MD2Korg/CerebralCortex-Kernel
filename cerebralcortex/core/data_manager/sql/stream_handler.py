@@ -328,6 +328,7 @@ class StreamHandler():
             stream_id = str(stream_id)
 
         if self.is_stream(stream_id=stream_id):
+            self.update_start_time(stream_id, start_time)
             stream_end_time = self.check_end_time(stream_id, end_time)
             annotation_status = self.annotations_status(stream_id, owner_id, annotations)
         else:
@@ -360,9 +361,6 @@ class StreamHandler():
         if isQueryReady == 1:
             try:
                 self.execute(qry, vals, commit=True)
-                #self.dbConnection.commit()
-                #self.cursor.close()
-                #self.dbConnection.close()
             except:
                 self.logging.log(error_message="Query: "+str(qry)+" - cannot be processed. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
                 
@@ -414,6 +412,33 @@ class StreamHandler():
                 return end_time
             else:
                 return "unchanged"
+        else:
+            self.logging.log(error_message="STREAM ID: "+stream_id+" - No record found. "+str(traceback.format_exc()), error_type=self.logtypes.DEBUG)
+
+    def update_start_time(self, stream_id: uuid, new_start_time: datetime):
+        """
+
+        :param stream_id:
+        :param new_start_time:
+        :return:
+        """
+        localtz = timezone(self.time_zone)
+
+        qry = "SELECT start_time from " + self.datastreamTable + " where identifier = %(identifier)s"
+        vals = {'identifier': str(stream_id)}
+        rows = self.execute(qry, vals)
+
+        if rows:
+            old_start_time = rows[0]["start_time"]
+            if new_start_time.tzinfo is None:
+                new_start_time = localtz.localize(new_start_time)
+            if old_start_time.tzinfo is None:
+                old_start_time = localtz.localize(old_start_time)
+
+            if old_start_time > new_start_time:
+                qry = "UPDATE " + self.datastreamTable + " set start_time=%s where identifier=%s"
+                vals = new_start_time, str(stream_id)
+                self.execute(qry, vals, commit=True)
         else:
             self.logging.log(error_message="STREAM ID: "+stream_id+" - No record found. "+str(traceback.format_exc()), error_type=self.logtypes.DEBUG)
 

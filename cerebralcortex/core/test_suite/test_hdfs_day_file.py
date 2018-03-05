@@ -38,9 +38,13 @@ class TestFileToDataStream(unittest.TestCase):
         self.CC = CerebralCortex()
         self.filetodb = FileToDB(self.CC)
         self.data_dir = "test_data/raw/11111111-107f-3624-aff2-dc0e0b5be53d/20171122/00000000-107f-3624-aff2-dc0e0b5be53d/"
-        self.day = "20171122"
+        self.days = ["20180221","20180223","20180224"]
+
         with open(self.data_dir+"7b3538af-1299-4504-b8fd-62683c66578e.json") as f:
             self.metadata = json.loads(f.read())
+
+        with open("test_data/kafka_msg.txt") as f:
+            self.kafka_msg = json.loads(f.read())
 
         self.owner = "11111111-107f-3624-aff2-dc0e0b5be53d"
         self.stream_id = "00000000-107f-3624-aff2-dc0e0b5be53d"
@@ -48,8 +52,6 @@ class TestFileToDataStream(unittest.TestCase):
         self.data = get_datapoints(10000)
         self.ds = DataStream(self.stream_id, self.owner, self.stream_name, self.metadata["data_descriptor"], self.metadata["execution_context"], self.metadata["annotations"], "ds", None, None, self.data)
 
-        with open("test_data/kafka_msg.txt") as f:
-            self.kafka_msg = json.loads(f.read())
 
     # def test_01_filetodb(self):
     #     self.filetodb.file_processor(self.kafka_msg, self.data_dir, False, True)
@@ -58,8 +60,11 @@ class TestFileToDataStream(unittest.TestCase):
         self.CC.save_stream(self.ds)
 
     def test_03_get_stream(self):
-        ds = self.CC.get_stream(self.stream_id, self.owner, self.day)
-        self.assertEqual(len(ds.data), 10000)
+        data_len = []
+        for day in self.days:
+            ds = self.CC.get_stream(self.stream_id, self.owner, day)
+            data_len.append(len(ds.data))
+        self.assertEqual(data_len, [999,3999,5001])
 
 
 
