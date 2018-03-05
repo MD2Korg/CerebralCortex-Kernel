@@ -145,7 +145,8 @@ class StreamHandler():
             return []
 
     def filter_sort_datapoints(self, data):
-        data = deserialize_obj(data)
+        if not isinstance(data, list):
+            data = deserialize_obj(data)
         clean_data = set(data)
         clean_data = sorted(clean_data)
         return clean_data
