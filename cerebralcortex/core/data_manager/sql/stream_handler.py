@@ -417,7 +417,7 @@ class StreamHandler():
 
     def update_start_time(self, stream_id: uuid, new_start_time: datetime):
         """
-
+        update start time only if the new-start-time is older than the existing start-time
         :param stream_id:
         :param new_start_time:
         :return:
