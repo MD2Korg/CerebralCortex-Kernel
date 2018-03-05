@@ -43,10 +43,10 @@ class TestFileToDataStream(unittest.TestCase):
     #     self.filetodb.file_processor(self.kafka_msg, self.data_dir, False, True)
 
     def test_02_get_data(self):
-        ds = self.CC.get_stream("04d5aae6-fe0b-377c-8daa-78b548a4dfe6", "00162d05-3248-4b7d-b4f6-8593b4faaa63", "20171113")
+        ds = self.CC.get_stream("044504f7-107f-3624-aff2-dc0e0b5be53d", "00162d05-3248-4b7d-b4f6-8593b4faaa63", "20171113")
         print(ds)
 
     
-
+    
 if __name__ == '__main__':
     unittest.main()

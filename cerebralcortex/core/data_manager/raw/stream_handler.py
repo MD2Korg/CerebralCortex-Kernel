@@ -146,11 +146,10 @@ class StreamHandler():
 
     def filter_hdfs_file(self, data):
         data = deserialize_obj(data)
-        clean_data = []
-        for row in data:
-            if row not in clean_data:
-                clean_data.append(row)
+        clean_data = set(data)
+        clean_data = sorted(clean_data)
         return clean_data
+
 
     # def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str):
     #     # Using libhdfs

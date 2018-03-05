@@ -117,6 +117,7 @@ class FileToDB():
         influxdb_data = ""
         nosql_data = []
         all_data = []
+        print("PROCESSING (owner, stream, day): ", owner, stream_id, stream_day)
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
         if influxdb_insert or nosql_insert:
@@ -128,8 +129,8 @@ class FileToDB():
                         influxdb_data = influxdb_data+all_data["influxdb_data"]
                     if nosql_insert:
                         if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
+                            nosql_data = all_data["nosql_data"]
                             if (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="hdfs":
-                                nosql_data = all_data["nosql_data"]
                                 self.write_hdfs_day_file(owner, stream_id, nosql_data)
                                 self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
                                                                    annotations, stream_type, nosql_data[0].start_time,
@@ -167,7 +168,7 @@ class FileToDB():
                         self.logging.log(
                             error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(owner)+ "Files: " + str(msg["filename"]) + " - Error in writing data to influxdb. " + str(
                                 traceback.format_exc()), error_type=self.logtypes.CRITICAL)
-            print("PROCESSED (owner, stream, day): ", owner, stream_id, stream_day)
+
 
     def write_hdfs_stream_file(self, participant_id, stream_id, filename, data):
         # Using libhdfs

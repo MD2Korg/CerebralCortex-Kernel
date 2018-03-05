@@ -70,6 +70,9 @@ class DataPoint:
     def offset(self, val):
         self._offset = val
 
+    def getKey(self):
+        return self._start_time
+
     @classmethod
     def from_tuple(cls, start_time: datetime, sample: Any, end_time: datetime = None, offset: str=None):
         return cls(start_time=start_time, end_time=end_time, offset=offset, sample=sample)
@@ -79,3 +82,13 @@ class DataPoint:
 
     def __repr__(self):
         return 'DataPoint(' + ', '.join(map(str, [self.start_time, self.end_time, self.sample]))
+
+    def __lt__(self, dp):
+        if hasattr(dp, 'getKey'):
+            return self.getKey().__lt__(dp.getKey())
+
+    def __eq__(self, dp):
+        return self._start_time==dp.start_time
+
+    def __hash__(self):
+        return hash(('start_time', self.start_time))
