@@ -138,13 +138,13 @@ class StreamHandler():
             with hdfs.open(filename, "rb") as curfile:
                 data = curfile.read()
             if data is not None:
-                return self.filter_hdfs_file(data)
+                return self.filter_sort_datapoints(data)
         except Exception as e:
             self.logging.log(error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc()),
                              error_type=self.logtypes.CRITICAL)
             return []
 
-    def filter_hdfs_file(self, data):
+    def filter_sort_datapoints(self, data):
         data = deserialize_obj(data)
         clean_data = set(data)
         clean_data = sorted(clean_data)
@@ -329,7 +329,7 @@ class StreamHandler():
             annotations = datastream.annotations
             stream_type = datastream.datastream_type
             data = datastream.data
-
+            data = self.filter_sort_datapoints(data)
             # get start and end time of a stream
             if data:
                 if isinstance(data, list):
@@ -369,7 +369,6 @@ class StreamHandler():
                 error_message="STREAM ID: " + stream_id + " - Cannot save stream. " + str(traceback.format_exc()),
                 error_type=self.logtypes.CRITICAL)
 
-
     def write_hdfs_day_file(self, participant_id: uuid, stream_id: uuid, data: DataPoint):
         """
 
@@ -379,58 +378,95 @@ class StreamHandler():
         """
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
-        day = None
-
-        # if the data appeared in a different day then this shall put that day in correct day
-        chunked_data = []
         existing_data = None
+        outputdata = {}
 
-        if len(data)==1:
+        #Data Processing loop
+        for row in data:
+            day = row.start_time.strftime("%Y%m%d")
+            if day not in outputdata:
+                outputdata[day] = []
+
+            outputdata[day].append(row)
+
+        #Data Write loop
+        for day, dps in outputdata.items():
             filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
             try:
                 if hdfs.exists(filename):
                     with hdfs.open(filename, "rb") as curfile:
                         existing_data = curfile.read()
                 if existing_data is not None:
-                    existing_data = deserialize_obj(existing_data)
-                    chunked_data.extend(existing_data)
-                    #TODO: remove duplicate
+                    existing_data = pickle.loads(existing_data)
+                    existing_data.extend(dps)
+                    dps = existing_data
                 with hdfs.open(filename, "wb") as f:
-                    pickle.dump(chunked_data, f)
+                    pickle.dump(dps, f)
             except Exception as ex:
-                self.logging.log(error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
-        else:
-            current_day = None
-            for row in data:
-                current_day = row.start_time.strftime("%Y%m%d")
-                if day is None:
-                    day = row.start_time.strftime("%Y%m%d")
-                    chunked_data.append(row)
-                elif day!=current_day:
-                    filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-                    # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
-                    if hdfs.exists(filename):
-                        with hdfs.open(filename, "rb") as curfile:
-                            existing_data = curfile.read()
-                    if existing_data is not None:
-                        existing_data = pickle.loads(existing_data)
-                        chunked_data.extend(existing_data)
-                    # TODO: remove duplicate
+                self.logging.log(
+                    error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
 
-                    try:
-                        with hdfs.open(filename, "wb") as f:
-                            pickle.dump(chunked_data, f)
-                    except Exception as ex:
-                        self.logging.log(
-                            error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
-
-                    day = row.start_time.strftime("%Y%m%d")
-                    chunked_data =[]
-                    chunked_data.append(row)
-                else:
-                    day = row.start_time.strftime("%Y%m%d")
-                    chunked_data.append(row)
-                existing_data = None
+    # def write_hdfs_day_file(self, participant_id: uuid, stream_id: uuid, data: DataPoint):
+    #     """
+    #
+    #     :param participant_id:
+    #     :param stream_id:
+    #     :param data:
+    #     """
+    #     # Using libhdfs
+    #     hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+    #     day = None
+    #
+    #     # if the data appeared in a different day then this shall put that day in correct day
+    #     chunked_data = []
+    #     existing_data = None
+    #
+    #     if len(data)==1:
+    #         filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+    #         try:
+    #             if hdfs.exists(filename):
+    #                 with hdfs.open(filename, "rb") as curfile:
+    #                     existing_data = curfile.read()
+    #             if existing_data is not None:
+    #                 existing_data = deserialize_obj(existing_data)
+    #                 chunked_data.extend(existing_data)
+    #                 #TODO: remove duplicate
+    #             with hdfs.open(filename, "wb") as f:
+    #                 pickle.dump(chunked_data, f)
+    #         except Exception as ex:
+    #             self.logging.log(error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+    #     else:
+    #         current_day = None
+    #         for row in data:
+    #             current_day = row.start_time.strftime("%Y%m%d")
+    #             if day is None:
+    #                 day = row.start_time.strftime("%Y%m%d")
+    #                 chunked_data.append(row)
+    #             elif day!=current_day:
+    #                 filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+    #                 # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
+    #                 if hdfs.exists(filename):
+    #                     with hdfs.open(filename, "rb") as curfile:
+    #                         existing_data = curfile.read()
+    #                 if existing_data is not None:
+    #                     existing_data = pickle.loads(existing_data)
+    #                     chunked_data.extend(existing_data)
+    #                 # TODO: remove duplicate
+    #
+    #                 try:
+    #                     with hdfs.open(filename, "wb") as f:
+    #                         pickle.dump(chunked_data, f)
+    #                 except Exception as ex:
+    #                     self.logging.log(
+    #                         error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+    #
+    #                 day = row.start_time.strftime("%Y%m%d")
+    #                 chunked_data =[]
+    #                 chunked_data.append(row)
+    #             else:
+    #                 day = row.start_time.strftime("%Y%m%d")
+    #                 chunked_data.append(row)
+    #             existing_data = None
 
     # def write_hdfs_day_file(self, participant_id: uuid, stream_id: uuid, data: DataPoint):
     #     """
