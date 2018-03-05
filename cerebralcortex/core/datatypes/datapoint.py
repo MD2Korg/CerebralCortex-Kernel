@@ -78,10 +78,10 @@ class DataPoint:
         return cls(start_time=start_time, end_time=end_time, offset=offset, sample=sample)
 
     def __str__(self):
-        return str(self.start_time) + " - " + str(self.sample)
+        return 'DataPoint(' + ', '.join(map(str, [self._start_time, self._end_time, self._offset, self._sample]))+')\n'
 
     def __repr__(self):
-        return 'DataPoint(' + ', '.join(map(str, [self.start_time, self.end_time, self.sample]))
+        return 'DataPoint(' + ', '.join(map(str, [self._start_time, self._end_time, self._offset, self._sample]))+')\n'
 
     def __lt__(self, dp):
         if hasattr(dp, 'getKey'):

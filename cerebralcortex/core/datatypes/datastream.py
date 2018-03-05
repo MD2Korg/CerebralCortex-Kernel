@@ -146,36 +146,43 @@ class DataStream:
         self._data = result
 
     # TODO- cannot use it due to circular dependencies. Moving it to CC class
-    def filter(self, annotation_stream_name: uuid, annotation: str, start_time: datetime, end_time: datetime) -> List[
-        DataPoint]:
-        """
-        This method maps datastream to derived annotation stream and returns a List of Datapoints
-        :param annotation_stream_name:
-        :param annotation:
-        :param start_time:
-        :param end_time:
-        :return:
-        """
+    # def filter(self, annotation_stream_name: uuid, annotation: str, start_time: datetime, end_time: datetime) -> List[
+    #     DataPoint]:
+    #     """
+    #     This method maps datastream to derived annotation stream and returns a List of Datapoints
+    #     :param annotation_stream_name:
+    #     :param annotation:
+    #     :param start_time:
+    #     :param end_time:
+    #     :return:
+    #     """
         # annotation_stream_id = Metadata.get_annotation_id(self.identifier, annotation_stream_name)
         # return SqlData.get_annotation_stream(annotation_stream_id, self.identifier, annotation, start_time, end_time)
 
-    @classmethod
-    def from_datastream(cls, input_streams: List):
-        result = cls(owner=input_streams[0].owner)
-
-        # TODO: Something with provenance tracking from datastream list
-
-        return result
+    # @classmethod
+    # def from_datastream(cls, input_streams: List):
+    #     result = cls(owner=input_streams[0].owner)
+    #
+    #     # TODO: Something with provenance tracking from datastream list
+    #
+    #     return result
 
     def __str__(self):
-        return str(self.identifier) + " - " + str(self.owner) + " - " + str(self.data)
+        return "Stream(" + ', '.join(map(str, [self._identifier,
+                                               self._owner,
+                                               self._name,
+                                               self._data_descriptor,
+                                               self._datastream_type,
+                                               self._execution_context,
+                                               self._annotations,
+                                               self._data]))
 
     def __repr__(self):
-        result = "Stream(" + ', '.join(map(str, [self.identifier,
-                                                 self.owner,
-                                                 self.name,
-                                                 self.data_descriptor,
-                                                 self.datastream_type,
-                                                 self.execution_context,
-                                                 self.annotations]))
-        return result
+        return "Stream(" + ', '.join(map(str, [self._identifier,
+                                               self._owner,
+                                               self._name,
+                                               self._data_descriptor,
+                                               self._datastream_type,
+                                               self._execution_context,
+                                               self._annotations,
+                                               self._data]))
