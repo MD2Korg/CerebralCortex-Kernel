@@ -321,15 +321,17 @@ class StreamHandler():
         Saves datastream raw data in Cassandra and metadata in MySQL.
         :param datastream:
         """
+        owner_id = datastream.owner
+        stream_name = datastream.name
+        stream_id = ""
+        data_descriptor = datastream.data_descriptor
+        execution_context = datastream.execution_context
+        annotations = datastream.annotations
+        stream_type = datastream.datastream_type
+        data = datastream.data
+        data = self.filter_sort_datapoints(data)
         try:
-            owner_id = datastream.owner
-            stream_name = datastream.name
-            data_descriptor = datastream.data_descriptor
-            execution_context = datastream.execution_context
-            annotations = datastream.annotations
-            stream_type = datastream.datastream_type
-            data = datastream.data
-            data = self.filter_sort_datapoints(data)
+
             # get start and end time of a stream
             if data:
                 if isinstance(data, list):
@@ -400,6 +402,7 @@ class StreamHandler():
                     existing_data = pickle.loads(existing_data)
                     existing_data.extend(dps)
                     dps = existing_data
+                dps = self.filter_sort_datapoints(dps)
                 with hdfs.open(filename, "wb") as f:
                     pickle.dump(dps, f)
             except Exception as ex:

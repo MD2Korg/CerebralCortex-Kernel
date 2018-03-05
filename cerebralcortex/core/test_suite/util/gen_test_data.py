@@ -26,28 +26,51 @@
 import gzip
 import random
 import argparse
+from datetime import datetime
+from cerebralcortex.core.datatypes.datapoint import DataPoint
+from cerebralcortex.core.util.data_types import convert_sample
 
-def gen_raw_data(filepath):
-    dps = get_datapoints(10000)
+
+def gen_raw_data(filepath: str):
+    """
+    write sample .gz data file
+    :param filepath:
+    """
+    dps = get_datapoints(10000, "str")
     with gzip.open(filepath, 'wb') as output_file:
         output_file.write(dps.encode())
 
 
-def get_datapoints(dp_size):
-    dps = ""
+def get_datapoints(dp_size: int, dp_type: str = "list") -> object:
+    """
+    Returns a list or string of sample data points
+    :param dp_size: int
+    :param dp_type: str or list
+    :return:
+    """
+    if dp_type == "str":
+        dps = ""
+    else:
+        dps = []
     for row in range(1, dp_size):
-        sample = str(random.random())+","+ str(random.random())+","+ str(random.random())+","+ str(random.random())+","+ str(random.random())
-        if row<1000:
-            tmp = 1519255691123 #20180221
-        elif row<5000 and row>1000:
-            tmp = 1519355691123 #20180223
+        sample = str(random.random()) + "," + str(random.random()) + "," + str(random.random()) + "," + str(
+            random.random()) + "," + str(random.random())
+        if row < 1000:
+            tmp = 1519255691123  # 20180221
+        elif row < 5000 and row > 1000:
+            tmp = 1519355691123  # 20180223
         else:
-            tmp = 1519455691123 #20180224
-        start_time = str(tmp + row * 10)
-        dps += (start_time + ",-21600000," + str(sample) + "\n")
+            tmp = 1519455691123  # 20180224
+        start_time = str(tmp + (row * 10))
+        if dp_type == "str":
+            dps += (start_time + ",-21600000," + str(sample) + "\n")
+        else:
+            dps.append(
+                DataPoint(datetime.utcfromtimestamp(int(start_time) / 1000), None, -21600000, convert_sample(sample)))
     return dps
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate sample data to test CerebralCortex")
     parser.add_argument("-of", "--output_filepath", help="Output file path, e.g., /home/ali/test.gz", required=False)
     args = vars(parser.parse_args())
