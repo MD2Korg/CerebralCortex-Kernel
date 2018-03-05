@@ -29,13 +29,22 @@ import unittest
 import json
 from cerebralcortex.cerebralcortex import CerebralCortex
 from cerebralcortex.core.data_manager.raw.file_to_db import FileToDB
-
+from cerebralcortex.core.metadata_manager.metadata import Metadata
+from cerebralcortex.core.datatypes.datapoint import DataPoint
+from cerebralcortex.core.datatypes.datastream import DataStream
 
 class TestFileToDataStream(unittest.TestCase):
     def setUp(self):
         self.CC = CerebralCortex()
         self.filetodb = FileToDB(self.CC)
         self.data_dir = "/home/ali/IdeaProjects/MD2K_DATA/data/"
+        metadata = Metadata()
+        self.owner = "11111111-107f-3624-aff2-dc0e0b5be53d"
+        self.dd = [metadata.DataDescriptor("float", "milliseconds", None)]
+        self.ec = metadata.ExecutionContext({}, {}, {}, None)
+        self.annotations = metadata.Annotations("test-stream", "00000000-107f-3624-aff2-dc0e0b5be53d")
+        self.data = self.get_datapoints()
+
         with open("test_data/kafka_msg.txt") as f:
             self.kafka_msg = json.loads(f.read())
 
@@ -46,7 +55,9 @@ class TestFileToDataStream(unittest.TestCase):
         ds = self.CC.get_stream("044504f7-107f-3624-aff2-dc0e0b5be53d", "00162d05-3248-4b7d-b4f6-8593b4faaa63", "20171113")
         print(ds)
 
-    
+    def get_datapoints(self):
+        for dp in range(400):
+
     
 if __name__ == '__main__':
     unittest.main()

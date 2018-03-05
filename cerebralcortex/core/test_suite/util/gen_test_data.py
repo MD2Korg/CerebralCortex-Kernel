@@ -28,20 +28,31 @@ import random
 import argparse
 
 def gen_raw_data(filepath):
-    with gzip.open(filepath, 'wb') as output:
-        for row in range(1, 1000000):
-            sample = str(random.random())+","+ str(random.random())+","+ str(random.random())+","+ str(random.random())+","+ str(random.random())
-            start_time = str(15112000134512 + row * 10)
-            r = (start_time + ", -21600000, " + str(sample) + "\n").encode()
+    dps = get_datapoints(10000)
+    with gzip.open(filepath, 'wb') as output_file:
+        output_file.write(dps.encode())
 
-            output.write(r)
-        output.close()
-        print(r)
 
+def get_datapoints(dp_size):
+    dps = ""
+    for row in range(1, dp_size):
+        sample = str(random.random())+","+ str(random.random())+","+ str(random.random())+","+ str(random.random())+","+ str(random.random())
+        if row<1000:
+            tmp = 1519255691123 #20180221
+        elif row<5000 and row>1000:
+            tmp = 1519355691123 #20180223
+        else:
+            tmp = 1519455691123 #20180224
+        start_time = str(tmp + row * 10)
+        dps += (start_time + ",-21600000," + str(sample) + "\n")
+    return dps
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(description="Generate sample data to test CerebralCortex")
-    parser.add_argument("-of", "--output_filepath", help="Output file path, e.g., /home/ali/test.gz", required=True)
+    parser.add_argument("-of", "--output_filepath", help="Output file path, e.g., /home/ali/test.gz", required=False)
     args = vars(parser.parse_args())
-
-    gen_raw_data(args["output_filepath"])
+    if args["output_filepath"]:
+        output_filepath = args["output_filepath"]
+    else:
+        output_filepath = "../test_data/raw/11111111-107f-3624-aff2-dc0e0b5be53d/20171122/00000000-107f-3624-aff2-dc0e0b5be53d/7b3538af-1299-4504-b8fd-62683c66578e.gz"
+    gen_raw_data(output_filepath)
