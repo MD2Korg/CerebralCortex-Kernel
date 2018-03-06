@@ -200,19 +200,20 @@ class FileToDB():
         #Data Write loop
         for day, dps in outputdata.items():
             filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-            try:
-                if hdfs.exists(filename):
-                    with hdfs.open(filename, "rb") as curfile:
-                        existing_data = curfile.read()
-                if existing_data is not None and existing_data!=b'':
-                    existing_data = pickle.loads(existing_data)
-                    existing_data.extend(dps)
-                    dps = existing_data
-                with hdfs.open(filename, "wb") as f:
-                    pickle.dump(dps, f)
-            except Exception as ex:
-                self.logging.log(
-                    error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+            if len(dps)>0:
+                try:
+                    if hdfs.exists(filename):
+                        with hdfs.open(filename, "rb") as curfile:
+                            existing_data = curfile.read()
+                    if existing_data is not None and existing_data!=b'':
+                        existing_data = pickle.loads(existing_data)
+                        existing_data.extend(dps)
+                        dps = existing_data
+                    with hdfs.open(filename, "wb") as f:
+                        pickle.dump(dps, f)
+                except Exception as ex:
+                    self.logging.log(
+                        error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
 
 
     # def write_hdfs_day_file(self, participant_id, stream_id, data):

@@ -380,16 +380,21 @@ class StreamHandler():
 
                 stream_id = datastream.identifier
 
-                # save metadata in SQL store
-                self.sql_data.save_stream_metadata(stream_id, stream_name, owner_id,
-                                                   data_descriptor, execution_context,
-                                                   annotations,
-                                                   stream_type, new_start_time, new_end_time)
+
                 if self.nosql_store=="hdfs":
-                    self.write_hdfs_day_file(owner_id, stream_id, data)
+                    status = self.write_hdfs_day_file(owner_id, stream_id, data)
                 else:
                     # save raw sensor data in Cassandra
-                    self.save_raw_data(stream_id, data)
+                    status = self.save_raw_data(stream_id, data)
+
+                if status:
+                    # save metadata in SQL store
+                    self.sql_data.save_stream_metadata(stream_id, stream_name, owner_id,
+                                                       data_descriptor, execution_context,
+                                                       annotations,
+                                                       stream_type, new_start_time, new_end_time)
+                else:
+                    print("Something went wrong in saving data points. Please check error logs /var/log/cerebralcortex.log")
         except Exception as e:
             self.logging.log(
                 error_message="STREAM ID: " + stream_id + " - Cannot save stream. " + str(traceback.format_exc()),
@@ -406,6 +411,7 @@ class StreamHandler():
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         existing_data = None
         outputdata = {}
+        success = False
 
         #Data Processing loop
         for row in data:
@@ -418,21 +424,23 @@ class StreamHandler():
         #Data Write loop
         for day, dps in outputdata.items():
             filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-            try:
-                if hdfs.exists(filename):
-                    with hdfs.open(filename, "rb") as curfile:
-                        existing_data = curfile.read()
-                if existing_data is not None:
-                    existing_data = pickle.loads(existing_data)
-                    existing_data.extend(dps)
-                    dps = existing_data
-                dps = self.filter_sort_datapoints(dps)
-                with hdfs.open(filename, "wb") as f:
-                    pickle.dump(dps, f)
-            except Exception as ex:
-                self.logging.log(
-                    error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
-
+            if len(dps)>0:
+                try:
+                    if hdfs.exists(filename):
+                        with hdfs.open(filename, "rb") as curfile:
+                            existing_data = curfile.read()
+                    if existing_data is not None:
+                        existing_data = pickle.loads(existing_data)
+                        existing_data.extend(dps)
+                        dps = existing_data
+                    dps = self.filter_sort_datapoints(dps)
+                    with hdfs.open(filename, "wb") as f:
+                        pickle.dump(dps, f)
+                    success = True
+                except Exception as ex:
+                    self.logging.log(
+                        error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+        return success
     # def write_hdfs_day_file(self, participant_id: uuid, stream_id: uuid, data: DataPoint):
     #     """
     #
@@ -563,6 +571,7 @@ class StreamHandler():
         :param datapoints:
         """
         datapoints = self.serialize_datapoints_batch(datapoints)
+        success = False
         try:
             cluster = Cluster([self.host_ip], port=self.host_port, protocol_version=4)
 
@@ -583,10 +592,12 @@ class StreamHandler():
 
             session.shutdown()
             cluster.shutdown()
+            success = True
         except Exception as e:
             self.logging.log(
                 error_message="STREAM ID: " + str(stream_id) + " - Cannot save raw data. " + str(traceback.format_exc()),
                 error_type=self.logtypes.CRITICAL)
+        return success
 
     def datapoints_to_cassandra_sql_batch(self, stream_id: uuid, datapoints: DataPoint, qry_without_endtime: str,
                                           qry_with_endtime: str):
