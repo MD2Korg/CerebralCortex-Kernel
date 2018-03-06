@@ -159,13 +159,13 @@ class DataStream:
         # annotation_stream_id = Metadata.get_annotation_id(self.identifier, annotation_stream_name)
         # return SqlData.get_annotation_stream(annotation_stream_id, self.identifier, annotation, start_time, end_time)
 
-    # @classmethod
-    # def from_datastream(cls, input_streams: List):
-    #     result = cls(owner=input_streams[0].owner)
-    #
-    #     # TODO: Something with provenance tracking from datastream list
-    #
-    #     return result
+    @classmethod
+    def from_datastream(cls, input_streams: List):
+        result = cls(owner=input_streams[0].owner)
+
+        # TODO: Something with provenance tracking from datastream list
+
+        return result
 
     def __str__(self):
         return "Stream(" + ', '.join(map(str, [self._identifier,
