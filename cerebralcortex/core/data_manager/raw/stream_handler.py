@@ -88,7 +88,7 @@ class StreamHandler():
             stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps)
         elif data_type == DataSet.ONLY_DATA:
             if self.nosql_store=="hdfs":
-                return self.read_hdfs_day_file(owner_id, stream_id, day)
+                return self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time)
             else:
                 return self.load_cassandra_data(where_clause)                
         elif data_type == DataSet.ONLY_METADATA:

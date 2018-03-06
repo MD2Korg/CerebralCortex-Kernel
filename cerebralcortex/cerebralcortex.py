@@ -48,6 +48,7 @@ class CerebralCortex:
             configuration_filepath = os.path.join(os.path.dirname(__file__), 'core/resources/cc_configuration.yml')
         self.config_filepath = configuration_filepath
         self.config = Configuration(configuration_filepath).config
+        self.debug = self.config["cc"]["debug"]
         self.timezone = timezone
         self.logging = CCLogging()
         self.logtypes = LogTypes()
