@@ -27,7 +27,7 @@
 
 import unittest
 import json
-import pickle
+from datetime import datetime
 from cerebralcortex.cerebralcortex import CerebralCortex
 from cerebralcortex.core.data_manager.raw.file_to_db import FileToDB
 from cerebralcortex.core.test_suite.util.gen_test_data import get_datapoints
@@ -61,10 +61,16 @@ class TestFileToDataStream(unittest.TestCase):
 
     def test_03_get_stream(self):
         data_len = []
+        start_time = datetime.utcfromtimestamp(1519355711)
+        end_time = datetime.utcfromtimestamp(1519355721)
         for day in self.days:
             ds = self.CC.get_stream(self.stream_id, self.owner, day)
             data_len.append(len(ds.data))
         self.assertEqual(data_len, [999,3999,5001])
+
+        ds = self.CC.get_stream(self.stream_id, self.owner, self.days[1], start_time,end_time)
+        self.assertEqual(len(ds.data), 1000)
+
 
 
 

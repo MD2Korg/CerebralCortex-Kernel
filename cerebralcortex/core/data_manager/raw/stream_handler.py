@@ -72,17 +72,17 @@ class StreamHandler():
         where_clause = "where identifier=" + str(stream_id) + " and day='" + str(day) + "'"
 
         if start_time:
-            where_clause += " and start_time>=cast('" + start_time + "' as timestamp)"
+            where_clause += " and start_time>=cast('" + str(start_time) + "' as timestamp)"
 
         if end_time:
-            where_clause += " and start_time<=cast('" + end_time + "' as timestamp)"
+            where_clause += " and start_time<=cast('" + str(end_time) + "' as timestamp)"
 
         # query datastream(mysql) for metadata
         datastream_metadata = self.sql_data.get_stream_metadata(stream_id)
 
         if data_type == DataSet.COMPLETE:
             if self.nosql_store=="hdfs":
-                dps = self.read_hdfs_day_file(owner_id, stream_id, day)
+                dps = self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time)
             else:
                 dps = self.load_cassandra_data(where_clause)
             stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps)
@@ -125,10 +125,10 @@ class StreamHandler():
                 error_message="STREAM ID: " + stream_id + " - Error in mapping datapoints and metadata to datastream. " + str(
                     traceback.format_exc()), error_type=self.logtypes.CRITICAL)
     
-    def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str):
+    def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None):
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
-        
+        subset_data = []
         filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
         if not hdfs.exists(filename):
             print("File does not exist.")
@@ -138,11 +138,34 @@ class StreamHandler():
             with hdfs.open(filename, "rb") as curfile:
                 data = curfile.read()
             if data is not None:
-                return self.filter_sort_datapoints(data)
+                clean_data = self.filter_sort_datapoints(data)
+                if start_time is not None or end_time is not None:
+                    clean_data = self.subset_data(clean_data, start_time, end_time)
+                return clean_data
         except Exception as e:
             self.logging.log(error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc()),
                              error_type=self.logtypes.CRITICAL)
             return []
+
+    def subset_data(self, data, start_time:datetime=None, end_time:datetime=None):
+        subset_data = []
+        if start_time is not None and end_time is not None:
+            for dp in data:
+                if dp.start_time>=start_time and dp.start_time<=end_time:
+                    subset_data.append(dp)
+            return subset_data
+        elif start_time is not None and end_time is None:
+            for dp in data:
+                if dp.start_time>=start_time:
+                    subset_data.append(dp)
+            return subset_data
+        elif start_time is None and end_time is not None:
+            for dp in data:
+                if dp.start_time<=end_time:
+                    subset_data.append(dp)
+            return subset_data
+        else:
+            return data
 
     def filter_sort_datapoints(self, data):
         if not isinstance(data, list):
