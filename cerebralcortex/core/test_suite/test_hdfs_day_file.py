@@ -50,14 +50,25 @@ class TestFileToDataStream(unittest.TestCase):
         self.stream_id = "00000000-107f-3624-aff2-dc0e0b5be53d"
         self.stream_name = "org.md2k.test_suite.hdfs_test"
         self.data = get_datapoints(10000)
-        self.ds = DataStream(self.stream_id, self.owner, self.stream_name, self.metadata["data_descriptor"], self.metadata["execution_context"], self.metadata["annotations"], "ds", None, None, self.data)
+
 
 
     # def test_01_filetodb(self):
     #     self.filetodb.file_processor(self.kafka_msg, self.data_dir, False, True)
 
     def test_02_save_stream(self):
-        self.CC.save_stream(self.ds)
+        outputdata = {}
+
+        #Data Processing loop
+        for row in self.data:
+            day = row.start_time.strftime("%Y%m%d")
+            if day not in outputdata:
+                outputdata[day] = []
+
+            outputdata[day].append(row)
+        for day, dps in outputdata.items():
+            ds = DataStream(self.stream_id, self.owner, self.stream_name, self.metadata["data_descriptor"], self.metadata["execution_context"], self.metadata["annotations"], "ds", None, None, dps)
+            self.CC.save_stream(ds)
 
     def test_03_get_stream(self):
         data_len = []
@@ -66,7 +77,7 @@ class TestFileToDataStream(unittest.TestCase):
         for day in self.days:
             ds = self.CC.get_stream(self.stream_id, self.owner, day)
             data_len.append(len(ds.data))
-        self.assertEqual(data_len, [999,3999,5001])
+        self.assertEqual(data_len, [3999,999,5001])
 
         ds = self.CC.get_stream(self.stream_id, self.owner, self.days[1], start_time,end_time)
         self.assertEqual(len(ds.data), 1000)

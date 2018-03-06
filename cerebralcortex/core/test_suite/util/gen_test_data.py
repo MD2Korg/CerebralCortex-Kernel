@@ -56,9 +56,9 @@ def get_datapoints(dp_size: int, dp_type: str = "list") -> object:
         sample = str(random.random()) + "," + str(random.random()) + "," + str(random.random()) + "," + str(
             random.random()) + "," + str(random.random())
         if row < 1000:
-            tmp = 1519255691123  # 20180221
-        elif row < 5000 and row > 1000:
             tmp = 1519355691123  # 20180223
+        elif row < 5000 and row > 1000:
+            tmp = 1519255691123  # 20180221
         else:
             tmp = 1519455691123  # 20180224
         start_time = str(tmp + (row * 10))

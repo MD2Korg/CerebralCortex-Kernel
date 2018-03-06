@@ -128,7 +128,7 @@ class StreamHandler():
     def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None):
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
-        subset_data = []
+        data = None
         filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
         if not hdfs.exists(filename):
             print("File does not exist.")
@@ -137,7 +137,7 @@ class StreamHandler():
         try:
             with hdfs.open(filename, "rb") as curfile:
                 data = curfile.read()
-            if data is not None:
+            if data is not None and data!=b'':
                 clean_data = self.filter_sort_datapoints(data)
                 if start_time is not None or end_time is not None:
                     clean_data = self.subset_data(clean_data, start_time, end_time)
