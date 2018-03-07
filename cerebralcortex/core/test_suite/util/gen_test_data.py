@@ -31,15 +31,17 @@ from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.util.data_types import convert_sample
 
 
-def gen_raw_data(filepath: str):
+def gen_raw_data(filepath: str, row_size, get_data):
     """
     write sample .gz data file
     :param filepath:
     """
-    dps = get_datapoints(10000, "str")
+    dps = get_datapoints(row_size, "str")
     with gzip.open(filepath, 'wb') as output_file:
         output_file.write(dps.encode())
 
+    if get_data:
+        return get_datapoints(row_size, "list")
 
 def get_datapoints(dp_size: int, dp_type: str = "list") -> object:
     """

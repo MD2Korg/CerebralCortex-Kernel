@@ -1,0 +1,63 @@
+{  
+   "annotations":[  
+
+   ],
+   "data_descriptor":[  
+      {  
+         "DATA_TYPE":"int",
+         "NAME":"TEST STREAM",
+         "DESCRIPTION":"Test data with sample values. ",
+         "FREQUENCY":"0.33",
+         "MAX_VALUE":"4",
+         "MIN_VALUE":"0"
+      }
+   ],
+   "execution_context":{  
+      "application_metadata":{  
+         "VERSION_NUMBER":"2000399",
+         "NAME":"MotionSense",
+         "DESCRIPTION":"Test data",
+         "VERSION_NAME":"2.0.3"
+      },
+      "datasource_metadata":{  
+         "DATA_TYPE":"org.md2k.datakitapi.datatype.DataTypeInt",
+         "NAME":"Test data source",
+         "DESCRIPTION":"Some random data for testing.",
+         "FREQUENCY":"0.33"
+      },
+      "platform_metadata":{  
+         "NAME":"Cerebralcortex",
+         "DEVICE_ID":"DB:47:51:FE:C1:7F"
+      },
+      "processing_module":{  
+         "algorithm":[  
+            {  
+               "authors":[  
+                  "Ali"
+               ],
+               "description":"",
+               "method":"",
+               "reference":{  
+                  "url":"http://md2k.org/"
+               },
+               "version":""
+            }
+         ],
+         "description":"",
+         "input_parameters":{  
+
+         },
+         "input_streams":[  
+
+         ],
+         "name":"",
+         "output_streams":[  
+
+         ]
+      }
+   },
+   "identifier":"00000000-107f-3624-aff2-dc0e0b5be53d",
+   "name":"org.md2k.test_suite.hdfs_test",
+   "owner":"11111111-107f-3624-aff2-dc0e0b5be53d",
+   "type":"datastream"
+}
