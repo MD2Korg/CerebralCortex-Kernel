@@ -35,7 +35,7 @@ class ObjectData(MinioHandler):
         self.CC = CC
         self.config = CC.config
 
-        self.logging = CCLogging()
+        self.logging = CCLogging(CC)
         self.logtypes = LogTypes()
 
         self.host = self.config["minio"]["host"]

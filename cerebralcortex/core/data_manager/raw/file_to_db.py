@@ -64,7 +64,7 @@ class FileToDB():
         self.raw_files_dir = self.config['hdfs']['raw_files_dir']
 
         self.nosql_store = self.config["data_ingestion"]["nosql_store"]
-        self.logging = CCLogging()
+        self.logging = CCLogging(CC)
         self.logtypes = LogTypes()
 
         self.influxdbIP = self.config['influxdb']['host']

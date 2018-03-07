@@ -50,7 +50,7 @@ class CerebralCortex:
         self.config = Configuration(configuration_filepath).config
         self.debug = self.config["cc"]["debug"]
         self.timezone = timezone
-        self.logging = CCLogging()
+        self.logging = CCLogging(self)
         self.logtypes = LogTypes()
         self.SqlData = SqlData(self)
         self.RawData = RawData(self)

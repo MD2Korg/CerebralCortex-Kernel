@@ -52,6 +52,9 @@ class LogHandler():
 
         error_message = "[" + str(file_name) + " - " + str(method_name) + " - " + str(line_number) + "] - " + str(error_message)
 
+        if self.debug:
+            print(error_message)
+
         if error_type==LogTypes.CRITICAL:
             self.logsyslog(syslog.LOG_CRIT, error_message)
         elif error_type == LogTypes.ERROR:

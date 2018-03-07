@@ -29,5 +29,5 @@ from cerebralcortex.core.log_manager.log_handler import LogHandler
 
 
 class CCLogging(LogHandler):
-    def __init__(self):
-        pass
+    def __init__(self, CC):
+        self.debug = CC.debug

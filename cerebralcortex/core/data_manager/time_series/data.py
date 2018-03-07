@@ -37,7 +37,7 @@ class TimeSeriesData(InfluxdbHandler):
 
         self.time_zone = CC.timezone
 
-        self.logging = CCLogging()
+        self.logging = CCLogging(CC)
         self.logtypes = LogTypes()
 
         self.influxdbIP = self.configuration['influxdb']['host']

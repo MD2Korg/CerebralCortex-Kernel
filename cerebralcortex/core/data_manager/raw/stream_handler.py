@@ -135,7 +135,7 @@ class StreamHandler():
             return []
 
         try:
-            with hdfs.open(filename, "rb") as curfile:
+            with hdfs.open(filename, "rbw") as curfile:
                 data = curfile.read()
             if data is not None and data!=b'':
                 clean_data = self.filter_sort_datapoints(data)
