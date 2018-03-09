@@ -52,7 +52,7 @@ minio:
 data_ingestion:
   influxdb_in: False
   nosql_in: True
-  nosql_store: "hdfs" # acceptable parameters are: cassandra, scylladb, hdfs
+  nosql_store: "cassandra" # acceptable parameters are: cassandra, scylladb, hdfs
 
 influxdb_blacklist: # influxdb data ingestion pipeline will not process stream names defined here
   ibl1: "ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST"
@@ -139,7 +139,7 @@ routes:
 #########################################################################
 data_replay:
   replay_type: "mydb" # acceptable parameters are filez OR mydb
-  data_dir: "/home/ali/IdeaProjects/MD2K_DATA/data/"
+  data_dir: "/home/ali/IdeaProjects/MD2K_DATA/data/mCerebrum_test_data/"
 
 users:
   uuids: "" # if no UUID specified then all users data will be replayed

@@ -59,5 +59,5 @@
    "identifier":"00000000-107f-3624-aff2-dc0e0b5be53d",
    "name":"org.md2k.test_suite.hdfs_test",
    "owner":"11111111-107f-3624-aff2-dc0e0b5be53d",
-   "type":"datastream"
+   "type":"1"
 }

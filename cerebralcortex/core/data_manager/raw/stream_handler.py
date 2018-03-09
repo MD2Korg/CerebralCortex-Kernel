@@ -69,14 +69,6 @@ class StreamHandler():
         if stream_id is None or day is None or owner_id is None:
             return None
         
-        where_clause = "where identifier=" + str(stream_id) + " and day='" + str(day) + "'"
-
-        if start_time:
-            where_clause += " and start_time>=cast('" + str(start_time) + "' as timestamp)"
-
-        if end_time:
-            where_clause += " and start_time<=cast('" + str(end_time) + "' as timestamp)"
-
         # query datastream(mysql) for metadata
         datastream_metadata = self.sql_data.get_stream_metadata(stream_id)
 
@@ -84,13 +76,13 @@ class StreamHandler():
             if self.nosql_store=="hdfs":
                 dps = self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time)
             else:
-                dps = self.load_cassandra_data(where_clause)
+                dps = self.load_cassandra_data(stream_id, day, start_time, end_time)
             stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps)
         elif data_type == DataSet.ONLY_DATA:
             if self.nosql_store=="hdfs":
                 return self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time)
             else:
-                return self.load_cassandra_data(where_clause)                
+                return self.load_cassandra_data(stream_id,day, start_time, end_time)
         elif data_type == DataSet.ONLY_METADATA:
             stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, None)
         else:
@@ -197,22 +189,39 @@ class StreamHandler():
     #         return []
         
     
-    def load_cassandra_data(self, where_clause=None) -> List:
+    def load_cassandra_data(self, stream_id, day, start_time=None, end_time=None) -> List:
         """
 
         :param stream_id:
         :param datapoints:
         :param batch_size:
         """
+        if isinstance(stream_id, str):
+            stream_id = uuid.UUID(stream_id)
+        where_clause = ""
+        vals = {"identifier":stream_id, "day":day}
         try:
             cluster = Cluster([self.host_ip], port=self.host_port, protocol_version=4)
 
             session = cluster.connect(self.keyspace_name)
 
-            query = "SELECT start_time,end_time, blob_obj FROM " + self.datapoint_table + " " + where_clause
-            statement = SimpleStatement(query, fetch_size=None)
+            if start_time is not None and end_time is not None:
+                where_clause = " and start_time>=? and end_time<=?"
+                vals["start_time"] = start_time
+                vals["end_time"] = end_time
+
+            elif start_time is not None and end_time is None:
+                where_clause = " and start_time>=? "
+                vals["start_time"] = start_time
+            elif start_time is None and end_time is not None:
+                where_clause = " and end_time<=?"
+                vals["end_time"] = end_time
+
+
+            query = session.prepare("SELECT start_time,end_time, blob_obj FROM " + self.datapoint_table + " where identifier=? and day=? "+where_clause+" ALLOW FILTERING").bind(vals)
+
             data = []
-            rows = session.execute(statement, timeout=None)
+            rows = session.execute(query, timeout=None)
             for row in rows:
                 data += self.parse_row(row)
 

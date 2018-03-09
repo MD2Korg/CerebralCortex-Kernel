@@ -136,39 +136,40 @@ class FileToDB():
                                                                    annotations, stream_type, nosql_data[0].start_time,
                                                                    nosql_data[len(nosql_data) - 1].start_time)
 
+
+
+                if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
+                    if (nosql_insert and len(nosql_data) > 0) and (self.nosql_store=="cassandra" or self.nosql_store=="scylladb"):
+                        # connect to cassandra
+                        cluster = Cluster([self.host_ip], port=self.host_port)
+                        session = cluster.connect(self.keyspace_name)
+                        qry_with_endtime = session.prepare(
+                            "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
+
+                        for data_block in self.line_to_batch_block(stream_id, owner, nosql_data, qry_with_endtime):
+                            session.execute(data_block)
+
+                        self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                                           annotations, stream_type, nosql_data[0][0],
+                                                           nosql_data[len(nosql_data) - 1][1])
+                        # mark day as processed in data_replay table
+                        self.sql_data.mark_processed_day(owner, stream_id, stream_day)
+                        session.shutdown()
+                        cluster.shutdown()
+
+                    if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
+                        try:
+                            influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort,
+                                                             username=self.influxdbUser,
+                                                             password=self.influxdbPassword, database=self.influxdbDatabase)
+                            influxdb_client.write_points(influxdb_data, protocol="line")
+                        except:
+                            self.logging.log(
+                                error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(owner)+ "Files: " + str(msg["filename"]) + " - Error in writing data to influxdb. " + str(
+                                    traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+
             # mark day as processed in data_replay table
             self.sql_data.mark_processed_day(owner, stream_id, stream_day)
-
-            if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
-                if (nosql_insert and len(nosql_data) > 0) and (self.nosql_store=="cassandra" or self.nosql_store=="scylladb"):
-                    # connect to cassandra
-                    cluster = Cluster([self.host_ip], port=self.host_port)
-                    session = cluster.connect(self.keyspace_name)
-                    qry_with_endtime = session.prepare(
-                        "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
-
-                    for data_block in self.line_to_batch_block(stream_id, owner, nosql_data, qry_with_endtime):
-                        session.execute(data_block)
-
-                    self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
-                                                       annotations, stream_type, nosql_data[0][0],
-                                                       nosql_data[len(nosql_data) - 1][1])
-                    # mark day as processed in data_replay table
-                    self.sql_data.mark_processed_day(owner, stream_id, stream_day)
-                    session.shutdown()
-                    cluster.shutdown()
-
-                if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
-                    try:
-                        influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort,
-                                                         username=self.influxdbUser,
-                                                         password=self.influxdbPassword, database=self.influxdbDatabase)
-                        influxdb_client.write_points(influxdb_data, protocol="line")
-                    except:
-                        self.logging.log(
-                            error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(owner)+ "Files: " + str(msg["filename"]) + " - Error in writing data to influxdb. " + str(
-                                traceback.format_exc()), error_type=self.logtypes.CRITICAL)
-
 
     def write_hdfs_stream_file(self, participant_id, stream_id, filename, data):
         # Using libhdfs
