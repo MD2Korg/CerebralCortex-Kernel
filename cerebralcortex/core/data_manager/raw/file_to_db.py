@@ -62,9 +62,10 @@ class FileToDB():
         self.hdfs_user = self.config['hdfs']['hdfs_user']
         self.hdfs_kerb_ticket = self.config['hdfs']['hdfs_kerb_ticket']
         self.raw_files_dir = self.config['hdfs']['raw_files_dir']
+        self.hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
 
         self.nosql_store = self.config["data_ingestion"]["nosql_store"]
-        self.logging = CCLogging(CC)
+        self.logging = CC.logging
         self.logtypes = LogTypes()
 
         self.influxdbIP = self.config['influxdb']['host']
@@ -173,7 +174,7 @@ class FileToDB():
 
     def write_hdfs_stream_file(self, participant_id, stream_id, filename, data):
         # Using libhdfs
-        hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+
         day = data[0][2]
 
         filename = str(participant_id)+"/"+str(stream_id)+"/"+str(day)+"/"+str(filename[-39:])
@@ -181,12 +182,12 @@ class FileToDB():
 
         filename = self.raw_files_dir+filename
         picked_data = pickle.dumps(data)
-        with hdfs.open(filename, "wb") as f:
+        with self.hdfs.open(filename, "wb") as f:
             f.write(picked_data)
 
     def write_hdfs_day_file(self, participant_id, stream_id, data):
         # Using libhdfs
-        hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+
         existing_data = None
         outputdata = {}
 
@@ -203,14 +204,14 @@ class FileToDB():
             filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
             if len(dps)>0:
                 try:
-                    if hdfs.exists(filename):
-                        with hdfs.open(filename, "rb") as curfile:
+                    if self.hdfs.exists(filename):
+                        with self.hdfs.open(filename, "rb") as curfile:
                             existing_data = curfile.read()
                     if existing_data is not None and existing_data!=b'':
                         existing_data = pickle.loads(existing_data)
                         existing_data.extend(dps)
                         dps = existing_data
-                    with hdfs.open(filename, "wb") as f:
+                    with self.hdfs.open(filename, "wb") as f:
                         pickle.dump(dps, f)
                 except Exception as ex:
                     self.logging.log(

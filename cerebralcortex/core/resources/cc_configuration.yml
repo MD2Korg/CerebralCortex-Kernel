@@ -52,7 +52,7 @@ minio:
 data_ingestion:
   influxdb_in: False
   nosql_in: True
-  nosql_store: "cassandra" # acceptable parameters are: cassandra, scylladb, hdfs
+  nosql_store: "hdfs" # acceptable parameters are: cassandra, scylladb, hdfs
 
 influxdb_blacklist: # influxdb data ingestion pipeline will not process stream names defined here
   ibl1: "ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST"
@@ -149,4 +149,4 @@ blacklist: #only works for "mydb" replay_type
     re1: '^BEACON--org.md2k.beacon--BEACON--([0-9A-F]+:){5}[0-9A-F]+$'
   txt_match:  #partial string matching, multiple are allowed
     tm1: 'RAW--org.md2k.%'
-    tm2: 'CU_AUDIO_FEATURE--%'
+#    tm2: 'CU_AUDIO_FEATURE--%'

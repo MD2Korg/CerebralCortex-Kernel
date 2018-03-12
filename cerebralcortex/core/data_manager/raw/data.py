@@ -27,7 +27,7 @@ from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.data_manager.sql.data import SqlData
 from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
-
+import pyarrow
 
 class RawData(StreamHandler):
     def __init__(self, CC):
@@ -37,7 +37,7 @@ class RawData(StreamHandler):
 
         self.time_zone = CC.timezone
 
-        self.logging = CCLogging(CC)
+        self.logging = CC.logging
         self.logtypes = LogTypes()
 
         self.host_ip = self.config['cassandra']['host']
@@ -52,5 +52,5 @@ class RawData(StreamHandler):
         self.hdfs_user = self.config['hdfs']['hdfs_user']
         self.hdfs_kerb_ticket = self.config['hdfs']['hdfs_kerb_ticket']
         self.raw_files_dir = self.config['hdfs']['raw_files_dir']
-        
+        self.hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         self.nosql_store = self.config['data_ingestion']['nosql_store']

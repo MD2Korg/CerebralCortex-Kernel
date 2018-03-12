@@ -39,7 +39,7 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
 
         self.time_zone = CC.timezone
 
-        self.logging = CCLogging(CC)
+        self.logging = CC.logging
         self.logtypes = LogTypes()
 
         self.hostIP = self.config['mysql']['host']
