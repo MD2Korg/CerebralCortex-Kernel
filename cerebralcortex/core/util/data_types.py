@@ -100,9 +100,9 @@ def convert_sample(sample):
             return tmp
         else:
             try:
-                return float(sample)
+                return [float(sample)]
             except:
-                return sample
+                return [sample]
     except:
         return sample
 

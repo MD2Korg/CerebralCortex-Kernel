@@ -118,15 +118,16 @@ class StreamHandler():
                     traceback.format_exc()), error_type=self.logtypes.CRITICAL)
     
     def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None):
-        # Using libhdfs
+        # Using libhdfs, TODO: using parent class self.hdfs would return .exists method as false in all cases. Debug
+        hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         data = None
         filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-        if not self.hdfs.exists(filename):
+        if not hdfs.exists(filename):
             print("File does not exist.")
             return []
 
         try:
-            with self.hdfs.open(filename, "rb") as curfile:
+            with hdfs.open(filename, "rb") as curfile:
                 data = curfile.read()
             if data is not None and data!=b'':
                 clean_data = self.filter_sort_datapoints(data)

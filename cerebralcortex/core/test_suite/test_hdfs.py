@@ -33,11 +33,13 @@ from cerebralcortex.cerebralcortex import CerebralCortex
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.test_suite.util.gen_test_data import gen_raw_data
 from cerebralcortex.core.data_manager.raw.file_to_db import FileToDB
-
-# class TestFileToDB():
-#     def test01_file_to_db(self):
-#         file_to_db = FileToDB(self.CC)
-#         file_to_db.file_processor(msg, data_path, CC.config['data_ingestion']['influxdb_in'], CC.config['data_ingestion']['nosql_in'])
+import pickle
+class TestFileToDB():
+    def test01_file_to_db(self):
+        file_to_db = FileToDB(self.CC)
+        for replay_batch in self.CC.SqlData.get_replay_batch(record_limit=5000):
+            for msg in replay_batch:
+                file_to_db.file_processor(msg, self.cc_conf["data_replay"]["data_dir"], self.cc_conf['data_ingestion']['influxdb_in'], self.cc_conf['data_ingestion']['nosql_in'])
 
 
 
@@ -100,7 +102,7 @@ class TestStreamHandler():
 
 
 
-class TestHDFS(unittest.TestCase, TestStreamHandler):
+class TestHDFS(unittest.TestCase, TestFileToDB):
     def setUp(self):
         with open("resources/cc_test_configuration.yml") as test_conf:
             test_conf = yaml.load(test_conf)
@@ -119,4 +121,5 @@ class TestHDFS(unittest.TestCase, TestStreamHandler):
         self.days = ["20180221", "20180223", "20180224"]
 
         # generate sample raw data file
-        self.data = gen_raw_data(self.gz_file, 10000, True)
+        self.data = gen_raw_data(self.gz_file, 1131448, True, "float")
+        print("done")
