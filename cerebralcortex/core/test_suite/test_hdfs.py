@@ -121,5 +121,8 @@ class TestHDFS(unittest.TestCase, TestFileToDB):
         self.days = ["20180221", "20180223", "20180224"]
 
         # generate sample raw data file
-        self.data = gen_raw_data(self.gz_file, 1131448, True, "float")
+        self.data = gen_raw_data(self.gz_file, 2160000, True, "float")
+        # ss = pickle.dumps(self.data)
+        # with open("/home/ali/Desktop/tmp/hadoop/sample.pickle", "wb") as f:
+        #     f.write(ss)
         print("done")
