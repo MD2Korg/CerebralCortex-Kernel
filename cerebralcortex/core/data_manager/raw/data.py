@@ -52,5 +52,4 @@ class RawData(StreamHandler):
         self.hdfs_user = self.config['hdfs']['hdfs_user']
         self.hdfs_kerb_ticket = self.config['hdfs']['hdfs_kerb_ticket']
         self.raw_files_dir = self.config['hdfs']['raw_files_dir']
-        self.hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         self.nosql_store = self.config['data_ingestion']['nosql_store']

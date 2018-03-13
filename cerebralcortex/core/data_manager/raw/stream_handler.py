@@ -118,7 +118,7 @@ class StreamHandler():
                     traceback.format_exc()), error_type=self.logtypes.CRITICAL)
     
     def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None):
-        # Using libhdfs, TODO: using parent class self.hdfs would return .exists method as false in all cases. Debug
+        # Using libhdfs,
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         data = None
         filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
@@ -417,6 +417,7 @@ class StreamHandler():
         :param data:
         """
         # Using libhdfs
+        hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         existing_data = None
         outputdata = {}
         success = False
@@ -434,15 +435,15 @@ class StreamHandler():
             filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
             if len(dps)>0:
                 try:
-                    if self.hdfs.exists(filename):
-                        with self.hdfs.open(filename, "rb") as curfile:
+                    if hdfs.exists(filename):
+                        with hdfs.open(filename, "rb") as curfile:
                             existing_data = curfile.read()
                     if existing_data is not None:
                         existing_data = pickle.loads(existing_data)
                         existing_data.extend(dps)
                         dps = existing_data
                     dps = self.filter_sort_datapoints(dps)
-                    with self.hdfs.open(filename, "wb") as f:
+                    with hdfs.open(filename, "wb") as f:
                         pickle.dump(dps, f)
                     success = True
                 except Exception as ex:
