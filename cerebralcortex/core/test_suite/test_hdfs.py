@@ -102,7 +102,7 @@ class TestStreamHandler():
 
 
 
-class TestHDFS(unittest.TestCase, TestFileToDB):
+class TestHDFS(unittest.TestCase, TestStreamHandler):
     def setUp(self):
         with open("resources/cc_test_configuration.yml") as test_conf:
             test_conf = yaml.load(test_conf)

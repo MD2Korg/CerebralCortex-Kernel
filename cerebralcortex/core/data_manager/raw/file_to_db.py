@@ -28,6 +28,8 @@ import json
 import uuid
 import traceback
 import gzip
+import os
+import pathlib
 import os.path
 import pyarrow
 import pickle
@@ -38,7 +40,7 @@ from cerebralcortex.core.datatypes.stream_types import StreamTypes
 from influxdb import InfluxDBClient
 from cerebralcortex.core.util.debuging_decorators import log_execution_time
 from cerebralcortex.core.util.data_types import convert_sample, serialize_obj
-from cerebralcortex.core.log_manager.logging import CCLogging
+from pympler.asizeof import asizeof
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 
 '''It is responsible to read .gz files and insert data in Cassandra/ScyllaDB OR HDFS and Influx. 
@@ -131,13 +133,13 @@ class FileToDB():
                     if nosql_insert:
                         if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
                             nosql_data.extend(all_data["nosql_data"])
+                            all_data["nosql_data"].clear()
 
             if (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="hdfs":
                 self.write_hdfs_day_file(owner, stream_id, nosql_data)
                 self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
                                                    annotations, stream_type, nosql_data[0].start_time,
                                                    nosql_data[len(nosql_data) - 1].start_time)
-
 
 
             #if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
@@ -170,6 +172,9 @@ class FileToDB():
                         error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(owner)+ "Files: " + str(msg["filename"]) + " - Error in writing data to influxdb. " + str(
                             traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
+            nosql_data.clear()
+            all_data.clear()
+
             # mark day as processed in data_replay table
             self.sql_data.mark_processed_day(owner, stream_id, stream_day)
 
@@ -197,7 +202,6 @@ class FileToDB():
             day = row.start_time.strftime("%Y%m%d")
             if day not in outputdata:
                 outputdata[day] = []
-
             outputdata[day].append(row)
 
         #Data Write loop
@@ -213,7 +217,9 @@ class FileToDB():
                         existing_data.extend(dps)
                         dps = existing_data
                     with self.hdfs.open(filename, "wb") as f:
-                        f.write(pickle.dumps(dps))
+                        tmp = pickle.dumps(dps)
+                        f.write(tmp)
+                        tmp = None
                         #pickle.dump(dps, f)
                 except Exception as ex:
                     self.logging.log(
