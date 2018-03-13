@@ -33,6 +33,7 @@ from cerebralcortex.core.util.data_types import  convert_sample, convert_sample_
 
 class TestFileToDataStream(unittest.TestCase):
     sample_data = {}
+    stream_name = "sample-stream"
     sample_data["string"] = 'some-string'
     sample_data["string_array"] = 'string1, string2, string3'
     sample_data["string_tuple"] = ' [1, 2, 3, 4]' #maybe
@@ -42,18 +43,18 @@ class TestFileToDataStream(unittest.TestCase):
     sample_data["list_of_dict"] = '[{"k1": "v1", "k2": "v2"}, {"k11": "v12"}]'
 
     def test_01_simple_parsing(self):
-        self.assertEqual(convert_sample(self.sample_data["string"]), 'some-string')
-        self.assertListEqual(convert_sample(self.sample_data["string_array"]), ['string1', 'string2', 'string3'])
-        self.assertListEqual(convert_sample(self.sample_data["string_tuple"]), [1, 2, 3, 4])
-        self.assertListEqual(convert_sample(self.sample_data["string_list"]), [1, 2, 3, 4])
-        self.assertEqual(convert_sample(self.sample_data["string_float"]), 123.0)
-        self.assertEqual(convert_sample(self.sample_data["string_json"]), {"k1": "v1", "k2": "v2"})
+        self.assertEqual(convert_sample(self.sample_data["string"], self.stream_name), 'some-string')
+        self.assertListEqual(convert_sample(self.sample_data["string_array"], self.stream_name), ['string1', 'string2', 'string3'])
+        self.assertListEqual(convert_sample(self.sample_data["string_tuple"], self.stream_name), [1, 2, 3, 4])
+        self.assertListEqual(convert_sample(self.sample_data["string_list"], self.stream_name), [1, 2, 3, 4])
+        self.assertEqual(convert_sample(self.sample_data["string_float"], self.stream_name), 123.0)
+        self.assertEqual(convert_sample(self.sample_data["string_json"], self.stream_name), {"k1": "v1", "k2": "v2"})
 
     def test_03_stress_test(self):
         st = datetime.datetime.now()
         for i in range(1, 1000000):
             #sample = random.random(), random.random(), random.random(), random.random(), random.random()
-            convert_sample("1.2, 32.23, 43.23, 1.2, 23.34234, 12, 5454")
+            convert_sample("1.2, 32.23, 43.23, 1.2, 23.34234, 12, 5454", self.stream_name)
         print("\n\nTime took to process all samples: ", datetime.datetime.now() - st)
 
 

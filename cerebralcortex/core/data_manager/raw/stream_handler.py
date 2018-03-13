@@ -250,7 +250,7 @@ class StreamHandler():
                              error_type=self.logtypes.CRITICAL)
             return []
 
-    def parse_row_raw_sample(self, row: str) -> List:
+    def parse_row_raw_sample(self, row: str, stream_name) -> List:
         """
 
         :param row:
@@ -267,7 +267,7 @@ class StreamHandler():
                 else:
                     sample_timezone = timezone(timedelta(milliseconds=r[1]))
                     start_time = datetime.fromtimestamp(r[0], sample_timezone)
-                sample = convert_sample(r[2])
+                sample = convert_sample(r[2], stream_name)
                 updated_rows.append(DataPoint(start_time=start_time, sample=sample))
             return updated_rows
         except Exception as e:

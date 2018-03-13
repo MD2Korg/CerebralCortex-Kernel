@@ -86,7 +86,9 @@ def convert_sample_type(sample: str) -> object:
         return "[%s]" % sample
 
 
-def convert_sample(sample):
+def convert_sample(sample, stream_name):
+    if "RAW--org.md2k." in stream_name or "CU_AUDIO_FEATURE--" in stream_name:
+        return sample
     try:
         if sample.startswith("[") or sample.startswith("{"):
             return json.loads(sample)

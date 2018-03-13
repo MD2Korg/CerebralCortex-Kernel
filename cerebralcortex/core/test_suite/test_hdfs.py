@@ -102,7 +102,7 @@ class TestStreamHandler():
 
 
 
-class TestHDFS(unittest.TestCase, TestFileToDB):
+class TestHDFS(unittest.TestCase, TestStreamHandler):
     def setUp(self):
         with open("resources/cc_test_configuration.yml") as test_conf:
             test_conf = yaml.load(test_conf)
@@ -121,7 +121,7 @@ class TestHDFS(unittest.TestCase, TestFileToDB):
         self.days = ["20180221", "20180223", "20180224"]
 
         # generate sample raw data file
-        self.data = gen_raw_data(self.gz_file, 2160000, True, "float")
+        self.data = gen_raw_data(self.gz_file, 10000, True, "float")
         # ss = pickle.dumps(self.data)
         # with open("/home/ali/Desktop/tmp/hadoop/sample.pickle", "wb") as f:
         #     f.write(ss)

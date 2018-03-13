@@ -394,9 +394,9 @@ class FileToDB():
                         offset = int(offset)
                         # TODO: improve the performance of sample parsing
                         if influxdb_insert==True and stream_name not in blacklist_streams and line_count<self.influx_day_datapoints_limit:
-                            values = convert_sample(sample)
+                            values = convert_sample(sample, stream_name)
                         elif nosql_insert==True:
-                            values = convert_sample(sample)
+                            values = convert_sample(sample, stream_name)
 
                         ############### START INFLUXDB BLOCK
                         if influxdb_insert and line_count<self.influx_day_datapoints_limit:
