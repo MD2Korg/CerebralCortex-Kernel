@@ -130,44 +130,45 @@ class FileToDB():
                         influxdb_data = influxdb_data+all_data["influxdb_data"]
                     if nosql_insert:
                         if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
-                            nosql_data = all_data["nosql_data"]
-                            if (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="hdfs":
-                                self.write_hdfs_day_file(owner, stream_id, nosql_data)
-                                self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
-                                                                   annotations, stream_type, nosql_data[0].start_time,
-                                                                   nosql_data[len(nosql_data) - 1].start_time)
+                            nosql_data.extend(all_data["nosql_data"])
+
+            if (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="hdfs":
+                self.write_hdfs_day_file(owner, stream_id, nosql_data)
+                self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                                   annotations, stream_type, nosql_data[0].start_time,
+                                                   nosql_data[len(nosql_data) - 1].start_time)
 
 
 
-                if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
-                    if (nosql_insert and len(nosql_data) > 0) and (self.nosql_store=="cassandra" or self.nosql_store=="scylladb"):
-                        # connect to cassandra
-                        cluster = Cluster([self.host_ip], port=self.host_port)
-                        session = cluster.connect(self.keyspace_name)
-                        qry_with_endtime = session.prepare(
-                            "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
+            #if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
+            if (nosql_insert and len(nosql_data) > 0) and (self.nosql_store=="cassandra" or self.nosql_store=="scylladb"):
+                # connect to cassandra
+                cluster = Cluster([self.host_ip], port=self.host_port)
+                session = cluster.connect(self.keyspace_name)
+                qry_with_endtime = session.prepare(
+                    "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
 
-                        for data_block in self.line_to_batch_block(stream_id, owner, nosql_data, qry_with_endtime):
-                            session.execute(data_block)
+                for data_block in self.line_to_batch_block(stream_id, owner, nosql_data, qry_with_endtime):
+                    session.execute(data_block)
 
-                        self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
-                                                           annotations, stream_type, nosql_data[0][0],
-                                                           nosql_data[len(nosql_data) - 1][1])
-                        # mark day as processed in data_replay table
-                        self.sql_data.mark_processed_day(owner, stream_id, stream_day)
-                        session.shutdown()
-                        cluster.shutdown()
+                self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                                   annotations, stream_type, nosql_data[0][0],
+                                                   nosql_data[len(nosql_data) - 1][1])
+                # mark day as processed in data_replay table
+                self.sql_data.mark_processed_day(owner, stream_id, stream_day)
+                session.shutdown()
+                cluster.shutdown()
 
-                    if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
-                        try:
-                            influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort,
-                                                             username=self.influxdbUser,
-                                                             password=self.influxdbPassword, database=self.influxdbDatabase)
-                            influxdb_client.write_points(influxdb_data, protocol="line")
-                        except:
-                            self.logging.log(
-                                error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(owner)+ "Files: " + str(msg["filename"]) + " - Error in writing data to influxdb. " + str(
-                                    traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
+                try:
+                    influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort,
+                                                     username=self.influxdbUser,
+                                                     password=self.influxdbPassword, database=self.influxdbDatabase)
+                    influxdb_client.write_points(influxdb_data, protocol="line")
+                except:
+                    self.logging.log(
+                        error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(owner)+ "Files: " + str(msg["filename"]) + " - Error in writing data to influxdb. " + str(
+                            traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
             # mark day as processed in data_replay table
             self.sql_data.mark_processed_day(owner, stream_id, stream_day)
@@ -212,7 +213,8 @@ class FileToDB():
                         existing_data.extend(dps)
                         dps = existing_data
                     with self.hdfs.open(filename, "wb") as f:
-                        pickle.dump(dps, f)
+                        f.write(pickle.dumps(dps))
+                        #pickle.dump(dps, f)
                 except Exception as ex:
                     self.logging.log(
                         error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
