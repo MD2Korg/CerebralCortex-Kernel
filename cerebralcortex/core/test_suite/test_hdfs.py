@@ -81,14 +81,15 @@ class TestStreamHandler():
 
         # test sub-set of stream
         ds = self.CC.get_stream(self.stream_id, self.owner_id, self.days[1], start_time, end_time)
-        if self.CC.config["data_ingestion"]["nosql_store"]!="hdfs":
-            self.assertEqual(len(ds.data), 600)
-            self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-23 03:14:52.133000"))
-            self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse("2018-02-23 03:14:58.123000"))
-        else:
+        if self.CC.config["data_ingestion"]["nosql_store"]=="hdfs" or self.CC.config["data_ingestion"]["nosql_store"]=="filesystem":
             self.assertEqual(len(ds.data), 700)
             self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-23 03:14:52.003000"))
             self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse("2018-02-23 03:14:58.993000"))
+        else:
+            self.assertEqual(len(ds.data), 600)
+            self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-23 03:14:52.133000"))
+            self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse("2018-02-23 03:14:58.123000"))
+
 
         # test metadata
         self.assertEqual(ds.owner,self.owner_id)
@@ -103,7 +104,7 @@ class TestStreamHandler():
 
 
 
-class TestHDFS(unittest.TestCase, TestFileToDB):
+class TestHDFS(unittest.TestCase, TestStreamHandler):
     def setUp(self):
         with open("resources/cc_test_configuration.yml") as test_conf:
             test_conf = yaml.load(test_conf)

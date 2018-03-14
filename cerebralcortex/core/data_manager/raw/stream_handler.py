@@ -74,6 +74,8 @@ class StreamHandler():
         if data_type == DataSet.COMPLETE:
             if self.nosql_store=="hdfs":
                 dps = self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time)
+            elif self.nosql_store=="filesystem":
+                dps =  self.read_filesystem_day_file(owner_id, stream_id, day, start_time, end_time)
             else:
                 dps = self.load_cassandra_data(stream_id, day, start_time, end_time)
             stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps)
@@ -81,7 +83,7 @@ class StreamHandler():
             if self.nosql_store=="hdfs":
                 return self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time)
             elif self.nosql_store=="filesystem":
-                return self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time)
+                return self.read_filesystem_day_file(owner_id, stream_id, day, start_time, end_time)
             else:
                 return self.load_cassandra_data(stream_id,day, start_time, end_time)
         elif data_type == DataSet.ONLY_METADATA:
@@ -454,6 +456,7 @@ class StreamHandler():
     def write_filesystem_day_file(self, participant_id, stream_id, data):
         existing_data = None
         outputdata = {}
+        success = False
 
         #Data Processing loop
         for row in data:
@@ -481,10 +484,11 @@ class StreamHandler():
                         tmp = pickle.dumps(dps)
                         f.write(tmp)
                         tmp = None
+                    success = True
                 except Exception as ex:
                     self.logging.log(
                         error_message="Error in writing data to FileSystem. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
-
+        return success
 
     def save_raw_data(self, stream_id: uuid, datapoints: DataPoint):
 
