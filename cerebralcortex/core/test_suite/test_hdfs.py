@@ -54,6 +54,7 @@ class TestStreamHandler():
                 outputdata[day] = []
 
             outputdata[day].append(row)
+
         for day, dps in outputdata.items():
             ds = DataStream(self.stream_id, self.owner_id, self.stream_name, self.metadata["data_descriptor"],
                             self.metadata["execution_context"], self.metadata["annotations"], self.metadata["type"], None, None, dps)

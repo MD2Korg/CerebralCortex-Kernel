@@ -50,7 +50,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
         return rows
 
-    def get_stream_names_ids_by_user(self, user_id: uuid, stream_name: str = None, start_time: datetime = None,
+    def get_stream_metadata_by_user(self, user_id: uuid, stream_name: str = None, start_time: datetime = None,
                                      end_time: datetime = None) -> List:
         """
         Returns all the stream ids and name that belongs to an owner-id
@@ -58,29 +58,28 @@ class StreamHandler():
         :return:
         """
         stream_ids_names = {}
-        v1, v2, v3, v4 = None, None, None, None
+        vals = []
         if not user_id:
+            print("User ID cannot be empty/None.")
             return None
 
-        qry = "SELECT identifier, name from " + self.datastreamTable
-        where_clause = "where owner=%s"
-        v1 = user_id
+        qry = "SELECT identifier, data_descriptor,execution_context,annotations, start_time, end_time from " + self.datastreamTable
+        where_clause = " where owner=%s "
+        vals.append(user_id)
         if stream_name:
             where_clause += " and name=%s "
-            v2 = stream_name
+            vals.append(stream_name)
         if start_time:
             where_clause += " and start_time<=%s "
-            v3 = start_time
+            vals.append(start_time)
         if end_time:
             where_clause += " and end_time>=%s "
-            v4 = end_time
-        vals = filter(None, (v1, v2, v3, v4))
+            vals.append(end_time)
 
+        qry = qry+where_clause
+        vals = tuple(vals)
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
-        for row in rows:
-            stream_ids_names[row["name"]] = row["identifier"]
-        return stream_ids_names
+        return rows
 
     def get_stream_duration(self, stream_id: uuid) -> dict:
         """

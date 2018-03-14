@@ -182,14 +182,14 @@ class CerebralCortex:
         """
         return self.SqlData.get_stream_duration(stream_id)
 
-    def get_stream_names_ids_by_user(self, user_id: uuid, stream_name: str = None, start_time: datetime = None,
+    def get_stream_metadata_by_user(self, user_id: uuid, stream_name: str = None, start_time: datetime = None,
                                      end_time: datetime = None) -> List:
         """
         Returns all the stream ids and name that belongs to an owner-id
         :param user_id:
         :return:
         """
-        return self.SqlData.get_stream_names_ids_by_user(user_id, stream_name, start_time, end_time)
+        return self.SqlData.get_stream_metadata_by_user(user_id, stream_name, start_time, end_time)
 
     def get_stream_metadata(self, stream_id: uuid) -> dict:
         """
