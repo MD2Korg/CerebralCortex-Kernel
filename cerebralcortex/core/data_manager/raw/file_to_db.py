@@ -29,7 +29,6 @@ import uuid
 import traceback
 import gzip
 import os
-import pathlib
 import os.path
 import pyarrow
 import pickle
@@ -225,104 +224,41 @@ class FileToDB():
                     self.logging.log(
                         error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
 
+    def write_filesystem_day_file(self, participant_id, stream_id, data):
+        # Using libhdfs
 
-    # def write_hdfs_day_file(self, participant_id, stream_id, data):
-    #     # Using libhdfs
-    #     hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
-    #     day = None
-    #     # if the data appeared in a different day then this shall put that day in correct day
-    #     chunked_data = []
-    #     existing_data = None
-    #     if len(data)==1:
-    #         day = data[0].start_time.strftime("%Y%m%d")
-    #         filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-    #         try:
-    #             if hdfs.exists(filename):
-    #                 with hdfs.open(filename, "rb") as curfile:
-    #                     existing_data = curfile.read()
-    #             if existing_data is not None:
-    #                 existing_data = pickle.loads(existing_data)
-    #                 existing_data.extend(data)
-    #                 # remove duplicate data
-    #                 data = [ii for n,ii in enumerate(existing_data) if ii not in existing_data[:n]]
-    #             with hdfs.open(filename, "wb") as f:
-    #                 pickle.dump(data, f)
-    #         except Exception as ex:
-    #             self.logging.log(
-    #                 error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
-    #     else:
-    #         current_day = None
-    #         for row in data:
-    #             current_day = row.start_time.strftime("%Y%m%d")
-    #             if day is None:
-    #                 day = row.start_time.strftime("%Y%m%d")
-    #                 if row not in chunked_data:
-    #                     chunked_data.append(row)
-    #             elif day!=current_day:
-    #                 filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-    #                 # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
-    #                 if hdfs.exists(filename):
-    #                     with hdfs.open(filename, "rb") as curfile:
-    #                         existing_data = curfile.read()
-    #                 if existing_data is not None and existing_data!="":
-    #                     existing_data = pickle.loads(existing_data)
-    #                     existing_data.extend(chunked_data)
-    #                     chunked_data = [ii for n,ii in enumerate(existing_data) if ii not in existing_data[:n]]
-    #                 if len(chunked_data)>0:
-    #                     try:
-    #                         with hdfs.open(filename, "wb") as f:
-    #                             pickle.dump(chunked_data, f)
-    #                     except Exception as ex:
-    #                         self.logging.log(
-    #                             error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
-    #
-    #                 day = row.start_time.strftime("%Y%m%d")
-    #                 chunked_data =[]
-    #                 if row not in chunked_data:
-    #                     chunked_data.append(row)
-    #             else:
-    #                 day = row.start_time.strftime("%Y%m%d")
-    #                 if row not in chunked_data:
-    #                     chunked_data.append(row)
-    #             existing_data = None
+        existing_data = None
+        outputdata = {}
 
-    # def write_hdfs_day_file(self, participant_id, stream_id, data):
-    #     # Using libhdfs
-    #     hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
-    #     day = None
-    #
-    #     # if the data appeared in a different day then this shall put that day in correct day
-    #     chunked_data = []
-    #     existing_data = None
-    #     for row in data:
-    #         if day is None:
-    #             day = row[2]
-    #             chunked_data.append(row)
-    #         elif day!=row[2]:
-    #             filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-    #             # if file exist then, retrieve, deserialize, concatenate, serialize again, and store
-    #             if hdfs.exists(filename):
-    #                 with hdfs.open(filename, "rb") as curfile:
-    #                     existing_data = curfile.read()
-    #             if existing_data is not None:
-    #                 existing_data = pickle.loads(existing_data)
-    #                 chunked_data.extend(existing_data)
-    #             chunked_data = chunked_data # TODO: remove duplicate
-    #
-    #             try:
-    #                 with hdfs.open(filename, "wb") as f:
-    #                     pickle.dump(chunked_data, f)
-    #             except Exception as ex:
-    #                 self.logging.log(
-    #                     error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
-    #             day = row[2]
-    #             chunked_data =[]
-    #             chunked_data.append(row)
-    #         else:
-    #             day = row[2]
-    #             chunked_data.append(row)
-    #         existing_data = None
+        #Data Processing loop
+        for row in data:
+            day = row.start_time.strftime("%Y%m%d")
+            if day not in outputdata:
+                outputdata[day] = []
+            outputdata[day].append(row)
 
+        #Data Write loop
+        for day, dps in outputdata.items():
+            filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)
+            if not os.path.exists(filename):
+                os.makedirs(filename, exist_ok=True)
+            filename = filename+"/"+str(day)+".pickle"
+            if len(dps)>0:
+                try:
+                    if os.path.exists(filename):
+                        with open(filename, "rb") as curfile:
+                            existing_data = curfile.read()
+                    if existing_data is not None and existing_data!=b'':
+                        existing_data = pickle.loads(existing_data)
+                        existing_data.extend(dps)
+                        dps = existing_data
+                    with open(filename, "wb") as f:
+                        tmp = pickle.dumps(dps)
+                        f.write(tmp)
+                        tmp = None
+                except Exception as ex:
+                    self.logging.log(
+                        error_message="Error in writing data to FileSystem. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
 
     def line_to_batch_block(self, stream_id: uuid, owner_id: uuid, lines: str, insert_qry: str):
 
