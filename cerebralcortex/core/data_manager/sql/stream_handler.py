@@ -154,7 +154,7 @@ class StreamHandler():
         :return:
         """
         if not user_id:
-            return None
+            return {}
         result = {}
         qry = "select data_descriptor,execution_context,annotations, start_time, end_time from " + self.datastreamTable + " where owner = %(owner)s"
         vals = {'owner': str(user_id)}
@@ -163,7 +163,7 @@ class StreamHandler():
         #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
-            return []
+            return {}
         else:
             for row in rows:
                 result[row["name"]] = row
