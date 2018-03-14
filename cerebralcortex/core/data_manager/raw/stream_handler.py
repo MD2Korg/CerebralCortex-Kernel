@@ -31,6 +31,7 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import List
 import traceback
+import os
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, SimpleStatement, BatchType
 from cerebralcortex.core.util.data_types import serialize_obj
@@ -38,8 +39,6 @@ from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.util.data_types import convert_sample, deserialize_obj
 from pytz import timezone as pytimezone
-
-
 
 class DataSet(Enum):
     COMPLETE = 1,
@@ -369,6 +368,8 @@ class StreamHandler():
 
                 if self.nosql_store=="hdfs":
                     status = self.write_hdfs_day_file(owner_id, stream_id, data)
+                elif self.nosql_store=="filesystem":
+                    status = self.write_filesystem_day_file(owner_id, stream_id, data)
                 else:
                     # save raw sensor data in Cassandra
                     status = self.save_raw_data(stream_id, data)
@@ -427,6 +428,41 @@ class StreamHandler():
                     self.logging.log(
                         error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
         return success
+
+    def write_filesystem_day_file(self, participant_id, stream_id, data):
+        existing_data = None
+        outputdata = {}
+
+        #Data Processing loop
+        for row in data:
+            day = row.start_time.strftime("%Y%m%d")
+            if day not in outputdata:
+                outputdata[day] = []
+            outputdata[day].append(row)
+
+        #Data Write loop
+        for day, dps in outputdata.items():
+            filename = self.filesystem_path+str(participant_id)+"/"+str(stream_id)
+            if not os.path.exists(filename):
+                os.makedirs(filename, exist_ok=True)
+            filename = filename+"/"+str(day)+".pickle"
+            if len(dps)>0:
+                try:
+                    if os.path.exists(filename):
+                        with open(filename, "rb") as curfile:
+                            existing_data = curfile.read()
+                    if existing_data is not None and existing_data!=b'':
+                        existing_data = pickle.loads(existing_data)
+                        existing_data.extend(dps)
+                        dps = existing_data
+                    with open(filename, "wb") as f:
+                        tmp = pickle.dumps(dps)
+                        f.write(tmp)
+                        tmp = None
+                except Exception as ex:
+                    self.logging.log(
+                        error_message="Error in writing data to FileSystem. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
+
 
     def save_raw_data(self, stream_id: uuid, datapoints: DataPoint):
 

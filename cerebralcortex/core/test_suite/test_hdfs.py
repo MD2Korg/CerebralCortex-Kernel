@@ -54,7 +54,7 @@ class TestStreamHandler():
                 outputdata[day] = []
 
             outputdata[day].append(row)
-
+        tt = self.CC.get_stream_metadata_by_user("636fcc1f-8966-4e63-a9df-0cbaa6e9296c","DATA_QUALITY--ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST", parser.parse("2017-12-01 00:00:00"),parser.parse("2017-12-01 23:59:00"))
         for day, dps in outputdata.items():
             ds = DataStream(self.stream_id, self.owner_id, self.stream_name, self.metadata["data_descriptor"],
                             self.metadata["execution_context"], self.metadata["annotations"], self.metadata["type"], None, None, dps)
@@ -103,7 +103,7 @@ class TestStreamHandler():
 
 
 
-class TestHDFS(unittest.TestCase, TestStreamHandler):
+class TestHDFS(unittest.TestCase, TestFileToDB):
     def setUp(self):
         with open("resources/cc_test_configuration.yml") as test_conf:
             test_conf = yaml.load(test_conf)

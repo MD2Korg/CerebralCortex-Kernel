@@ -37,9 +37,7 @@ from cassandra.query import BatchStatement, BatchType
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
 from influxdb import InfluxDBClient
-from cerebralcortex.core.util.debuging_decorators import log_execution_time
 from cerebralcortex.core.util.data_types import convert_sample, serialize_obj
-from pympler.asizeof import asizeof
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 
 '''It is responsible to read .gz files and insert data in Cassandra/ScyllaDB OR HDFS and Influx. 
@@ -50,6 +48,7 @@ class FileToDB():
     def __init__(self, CC):
         self.config = CC.config
 
+        self.rawData = CC.RawData
         self.sql_data = CC.SqlData
         self.host_ip = self.config['cassandra']['host']
         self.host_port = self.config['cassandra']['port']
@@ -63,7 +62,8 @@ class FileToDB():
         self.hdfs_user = self.config['hdfs']['hdfs_user']
         self.hdfs_kerb_ticket = self.config['hdfs']['hdfs_kerb_ticket']
         self.raw_files_dir = self.config['hdfs']['raw_files_dir']
-        self.hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+
+        self.filesystem_path = self.config["data_ingestion"]["filesystem_path"]
 
         self.nosql_store = self.config["data_ingestion"]["nosql_store"]
         self.logging = CC.logging
@@ -79,6 +79,9 @@ class FileToDB():
         self.sample_group_size = 99
         self.influx_batch_size = 10000
         self.influx_day_datapoints_limit = 37000
+
+        if self.nosql_store=="hdfs":
+            self.hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
 
     #@log_execution_time
     def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert: bool = False, nosql_insert: bool = True):
@@ -133,6 +136,12 @@ class FileToDB():
                         if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
                             nosql_data.extend(all_data["nosql_data"])
                             all_data["nosql_data"].clear()
+
+            if (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="filesystem":
+                self.rawData.write_filesystem_day_file(owner, stream_id, nosql_data)
+                self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
+                                                   annotations, stream_type, nosql_data[0].start_time,
+                                                   nosql_data[len(nosql_data) - 1].start_time)
 
             if (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="hdfs":
                 self.write_hdfs_day_file(owner, stream_id, nosql_data)
@@ -223,42 +232,6 @@ class FileToDB():
                 except Exception as ex:
                     self.logging.log(
                         error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
-
-    def write_filesystem_day_file(self, participant_id, stream_id, data):
-        # Using libhdfs
-
-        existing_data = None
-        outputdata = {}
-
-        #Data Processing loop
-        for row in data:
-            day = row.start_time.strftime("%Y%m%d")
-            if day not in outputdata:
-                outputdata[day] = []
-            outputdata[day].append(row)
-
-        #Data Write loop
-        for day, dps in outputdata.items():
-            filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)
-            if not os.path.exists(filename):
-                os.makedirs(filename, exist_ok=True)
-            filename = filename+"/"+str(day)+".pickle"
-            if len(dps)>0:
-                try:
-                    if os.path.exists(filename):
-                        with open(filename, "rb") as curfile:
-                            existing_data = curfile.read()
-                    if existing_data is not None and existing_data!=b'':
-                        existing_data = pickle.loads(existing_data)
-                        existing_data.extend(dps)
-                        dps = existing_data
-                    with open(filename, "wb") as f:
-                        tmp = pickle.dumps(dps)
-                        f.write(tmp)
-                        tmp = None
-                except Exception as ex:
-                    self.logging.log(
-                        error_message="Error in writing data to FileSystem. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
 
     def line_to_batch_block(self, stream_id: uuid, owner_id: uuid, lines: str, insert_qry: str):
 
@@ -399,7 +372,7 @@ class FileToDB():
                         ############### END INFLUXDB BLOCK
 
                         ############### START OF NO-SQL (HDFS) DATA BLOCK
-                        if nosql_insert and self.nosql_store=="hdfs":
+                        if nosql_insert and  (self.nosql_store=="hdfs" or self.nosql_store=="filesystem"):
 
                             start_time_dt = datetime.datetime.utcfromtimestamp(
                                 start_time)
@@ -432,7 +405,7 @@ class FileToDB():
                                 datapoints.append(DataPoint(start_time_dt, None, offset, values))
                                 line_number += 1
 
-                if (nosql_insert and len(datapoints) > 0) and self.nosql_store!="hdfs":
+                if (nosql_insert and len(datapoints) > 0) and (self.nosql_store!="hdfs" or self.nosql_store!="filesystem"):
                     if not last_start_time:
                         last_start_time = datetime.datetime.utcfromtimestamp(start_time)
                     grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])

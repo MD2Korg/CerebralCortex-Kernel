@@ -52,4 +52,6 @@ class RawData(StreamHandler):
         self.hdfs_user = self.config['hdfs']['hdfs_user']
         self.hdfs_kerb_ticket = self.config['hdfs']['hdfs_kerb_ticket']
         self.raw_files_dir = self.config['hdfs']['raw_files_dir']
+
         self.nosql_store = self.config['data_ingestion']['nosql_store']
+        self.filesystem_path = self.config["data_ingestion"]["filesystem_path"]
