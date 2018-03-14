@@ -80,6 +80,8 @@ class StreamHandler():
         elif data_type == DataSet.ONLY_DATA:
             if self.nosql_store=="hdfs":
                 return self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time)
+            elif self.nosql_store=="filesystem":
+                return self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time)
             else:
                 return self.load_cassandra_data(stream_id,day, start_time, end_time)
         elif data_type == DataSet.ONLY_METADATA:
@@ -135,6 +137,26 @@ class StreamHandler():
                 return clean_data
         except Exception as e:
             self.logging.log(error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc()),
+                             error_type=self.logtypes.CRITICAL)
+            return []
+
+    def read_filesystem_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None):
+        data = None
+        filename = self.filesystem_path+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+        if not os.path.exists(filename):
+            print("File does not exist.")
+            return []
+
+        try:
+            with open(filename, "rb") as curfile:
+                data = curfile.read()
+            if data is not None and data!=b'':
+                clean_data = self.filter_sort_datapoints(data)
+                if start_time is not None or end_time is not None:
+                    clean_data = self.subset_data(clean_data, start_time, end_time)
+                return clean_data
+        except Exception as e:
+            self.logging.log(error_message="Error loading from FileSystem: Cannot parse row. " + str(traceback.format_exc()),
                              error_type=self.logtypes.CRITICAL)
             return []
 
