@@ -264,7 +264,7 @@ class StreamHandler():
         if not stream_id:
             return None
 
-        qry = "select name from " + self.datastreamTable + " where name = %(identifier)s"
+        qry = "select name from " + self.datastreamTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(stream_id)}
 
         rows = self.execute(qry, vals)
