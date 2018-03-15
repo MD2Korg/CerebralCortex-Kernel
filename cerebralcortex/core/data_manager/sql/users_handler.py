@@ -39,7 +39,7 @@ class UserHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_user_metadata(self, user_id:uuid, username: str = None) -> List:
+    def get_user_metadata(self, user_id: uuid, username: str = None) -> List:
         """
 
         :param user_id:
@@ -47,24 +47,26 @@ class UserHandler():
         :return:
         """
         if not user_id and not username:
-            return None
+            print("User ID/name cannot be empty.")
+            return []
 
         if user_id and not username:
             qry = "select user_metadata from user where identifier=%(identifier)s"
             vals = {"identifier": str(user_id)}
         elif not user_id and username:
             qry = "select user_metadata from user where username=%(username)s"
-            vals = {"username":str(username)}
+            vals = {"username": str(username)}
         else:
             qry = "select user_metadata from user where identifier=%s and username=%s"
             vals = str(user_id), str(username)
 
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
         if len(rows) == 0:
+            print("No record found.")
             return []
         else:
-            return rows[0]["user_metadata"]
+            return rows["user_metadata"]
+
     def get_user_uuid(self, username: str) -> str:
 
         """
@@ -76,13 +78,13 @@ class UserHandler():
         qry = "SELECT identifier from " + self.userTable + " where username = %(username)s"
         vals = {'username': str(username)}
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
 
         if rows:
             user_uuid = rows[0]["identifier"]
             return user_uuid
         else:
-            return False
+            print("No record found.")
+            return ""
 
     def login_user(self, username: str, password: str) -> bool:
         """
@@ -98,8 +100,8 @@ class UserHandler():
         vals = username, password
 
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
         if len(rows) == 0:
+            print("No record found.")
             return False
         else:
             return True
@@ -119,7 +121,6 @@ class UserHandler():
         vals = auth_token, token_owner
 
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
             return False
@@ -157,7 +158,6 @@ class UserHandler():
         user_uuid = self.get_user_uuid(username)
 
         self.execute(qry, vals, commit=True)
-        #self.dbConnection.commit()
 
         return user_uuid
 

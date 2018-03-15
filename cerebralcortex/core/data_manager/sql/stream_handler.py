@@ -94,14 +94,13 @@ class StreamHandler():
         vals = {'identifier': str(stream_id)}
 
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
             return {"start_time": None, "end_time": None}
         else:
             return {"start_time": rows[0]["start_time"], "end_time": rows[0]["end_time"]}
 
-    def get_all_users(self, study_name: str) -> dict:
+    def get_all_users(self, study_name: str) -> List:
 
         """
 
@@ -109,22 +108,23 @@ class StreamHandler():
         :return:
         """
         if not study_name:
-            return None
+            print("Study name cannot be empty.")
+            return []
         results = []
         qry = 'SELECT identifier, username FROM ' + self.userTable + ' where user_metadata->"$.study_name"=%(study_name)s'
         vals = {'study_name': str(study_name)}
 
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
-            return None
+            print("No record found.")
+            return []
         else:
             for row in rows:
                 results.append(row)
             return results
 
-    def get_user_streams(self, user_id: uuid) -> dict:
+    def get_user_streams(self, user_id: uuid) -> List:
 
         """
 
@@ -132,22 +132,23 @@ class StreamHandler():
         :return:
         """
         if not user_id:
-            return None
+            print("User ID cannot be empty.")
+            return []
         result = {}
         qry = 'SELECT * FROM ' + self.datastreamTable + ' where owner=%(owner)s'
         vals = {'owner': str(user_id)}
 
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
+            print("No record found.")
             return []
         else:
             for row in rows:
                 result[row["name"]] = row
             return result
 
-    def get_user_streams_metadata(self, user_id: str) -> uuid:
+    def get_user_streams_metadata(self, user_id: str) -> dict:
         """
 
         :param user_id:
@@ -160,9 +161,9 @@ class StreamHandler():
         vals = {'owner': str(user_id)}
 
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
+            print("No record found.")
             return {}
         else:
             for row in rows:
@@ -182,10 +183,10 @@ class StreamHandler():
         vals = {'identifier': str(user_id)}
 
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
-            return None
+            print("No record found.")
+            return ""
         else:
             return rows[0]["username"]
         
@@ -205,12 +206,13 @@ class StreamHandler():
             qry = "select username from " + self.userTable + " where username = %(username)s"
             vals = {'username': str(user_name)}
         else:
+            print("Wrong parameters.")
             return False
 
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
+            print("No record found.")
             return False
         else:
             return True
@@ -228,10 +230,10 @@ class StreamHandler():
         vals = {'username': str(user_name)}
 
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
-            return None
+            print("No record found.")
+            return ""
         else:
             return rows[0]["identifier"]
 
@@ -250,6 +252,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
+            print("No record found.")
             return []
         else:
             return rows
@@ -261,16 +264,17 @@ class StreamHandler():
         :return:
         """
         if not stream_id:
-            return None
+            print("Stream ID cannot be empty.")
+            return ""
 
         qry = "select name from " + self.datastreamTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(stream_id)}
 
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
 
         if len(rows) == 0:
-            return None
+            print("No record found.")
+            return ""
         else:
             return rows[0]["name"]
 
@@ -284,7 +288,6 @@ class StreamHandler():
         qry = "SELECT * from " + self.datastreamTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(stream_id)}
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
 
         if rows:
             return True
@@ -313,16 +316,6 @@ class StreamHandler():
         """
         isQueryReady = 0
 
-        # if start_time:
-        #     try:
-        #         start_time = int(start_time)
-        #     except:
-        #         pass
-        # if end_time:
-        #     try:
-        #         end_time = int(end_time)
-        #     except:
-        #         pass
         if stream_id:
             stream_id = str(stream_id)
 
@@ -376,7 +369,6 @@ class StreamHandler():
         qry = "select annotations from " + self.datastreamTable + " where identifier = %s and owner=%s"
         vals = stream_id, owner_id
         result = self.execute(qry, vals)
-        #result = self.cursor.fetchall()
 
         if result:
             if json.loads(result[0]["annotations"]) == annotations:
@@ -386,7 +378,7 @@ class StreamHandler():
         else:
             return "new"
 
-    def check_end_time(self, stream_id: uuid, end_time: datetime):
+    def check_end_time(self, stream_id: uuid, end_time: datetime) -> str:
         """
 
         :param stream_id:
@@ -398,7 +390,6 @@ class StreamHandler():
         qry = "SELECT end_time from " + self.datastreamTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(stream_id)}
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
 
         if rows:
             old_end_time = rows[0]["end_time"]
@@ -447,7 +438,7 @@ class StreamHandler():
         vals = str(owner_id), str(stream_id), str(day)
         self.execute(qry, vals, commit=True)
 
-    def is_day_processed(self, owner_id, stream_id, day):
+    def is_day_processed(self, owner_id, stream_id, day)->bool:
         qry = "SELECT processed from "+self.dataReplayTable+" where owner_id=%s and stream_id=%s and day=%s"
         vals = str(owner_id), str(stream_id), str(day)
         rows = self.execute(qry, vals)
@@ -456,7 +447,7 @@ class StreamHandler():
         else:
             return False
 
-    def get_replay_batch(self, record_limit:int=5000):
+    def get_replay_batch(self, record_limit:int=5000)-> List:
         blacklist_regex = self.config["blacklist"]
         regex_cols = "" #regex match on columns
         like_cols = "" # like operator on columns
