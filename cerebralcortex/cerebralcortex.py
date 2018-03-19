@@ -72,7 +72,7 @@ class CerebralCortex:
         """
         self.RawData.save_stream(datastream)
 
-    def get_stream(self, stream_id: uuid, user_id: uuid, day:str, start_time: datetime = None, end_time: datetime = None,
+    def get_stream(self, stream_id: uuid, user_id: uuid, day:str, start_time: datetime = None, end_time: datetime = None, localtime:bool=True,
                    data_type=DataSet.COMPLETE) -> DataStream:
         """
 
@@ -83,7 +83,7 @@ class CerebralCortex:
         :param data_type:
         :return:
         """
-        return self.RawData.get_stream(stream_id, user_id, day, start_time, end_time, data_type)
+        return self.RawData.get_stream(stream_id, user_id, day, start_time, end_time, localtime, data_type)
 
     def get_stream_samples(self, stream_id, day, start_time=None, end_time=None) -> List[DataPoint]:
         """
