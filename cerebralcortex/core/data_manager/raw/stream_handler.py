@@ -54,7 +54,7 @@ class StreamHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_stream(self, stream_id: uuid=None, owner_id: uuid=None, day:str=None, start_time: datetime = None, end_time: datetime = None,
+    def get_stream(self, stream_id: uuid=None, owner_id: uuid=None, day:str=None, start_time: datetime = None, end_time: datetime = None, localtime:bool=True,
                    data_type=DataSet.COMPLETE) -> DataStream:
 
         """
@@ -74,17 +74,17 @@ class StreamHandler():
 
         if data_type == DataSet.COMPLETE:
             if self.nosql_store=="hdfs":
-                dps = self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time)
+                dps = self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
             elif self.nosql_store=="filesystem":
-                dps =  self.read_filesystem_day_file(owner_id, stream_id, day, start_time, end_time)
+                dps =  self.read_filesystem_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
             else:
                 dps = self.load_cassandra_data(stream_id, day, start_time, end_time)
             stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps)
         elif data_type == DataSet.ONLY_DATA:
             if self.nosql_store=="hdfs":
-                return self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time)
+                return self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
             elif self.nosql_store=="filesystem":
-                return self.read_filesystem_day_file(owner_id, stream_id, day, start_time, end_time)
+                return self.read_filesystem_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
             else:
                 return self.load_cassandra_data(stream_id,day, start_time, end_time)
         elif data_type == DataSet.ONLY_METADATA:
@@ -121,7 +121,7 @@ class StreamHandler():
                 error_message="STREAM ID: " + stream_id + " - Error in mapping datapoints and metadata to datastream. " + str(
                     traceback.format_exc()), error_type=self.logtypes.CRITICAL)
     
-    def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None):
+    def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None, localtime:bool=True):
         # Using libhdfs,
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         data = None
@@ -137,14 +137,15 @@ class StreamHandler():
                 clean_data = self.filter_sort_datapoints(data)
                 if start_time is not None or end_time is not None:
                     clean_data = self.subset_data(clean_data, start_time, end_time)
-                clean_data = self.convert_to_localtime(clean_data)
+                if localtime:
+                    clean_data = self.convert_to_localtime(clean_data)
                 return clean_data
         except Exception as e:
             self.logging.log(error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc()),
                              error_type=self.logtypes.CRITICAL)
             return []
 
-    def read_filesystem_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None):
+    def read_filesystem_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None, localtime:bool=True):
         data = None
         filename = self.filesystem_path+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
         if not os.path.exists(filename):
@@ -158,7 +159,8 @@ class StreamHandler():
                 clean_data = self.filter_sort_datapoints(data)
                 if start_time is not None or end_time is not None:
                     clean_data = self.subset_data(clean_data, start_time, end_time)
-                clean_data = self.convert_to_localtime(clean_data)
+                if localtime:
+                    clean_data = self.convert_to_localtime(clean_data)
                 return clean_data
         except Exception as e:
             self.logging.log(error_message="Error loading from FileSystem: Cannot parse row. " + str(traceback.format_exc()),
