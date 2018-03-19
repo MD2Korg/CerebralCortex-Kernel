@@ -31,6 +31,7 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import List
 import traceback
+from cerebralcortex.core.util.datetime_helper_methods import get_timezone
 import os
 from cassandra.cluster import Cluster
 from cassandra.query import BatchStatement, SimpleStatement, BatchType
@@ -136,6 +137,7 @@ class StreamHandler():
                 clean_data = self.filter_sort_datapoints(data)
                 if start_time is not None or end_time is not None:
                     clean_data = self.subset_data(clean_data, start_time, end_time)
+                clean_data = self.convert_to_localtime(clean_data)
                 return clean_data
         except Exception as e:
             self.logging.log(error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc()),
@@ -156,6 +158,7 @@ class StreamHandler():
                 clean_data = self.filter_sort_datapoints(data)
                 if start_time is not None or end_time is not None:
                     clean_data = self.subset_data(clean_data, start_time, end_time)
+                clean_data = self.convert_to_localtime(clean_data)
                 return clean_data
         except Exception as e:
             self.logging.log(error_message="Error loading from FileSystem: Cannot parse row. " + str(traceback.format_exc()),
@@ -188,7 +191,38 @@ class StreamHandler():
         clean_data = set(data)
         clean_data = sorted(clean_data)
         return clean_data
-    
+
+    def convert_to_localtime(self, data: List[DataPoint]) -> List[DataPoint]:
+        """
+        convert UTC time to local time
+        :param data:
+        :return:
+        """
+        local_tz_data = []
+        end_time = None
+        if len(data)>0:
+            possible_tz = pytimezone(get_timezone(data[0].offset))
+            for dp in data:
+                if dp.end_time is not None:
+                    end_time = possible_tz.localize(dp.end_time)
+                local_tz_data.append(DataPoint(possible_tz.localize(dp.start_time), end_time, dp.offset, dp.sample))
+        return local_tz_data
+
+    def convert_to_UTCtime(self, data: List[DataPoint]) -> List[DataPoint]:
+        """
+        convert local time to UTC time
+        :param data:
+        :return:
+        """
+        local_tz_data = []
+        end_time = None
+        if len(data)>0:
+            for dp in data:
+                if dp.end_time is not None:
+                    end_time = dp.end_time.replace(tzinfo=None)
+                local_tz_data.append(DataPoint(dp.start_time.replace(tzinfo=None), end_time, dp.offset, dp.sample))
+        return local_tz_data
+
     def load_cassandra_data(self, stream_id, day, start_time=None, end_time=None) -> List:
         """
 
@@ -362,7 +396,11 @@ class StreamHandler():
         annotations = datastream.annotations
         stream_type = datastream.datastream_type
         data = datastream.data
+        if len(data)>0 and (data[0].offset=="" or data[0].offset is None):
+            raise ValueError("Data points cannot have None or empty offset")
+
         data = self.filter_sort_datapoints(data)
+        data = self.convert_to_UTCtime(data)
         try:
 
             # get start and end time of a stream
@@ -442,7 +480,7 @@ class StreamHandler():
                             existing_data = curfile.read()
                     if existing_data is not None:
                         existing_data = pickle.loads(existing_data)
-                        existing_data.extend(dps)
+                        dps.extend(existing_data)
                         dps = existing_data
                     dps = self.filter_sort_datapoints(dps)
                     with hdfs.open(filename, "wb") as f:
@@ -478,8 +516,9 @@ class StreamHandler():
                             existing_data = curfile.read()
                     if existing_data is not None and existing_data!=b'':
                         existing_data = pickle.loads(existing_data)
-                        existing_data.extend(dps)
+                        dps.extend(existing_data)
                         dps = existing_data
+                    dps = self.filter_sort_datapoints(dps)
                     with open(filename, "wb") as f:
                         tmp = pickle.dumps(dps)
                         f.write(tmp)

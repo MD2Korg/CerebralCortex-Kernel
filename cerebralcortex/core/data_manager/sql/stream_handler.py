@@ -117,7 +117,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_all_users")
             return []
         else:
             for row in rows:
@@ -141,7 +141,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_user_streams")
             return []
         else:
             for row in rows:
@@ -163,7 +163,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_user_streams_metadata")
             return {}
         else:
             for row in rows:
@@ -185,7 +185,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_user_name")
             return ""
         else:
             return rows[0]["username"]
@@ -212,7 +212,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - is_user")
             return False
         else:
             return True
@@ -232,7 +232,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_user_id")
             return ""
         else:
             return rows[0]["identifier"]
@@ -252,7 +252,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_stream_id")
             return []
         else:
             return rows
@@ -273,7 +273,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_stream_name")
             return ""
         else:
             return rows[0]["name"]
@@ -330,7 +330,7 @@ class StreamHandler():
         if stream_end_time != "unchanged" and annotation_status == "changed":
             # update annotations and end-time
             qry = "UPDATE " + self.datastreamTable + " set annotations=JSON_ARRAY_APPEND(annotations, '$.annotations',  CAST(%s AS JSON)), end_time=%s where identifier=%s"
-            vals = json.dumps(annotations), stream_end_time, str(stream_id)
+            vals = json.dumps(annotations, default=str), stream_end_time, str(stream_id)
             isQueryReady = 1
         elif stream_end_time != "unchanged" and annotation_status == "unchanged":
             # update only end-time
@@ -340,14 +340,14 @@ class StreamHandler():
         elif stream_end_time == "unchanged" and annotation_status == "changed":
             # update only annotations
             qry = "UPDATE " + self.datastreamTable + " set annotations=JSON_ARRAY_APPEND(annotations, '$.annotations',  CAST(%s AS JSON)) where identifier=%s"
-            vals = json.dumps(annotations), str(stream_id)
+            vals = json.dumps(annotations, default=str), str(stream_id)
             isQueryReady = 1
         
         elif (annotation_status == "new"):
             qry = "INSERT INTO " + self.datastreamTable + " (identifier, owner, name, data_descriptor, execution_context, annotations, type, start_time, end_time) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
             vals = str(stream_id), str(owner_id), str(stream_name), json.dumps(
-                data_descriptor), json.dumps(execution_context), json.dumps(
-                annotations), stream_type, start_time, end_time
+                data_descriptor), json.dumps(execution_context, default=str), json.dumps(
+                annotations, default=str), stream_type, start_time, end_time
             isQueryReady = 1        
         # if nothing is changed then isQueryReady would be 0 and no database transaction would be performed
         if isQueryReady == 1:
