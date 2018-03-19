@@ -71,11 +71,11 @@ class TestStreamHandler():
             data_len.append(len(ds.data))
             start_times.append(ds.data[0].start_time)
             end_times.append(ds.data[len(ds.data)-1].start_time)
-
+        n = datetime.now()
         # test start/end time of datapoints
         self.assertEqual(data_len, [3999, 999, 5001])
-        expected_start_times = [parser.parse("2018-02-21 23:28:21.133000"),parser.parse("2018-02-23 03:14:51.133000"),parser.parse("2018-02-24 07:01:41.123000")]
-        expected_end_times = [parser.parse("2018-02-21 23:29:01.113000"),parser.parse("2018-02-23 03:15:01.113000"),parser.parse("2018-02-24 07:03:11.113000")]
+        expected_start_times = [parser.parse("2018-02-21 23:28:21.133000-06:00"),parser.parse("2018-02-23 03:14:51.133000-06:00"),parser.parse("2018-02-24 07:01:41.123000-06:00")]
+        expected_end_times = [parser.parse("2018-02-21 23:29:01.113000-06:00"),parser.parse("2018-02-23 03:15:01.113000-06:00"),parser.parse("2018-02-24 07:03:11.113000-06:00")]
         self.assertEqual(start_times, expected_start_times)
         self.assertEqual(end_times, expected_end_times)
 
@@ -83,12 +83,12 @@ class TestStreamHandler():
         ds = self.CC.get_stream(self.stream_id, self.owner_id, self.days[1], start_time, end_time)
         if self.CC.config["data_ingestion"]["nosql_store"]=="hdfs" or self.CC.config["data_ingestion"]["nosql_store"]=="filesystem":
             self.assertEqual(len(ds.data), 700)
-            self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-23 03:14:52.003000"))
-            self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse("2018-02-23 03:14:58.993000"))
+            self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-23 03:14:52.003000-06:00"))
+            self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse("2018-02-23 03:14:58.993000-06:00"))
         else:
             self.assertEqual(len(ds.data), 600)
-            self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-23 03:14:52.133000"))
-            self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse("2018-02-23 03:14:58.123000"))
+            self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-23 03:14:52.133000-06:00"))
+            self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse("2018-02-23 03:14:58.123000-06:00"))
 
 
         # test metadata
