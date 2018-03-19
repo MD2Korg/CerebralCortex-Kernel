@@ -480,7 +480,7 @@ class StreamHandler():
                             existing_data = curfile.read()
                     if existing_data is not None:
                         existing_data = pickle.loads(existing_data)
-                        existing_data.extend(dps)
+                        dps.extend(existing_data)
                         dps = existing_data
                     dps = self.filter_sort_datapoints(dps)
                     with hdfs.open(filename, "wb") as f:
@@ -516,7 +516,7 @@ class StreamHandler():
                             existing_data = curfile.read()
                     if existing_data is not None and existing_data!=b'':
                         existing_data = pickle.loads(existing_data)
-                        existing_data.extend(dps)
+                        dps.extend(existing_data)
                         dps = existing_data
                     dps = self.filter_sort_datapoints(dps)
                     with open(filename, "wb") as f:

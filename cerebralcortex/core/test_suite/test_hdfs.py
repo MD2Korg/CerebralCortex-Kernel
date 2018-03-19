@@ -33,7 +33,8 @@ from cerebralcortex.cerebralcortex import CerebralCortex
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.test_suite.util.gen_test_data import gen_raw_data
 from cerebralcortex.core.data_manager.raw.file_to_db import FileToDB
-import pickle
+
+
 class TestFileToDB():
     def test01_file_to_db(self):
         file_to_db = FileToDB(self.CC)
@@ -71,7 +72,7 @@ class TestStreamHandler():
             data_len.append(len(ds.data))
             start_times.append(ds.data[0].start_time)
             end_times.append(ds.data[len(ds.data)-1].start_time)
-        n = datetime.now()
+
         # test start/end time of datapoints
         self.assertEqual(data_len, [3999, 999, 5001])
         expected_start_times = [parser.parse("2018-02-21 23:28:21.133000-06:00"),parser.parse("2018-02-23 03:14:51.133000-06:00"),parser.parse("2018-02-24 07:01:41.123000-06:00")]

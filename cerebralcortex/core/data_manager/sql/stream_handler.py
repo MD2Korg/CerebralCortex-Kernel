@@ -117,7 +117,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_all_users")
             return []
         else:
             for row in rows:
@@ -141,7 +141,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_user_streams")
             return []
         else:
             for row in rows:
@@ -163,7 +163,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_user_streams_metadata")
             return {}
         else:
             for row in rows:
@@ -185,7 +185,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_user_name")
             return ""
         else:
             return rows[0]["username"]
@@ -212,7 +212,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - is_user")
             return False
         else:
             return True
@@ -232,7 +232,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_user_id")
             return ""
         else:
             return rows[0]["identifier"]
@@ -252,7 +252,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_stream_id")
             return []
         else:
             return rows
@@ -273,7 +273,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found.")
+            print("No record found - get_stream_name")
             return ""
         else:
             return rows[0]["name"]
