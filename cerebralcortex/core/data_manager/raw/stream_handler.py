@@ -187,6 +187,7 @@ class StreamHandler():
             return subset_data
         else:
             return data
+
     @log_execution_time
     def filter_sort_datapoints(self, data):
         if not isinstance(data, list):
@@ -217,8 +218,10 @@ class StreamHandler():
             possible_tz = pytimezone(get_timezone(data[0].offset))
             for dp in data:
                 if dp.end_time is not None:
-                    end_time = possible_tz.localize(dp.end_time)
-                local_tz_data.append(DataPoint(possible_tz.localize(dp.start_time), end_time, dp.offset, dp.sample))
+                    #end_time = possible_tz.localize(dp.end_time)
+                    dp.end_time = datetime.fromtimestamp(dp.end_time.timestamp(),possible_tz)#possible_tz.localize(dp.end_time)
+                dp.start_time = datetime.fromtimestamp(dp.start_time.timestamp(),possible_tz)#possible_tz.localize(dp.start_time)
+                local_tz_data.append(dp)
         return local_tz_data
 
     def convert_to_UTCtime(self, data: List[DataPoint]) -> List[DataPoint]:
