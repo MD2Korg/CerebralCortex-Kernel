@@ -25,7 +25,7 @@
 
 from datetime import datetime
 from typing import Any
-from pytz import timezone as pytimezone
+
 
 class DataPoint:
     def __init__(self,
@@ -37,8 +37,6 @@ class DataPoint:
         self._end_time = end_time
         self._offset = offset
         self._sample = sample
-        possible_tz = pytimezone("US/Central")
-        self._start_time = possible_tz.localize(self._start_time)
 
     @property
     def sample(self):

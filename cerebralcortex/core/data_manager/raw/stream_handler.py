@@ -54,7 +54,6 @@ class StreamHandler():
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
-    @log_execution_time
     def get_stream(self, stream_id: uuid=None, owner_id: uuid=None, day:str=None, start_time: datetime = None, end_time: datetime = None, localtime:bool=True,
                    data_type=DataSet.COMPLETE) -> DataStream:
 
@@ -188,24 +187,21 @@ class StreamHandler():
         else:
             return data
 
-    @log_execution_time
     def filter_sort_datapoints(self, data):
         if not isinstance(data, list):
             data = deserialize_obj(data)
         clean_data = self.dedup(sorted(data))
-        #clean_data = list(set(clean_data))
         return clean_data
 
     def dedup(self, data):
         result = [data[0]]
-        for l in data[1:]:
-            if l.start_time == result[-1].start_time:
+        for dp in data[1:]:
+            if dp.start_time == result[-1].start_time:
                 continue
-            result.append(l)
+            result.append(dp)
 
         return result
 
-    @log_execution_time
     def convert_to_localtime(self, data: List[DataPoint]) -> List[DataPoint]:
         """
         convert UTC time to local time
@@ -213,12 +209,10 @@ class StreamHandler():
         :return:
         """
         local_tz_data = []
-        end_time = None
         if len(data)>0:
             possible_tz = pytimezone(get_timezone(data[0].offset))
             for dp in data:
                 if dp.end_time is not None:
-                    #end_time = possible_tz.localize(dp.end_time)
                     dp.end_time = datetime.fromtimestamp(dp.end_time.timestamp(),possible_tz)#possible_tz.localize(dp.end_time)
                 dp.start_time = datetime.fromtimestamp(dp.start_time.timestamp(),possible_tz)#possible_tz.localize(dp.start_time)
                 local_tz_data.append(dp)
