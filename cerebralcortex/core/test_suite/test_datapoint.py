@@ -34,14 +34,28 @@ class TestDataPoints(unittest.TestCase):
 
     def test_01_simple_parsing(self):
         dps = []
+        dps.append(DataPoint(parser.parse("2018-02-21 23:28:21"), None, -21600000, [2,2]))
+        dps.append(DataPoint(parser.parse("2018-02-21 23:28:23"), None, -21600000, [3,3]))
         dps.append(DataPoint(parser.parse("2018-02-21 23:28:21"), None, -21600000, [1,1]))
         dps.append(DataPoint(parser.parse("2018-02-21 23:28:22"), None, -21600000, [1,2]))
         dps.append(DataPoint(parser.parse("2018-02-21 23:28:23"), None, -21600000, [1,3]))
-        dps.append(DataPoint(parser.parse("2018-02-21 23:28:23"), None, -21600000, [3,3]))
         dps.append(DataPoint(parser.parse("2018-02-21 23:28:24"), None, -21600000, [1,4]))
-        dps.append(DataPoint(parser.parse("2018-02-21 23:28:21"), None, -21600000, [2,2]))
-        unique_dps = set(dps)
-        print(len(unique_dps),len(dps))
 
+
+        #unique_dps = list(set(dps))
+        clean_data = self.dedup(sorted(dps))
+        #unique_dps = set(dps)
+
+        print(len(clean_data),len(dps))
+        return clean_data
+
+    def dedup(self, data):
+        result = [data[0]]
+        for l in data[1:]:
+            if l.start_time == result[-1].start_time:
+                continue
+            result.append(l)
+
+        return result
 if __name__ == '__main__':
     unittest.main()

@@ -40,6 +40,7 @@ from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.util.data_types import convert_sample, deserialize_obj
 from pytz import timezone as pytimezone
+from cerebralcortex.core.util.debuging_decorators import log_execution_time
 
 class DataSet(Enum):
     COMPLETE = 1,
@@ -53,7 +54,7 @@ class StreamHandler():
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
-
+    @log_execution_time
     def get_stream(self, stream_id: uuid=None, owner_id: uuid=None, day:str=None, start_time: datetime = None, end_time: datetime = None, localtime:bool=True,
                    data_type=DataSet.COMPLETE) -> DataStream:
 
@@ -186,14 +187,24 @@ class StreamHandler():
             return subset_data
         else:
             return data
-
+    @log_execution_time
     def filter_sort_datapoints(self, data):
         if not isinstance(data, list):
             data = deserialize_obj(data)
-        clean_data = set(data)
-        clean_data = sorted(clean_data)
+        clean_data = self.dedup(sorted(data))
+        #clean_data = list(set(clean_data))
         return clean_data
 
+    def dedup(self, data):
+        result = [data[0]]
+        for l in data[1:]:
+            if l.start_time == result[-1].start_time:
+                continue
+            result.append(l)
+
+        return result
+
+    @log_execution_time
     def convert_to_localtime(self, data: List[DataPoint]) -> List[DataPoint]:
         """
         convert UTC time to local time

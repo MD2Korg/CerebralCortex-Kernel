@@ -84,8 +84,8 @@ class DataPoint:
         return 'DataPoint(' + ', '.join(map(str, [self._start_time, self._end_time, self._offset, self._sample]))+')\n'
 
     def __lt__(self, dp):
-        if hasattr(dp, 'getKey'):
-            return self.getKey().__lt__(dp.getKey())
+        #if hasattr(dp, 'getKey'):
+        return self.getKey().__lt__(dp.getKey())
 
     def __eq__(self, dp):
         return self._start_time==dp.start_time

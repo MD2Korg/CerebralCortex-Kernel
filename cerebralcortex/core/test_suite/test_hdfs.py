@@ -45,6 +45,10 @@ class TestFileToDB():
 
 
 class TestStreamHandler():
+    def test00_get_stream(self):
+        ds = self.CC.get_stream("751c931c-24e4-3f36-a3e6-f7d2670d7f9a","636fcc1f-8966-4e63-a9df-0cbaa6e9296c","20171201")
+        print("done")
+
     def test01_save_stream(self):
         outputdata = {}
 
