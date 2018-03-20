@@ -300,6 +300,7 @@ class FileToDB():
                 for line in lines:
                     line_count += 1
                     line = line.decode('utf-8')
+
                     try:
                         ts, offset, sample = line.split(',', 2)
                         bad_row = 0  # if line is not properly formatted then rest of the code shall not be executed
@@ -319,7 +320,7 @@ class FileToDB():
                         if influxdb_insert and line_count<self.influx_day_datapoints_limit:
                             if stream_name not in blacklist_streams:
                                 measurement_and_tags = '%s,owner_id=%s,owner_name=%s,stream_id=%s' % (
-                                str(stream_name), str(stream_owner_id), str(stream_owner_name), str(stream_id))
+                                str(stream_name.replace(" ","_")), str(stream_owner_id), str(stream_owner_name), str(stream_id))
 
                                 try:
                                     if isinstance(values, list):
