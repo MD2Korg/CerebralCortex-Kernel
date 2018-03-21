@@ -54,7 +54,7 @@ class StreamHandler():
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
-    def get_stream(self, stream_id: uuid=None, owner_id: uuid=None, day:str=None, start_time: datetime = None, end_time: datetime = None, localtime:bool=True,
+    def get_stream(self, stream_id: uuid=None, owner_id: uuid=None, day:str=None, start_time: datetime = None, end_time: datetime = None, localtime:bool=False,
                    data_type=DataSet.COMPLETE) -> DataStream:
 
         """
@@ -410,7 +410,7 @@ class StreamHandler():
             raise ValueError("Data points cannot have None or empty offset")
 
         data = self.filter_sort_datapoints(data)
-        data = self.convert_to_UTCtime(data)
+        #data = self.convert_to_UTCtime(data)
         try:
 
             # get start and end time of a stream

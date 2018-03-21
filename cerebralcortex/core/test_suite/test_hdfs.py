@@ -30,7 +30,7 @@ from datetime import datetime
 import yaml
 from dateutil import parser
 from cerebralcortex.cerebralcortex import CerebralCortex
-from cerebralcortex.core.datatypes.datastream import DataStream
+from cerebralcortex.core.datatypes.datastream import DataStream, DataPoint
 from cerebralcortex.core.test_suite.util.gen_test_data import gen_raw_data
 from cerebralcortex.core.data_manager.raw.file_to_db import FileToDB
 
@@ -46,7 +46,10 @@ class TestFileToDB():
 
 class TestStreamHandler():
     def test00_get_stream(self):
-        ds = self.CC.get_stream("751c931c-24e4-3f36-a3e6-f7d2670d7f9a","636fcc1f-8966-4e63-a9df-0cbaa6e9296c","20171201")
+        ds1 = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1])
+        ds1.data.append(DataPoint(parser.parse("2018-02-23 03:14:51.133000-06:00"), None, -21600000, "some test values"))
+        self.CC.save_stream(ds1)
+        #ds2 = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1])
         print("done")
 
     def test01_save_stream(self):
