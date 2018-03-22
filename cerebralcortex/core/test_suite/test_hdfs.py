@@ -47,7 +47,24 @@ class TestFileToDB():
 
 
 class TestStreamHandler():
-    def test00_get_stream(self):
+
+    def test01_save_stream(self):
+        outputdata = {}
+
+        # Data Processing loop
+        for row in self.data:
+            day = row.start_time.strftime("%Y%m%d")
+            if day not in outputdata:
+                outputdata[day] = []
+
+            outputdata[day].append(row)
+       # tt = self.CC.get_stream_metadata("355fde3e-ee20-3fa5-8c29-069b470218b7")
+        for day, dps in outputdata.items():
+            ds = DataStream(self.stream_id, self.owner_id, self.stream_name, self.metadata["data_descriptor"],
+                            self.metadata["execution_context"], self.metadata["annotations"], self.metadata["type"], None, None, dps)
+            self.CC.save_stream(ds)
+
+    def test02_get_stream(self):
         st = datetime.now()
         data = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1], localtime=False).data
         print("Loaded pickle 1 (Total time):", datetime.now()-st)
@@ -72,23 +89,7 @@ class TestStreamHandler():
 
         print("done")
 
-    def test01_save_stream(self):
-        outputdata = {}
-
-        # Data Processing loop
-        for row in self.data:
-            day = row.start_time.strftime("%Y%m%d")
-            if day not in outputdata:
-                outputdata[day] = []
-
-            outputdata[day].append(row)
-       # tt = self.CC.get_stream_metadata("355fde3e-ee20-3fa5-8c29-069b470218b7")
-        for day, dps in outputdata.items():
-            ds = DataStream(self.stream_id, self.owner_id, self.stream_name, self.metadata["data_descriptor"],
-                            self.metadata["execution_context"], self.metadata["annotations"], self.metadata["type"], None, None, dps)
-            self.CC.save_stream(ds)
-
-    def test02_get_stream(self):
+    def test03_get_stream(self):
         data_len = []
         start_times = []
         end_times = []
@@ -102,8 +103,8 @@ class TestStreamHandler():
 
         # test start/end time of datapoints
         self.assertEqual(data_len, [3999, 999, 5001])
-        expected_start_times = [parser.parse("2018-02-21 23:28:21.133000-06:00"),parser.parse("2018-02-23 03:14:51.133000-06:00"),parser.parse("2018-02-24 07:01:41.123000-06:00")]
-        expected_end_times = [parser.parse("2018-02-21 23:29:01.113000-06:00"),parser.parse("2018-02-23 03:15:01.113000-06:00"),parser.parse("2018-02-24 07:03:11.113000-06:00")]
+        expected_start_times = [parser.parse("2018-02-21 17:28:21.133000"),parser.parse("2018-02-22 21:14:51.133000"),parser.parse("2018-02-24 01:01:41.123000")]
+        expected_end_times = [parser.parse("2018-02-21 17:29:01.113000"),parser.parse("2018-02-22 21:15:01.113000"),parser.parse("2018-02-24 01:03:11.113000")]
         self.assertEqual(start_times, expected_start_times)
         self.assertEqual(end_times, expected_end_times)
 
@@ -111,8 +112,8 @@ class TestStreamHandler():
         ds = self.CC.get_stream(self.stream_id, self.owner_id, self.days[1], start_time, end_time)
         if self.CC.config["data_ingestion"]["nosql_store"]=="hdfs" or self.CC.config["data_ingestion"]["nosql_store"]=="filesystem":
             self.assertEqual(len(ds.data), 700)
-            self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-23 03:14:52.003000-06:00"))
-            self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse("2018-02-23 03:14:58.993000-06:00"))
+            self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-22 21:14:52.003000"))
+            self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse("2018-02-22 21:14:58.993000"))
         else:
             self.assertEqual(len(ds.data), 600)
             self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-23 03:14:52.133000-06:00"))
@@ -151,5 +152,5 @@ class TestHDFS(unittest.TestCase, TestStreamHandler):
         self.days = ["20180221", "20180223", "20180224"]
 
         # generate sample raw data file
-        self.data = gen_raw_data(self.gz_file, 1000000, True, "float")
+        self.data = gen_raw_data(self.gz_file, 10000, True, "float")
         print("done")
