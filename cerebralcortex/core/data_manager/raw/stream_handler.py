@@ -25,6 +25,7 @@
 
 import json
 import uuid
+import pytz
 import pyarrow
 import pickle
 from datetime import datetime, timedelta, timezone
@@ -202,7 +203,8 @@ class StreamHandler():
 
         return result
 
-    def convert_to_localtime(self, data: List[DataPoint]) -> List[DataPoint]:
+    # deprecated: slower than timedelta
+    def convert_to_localtime_using_pytz(self, data: List[DataPoint]) -> List[DataPoint]:
         """
         convert UTC time to local time
         :param data:
@@ -213,10 +215,27 @@ class StreamHandler():
             possible_tz = pytimezone(get_timezone(data[0].offset))
             for dp in data:
                 if dp.end_time is not None:
+                    dp.end_time = dp.end_time.replace(tzinfo=pytz.utc)
                     dp.end_time = datetime.fromtimestamp(dp.end_time.timestamp(),possible_tz)#possible_tz.localize(dp.end_time)
+                dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
                 dp.start_time = datetime.fromtimestamp(dp.start_time.timestamp(),possible_tz)#possible_tz.localize(dp.start_time)
                 local_tz_data.append(dp)
         return local_tz_data
+
+    def convert_to_localtime(self, data: List[DataPoint]) -> List[DataPoint]:
+        """
+        convert UTC time to local time
+        :param data:
+        :return:
+        """
+        #local_tz_data = []
+        if len(data)>0:
+            for dp in data:
+                if dp.end_time is not None:
+                    dp.end_time += timedelta(milliseconds=dp.offset)
+                dp.start_time += timedelta(milliseconds=dp.offset)
+                #local_tz_data.append(dp)
+        return data
 
     def convert_to_UTCtime(self, data: List[DataPoint]) -> List[DataPoint]:
         """
@@ -224,14 +243,14 @@ class StreamHandler():
         :param data:
         :return:
         """
-        local_tz_data = []
-        end_time = None
+        #local_tz_data = []
+        #end_time = None
         if len(data)>0:
             for dp in data:
                 if dp.end_time is not None:
-                    end_time = dp.end_time.replace(tzinfo=None)
-                local_tz_data.append(DataPoint(dp.start_time.replace(tzinfo=None), end_time, dp.offset, dp.sample))
-        return local_tz_data
+                    dp.end_time -= timedelta(milliseconds=dp.offset)
+                dp.start_time -= timedelta(milliseconds=dp.offset)
+        return data
 
     def load_cassandra_data(self, stream_id, day, start_time=None, end_time=None) -> List:
         """

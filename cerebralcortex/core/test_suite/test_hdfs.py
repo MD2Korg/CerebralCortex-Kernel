@@ -48,32 +48,27 @@ class TestFileToDB():
 
 class TestStreamHandler():
     def test00_get_stream(self):
-        possible_tz = pytimezone("America/Bahia_Banderas")
         st = datetime.now()
-        ds1 = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1], localtime=False).data
+        data = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1], localtime=False).data
         print("Loaded pickle 1 (Total time):", datetime.now()-st)
-        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000"), ds1[0].start_time)
+        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000"), data[0].start_time)
 
         st = datetime.now()
-        for dp in ds1:
-            dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
-            dp.start_time = datetime.fromtimestamp(dp.start_time.timestamp(),possible_tz)
+        data = self.CC.RawData.convert_to_localtime_using_pytz(data)
         print("Offset using pytz (Total time):", datetime.now()-st)
-        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000-06:00"), ds1[0].start_time)
+        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000-06:00"), data[0].start_time)
 
         # timedelta approach to convert time to local time
-        ds1 = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1], localtime=False).data
+        data = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1], localtime=False).data
         st = datetime.now()
-        for dp in ds1:
-            dp.start_time += timedelta(milliseconds=dp.offset)
         print("Offset using timedelta - to local (Total time):", datetime.now()-st)
-        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000"), ds1[0].start_time)
+        data = self.CC.RawData.convert_to_localtime(data)
+        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000"), data[0].start_time)
 
         st = datetime.now()
-        for dp in ds1:
-            dp.start_time -= timedelta(milliseconds=dp.offset)
+        data = self.CC.RawData.convert_to_UTCtime(data)
         print("Offset using timedelta - to utc (Total time):", datetime.now()-st)
-        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000"), ds1[0].start_time)
+        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000"), data[0].start_time)
 
         print("done")
 
