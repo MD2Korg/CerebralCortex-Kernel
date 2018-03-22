@@ -25,9 +25,11 @@
 
 import json
 import unittest
-from datetime import datetime
-
+from datetime import datetime, timedelta
+import pytz
+from pytz import timezone as pytimezone
 import yaml
+import copy
 from dateutil import parser
 from cerebralcortex.cerebralcortex import CerebralCortex
 from cerebralcortex.core.datatypes.datastream import DataStream, DataPoint
@@ -46,10 +48,33 @@ class TestFileToDB():
 
 class TestStreamHandler():
     def test00_get_stream(self):
-        ds1 = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1])
-        ds1.data.append(DataPoint(parser.parse("2018-02-23 03:14:51.133000-06:00"), None, -21600000, "some test values"))
-        self.CC.save_stream(ds1)
-        #ds2 = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1])
+        possible_tz = pytimezone("America/Bahia_Banderas")
+        st = datetime.now()
+        ds1 = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1], localtime=False).data
+        print("Loaded pickle 1 (Total time):", datetime.now()-st)
+        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000"), ds1[0].start_time)
+
+        st = datetime.now()
+        for dp in ds1:
+            dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
+            dp.start_time = datetime.fromtimestamp(dp.start_time.timestamp(),possible_tz)
+        print("Offset using pytz (Total time):", datetime.now()-st)
+        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000-06:00"), ds1[0].start_time)
+
+        # timedelta approach to convert time to local time
+        ds1 = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1], localtime=False).data
+        st = datetime.now()
+        for dp in ds1:
+            dp.start_time += timedelta(milliseconds=dp.offset)
+        print("Offset using timedelta - to local (Total time):", datetime.now()-st)
+        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000"), ds1[0].start_time)
+
+        st = datetime.now()
+        for dp in ds1:
+            dp.start_time -= timedelta(milliseconds=dp.offset)
+        print("Offset using timedelta - to utc (Total time):", datetime.now()-st)
+        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000"), ds1[0].start_time)
+
         print("done")
 
     def test01_save_stream(self):
@@ -131,8 +156,5 @@ class TestHDFS(unittest.TestCase, TestStreamHandler):
         self.days = ["20180221", "20180223", "20180224"]
 
         # generate sample raw data file
-        self.data = gen_raw_data(self.gz_file, 10000, True, "float")
-        # ss = pickle.dumps(self.data)
-        # with open("/home/ali/Desktop/tmp/hadoop/sample.pickle", "wb") as f:
-        #     f.write(ss)
+        self.data = gen_raw_data(self.gz_file, 1000000, True, "float")
         print("done")
