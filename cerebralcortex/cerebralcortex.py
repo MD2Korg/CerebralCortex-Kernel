@@ -65,12 +65,12 @@ class CerebralCortex:
     ###########################################################################
     ############### RAW DATA MANAGER METHODS ##################################
     ###########################################################################
-    def save_stream(self, datastream: DataStream):
+    def save_stream(self, datastream: DataStream, changeToUTC=True):
         """
         Saves datastream raw data in Cassandra and metadata in MySQL.
         :param datastream:
         """
-        self.RawData.save_stream(datastream)
+        self.RawData.save_stream(datastream, changeToUTC)
 
     def get_stream(self, stream_id: uuid, user_id: uuid, day:str, start_time: datetime = None, end_time: datetime = None, localtime:bool=True,
                    data_type=DataSet.COMPLETE) -> DataStream:

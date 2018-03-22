@@ -136,10 +136,10 @@ class StreamHandler():
                 data = curfile.read()
             if data is not None and data!=b'':
                 clean_data = self.filter_sort_datapoints(data)
-                if start_time is not None or end_time is not None:
-                    clean_data = self.subset_data(clean_data, start_time, end_time)
                 if localtime:
                     clean_data = self.convert_to_localtime(clean_data)
+                if start_time is not None or end_time is not None:
+                    clean_data = self.subset_data(clean_data, start_time, end_time)
                 return clean_data
         except Exception as e:
             self.logging.log(error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc()),
@@ -158,10 +158,10 @@ class StreamHandler():
                 data = curfile.read()
             if data is not None and data!=b'':
                 clean_data = self.filter_sort_datapoints(data)
-                if start_time is not None or end_time is not None:
-                    clean_data = self.subset_data(clean_data, start_time, end_time)
                 if localtime:
                     clean_data = self.convert_to_localtime(clean_data)
+                if start_time is not None or end_time is not None:
+                    clean_data = self.subset_data(clean_data, start_time, end_time)
                 return clean_data
         except Exception as e:
             self.logging.log(error_message="Error loading from FileSystem: Cannot parse row. " + str(traceback.format_exc()),
@@ -243,8 +243,9 @@ class StreamHandler():
         :param data:
         :return:
         """
-        #local_tz_data = []
-        #end_time = None
+        if data[0].offset==0 or data[0].offset is None or data[0].offset=="":
+            raise ValueError("Offset cannot be None, 0, and/or empty. Please set the same time offsets you received using get_stream.")
+
         if len(data)>0:
             for dp in data:
                 if dp.end_time is not None:
@@ -411,7 +412,7 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    def save_stream(self, datastream: DataStream):
+    def save_stream(self, datastream: DataStream, changeToUTC=True):
 
         """
         Saves datastream raw data in Cassandra and metadata in MySQL.
@@ -425,11 +426,12 @@ class StreamHandler():
         annotations = datastream.annotations
         stream_type = datastream.datastream_type
         data = datastream.data
-        if len(data)>0 and (data[0].offset=="" or data[0].offset is None):
-            raise ValueError("Data points cannot have None or empty offset")
+        if len(data)>0 and (data[0].offset=="" or data[0].offset is None or data[0].offset==0):
+            raise ValueError("Offset cannot be None, 0, and/or empty. Please set the same time offsets you received using get_stream.")
 
         data = self.filter_sort_datapoints(data)
-        #data = self.convert_to_UTCtime(data)
+        if changeToUTC:
+            data = self.convert_to_UTCtime(data)
         try:
 
             # get start and end time of a stream
