@@ -44,7 +44,8 @@ class DataStream:
                  stream_type: str = None,
                  start_time: datetime = None,
                  end_time: datetime = None,
-                 data: List[DataPoint] = None
+                 data: List[DataPoint] = None,
+                 stream_timezone = None
                  ):
         self._identifier = identifier
         self._owner = owner
@@ -56,6 +57,7 @@ class DataStream:
         self._start_time = start_time
         self._end_time = end_time
         self._data = data
+        self._stream_timezone = stream_timezone
 
     def find_annotation_references(self, identifier: int = None, name: str = None):
         result = self._annotations

@@ -78,9 +78,12 @@ class TestStreamHandler():
         # timedelta approach to convert time to local time
         data = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1]).data
         st = datetime.now()
+        data_local = self.CC.RawData.convert_to_localtime(data, True)
+        data_utc = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1]).data
+        data_utc = self.CC.RawData.convert_to_localtime(data_utc, False)
         print("Offset using timedelta - to local (Total time):", datetime.now()-st)
-        data = self.CC.RawData.convert_to_localtime(data)
-        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000"), data[0].start_time)
+        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000"), data_local[0].start_time)
+        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000+00:00"), data_utc[0].start_time)
 
         st = datetime.now()
         data = self.CC.RawData.convert_to_UTCtime(data)

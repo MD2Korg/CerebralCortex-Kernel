@@ -80,7 +80,7 @@ class StreamHandler():
                 dps =  self.read_filesystem_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
             else:
                 dps = self.load_cassandra_data(stream_id, day, start_time, end_time)
-            stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps)
+            stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps, localtime)
         elif data_type == DataSet.ONLY_DATA:
             if self.nosql_store=="hdfs":
                 return self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
@@ -98,7 +98,7 @@ class StreamHandler():
         return stream
 
     def map_datapoint_and_metadata_to_datastream(self, stream_id: int, datastream_info: dict,
-                                                 data: object) -> DataStream:
+                                                 data: object, localtime:bool=True) -> DataStream:
         """
         This method will map the datapoint and metadata to datastream object
         :param stream_id:
@@ -115,8 +115,12 @@ class StreamHandler():
             stream_type = datastream_info[0]["type"]
             start_time = datastream_info[0]["start_time"]
             end_time = datastream_info[0]["end_time"]
+            if localtime:
+                stream_timezone = "local"
+            else:
+                stream_timezone = "utc"
             return DataStream(stream_id, ownerID, name, data_descriptor, execution_context, annotations,
-                              stream_type, start_time, end_time, data)
+                              stream_type, start_time, end_time, data, stream_timezone)
         except Exception as e:
             self.logging.log(
                 error_message="STREAM ID: " + stream_id + " - Error in mapping datapoints and metadata to datastream. " + str(
@@ -128,7 +132,7 @@ class StreamHandler():
         data = None
         filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
         if not hdfs.exists(filename):
-            print("File does not exist.")
+            print(filename, "does not exist.")
             return []
 
         try:
@@ -136,8 +140,7 @@ class StreamHandler():
                 data = curfile.read()
             if data is not None and data!=b'':
                 clean_data = self.filter_sort_datapoints(data)
-                if localtime:
-                    clean_data = self.convert_to_localtime(clean_data)
+                clean_data = self.convert_to_localtime(clean_data, localtime)
                 if start_time is not None or end_time is not None:
                     clean_data = self.subset_data(clean_data, start_time, end_time)
                 return clean_data
@@ -150,7 +153,7 @@ class StreamHandler():
         data = None
         filename = self.filesystem_path+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
         if not os.path.exists(filename):
-            print("File does not exist.")
+            print(filename, "does not exist.")
             return []
 
         try:
@@ -158,8 +161,7 @@ class StreamHandler():
                 data = curfile.read()
             if data is not None and data!=b'':
                 clean_data = self.filter_sort_datapoints(data)
-                if localtime:
-                    clean_data = self.convert_to_localtime(clean_data)
+                clean_data = self.convert_to_localtime(clean_data, localtime)
                 if start_time is not None or end_time is not None:
                     clean_data = self.subset_data(clean_data, start_time, end_time)
                 return clean_data
@@ -222,7 +224,7 @@ class StreamHandler():
                 local_tz_data.append(dp)
         return local_tz_data
 
-    def convert_to_localtime(self, data: List[DataPoint]) -> List[DataPoint]:
+    def convert_to_localtime(self, data: List[DataPoint], localtime) -> List[DataPoint]:
         """
         convert UTC time to local time
         :param data:
@@ -231,10 +233,14 @@ class StreamHandler():
         #local_tz_data = []
         if len(data)>0:
             for dp in data:
-                if dp.end_time is not None:
-                    dp.end_time += timedelta(milliseconds=dp.offset)
-                dp.start_time += timedelta(milliseconds=dp.offset)
-                #local_tz_data.append(dp)
+                if localtime:
+                    if dp.end_time is not None:
+                        dp.end_time += timedelta(milliseconds=dp.offset)
+                    dp.start_time += timedelta(milliseconds=dp.offset)
+                else:
+                    if dp.end_time is not None:
+                        dp.end_time = dp.end_time.replace(tzinfo=pytz.utc)
+                    dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
         return data
 
     def convert_to_UTCtime(self, data: List[DataPoint]) -> List[DataPoint]:
