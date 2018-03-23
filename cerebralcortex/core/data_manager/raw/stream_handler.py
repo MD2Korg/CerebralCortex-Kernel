@@ -205,8 +205,30 @@ class StreamHandler():
 
         return result
 
-    # deprecated: slower than timedelta
-    def convert_to_localtime_using_pytz(self, data: List[DataPoint]) -> List[DataPoint]:
+    def convert_to_localtime(self, data: List[DataPoint], localtime) -> List[DataPoint]:
+        """
+        convert UTC time to local time
+        :param data:
+        :return:
+        """
+
+        if len(data)>0:
+            possible_tz = pytimezone(get_timezone(data[0].offset))
+            for dp in data:
+                if localtime:
+                    if dp.end_time is not None:
+                        dp.end_time = dp.end_time.replace(tzinfo=pytz.utc)
+                        dp.end_time = datetime.fromtimestamp(dp.end_time.timestamp(),possible_tz)#possible_tz.localize(dp.end_time)
+                    dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
+                    dp.start_time = datetime.fromtimestamp(dp.start_time.timestamp(),possible_tz)#possible_tz.localize(dp.start_time)
+                else:
+                    if dp.end_time is not None:
+                        dp.end_time = dp.end_time.replace(tzinfo=pytz.utc)
+                    dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
+
+        return data
+
+    def convert_to_UTCtime(self, data: List[DataPoint]) -> List[DataPoint]:
         """
         convert UTC time to local time
         :param data:
@@ -214,50 +236,48 @@ class StreamHandler():
         """
         local_tz_data = []
         if len(data)>0:
-            possible_tz = pytimezone(get_timezone(data[0].offset))
+            possible_tz = pytimezone(get_timezone(0000))
             for dp in data:
                 if dp.end_time is not None:
-                    dp.end_time = dp.end_time.replace(tzinfo=pytz.utc)
-                    dp.end_time = datetime.fromtimestamp(dp.end_time.timestamp(),possible_tz)#possible_tz.localize(dp.end_time)
-                dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
-                dp.start_time = datetime.fromtimestamp(dp.start_time.timestamp(),possible_tz)#possible_tz.localize(dp.start_time)
+                    dp.end_time = datetime.fromtimestamp(dp.end_time.timestamp(),possible_tz)
+                dp.start_time = datetime.fromtimestamp(dp.start_time.timestamp(),possible_tz)
                 local_tz_data.append(dp)
         return local_tz_data
 
-    def convert_to_localtime(self, data: List[DataPoint], localtime) -> List[DataPoint]:
-        """
-        convert UTC time to local time
-        :param data:
-        :return:
-        """
-        #local_tz_data = []
-        if len(data)>0:
-            for dp in data:
-                if localtime:
-                    if dp.end_time is not None:
-                        dp.end_time += timedelta(milliseconds=dp.offset)
-                    dp.start_time += timedelta(milliseconds=dp.offset)
-                else:
-                    if dp.end_time is not None:
-                        dp.end_time = dp.end_time.replace(tzinfo=pytz.utc)
-                    dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
-        return data
+    # def convert_to_localtime(self, data: List[DataPoint], localtime) -> List[DataPoint]:
+    #     """
+    #     convert UTC time to local time
+    #     :param data:
+    #     :return:
+    #     """
+    #     #local_tz_data = []
+    #     if len(data)>0:
+    #         for dp in data:
+    #             if localtime:
+    #                 if dp.end_time is not None:
+    #                     dp.end_time += timedelta(milliseconds=dp.offset)
+    #                 dp.start_time += timedelta(milliseconds=dp.offset)
+    #             else:
+    #                 if dp.end_time is not None:
+    #                     dp.end_time = dp.end_time.replace(tzinfo=pytz.utc)
+    #                 dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
+    #     return data
 
-    def convert_to_UTCtime(self, data: List[DataPoint]) -> List[DataPoint]:
-        """
-        convert local time to UTC time
-        :param data:
-        :return:
-        """
-        if data[0].offset==0 or data[0].offset is None or data[0].offset=="":
-            raise ValueError("Offset cannot be None, 0, and/or empty. Please set the same time offsets you received using get_stream.")
-
-        if len(data)>0:
-            for dp in data:
-                if dp.end_time is not None:
-                    dp.end_time -= timedelta(milliseconds=dp.offset)
-                dp.start_time -= timedelta(milliseconds=dp.offset)
-        return data
+    # def convert_to_UTCtime(self, data: List[DataPoint]) -> List[DataPoint]:
+    #     """
+    #     convert local time to UTC time
+    #     :param data:
+    #     :return:
+    #     """
+    #     if data[0].offset==0 or data[0].offset is None or data[0].offset=="":
+    #         raise ValueError("Offset cannot be None, 0, and/or empty. Please set the same time offsets you received using get_stream.")
+    #
+    #     if len(data)>0:
+    #         for dp in data:
+    #             if dp.end_time is not None:
+    #                 dp.end_time -= timedelta(milliseconds=dp.offset)
+    #             dp.start_time -= timedelta(milliseconds=dp.offset)
+    #     return data
 
     def load_cassandra_data(self, stream_id, day, start_time=None, end_time=None) -> List:
         """
@@ -418,7 +438,7 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    def save_stream(self, datastream: DataStream, changeToUTC=True):
+    def save_stream(self, datastream: DataStream, localtime=True):
 
         """
         Saves datastream raw data in Cassandra and metadata in MySQL.
@@ -436,7 +456,7 @@ class StreamHandler():
             raise ValueError("Offset cannot be None, 0, and/or empty. Please set the same time offsets you received using get_stream.")
 
         data = self.filter_sort_datapoints(data)
-        if changeToUTC:
+        if localtime:
             data = self.convert_to_UTCtime(data)
         try:
 

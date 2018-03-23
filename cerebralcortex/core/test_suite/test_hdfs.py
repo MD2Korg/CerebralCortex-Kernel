@@ -65,30 +65,27 @@ class TestStreamHandler():
             self.CC.save_stream(ds)
 
     def test02_get_stream(self):
-        st = datetime.now()
         data = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1]).data
-        print("Loaded pickle 1 (Total time):", datetime.now()-st)
-        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000"), data[0].start_time)
+        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000-06:00"), data[0].start_time)
 
-        st = datetime.now()
-        data = self.CC.RawData.convert_to_localtime_using_pytz(data)
-        print("Offset using pytz (Total time):", datetime.now()-st)
-        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000-06:00"), data[0].start_time)
+        # using timedelta, this test will fail
+        dt = datetime.utcfromtimestamp(1509407912.633)
+        dp = [DataPoint(dt, None, -28800000, "some sample")]
+        dp_local = self.CC.RawData.convert_to_localtime(dp, True)
+        self.assertEqual(parser.parse("2017-10-30 16:58:32.633000-07:00"), dp_local[0].start_time)
+        dp_utc = self.CC.RawData.convert_to_UTCtime(dp_local)
+        self.assertEqual(1509407912.633, dp_utc[0].start_time.timestamp())
 
         # timedelta approach to convert time to local time
         data = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1]).data
-        st = datetime.now()
         data_local = self.CC.RawData.convert_to_localtime(data, True)
         data_utc = self.CC.get_stream(self.stream_id,self.owner_id,self.days[1]).data
         data_utc = self.CC.RawData.convert_to_localtime(data_utc, False)
-        print("Offset using timedelta - to local (Total time):", datetime.now()-st)
-        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000"), data_local[0].start_time)
+        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000-06:00"), data_local[0].start_time)
         self.assertEqual(parser.parse("2018-02-23 03:14:51.133000+00:00"), data_utc[0].start_time)
 
-        st = datetime.now()
         data = self.CC.RawData.convert_to_UTCtime(data)
-        print("Offset using timedelta - to utc (Total time):", datetime.now()-st)
-        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000"), data[0].start_time)
+        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000+00:00"), data[0].start_time)
 
         print("done")
 
@@ -96,8 +93,8 @@ class TestStreamHandler():
         data_len = []
         start_times = []
         end_times = []
-        start_time = parser.parse("2018-02-21 23:28:21.133000")
-        end_time = parser.parse("2018-02-21 23:28:25.133000")
+        start_time = parser.parse("2018-02-21 23:28:21.403000-06:00")
+        end_time = parser.parse("2018-02-21 23:28:24.133000-06:00")
         for day in self.days:
             ds = self.CC.get_stream(self.stream_id, self.owner_id, day)
             data_len.append(len(ds.data))
@@ -106,17 +103,17 @@ class TestStreamHandler():
 
         # test start/end time of datapoints
         self.assertEqual(data_len, [3999, 999, 5001])
-        expected_start_times = [parser.parse("2018-02-21 23:28:21.133000"),parser.parse("2018-02-23 03:14:51.133000"),parser.parse("2018-02-24 07:01:41.123000")]
-        expected_end_times = [parser.parse("2018-02-21 23:29:01.113000"),parser.parse("2018-02-23 03:15:01.113000"),parser.parse("2018-02-24 07:03:11.113000")]
+        expected_start_times = [parser.parse("2018-02-21 23:28:21.133000-06:00"),parser.parse("2018-02-23 03:14:51.133000-06:00"),parser.parse("2018-02-24 07:01:41.123000-06:00")]
+        expected_end_times = [parser.parse("2018-02-21 23:29:01.113000-06:00"),parser.parse("2018-02-23 03:15:01.113000-06:00"),parser.parse("2018-02-24 07:03:11.113000-06:00")]
         self.assertEqual(start_times, expected_start_times)
         self.assertEqual(end_times, expected_end_times)
 
         # test sub-set of stream
         ds = self.CC.get_stream(self.stream_id, self.owner_id, self.days[0], start_time, end_time)
         if self.CC.config["data_ingestion"]["nosql_store"]=="hdfs" or self.CC.config["data_ingestion"]["nosql_store"]=="filesystem":
-            self.assertEqual(len(ds.data), 401)
-            self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-21 23:28:21.133000"))
-            self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse("2018-02-21 23:28:25.133000"))
+            self.assertEqual(len(ds.data), 274)
+            self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-21 23:28:21.403000-06:00"))
+            self.assertEqual(ds.data[len(ds.data)-1].start_time, parser.parse("2018-02-21 23:28:24.133000-06:00"))
         else:
             self.assertEqual(len(ds.data), 600)
             self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-23 03:14:52.133000-06:00"))
@@ -134,6 +131,8 @@ class TestStreamHandler():
         self.assertEqual(ds.execution_context['platform_metadata'], self.metadata["execution_context"]["platform_metadata"])
         self.assertEqual(ds.execution_context['processing_module'], self.metadata["execution_context"]["processing_module"])
 
+    def test04_time_conversion(self):
+        dt = datetime.utcfromtimestamp(1509407912.633)
 
 
 class TestHDFS(unittest.TestCase, TestStreamHandler):
