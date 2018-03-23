@@ -452,8 +452,8 @@ class StreamHandler():
         annotations = datastream.annotations
         stream_type = datastream.datastream_type
         data = datastream.data
-        if len(data)>0 and (data[0].offset=="" or data[0].offset is None or data[0].offset==0):
-            raise ValueError("Offset cannot be None, 0, and/or empty. Please set the same time offsets you received using get_stream.")
+        if len(data)>0 and (data[0].offset=="" or data[0].offset is None):
+            raise ValueError("Offset cannot be None and/or empty. Please set the same time offsets you received using get_stream.")
 
         data = self.filter_sort_datapoints(data)
         if localtime:
