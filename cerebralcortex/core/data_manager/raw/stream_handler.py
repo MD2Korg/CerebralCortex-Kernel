@@ -535,7 +535,7 @@ class StreamHandler():
                     if hdfs.exists(filename):
                         with hdfs.open(filename, "rb") as curfile:
                             existing_data = curfile.read()
-                    if existing_data is not None:
+                    if existing_data is not None and existing_data!=b'':
                         existing_data = pickle.loads(existing_data)
                         dps.extend(existing_data)
                         dps = existing_data
@@ -544,6 +544,9 @@ class StreamHandler():
                         pickle.dump(dps, f)
                     success = True
                 except Exception as ex:
+                    # delete file if file was opened and no data was written to it
+                    if hdfs.info(filename)["size"]==0:
+                        hdfs.delete(filename)
                     self.logging.log(
                         error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
         return success
@@ -582,6 +585,10 @@ class StreamHandler():
                         tmp = None
                     success = True
                 except Exception as ex:
+                    # delete file if file was opened and no data was written to it
+                    if os.path.exists(filename):
+                        if os.path.getsize(filename)==0:
+                           os.remove(filename)
                     self.logging.log(
                         error_message="Error in writing data to FileSystem. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
         return success
