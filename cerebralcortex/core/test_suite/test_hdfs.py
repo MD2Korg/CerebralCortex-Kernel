@@ -58,7 +58,6 @@ class TestStreamHandler():
                 outputdata[day] = []
 
             outputdata[day].append(row)
-       # tt = self.CC.get_stream_metadata("355fde3e-ee20-3fa5-8c29-069b470218b7")
         for day, dps in outputdata.items():
             ds = DataStream(self.stream_id, self.owner_id, self.stream_name, self.metadata["data_descriptor"],
                             self.metadata["execution_context"], self.metadata["annotations"], self.metadata["type"], None, None, dps)
@@ -98,8 +97,9 @@ class TestStreamHandler():
         for day in self.days:
             ds = self.CC.get_stream(self.stream_id, self.owner_id, day)
             data_len.append(len(ds.data))
-            start_times.append(ds.data[0].start_time)
-            end_times.append(ds.data[len(ds.data)-1].start_time)
+            if len(ds.data)>0:
+                start_times.append(ds.data[0].start_time)
+                end_times.append(ds.data[len(ds.data)-1].start_time)
 
         # test start/end time of datapoints
         self.assertEqual(data_len, [3999, 999, 5001])
@@ -131,9 +131,23 @@ class TestStreamHandler():
         self.assertEqual(ds.execution_context['platform_metadata'], self.metadata["execution_context"]["platform_metadata"])
         self.assertEqual(ds.execution_context['processing_module'], self.metadata["execution_context"]["processing_module"])
 
-    def test04_time_conversion(self):
-        dt = datetime.utcfromtimestamp(1509407912.633)
+    def test04_local_time(self):
+        dps = [DataPoint(parser.parse("2018-01-02 02:04:21.486000"), None, -18000000, ['com.sec.android.app.camera', None, None, None])
+            , DataPoint(parser.parse("2018-01-02 02:04:21.500000"), None, -18000000, ['com.sec.android.app.camera', None, None, None])
+            , DataPoint(parser.parse("2018-01-02 02:04:21.515000"), None, -18000000, ['com.sec.android.app.camera', None, None, None])
+            , DataPoint(parser.parse("2018-01-02 02:04:21.522000"), None, -18000000, ['com.sec.android.app.camera', None, None, None])
+            , DataPoint(parser.parse("2018-01-02 01:04:21.528000"), None, -18000000, ['com.sec.android.app.camera', None, None, None])
+            , DataPoint(parser.parse("2018-01-02 01:17:16.166000"), None, -18000000, ['com.appsbybrent.trackyourfast', 'Health & Fitness', 'Track Your Fast - Intermittent Fasting Timer', None])
+            , DataPoint(parser.parse("2018-01-02 21:17:16.179000"), None, -18000000, ['com.appsbybrent.trackyourfast', 'Health & Fitness', 'Track Your Fast - Intermittent Fasting Timer', None])
+            , DataPoint(parser.parse("2018-01-02 21:17:16.191000"), None, -18000000, ['com.appsbybrent.trackyourfast', 'Health & Fitness', 'Track Your Fast - Intermittent Fasting Timer', None])
+            , DataPoint(parser.parse("2018-01-02 21:17:16.206000"), None, -18000000, ['com.appsbybrent.trackyourfast', 'Health & Fitness', 'Track Your Fast - Intermittent Fasting Timer', None])
+               ]
+        data = self.CC.get_stream(self.stream_id,self.owner_id,"20180102").data
+        print(data)
 
+        ds = DataStream(self.stream_id, self.owner_id, self.stream_name, self.metadata["data_descriptor"],
+                        self.metadata["execution_context"], self.metadata["annotations"], self.metadata["type"], None, None, dps)
+        self.CC.save_stream(ds, localtime=False)
 
 class TestHDFS(unittest.TestCase, TestStreamHandler):
     def setUp(self):
@@ -151,7 +165,7 @@ class TestHDFS(unittest.TestCase, TestStreamHandler):
         self.stream_name = self.metadata["name"]
         self.test_data_folder = test_conf["sample_data"]["data_folder"]
         self.gz_file = self.test_data_folder + test_conf["sample_data"]["gz_file"]
-        self.days = ["20180222", "20180223", "20180224"]
+        self.days = ["20180221", "20180223", "20180224"]
 
         # generate sample raw data file
         self.data = gen_raw_data(self.gz_file, 10000, True, "float")

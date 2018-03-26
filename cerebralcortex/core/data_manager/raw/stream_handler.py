@@ -68,7 +68,7 @@ class StreamHandler():
         :return:
         """
         if stream_id is None or day is None or owner_id is None:
-            return None
+            return []
         
         # query datastream(mysql) for metadata
         datastream_metadata = self.sql_data.get_stream_metadata(stream_id)
@@ -125,54 +125,121 @@ class StreamHandler():
             self.logging.log(
                 error_message="STREAM ID: " + stream_id + " - Error in mapping datapoints and metadata to datastream. " + str(
                     traceback.format_exc()), error_type=self.logtypes.CRITICAL)
-    
+
+    # def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None, localtime:bool=True):
+    #     # Using libhdfs,
+    #     hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+    #     data = None
+    #     filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+    #     if not hdfs.exists(filename):
+    #         print(filename, "does not exist.")
+    #         return []
+    #
+    #     try:
+    #         with hdfs.open(filename, "rb") as curfile:
+    #             data = curfile.read()
+    #         if data is not None and data!=b'':
+    #             clean_data = self.filter_sort_datapoints(data)
+    #             clean_data = self.convert_to_localtime(clean_data, localtime)
+    #             if start_time is not None or end_time is not None:
+    #                 clean_data = self.subset_data(clean_data, start_time, end_time)
+    #             return clean_data
+    #         else:
+    #             return []
+    #     except Exception as e:
+    #         self.logging.log(error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc()),
+    #                          error_type=self.logtypes.CRITICAL)
+    #         return []
+
     def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None, localtime:bool=True):
         # Using libhdfs,
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         data = None
-        filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-        if not hdfs.exists(filename):
-            print(filename, "does not exist.")
-            return []
 
-        try:
-            with hdfs.open(filename, "rb") as curfile:
-                data = curfile.read()
-            if data is not None and data!=b'':
-                clean_data = self.filter_sort_datapoints(data)
-                clean_data = self.convert_to_localtime(clean_data, localtime)
-                if start_time is not None or end_time is not None:
-                    clean_data = self.subset_data(clean_data, start_time, end_time)
-                return clean_data
-            else:
+        if localtime:
+            days = [datetime.strftime(datetime.strptime(day,  '%Y%m%d')-timedelta(hours=24),"%Y%m%d"), day, datetime.strftime(datetime.strptime(day,  '%Y%m%d')+timedelta(hours=24),"%Y%m%d")]
+            day_start_time = datetime.strptime(day,  '%Y%m%d')
+            day_end_time = day_start_time + timedelta(hours=24)
+            day_block = []
+            for d in days:
+                filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(d)+".pickle"
+                if hdfs.exists(filename):
+                    with hdfs.open(filename, "rb") as curfile:
+                        data = curfile.read()
+                    if data is not None and data!=b'':
+                        clean_data = self.filter_sort_datapoints(data)
+                        clean_data = self.convert_to_localtime(clean_data, localtime)
+                        day_start_time = datetime.fromtimestamp(day_start_time.timestamp(), clean_data[0].start_time.tzinfo)
+                        day_end_time = datetime.fromtimestamp(day_end_time.timestamp(), clean_data[0].start_time.tzinfo)
+                        day_block.extend(self.subset_data(clean_data, day_start_time, day_end_time))
+            day_block = self.filter_sort_datapoints(day_block)
+            if start_time is not None or end_time is not None:
+                day_block = self.subset_data(day_block, start_time, end_time)
+            return day_block
+        else:
+            filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+            if not hdfs.exists(filename):
+                print(filename, "does not exist.")
                 return []
-        except Exception as e:
-            self.logging.log(error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc()),
-                             error_type=self.logtypes.CRITICAL)
-            return []
+            try:
+                with hdfs.open(filename, "rb") as curfile:
+                    data = curfile.read()
+                if data is not None and data!=b'':
+                    clean_data = self.filter_sort_datapoints(data)
+                    clean_data = self.convert_to_localtime(clean_data, localtime)
+                    if start_time is not None or end_time is not None:
+                        clean_data = self.subset_data(clean_data, start_time, end_time)
+                    return clean_data
+                else:
+                    return []
+            except Exception as e:
+                self.logging.log(error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc()),
+                                 error_type=self.logtypes.CRITICAL)
+                return []
 
     def read_filesystem_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None, localtime:bool=True):
         data = None
-        filename = self.filesystem_path+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-        if not os.path.exists(filename):
-            print(filename, "does not exist.")
-            return []
-
-        try:
-            with open(filename, "rb") as curfile:
-                data = curfile.read()
-            if data is not None and data!=b'':
-                clean_data = self.filter_sort_datapoints(data)
-                clean_data = self.convert_to_localtime(clean_data, localtime)
-                if start_time is not None or end_time is not None:
-                    clean_data = self.subset_data(clean_data, start_time, end_time)
-                return clean_data
-            else:
+        if localtime:
+            days = [datetime.strftime(datetime.strptime(day,  '%Y%m%d')-timedelta(hours=24),"%Y%m%d"), day, datetime.strftime(datetime.strptime(day,  '%Y%m%d')+timedelta(hours=24),"%Y%m%d")]
+            day_start_time = datetime.strptime(day,  '%Y%m%d')
+            day_end_time = day_start_time + timedelta(hours=24)
+            day_block = []
+            for d in days:
+                filename = self.filesystem_path+str(owner_id)+"/"+str(stream_id)+"/"+str(d)+".pickle"
+                if os.path.exists(filename):
+                    with open(filename, "rb") as curfile:
+                        data = curfile.read()
+                    if data is not None and data!=b'':
+                        clean_data = self.filter_sort_datapoints(data)
+                        clean_data = self.convert_to_localtime(clean_data, localtime)
+                        day_start_time = datetime.fromtimestamp(day_start_time.timestamp(), clean_data[0].start_time.tzinfo)
+                        day_end_time = datetime.fromtimestamp(day_end_time.timestamp(), clean_data[0].start_time.tzinfo)
+                        day_block.extend(self.subset_data(clean_data, day_start_time, day_end_time))
+            day_block = self.filter_sort_datapoints(day_block)
+            if start_time is not None or end_time is not None:
+                day_block = self.subset_data(day_block, start_time, end_time)
+            return day_block
+        else:
+            filename = self.filesystem_path+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+            if not os.path.exists(filename):
+                print(filename, "does not exist.")
                 return []
-        except Exception as e:
-            self.logging.log(error_message="Error loading from FileSystem: Cannot parse row. " + str(traceback.format_exc()),
-                             error_type=self.logtypes.CRITICAL)
-            return []
+
+            try:
+                with open(filename, "rb") as curfile:
+                    data = curfile.read()
+                if data is not None and data!=b'':
+                    clean_data = self.filter_sort_datapoints(data)
+                    clean_data = self.convert_to_localtime(clean_data, localtime)
+                    if start_time is not None or end_time is not None:
+                        clean_data = self.subset_data(clean_data, start_time, end_time)
+                    return clean_data
+                else:
+                    return []
+            except Exception as e:
+                self.logging.log(error_message="Error loading from FileSystem: Cannot parse row. " + str(traceback.format_exc()),
+                                 error_type=self.logtypes.CRITICAL)
+                return []
 
     def subset_data(self, data, start_time:datetime=None, end_time:datetime=None):
         subset_data = []
@@ -195,10 +262,13 @@ class StreamHandler():
             return data
 
     def filter_sort_datapoints(self, data):
-        if not isinstance(data, list):
-            data = deserialize_obj(data)
-        clean_data = self.dedup(sorted(data))
-        return clean_data
+        if len(data)>0:
+            if not isinstance(data, list):
+                data = deserialize_obj(data)
+            clean_data = self.dedup(sorted(data))
+            return clean_data
+        else:
+            return data
 
     def dedup(self, data):
         result = [data[0]]
