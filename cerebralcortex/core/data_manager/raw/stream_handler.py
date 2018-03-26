@@ -144,6 +144,8 @@ class StreamHandler():
                 if start_time is not None or end_time is not None:
                     clean_data = self.subset_data(clean_data, start_time, end_time)
                 return clean_data
+            else:
+                return []
         except Exception as e:
             self.logging.log(error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc()),
                              error_type=self.logtypes.CRITICAL)
@@ -165,6 +167,8 @@ class StreamHandler():
                 if start_time is not None or end_time is not None:
                     clean_data = self.subset_data(clean_data, start_time, end_time)
                 return clean_data
+            else:
+                return []
         except Exception as e:
             self.logging.log(error_message="Error loading from FileSystem: Cannot parse row. " + str(traceback.format_exc()),
                              error_type=self.logtypes.CRITICAL)
