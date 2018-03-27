@@ -142,7 +142,7 @@ class TestStreamHandler():
             , DataPoint(parser.parse("2018-01-02 21:17:16.191000"), None, -18000000, ['com.appsbybrent.trackyourfast', 'Health & Fitness', 'Track Your Fast - Intermittent Fasting Timer', None])
             , DataPoint(parser.parse("2018-01-02 21:17:16.206000"), None, -18000000, ['com.appsbybrent.trackyourfast', 'Health & Fitness', 'Track Your Fast - Intermittent Fasting Timer', None])
                ]
-        data = self.CC.get_stream(self.stream_id,self.owner_id,"20180102").data
+        data = self.CC.get_stream(self.stream_id,self.owner_id,"20180102", localtime=False).data
         print(data)
 
         ds = DataStream(self.stream_id, self.owner_id, self.stream_name, self.metadata["data_descriptor"],

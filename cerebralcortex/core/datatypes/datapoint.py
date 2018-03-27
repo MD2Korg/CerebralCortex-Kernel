@@ -33,6 +33,13 @@ class DataPoint:
                  end_time: datetime = None,
                  offset: str=None,
                  sample: Any = None):
+        """
+
+        :param start_time:
+        :param end_time:
+        :param offset: in milliseconds
+        :param sample:
+        """
         self._start_time = start_time
         self._end_time = end_time
         self._offset = offset
