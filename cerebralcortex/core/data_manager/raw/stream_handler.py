@@ -28,6 +28,7 @@ import uuid
 import pytz
 import pyarrow
 import pickle
+import gzip
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import List
@@ -163,29 +164,45 @@ class StreamHandler():
             day_block = []
             for d in days:
                 filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(d)+".pickle"
+                gz_filename = filename.replace(".pickle", ".gz")
+                data = None
                 if hdfs.exists(filename):
                     with hdfs.open(filename, "rb") as curfile:
                         data = curfile.read()
-                    if data is not None and data!=b'':
-                        clean_data = self.filter_sort_datapoints(data)
-                        clean_data = self.convert_to_localtime(clean_data, localtime)
-                        day_start_time = datetime.fromtimestamp(day_start_time.timestamp(), clean_data[0].start_time.tzinfo)
-                        day_end_time = datetime.fromtimestamp(day_end_time.timestamp(), clean_data[0].start_time.tzinfo)
-                        day_block.extend(self.subset_data(clean_data, day_start_time, day_end_time))
+                elif hdfs.exists(gz_filename):
+                    with hdfs.open(gz_filename, "rb") as curfile:
+                        data = curfile.read()
+                        data = gzip.decompress(data)
+
+                if data is not None and data!=b'':
+                    clean_data = self.filter_sort_datapoints(data)
+                    self.compress_store_pickle(gz_filename, clean_data,hdfs)
+                    clean_data = self.convert_to_localtime(clean_data, localtime)
+                    day_start_time = datetime.fromtimestamp(day_start_time.timestamp(), clean_data[0].start_time.tzinfo)
+                    day_end_time = datetime.fromtimestamp(day_end_time.timestamp(), clean_data[0].start_time.tzinfo)
+                    day_block.extend(self.subset_data(clean_data, day_start_time, day_end_time))
             day_block = self.filter_sort_datapoints(day_block)
             if start_time is not None or end_time is not None:
                 day_block = self.subset_data(day_block, start_time, end_time)
             return day_block
         else:
             filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-            if not hdfs.exists(filename):
-                print(filename, "does not exist.")
-                return []
+            gz_filename = filename.replace(".pickle", ".gz")
+            data = None
             try:
-                with hdfs.open(filename, "rb") as curfile:
-                    data = curfile.read()
+                if hdfs.exists(filename):
+                    with hdfs.open(filename, "rb") as curfile:
+                        data = curfile.read()
+                elif hdfs.exists(gz_filename):
+                    with hdfs.open(gz_filename, "rb") as curfile:
+                        data = curfile.read()
+                        data = gzip.decompress(data)
+                else:
+                    print(filename.replace("pickle",""), "does not exist.")
+                    return []
                 if data is not None and data!=b'':
                     clean_data = self.filter_sort_datapoints(data)
+                    self.compress_store_pickle(filename, clean_data,hdfs)
                     clean_data = self.convert_to_localtime(clean_data, localtime)
                     if start_time is not None or end_time is not None:
                         clean_data = self.subset_data(clean_data, start_time, end_time)
@@ -197,6 +214,7 @@ class StreamHandler():
                                  error_type=self.logtypes.CRITICAL)
                 return []
 
+
     def read_filesystem_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None, localtime:bool=True):
         data = None
         if localtime:
@@ -205,31 +223,47 @@ class StreamHandler():
             day_end_time = day_start_time + timedelta(hours=24)
             day_block = []
             for d in days:
+                data = None
                 filename = self.filesystem_path+str(owner_id)+"/"+str(stream_id)+"/"+str(d)+".pickle"
+                gz_filename = filename.replace(".pickle", ".gz")
                 if os.path.exists(filename):
                     with open(filename, "rb") as curfile:
                         data = curfile.read()
-                    if data is not None and data!=b'':
-                        clean_data = self.filter_sort_datapoints(data)
-                        clean_data = self.convert_to_localtime(clean_data, localtime)
-                        day_start_time = datetime.fromtimestamp(day_start_time.timestamp(), clean_data[0].start_time.tzinfo)
-                        day_end_time = datetime.fromtimestamp(day_end_time.timestamp(), clean_data[0].start_time.tzinfo)
-                        day_block.extend(self.subset_data(clean_data, day_start_time, day_end_time))
+                elif os.path.exists(gz_filename):
+                    with open(gz_filename, "rb") as curfile:
+                        data = curfile.read()
+                        data = gzip.decompress(data)
+                if data is not None and data!=b'':
+                    clean_data = self.filter_sort_datapoints(data)
+                    self.compress_store_pickle(filename, clean_data)
+                    clean_data = self.convert_to_localtime(clean_data, localtime)
+                    day_start_time = datetime.fromtimestamp(day_start_time.timestamp(), clean_data[0].start_time.tzinfo)
+                    day_end_time = datetime.fromtimestamp(day_end_time.timestamp(), clean_data[0].start_time.tzinfo)
+                    day_block.extend(self.subset_data(clean_data, day_start_time, day_end_time))
+
             day_block = self.filter_sort_datapoints(day_block)
             if start_time is not None or end_time is not None:
                 day_block = self.subset_data(day_block, start_time, end_time)
             return day_block
         else:
             filename = self.filesystem_path+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-            if not os.path.exists(filename):
-                print(filename, "does not exist.")
-                return []
+            gz_filename = filename.replace(".pickle", ".gz")
+            data = None
 
             try:
-                with open(filename, "rb") as curfile:
-                    data = curfile.read()
+                if os.path.exists(filename):
+                    with open(filename, "rb") as curfile:
+                        data = curfile.read()
+                elif os.path.exists(gz_filename):
+                    with open(gz_filename, "rb") as curfile:
+                        data = curfile.read()
+                        data = gzip.decompress(data)
+                else:
+                    print(filename.replace("pickle",""), "does not exist.")
+                    return []
                 if data is not None and data!=b'':
                     clean_data = self.filter_sort_datapoints(data)
+                    self.compress_store_pickle(filename, clean_data)
                     clean_data = self.convert_to_localtime(clean_data, localtime)
                     if start_time is not None or end_time is not None:
                         clean_data = self.subset_data(clean_data, start_time, end_time)
@@ -240,6 +274,42 @@ class StreamHandler():
                 self.logging.log(error_message="Error loading from FileSystem: Cannot parse row. " + str(traceback.format_exc()),
                                  error_type=self.logtypes.CRITICAL)
                 return []
+
+    def compress_store_pickle(self, filename: str, data: pickle, hdfs: object=None):
+        """
+
+        :param filename: pickle file name
+        :param data: pickled data
+        :param hdfs: hdfs connection object
+        """
+        gz_filename = filename.replace(".pickle", ".gz")
+        if len(data)>0:
+            data = pickle.dumps(data)
+            compressed_data = gzip.compress(data)
+            if hdfs is None:
+                try:
+                    if not os.path.exists(gz_filename):
+                        with open(gz_filename, "wb") as gzwrite:
+                            gzwrite.write(compressed_data)
+                    if os.path.exists(filename):
+                        if os.path.getsize(gz_filename)>0:
+                            os.remove(filename)
+                except:
+                    if os.path.exists(gz_filename):
+                        if os.path.getsize(gz_filename)==0:
+                            os.remove(gz_filename)
+            else:
+                try:
+                    if not hdfs.exists(gz_filename):
+                        with hdfs.open(gz_filename, "wb") as gzwrite:
+                            gzwrite.write(compressed_data)
+                    if not hdfs.exists(filename):
+                        if hdfs.info(gz_filename)["size"]>0:
+                            hdfs.delete(filename)
+                except:
+                    # delete file if file was opened and no data was written to it
+                    if hdfs.info(gz_filename)["size"]==0:
+                        hdfs.delete(gz_filename)
 
     def subset_data(self, data, start_time:datetime=None, end_time:datetime=None):
         subset_data = []
@@ -603,7 +673,7 @@ class StreamHandler():
 
         #Data Write loop
         for day, dps in outputdata.items():
-            filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
+            filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".gz"
             if len(dps)>0:
                 try:
                     if hdfs.exists(filename):
@@ -615,7 +685,9 @@ class StreamHandler():
                         dps = existing_data
                     dps = self.filter_sort_datapoints(dps)
                     with hdfs.open(filename, "wb") as f:
-                        pickle.dump(dps, f)
+                        dps = pickle.dumps(dps)
+                        dps = gzip.compress(dps)
+                        f.write(dps)
                     success = True
                 except Exception as ex:
                     # delete file if file was opened and no data was written to it
@@ -642,7 +714,7 @@ class StreamHandler():
             filename = self.filesystem_path+str(participant_id)+"/"+str(stream_id)
             if not os.path.exists(filename):
                 os.makedirs(filename, exist_ok=True)
-            filename = filename+"/"+str(day)+".pickle"
+            filename = filename+"/"+str(day)+".gz"
             if len(dps)>0:
                 try:
                     if os.path.exists(filename):
@@ -654,9 +726,9 @@ class StreamHandler():
                         dps = existing_data
                     dps = self.filter_sort_datapoints(dps)
                     with open(filename, "wb") as f:
-                        tmp = pickle.dumps(dps)
-                        f.write(tmp)
-                        tmp = None
+                        dps = pickle.dumps(dps)
+                        dps = gzip.compress(dps)
+                        f.write(dps)
                     success = True
                 except Exception as ex:
                     # delete file if file was opened and no data was written to it
