@@ -313,6 +313,11 @@ class StreamHandler():
 
     def subset_data(self, data, start_time:datetime=None, end_time:datetime=None):
         subset_data = []
+        if start_time.tzinfo is None or start_time.tzinfo =="":
+            start_time = start_time.replace(tzinfo=data[0].start_time.tzinfo)
+        if end_time.tzinfo is None or end_time.tzinfo =="":
+            end_time = end_time.replace(tzinfo=data[0].start_time.tzinfo)
+
         if start_time is not None and end_time is not None:
             for dp in data:
                 if dp.start_time>=start_time and dp.start_time<=end_time:

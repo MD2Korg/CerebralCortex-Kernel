@@ -93,7 +93,7 @@ class TestStreamHandler():
         data_len = []
         start_times = []
         end_times = []
-        start_time = parser.parse("2018-02-21 23:28:21.403000-06:00")
+        start_time = parser.parse("2018-02-21 23:28:21.403000")
         end_time = parser.parse("2018-02-21 23:28:24.133000-06:00")
         for day in self.days:
             ds = self.CC.get_stream(self.stream_id, self.owner_id, day)
