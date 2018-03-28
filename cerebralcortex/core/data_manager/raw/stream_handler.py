@@ -304,13 +304,8 @@ class StreamHandler():
                         with hdfs.open(gz_filename, "wb") as gzwrite:
                             gzwrite.write(compressed_data)
                     if hdfs.exists(filename):
-                        print("exists")
                         if hdfs.info(gz_filename)["size"]>0:
-                            try:
-                                print("gonna delete", filename)
-                                hdfs.delete(filename)
-                            except:
-                                print("error in deleting")
+                            hdfs.delete(filename)
                 except:
                     print("Error in generating gz file.")
                     # delete file if file was opened and no data was written to it
