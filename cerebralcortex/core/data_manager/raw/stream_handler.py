@@ -307,6 +307,7 @@ class StreamHandler():
                         if hdfs.info(gz_filename)["size"]>0:
                             hdfs.delete(filename)
                 except:
+                    print("Error in generating gz file.")
                     # delete file if file was opened and no data was written to it
                     if hdfs.info(gz_filename)["size"]==0:
                         hdfs.delete(gz_filename)
@@ -685,6 +686,7 @@ class StreamHandler():
                         with hdfs.open(filename, "rb") as curfile:
                             existing_data = curfile.read()
                     if existing_data is not None and existing_data!=b'':
+                        existing_data = gzip.decompress(existing_data)
                         existing_data = pickle.loads(existing_data)
                         dps.extend(existing_data)
                         dps = existing_data
@@ -726,6 +728,7 @@ class StreamHandler():
                         with open(filename, "rb") as curfile:
                             existing_data = curfile.read()
                     if existing_data is not None and existing_data!=b'':
+                        existing_data = gzip.decompress(existing_data)
                         existing_data = pickle.loads(existing_data)
                         dps.extend(existing_data)
                         dps = existing_data
