@@ -303,7 +303,7 @@ class StreamHandler():
                     if not hdfs.exists(gz_filename):
                         with hdfs.open(gz_filename, "wb") as gzwrite:
                             gzwrite.write(compressed_data)
-                    if not hdfs.exists(filename):
+                    if hdfs.exists(filename):
                         if hdfs.info(gz_filename)["size"]>0:
                             hdfs.delete(filename)
                 except:
