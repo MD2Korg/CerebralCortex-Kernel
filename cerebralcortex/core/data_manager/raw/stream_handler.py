@@ -176,7 +176,7 @@ class StreamHandler():
 
                 if data is not None and data!=b'':
                     clean_data = self.filter_sort_datapoints(data)
-                    self.compress_store_pickle(gz_filename, clean_data,hdfs)
+                    self.compress_store_pickle(filename, clean_data,hdfs)
                     clean_data = self.convert_to_localtime(clean_data, localtime)
                     day_start_time = datetime.fromtimestamp(day_start_time.timestamp(), clean_data[0].start_time.tzinfo)
                     day_end_time = datetime.fromtimestamp(day_end_time.timestamp(), clean_data[0].start_time.tzinfo)
