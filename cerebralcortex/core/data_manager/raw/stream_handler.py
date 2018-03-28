@@ -307,7 +307,7 @@ class StreamHandler():
                         print("exists")
                         if hdfs.info(gz_filename)["size"]>0:
                             try:
-                                print("gonna delete")
+                                print("gonna delete", filename)
                                 hdfs.delete(filename)
                             except:
                                 print("error in deleting")
