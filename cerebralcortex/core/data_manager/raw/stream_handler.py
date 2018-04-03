@@ -36,13 +36,12 @@ import traceback
 from cerebralcortex.core.util.datetime_helper_methods import get_timezone
 import os
 from cassandra.cluster import Cluster
-from cassandra.query import BatchStatement, SimpleStatement, BatchType
+from cassandra.query import BatchStatement, BatchType
 from cerebralcortex.core.util.data_types import serialize_obj
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.util.data_types import convert_sample, deserialize_obj
 from pytz import timezone as pytimezone
-from cerebralcortex.core.util.debuging_decorators import log_execution_time
 
 class DataSet(Enum):
     COMPLETE = 1,
@@ -588,7 +587,7 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    def save_stream(self, datastream: DataStream, localtime=True):
+    def save_stream(self, datastream: DataStream, localtime=False):
 
         """
         Saves datastream raw data in Cassandra and metadata in MySQL.
