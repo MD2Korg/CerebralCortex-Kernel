@@ -698,8 +698,8 @@ class StreamHandler():
                             f.write(dps)
                         except Exception as e:
                             print("Cannot write file to HDFS:", str(e))
-                    if hdfs.exists(filename.replace(".pickle", ".gz")):
-                        hdfs.delete(filename.replace(".pickle", ".gz"))
+                    # if hdfs.exists(filename.replace(".pickle", ".gz")):
+                    #     hdfs.delete(filename.replace(".pickle", ".gz"))
                     success = True
                 except Exception as ex:
                     # delete file if file was opened and no data was written to it
