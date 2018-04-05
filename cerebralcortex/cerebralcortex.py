@@ -44,8 +44,8 @@ from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
 class CerebralCortex:
     def __init__(self, configuration_filepath=None, timezone='UTC'):
 
-        if not configuration_filepath:
-            configuration_filepath = os.path.join(os.path.dirname(__file__), 'core/resources/cc_configuration.yml')
+        # if not configuration_filepath:
+        #     configuration_filepath = os.path.join(os.path.dirname(__file__), 'core/resources/cc_configuration.yml')
         self.config_filepath = configuration_filepath
         self.config = Configuration(configuration_filepath).config
         self.debug = self.config["cc"]["debug"]
@@ -386,7 +386,11 @@ class CerebralCortex:
         :param topic:
         :param msg:
         """
-        self.MessagingQueue.produce_message(topic, msg)
+        try:
+            self.MessagingQueue.produce_message(topic, msg)
+        except Exception as e:
+            raise Exception("Error publishing message. Topic: "+str(topic)+" - "+str(e))
+
 
     def kafka_subscribe_to_topic(self, topic: str, auto_offset_reset: str="largest"):
         """
