@@ -699,8 +699,9 @@ class StreamHandler():
                     success = True
                 except Exception as ex:
                     # delete file if file was opened and no data was written to it
-                    if hdfs.info(filename)["size"]==0:
-                        hdfs.delete(filename)
+                    if hdfs.exists(filename):
+                        if hdfs.info(filename)["size"]==0:
+                            hdfs.delete(filename)
                     self.logging.log(
                         error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
         return success

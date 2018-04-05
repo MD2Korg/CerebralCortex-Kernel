@@ -197,7 +197,7 @@ class FileToDB():
             all_data.clear()
 
             # mark day as processed in data_replay table
-            # self.sql_data.mark_processed_day(owner, stream_id, stream_day)
+            #self.sql_data.mark_processed_day(owner, stream_id, stream_day) # TODO: This should run only when data replay is being done
 
     # def write_hdfs_stream_file(self, participant_id, stream_id, filename, data):
     #     # Using libhdfs
