@@ -693,13 +693,9 @@ class StreamHandler():
                     with hdfs.open(filename, "wb") as f:
                         dps = pickle.dumps(dps)
                         dps = gzip.compress(dps)
-                        print(dps)
-                        try:
-                            f.write(dps)
-                        except Exception as e:
-                            print("Cannot write file to HDFS:", str(e))
-                    # if hdfs.exists(filename.replace(".pickle", ".gz")):
-                    #     hdfs.delete(filename.replace(".pickle", ".gz"))
+                        f.write(dps)
+                    if hdfs.exists(filename.replace(".gz", ".pickle")):
+                        hdfs.delete(filename.replace(".pickle", ".pickle"))
                     success = True
                 except Exception as ex:
                     # delete file if file was opened and no data was written to it
