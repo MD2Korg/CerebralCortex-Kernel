@@ -45,14 +45,14 @@ mysql:
 minio:
   host: 127.0.0.1
   port: 9000
-  access_key: 'eiyLwkdFUnCw2V48KiUR'
-  secret_key: '4W6gs8eyOEMmVIj1pBhc'
+  access_key: ''
+  secret_key: ''
   secure: False #ssl
 
 data_ingestion:
   influxdb_in: False
   nosql_in: True
-  nosql_store: "hdfs" # acceptable parameters are: cassandra, scylladb, hdfs, filesystem
+  nosql_store: "filesystem" # acceptable parameters are: cassandra, scylladb, hdfs, filesystem
   filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/data/test/" # in case of nosql_store=filesystem, provide directory path where data shall be stored
 
 influxdb_blacklist: # influxdb data ingestion pipeline will not process stream names defined here
@@ -139,7 +139,7 @@ routes:
 ###################### DATA REPLAY CONFIGS ##############################
 #########################################################################
 data_replay:
-  replay_type: "mydb" # acceptable parameters are filez OR mydb
+  replay_type: "filez" # acceptable parameters are filez OR mydb
   data_dir: "/home/ali/IdeaProjects/MD2K_DATA/data/mCerebrum_test_data/"
 
 users:

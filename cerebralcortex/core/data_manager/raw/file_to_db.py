@@ -64,6 +64,7 @@ class FileToDB():
         self.raw_files_dir = self.config['hdfs']['raw_files_dir']
 
         self.filesystem_path = self.config["data_ingestion"]["filesystem_path"]
+        self.data_play_type = self.config["data_replay"]["replay_type"]
 
         self.nosql_store = self.config["data_ingestion"]["nosql_store"]
         self.logging = CC.logging
@@ -126,16 +127,25 @@ class FileToDB():
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
         if influxdb_insert or nosql_insert:
-            for filename in filenames:
-                if os.path.exists(zip_filepath + filename):
-                    all_data = self.line_to_sample(zip_filepath + filename, stream_id, owner, owner_name, name, data_descriptor,
+            if self.data_play_type=="mydb":
+                for filename in filenames:
+                    if os.path.exists(zip_filepath + filename):
+                        all_data = self.line_to_sample(zip_filepath + filename, stream_id, owner, owner_name, name, data_descriptor,
+                                                       influxdb_insert, nosql_insert)
+                        if influxdb_insert:
+                            influxdb_data = influxdb_data+all_data["influxdb_data"]
+                        if nosql_insert:
+                            if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
+                                nosql_data.extend(all_data["nosql_data"])
+                                all_data["nosql_data"].clear()
+            else:
+                if os.path.exists(zip_filepath + str(filenames[0])):
+                    all_data = self.line_to_sample(zip_filepath + str(filenames[0]), stream_id, owner, owner_name, name, data_descriptor,
                                                    influxdb_insert, nosql_insert)
                     if influxdb_insert:
                         influxdb_data = influxdb_data+all_data["influxdb_data"]
                     if nosql_insert:
-                        if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
-                            nosql_data.extend(all_data["nosql_data"])
-                            all_data["nosql_data"].clear()
+                        nosql_data = all_data["nosql_data"]
 
             if (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="filesystem":
                 self.rawData.write_filesystem_day_file(owner, stream_id, nosql_data)

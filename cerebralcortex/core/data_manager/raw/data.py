@@ -55,3 +55,5 @@ class RawData(StreamHandler):
 
         self.nosql_store = self.config['data_ingestion']['nosql_store']
         self.filesystem_path = self.config["data_ingestion"]["filesystem_path"]
+        
+        self.data_play_type = self.config["data_replay"]["replay_type"]
