@@ -695,7 +695,7 @@ class StreamHandler():
                         dps = gzip.compress(dps)
                         f.write(dps)
                     if hdfs.exists(filename.replace(".gz", ".pickle")):
-                        hdfs.delete(filename.replace(".pickle", ".pickle"))
+                        hdfs.delete(filename.replace(".gz", ".pickle"))
                     success = True
                 except Exception as ex:
                     # delete file if file was opened and no data was written to it
