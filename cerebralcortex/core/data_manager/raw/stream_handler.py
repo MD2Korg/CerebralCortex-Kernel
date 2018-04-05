@@ -688,12 +688,14 @@ class StreamHandler():
                         existing_data = gzip.decompress(existing_data)
                         existing_data = pickle.loads(existing_data)
                         dps.extend(existing_data)
-                        dps = existing_data
+                        #dps = existing_data
                     dps = self.filter_sort_datapoints(dps)
                     with hdfs.open(filename, "wb") as f:
                         dps = pickle.dumps(dps)
                         dps = gzip.compress(dps)
                         f.write(dps)
+                    if hdfs.exists(filename.replace(".pickle", ".gz")):
+                        hdfs.delete(filename.replace(".pickle", ".gz"))
                     success = True
                 except Exception as ex:
                     # delete file if file was opened and no data was written to it
@@ -730,12 +732,14 @@ class StreamHandler():
                         existing_data = gzip.decompress(existing_data)
                         existing_data = pickle.loads(existing_data)
                         dps.extend(existing_data)
-                        dps = existing_data
+                        #dps = existing_data
                     dps = self.filter_sort_datapoints(dps)
                     with open(filename, "wb") as f:
                         dps = pickle.dumps(dps)
                         dps = gzip.compress(dps)
                         f.write(dps)
+                    if os.path.exists(filename.replace(".pickle", ".gz")):
+                        os.path.delete(filename.replace(".pickle", ".gz"))
                     success = True
                 except Exception as ex:
                     # delete file if file was opened and no data was written to it
