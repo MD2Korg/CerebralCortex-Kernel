@@ -688,7 +688,7 @@ class StreamHandler():
                         existing_data = gzip.decompress(existing_data)
                         existing_data = pickle.loads(existing_data)
                         dps.extend(existing_data)
-                        #dps = existing_data
+                        dps = existing_data
                     dps = self.filter_sort_datapoints(dps)
                     with hdfs.open(filename, "wb") as f:
                         dps = pickle.dumps(dps)
