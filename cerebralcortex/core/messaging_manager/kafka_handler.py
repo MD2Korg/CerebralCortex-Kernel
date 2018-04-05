@@ -38,8 +38,8 @@ class KafkaHandler():
         try:
             self.producer.send(topic, msg)
             self.producer.flush()
-        except:
-            print("Error publishing message. Topic: "+str(topic)+" - "+str(msg))
+        except Exception as e:
+            print("Error publishing message. Topic: "+str(topic)+" - "+str(e))
 
     def subscribe_to_topic(self, topic: str):
         """
