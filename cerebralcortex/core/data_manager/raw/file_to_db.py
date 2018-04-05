@@ -100,6 +100,8 @@ class FileToDB():
         else:
             metadata_header = msg["metadata"]
 
+        stream_day = None
+
         stream_id = metadata_header["identifier"]
         owner = metadata_header["owner"]
         name = metadata_header["name"]
@@ -115,7 +117,8 @@ class FileToDB():
             stream_type = StreamTypes.DATASTREAM
 
         owner_name = self.sql_data.get_user_name(owner)
-        stream_day = msg["day"]
+        if "day" in msg:
+            stream_day = msg["day"]
         if isinstance(msg["filename"], str):
             filenames = msg["filename"].split(",")
         else:
@@ -123,7 +126,7 @@ class FileToDB():
         influxdb_data = ""
         nosql_data = []
         all_data = []
-        print("PROCESSING (owner, stream, day): ", owner, stream_id, stream_day)
+        print("PROCESSING (owner, stream, day): ", owner, stream_id)
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
         if influxdb_insert or nosql_insert:
@@ -194,7 +197,7 @@ class FileToDB():
             all_data.clear()
 
             # mark day as processed in data_replay table
-            self.sql_data.mark_processed_day(owner, stream_id, stream_day)
+            # self.sql_data.mark_processed_day(owner, stream_id, stream_day)
 
     # def write_hdfs_stream_file(self, participant_id, stream_id, filename, data):
     #     # Using libhdfs
