@@ -45,7 +45,7 @@ class RawData(StreamHandler):
         self.keyspace_name = self.config['cassandra']['keyspace']
         self.datapoint_table = self.config['cassandra']['datapoint_table']
         self.batch_size = 64500
-        self.sample_group_size = 99
+        self.sample_group_size = 0 # disabled batching in row
 
         self.hdfs_ip = self.config['hdfs']['host']
         self.hdfs_port = self.config['hdfs']['port']

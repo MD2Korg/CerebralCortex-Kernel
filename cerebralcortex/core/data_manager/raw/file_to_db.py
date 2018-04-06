@@ -197,7 +197,8 @@ class FileToDB():
             all_data.clear()
 
             # mark day as processed in data_replay table
-            #self.sql_data.mark_processed_day(owner, stream_id, stream_day) # TODO: This should run only when data replay is being done
+            if self.data_play_type=="mydb":
+                self.sql_data.mark_processed_day(owner, stream_id, stream_day)
 
     # def write_hdfs_stream_file(self, participant_id, stream_id, filename, data):
     #     # Using libhdfs
@@ -324,10 +325,11 @@ class FileToDB():
                         start_time = int(ts) / 1000.0
                         offset = int(offset)
                         # TODO: improve the performance of sample parsing
-                        if influxdb_insert==True and stream_name not in blacklist_streams and line_count<self.influx_day_datapoints_limit:
+                        if nosql_insert==True:
                             values = convert_sample(sample, stream_name)
-                        elif nosql_insert==True:
+                        elif influxdb_insert==True and stream_name not in blacklist_streams and line_count<self.influx_day_datapoints_limit:
                             values = convert_sample(sample, stream_name)
+
 
                         ############### START INFLUXDB BLOCK
                         if influxdb_insert and line_count<self.influx_day_datapoints_limit:
