@@ -32,8 +32,11 @@ import os
 import os.path
 import pyarrow
 import pickle
-from cassandra.cluster import Cluster
-from cassandra.query import BatchStatement, BatchType
+try:
+    from cassandra.cluster import Cluster
+    from cassandra.query import BatchStatement, BatchType
+except ImportError:
+    pass
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
 from influxdb import InfluxDBClient
