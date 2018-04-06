@@ -72,7 +72,7 @@ class CerebralCortex:
         """
         self.RawData.save_stream(datastream, localtime)
 
-    def get_stream(self, stream_id: uuid, user_id: uuid, day:str, start_time: datetime = None, end_time: datetime = None, localtime:bool=True,
+    def get_stream(self, stream_id: uuid, user_id: uuid, day:str, start_time: datetime = None, end_time: datetime = None, localtime:bool=False,
                    data_type=DataSet.COMPLETE) -> DataStream:
         """
 
