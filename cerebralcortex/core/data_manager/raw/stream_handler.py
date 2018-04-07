@@ -35,11 +35,8 @@ from typing import List
 import traceback
 from cerebralcortex.core.util.datetime_helper_methods import get_timezone
 import os
-try:
-    from cassandra.cluster import Cluster
-    from cassandra.query import BatchStatement, BatchType
-except ImportError:
-    pass
+from cassandra.cluster import Cluster
+from cassandra.query import BatchStatement, BatchType
 from cerebralcortex.core.util.data_types import serialize_obj
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.datastream import DataStream

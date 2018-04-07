@@ -31,12 +31,10 @@ import gzip
 import os
 import os.path
 import pyarrow
-import pickle
-try:
-    from cassandra.cluster import Cluster
-    from cassandra.query import BatchStatement, BatchType
-except ImportError:
-    pass
+
+
+from cassandra.cluster import Cluster
+from cassandra.query import BatchStatement, BatchType
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
 from influxdb import InfluxDBClient
