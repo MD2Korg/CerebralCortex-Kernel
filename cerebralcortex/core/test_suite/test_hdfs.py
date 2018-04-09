@@ -26,7 +26,7 @@
 import json
 import unittest
 from datetime import datetime
-
+import argparse
 import yaml
 from dateutil import parser
 
@@ -65,8 +65,8 @@ class TestStreamHandler():
             self.CC.save_stream(ds)
 
     def test02_get_stream(self):
-        data = self.CC.get_stream(self.stream_id, self.owner_id, self.days[1]).data
-        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000-06:00"), data[0].start_time)
+        data = self.CC.get_stream(self.stream_id, self.owner_id, self.days[1], localtime=True).data
+        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000-06:00"), data[0].start_time)
 
         # using timedelta, this test will fail
         dt = datetime.utcfromtimestamp(1509407912.633)
@@ -77,15 +77,15 @@ class TestStreamHandler():
         self.assertEqual(1509407912.633, dp_utc[0].start_time.timestamp())
 
         # timedelta approach to convert time to local time
-        data = self.CC.get_stream(self.stream_id, self.owner_id, self.days[1]).data
+        data = self.CC.get_stream(self.stream_id, self.owner_id, self.days[1], localtime=True).data
         data_local = self.CC.RawData.convert_to_localtime(data, True)
-        data_utc = self.CC.get_stream(self.stream_id, self.owner_id, self.days[1]).data
+        data_utc = self.CC.get_stream(self.stream_id, self.owner_id, self.days[0], localtime=False).data
         data_utc = self.CC.RawData.convert_to_localtime(data_utc, False)
-        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000-06:00"), data_local[0].start_time)
-        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000+00:00"), data_utc[0].start_time)
+        self.assertEqual(parser.parse("2018-02-22 15:14:51.133000-06:00"), data_local[0].start_time)
+        self.assertEqual(parser.parse("2018-02-21 23:28:21.133000+00:00"), data_utc[0].start_time)
 
         data = self.CC.RawData.convert_to_UTCtime(data)
-        self.assertEqual(parser.parse("2018-02-23 03:14:51.133000+00:00"), data[0].start_time)
+        self.assertEqual(parser.parse("2018-02-22 21:14:51.133000+00:00"), data[0].start_time)
 
         print("done")
 
@@ -93,10 +93,10 @@ class TestStreamHandler():
         data_len = []
         start_times = []
         end_times = []
-        start_time = parser.parse("2018-02-21 23:28:21.403000")
-        end_time = parser.parse("2018-02-21 23:28:24.133000-06:00")
+        start_time = parser.parse("2018-02-21 17:28:21.163000-06:00")
+        end_time = parser.parse("2018-02-21 17:28:24.083000-06:00")
         for day in self.days:
-            ds = self.CC.get_stream(self.stream_id, self.owner_id, day)
+            ds = self.CC.get_stream(self.stream_id, self.owner_id, day, localtime=True)
             data_len.append(len(ds.data))
             if len(ds.data) > 0:
                 start_times.append(ds.data[0].start_time)
@@ -104,22 +104,22 @@ class TestStreamHandler():
 
         # test start/end time of datapoints
         self.assertEqual(data_len, [3999, 999, 5001])
-        expected_start_times = [parser.parse("2018-02-21 23:28:21.133000-06:00"),
-                                parser.parse("2018-02-23 03:14:51.133000-06:00"),
-                                parser.parse("2018-02-24 07:01:41.123000-06:00")]
-        expected_end_times = [parser.parse("2018-02-21 23:29:01.113000-06:00"),
-                              parser.parse("2018-02-23 03:15:01.113000-06:00"),
-                              parser.parse("2018-02-24 07:03:11.113000-06:00")]
+        expected_start_times = [parser.parse("2018-02-21 17:28:21.133000-06:00"),
+                                parser.parse("2018-02-22 21:14:51.133000-06:00"),
+                                parser.parse("2018-02-24 01:01:41.123000-06:00")]
+        expected_end_times = [parser.parse("2018-02-21 17:29:01.113000-06:00"),
+                              parser.parse("2018-02-22 21:15:01.113000-06:00"),
+                              parser.parse("2018-02-24 01:03:11.113000-06:00")]
         self.assertEqual(start_times, expected_start_times)
         self.assertEqual(end_times, expected_end_times)
 
         # test sub-set of stream
-        ds = self.CC.get_stream(self.stream_id, self.owner_id, self.days[0], start_time, end_time)
+        ds = self.CC.get_stream(self.stream_id, self.owner_id, self.days[0], start_time, end_time, localtime=True)
         if self.CC.config["data_ingestion"]["nosql_store"] == "hdfs" or self.CC.config["data_ingestion"][
             "nosql_store"] == "filesystem":
-            self.assertEqual(len(ds.data), 274)
-            self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-21 23:28:21.403000-06:00"))
-            self.assertEqual(ds.data[len(ds.data) - 1].start_time, parser.parse("2018-02-21 23:28:24.133000-06:00"))
+            self.assertEqual(len(ds.data), 293)
+            self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-21 17:28:21.163000-06:00"))
+            self.assertEqual(ds.data[len(ds.data) - 1].start_time, parser.parse("2018-02-21 17:28:24.083000-06:00"))
         else:
             self.assertEqual(len(ds.data), 600)
             self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-23 03:14:52.133000-06:00"))
@@ -169,7 +169,7 @@ class TestStreamHandler():
                         self.metadata["execution_context"], self.metadata["annotations"], self.metadata["type"], None,
                         None, dps)
         self.CC.save_stream(ds, localtime=False)
-        local_data = self.CC.get_stream(self.stream_id, self.owner_id, "20180102").data
+        local_data = self.CC.get_stream(self.stream_id, self.owner_id, "20180102", localtime=True).data
         utc_data = self.CC.get_stream(self.stream_id, self.owner_id, "20180102", localtime=False).data
         self.assertEqual(len(local_data), 3)
         self.assertEqual(local_data[0].start_time, parser.parse("2018-01-02 16:17:16.179000-05:00"))
@@ -182,13 +182,22 @@ class TestStreamHandler():
 
 class TestHDFS(unittest.TestCase, TestStreamHandler):
     def setUp(self):
-        with open("resources/cc_test_configuration.yml") as test_conf:
+        # parser = argparse.ArgumentParser('Test suite for CerebralCortex')
+        # parser.add_argument("-c", "--config_filepath", help="CC Configuration file path", required=True)
+        # parser.add_argument("-tc", "--test_config_filepath", help="CC test suite congiguration path",required=True)
+        #
+        # args = vars(parser.parse_args())
+
+        test_config_filepath = "resources/cc_test_configuration.yml"#args["test_config_filepath"]
+        config_filepath ="../resources/cc_configuration.yml" #args["config_filepath"]
+
+        with open(test_config_filepath) as test_conf:
             test_conf = yaml.load(test_conf)
 
         with open(test_conf["sample_data"]["data_folder"] + test_conf["sample_data"]["json_file"], "r") as md:
             self.metadata = json.loads(md.read())
 
-        self.CC = CerebralCortex()
+        self.CC = CerebralCortex(config_filepath)
         self.cc_conf = self.CC.config
 
         self.owner_id = self.metadata["owner"]
@@ -196,8 +205,12 @@ class TestHDFS(unittest.TestCase, TestStreamHandler):
         self.stream_name = self.metadata["name"]
         self.test_data_folder = test_conf["sample_data"]["data_folder"]
         self.gz_file = self.test_data_folder + test_conf["sample_data"]["gz_file"]
-        self.days = ["20180221", "20180223", "20180224"]
+        self.days = ["20180221", "20180222", "20180224"]
 
         # generate sample raw data file
         self.data = gen_raw_data(self.gz_file, 10000, True, "float")
         print("done")
+
+if __name__=='__main__':
+    print("wowooooooooooooooooooooooooooooooooooooooooo")
+    unittest.main()
