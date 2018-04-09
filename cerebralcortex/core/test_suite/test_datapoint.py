@@ -26,11 +26,11 @@
 
 from dateutil import parser
 import unittest
+from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
 
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 
 class TestDataPoints(unittest.TestCase):
-
 
     def test_01_simple_parsing(self):
         dps = []
@@ -41,21 +41,8 @@ class TestDataPoints(unittest.TestCase):
         dps.append(DataPoint(parser.parse("2018-02-21 23:28:23"), None, -21600000, [1,3]))
         dps.append(DataPoint(parser.parse("2018-02-21 23:28:24"), None, -21600000, [1,4]))
 
-
-        #unique_dps = list(set(dps))
-        clean_data = self.dedup(sorted(dps))
-        #unique_dps = set(dps)
-
-        print(len(clean_data),len(dps))
-        return clean_data
-
-    def dedup(self, data):
-        result = [data[0]]
-        for l in data[1:]:
-            if l.start_time == result[-1].start_time:
-                continue
-            result.append(l)
-
-        return result
-if __name__ == '__main__':
-    unittest.main()
+        clean_data = StreamHandler.dedup("",sorted(dps))
+        self.assertEqual(clean_data[0],dps[0])
+        self.assertEqual(clean_data[1],dps[3])
+        self.assertEqual(clean_data[2],dps[1])
+        self.assertEqual(clean_data[3],dps[5])

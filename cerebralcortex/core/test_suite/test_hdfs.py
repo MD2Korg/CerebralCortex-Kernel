@@ -209,8 +209,3 @@ class TestHDFS(unittest.TestCase, TestStreamHandler):
 
         # generate sample raw data file
         self.data = gen_raw_data(self.gz_file, 10000, True, "float")
-        print("done")
-
-if __name__=='__main__':
-    print("wowooooooooooooooooooooooooooooooooooooooooo")
-    unittest.main()
