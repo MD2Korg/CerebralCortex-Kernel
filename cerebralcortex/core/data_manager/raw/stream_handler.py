@@ -156,7 +156,7 @@ class StreamHandler():
 
     def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None, localtime:bool=True):
         # Using libhdfs,
-
+        hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         data = None
 
         if localtime:
@@ -165,17 +165,23 @@ class StreamHandler():
             day_end_time = day_start_time + timedelta(hours=24)
             day_block = []
             for d in days:
-                hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+
                 filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(d)+".pickle"
                 gz_filename = filename.replace(".pickle", ".gz")
                 data = None
                 if hdfs.exists(filename):
-                    with hdfs.open(filename, "rb") as curfile:
-                        data = curfile.read()
+                    try:
+                        with hdfs.open(filename, "rb") as curfile:
+                            data = curfile.read()
+                    except Exception as e:
+                        print("Pickle file:", filename, str(e))
                 elif hdfs.exists(gz_filename):
-                    with hdfs.open(gz_filename, "rb") as curfile:
-                        data = curfile.read()
-                        data = gzip.decompress(data)
+                    try:
+                        with hdfs.open(gz_filename, "rb") as curfile:
+                            data = curfile.read()
+                            data = gzip.decompress(data)
+                    except:
+                        print("GZ file:", gz_filename, str(e))
 
                 if data is not None and data!=b'':
                     clean_data = self.filter_sort_datapoints(data)
@@ -189,7 +195,6 @@ class StreamHandler():
                 day_block = self.subset_data(day_block, start_time, end_time)
             return day_block
         else:
-            hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
             filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
             gz_filename = filename.replace(".pickle", ".gz")
             data = None
