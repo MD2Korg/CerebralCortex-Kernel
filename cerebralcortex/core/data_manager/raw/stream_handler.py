@@ -156,7 +156,7 @@ class StreamHandler():
 
     def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None, localtime:bool=True):
         # Using libhdfs,
-        hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+
         data = None
 
         if localtime:
@@ -165,6 +165,7 @@ class StreamHandler():
             day_end_time = day_start_time + timedelta(hours=24)
             day_block = []
             for d in days:
+                hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
                 filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(d)+".pickle"
                 gz_filename = filename.replace(".pickle", ".gz")
                 data = None
@@ -188,6 +189,7 @@ class StreamHandler():
                 day_block = self.subset_data(day_block, start_time, end_time)
             return day_block
         else:
+            hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
             filename = self.raw_files_dir+str(owner_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
             gz_filename = filename.replace(".pickle", ".gz")
             data = None
@@ -284,11 +286,13 @@ class StreamHandler():
         """
         gz_filename = filename.replace(".pickle", ".gz")
         if len(data)>0:
-            data = pickle.dumps(data)
-            compressed_data = gzip.compress(data)
+
             if hdfs is None:
                 try:
                     if not os.path.exists(gz_filename):
+                        # moved inside if condition so if exist do not even pickle/compress
+                        data = pickle.dumps(data)
+                        compressed_data = gzip.compress(data)
                         with open(gz_filename, "wb") as gzwrite:
                             gzwrite.write(compressed_data)
                     if os.path.exists(filename):
@@ -301,6 +305,9 @@ class StreamHandler():
             else:
                 try:
                     if not hdfs.exists(gz_filename):
+                        # moved inside if condition so if exist do not even pickle/compress
+                        data = pickle.dumps(data)
+                        compressed_data = gzip.compress(data)
                         with hdfs.open(gz_filename, "wb") as gzwrite:
                             gzwrite.write(compressed_data)
                     if hdfs.exists(filename):
