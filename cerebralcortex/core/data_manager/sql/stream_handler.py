@@ -188,7 +188,7 @@ class StreamHandler():
         else:
             return rows[0]["username"]
         
-    def is_user(self, user_id: uuid=None, user_name:uuid=None) -> str:
+    def is_user(self, user_id: uuid=None, user_name:uuid=None) -> bool:
         """
 
         :param user_id:
