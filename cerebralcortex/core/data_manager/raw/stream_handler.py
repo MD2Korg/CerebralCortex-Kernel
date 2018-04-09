@@ -67,35 +67,38 @@ class StreamHandler():
         :param data_type:
         :return:
         """
-        if stream_id is None or day is None or owner_id is None:
+        if stream_id is None or day is None:
             return []
         
         # query datastream(mysql) for metadata
         datastream_metadata = self.sql_data.get_stream_metadata(stream_id)
-
-        if data_type == DataSet.COMPLETE:
-            if self.nosql_store=="hdfs":
-                dps = self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
-            elif self.nosql_store=="filesystem":
-                dps =  self.read_filesystem_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
+        if len(datastream_metadata)>0:
+            owner_id = datastream_metadata[0]["owner"]
+            if data_type == DataSet.COMPLETE:
+                if self.nosql_store=="hdfs":
+                    dps = self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
+                elif self.nosql_store=="filesystem":
+                    dps =  self.read_filesystem_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
+                else:
+                    dps = self.load_cassandra_data(stream_id, day, start_time, end_time)
+                stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps, localtime)
+            elif data_type == DataSet.ONLY_DATA:
+                if self.nosql_store=="hdfs":
+                    return self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
+                elif self.nosql_store=="filesystem":
+                    return self.read_filesystem_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
+                else:
+                    return self.load_cassandra_data(stream_id,day, start_time, end_time)
+            elif data_type == DataSet.ONLY_METADATA:
+                stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, None)
             else:
-                dps = self.load_cassandra_data(stream_id, day, start_time, end_time)
-            stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps, localtime)
-        elif data_type == DataSet.ONLY_DATA:
-            if self.nosql_store=="hdfs":
-                return self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
-            elif self.nosql_store=="filesystem":
-                return self.read_filesystem_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
-            else:
-                return self.load_cassandra_data(stream_id,day, start_time, end_time)
-        elif data_type == DataSet.ONLY_METADATA:
-            stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, None)
+                self.logging.log(
+                    error_message="STREAM ID: " + stream_id + "Failed to get data stream. Invalid type parameter.",
+                    error_type=self.logtypes.DEBUG)
+                return None
+            return stream
         else:
-            self.logging.log(
-                error_message="STREAM ID: " + stream_id + "Failed to get data stream. Invalid type parameter.",
-                error_type=self.logtypes.DEBUG)
-            return None
-        return stream
+            return DataStream()
 
     def map_datapoint_and_metadata_to_datastream(self, stream_id: int, datastream_info: dict,
                                                  data: object, localtime:bool=True) -> DataStream:
@@ -105,7 +108,6 @@ class StreamHandler():
         :param data: list
         :return: datastream object
         """
-
         try:
             ownerID = datastream_info[0]["owner"]
             name = datastream_info[0]["name"]
@@ -125,6 +127,7 @@ class StreamHandler():
             self.logging.log(
                 error_message="STREAM ID: " + stream_id + " - Error in mapping datapoints and metadata to datastream. " + str(
                     traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+
 
     # def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None, localtime:bool=True):
     #     # Using libhdfs,
@@ -306,8 +309,9 @@ class StreamHandler():
                 except:
                     print("Error in generating gz file.")
                     # delete file if file was opened and no data was written to it
-                    if hdfs.info(gz_filename)["size"]==0:
-                        hdfs.delete(gz_filename)
+                    if hdfs.exists(gz_filename):
+                        if hdfs.info(gz_filename)["size"]==0:
+                            hdfs.delete(gz_filename)
 
     def subset_data(self, data, start_time:datetime=None, end_time:datetime=None):
         subset_data = []

@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
+import warnings
 import uuid
 from datetime import datetime
 from typing import List
@@ -72,7 +72,7 @@ class CerebralCortex:
         """
         self.RawData.save_stream(datastream, localtime)
 
-    def get_stream(self, stream_id: uuid, user_id: uuid, day:str, start_time: datetime = None, end_time: datetime = None, localtime:bool=False,
+    def get_stream(self, stream_id: uuid, user_id: uuid=None, day:str=None, start_time: datetime = None, end_time: datetime = None, localtime:bool=False,
                    data_type=DataSet.COMPLETE) -> DataStream:
         """
 
@@ -83,6 +83,7 @@ class CerebralCortex:
         :param data_type:
         :return:
         """
+        warnings.warn("user_id is not a required parameter. This will be removed in CerebralCortex 3.0 version.", PendingDeprecationWarning)
         return self.RawData.get_stream(stream_id, user_id, day, start_time, end_time, localtime, data_type)
 
     def get_stream_samples(self, stream_id, day, start_time=None, end_time=None) -> List[DataPoint]:

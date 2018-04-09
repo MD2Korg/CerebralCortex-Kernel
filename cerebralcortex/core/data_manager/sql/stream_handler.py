@@ -25,6 +25,7 @@
 
 import json
 import uuid
+import re
 from datetime import datetime
 from typing import List
 import traceback
@@ -452,15 +453,26 @@ class StreamHandler():
         for btm in blacklist_regex["txt_match"]:
             like_cols += '%s not like "%s" and ' % ("stream_name", blacklist_regex["txt_match"][btm])
 
-        qry = "SELECT day, files_list, metadata from "+self.dataReplayTable+" where " + regex_cols +" "+like_cols+"  processed=0"
-        rows = self.execute(qry)
-        msgs = []
-        if len(rows)>0:
-            for row in rows:
-                if len(msgs)>int(record_limit):
-                    yield msgs
-                    msgs = []
-                msgs.append({"metadata": json.loads(row["metadata"]), "day":row["day"], "filename":json.loads(row["files_list"])})
-            yield msgs
+        if regex_cols!="" and like_cols!="":
+            qry = "SELECT day, files_list, metadata from "+self.dataReplayTable+" where " + regex_cols +" "+like_cols+"  processed=0"
+        elif regex_cols!="" and like_cols=="":
+            qry = "SELECT day, files_list, metadata from "+self.dataReplayTable+" where " + re.sub("and $", "", regex_cols)+"  processed=0"
+        elif regex_cols=="" and like_cols!="":
+            qry = "SELECT day, files_list, metadata from "+self.dataReplayTable+" where " + re.sub("and $", "", like_cols)+"  processed=0"
+        else:
+            qry = ""
+
+        if qry!="":
+            rows = self.execute(qry)
+            msgs = []
+            if len(rows)>0:
+                for row in rows:
+                    if len(msgs)>int(record_limit):
+                        yield msgs
+                        msgs = []
+                    msgs.append({"metadata": json.loads(row["metadata"]), "day":row["day"], "filename":json.loads(row["files_list"])})
+                yield msgs
+            else:
+                yield []
         else:
             yield []

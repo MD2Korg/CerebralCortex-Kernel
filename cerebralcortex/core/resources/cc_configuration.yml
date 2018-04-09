@@ -53,7 +53,7 @@ data_ingestion:
   influxdb_in: False
   nosql_in: True
   nosql_store: "filesystem" # acceptable parameters are: cassandra, scylladb, hdfs, filesystem
-  filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/data/test/" # in case of nosql_store=filesystem, provide directory path where data shall be stored
+  filesystem_path: "/vagrant/" # in case of nosql_store=filesystem, provide directory path where data shall be stored
 
 influxdb_blacklist: # influxdb data ingestion pipeline will not process stream names defined here
   ibl1: "ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST"
@@ -139,7 +139,7 @@ routes:
 ###################### DATA REPLAY CONFIGS ##############################
 #########################################################################
 data_replay:
-  replay_type: "filez" # acceptable parameters are filez OR mydb
+  replay_type: "filez" # acceptable parameters are kfka (i.e., using Kafka messaging queue) OR mydb (i.e., files/dirs stored in MySQL)
   data_dir: "/home/ali/IdeaProjects/MD2K_DATA/data/mCerebrum_test_data/"
 
 users:
