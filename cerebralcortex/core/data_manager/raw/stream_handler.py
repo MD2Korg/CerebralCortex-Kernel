@@ -170,18 +170,12 @@ class StreamHandler():
                 gz_filename = filename.replace(".pickle", ".gz")
                 data = None
                 if hdfs.exists(filename):
-                    try:
-                        with hdfs.open(filename, "rb") as curfile:
-                            data = curfile.read()
-                    except Exception as e:
-                        print("Pickle file:", filename, str(e))
+                    with hdfs.open(filename, "rb") as curfile:
+                        data = curfile.read()
                 elif hdfs.exists(gz_filename):
-                    try:
-                        with hdfs.open(gz_filename, "rb") as curfile:
-                            data = curfile.read()
-                            data = gzip.decompress(data)
-                    except:
-                        print("GZ file:", gz_filename, str(e))
+                    with hdfs.open(gz_filename, "rb") as curfile:
+                        data = curfile.read()
+                        data = gzip.decompress(data)
 
                 if data is not None and data!=b'':
                     clean_data = self.filter_sort_datapoints(data)
@@ -678,7 +672,6 @@ class StreamHandler():
         """
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
-        existing_data = None
         outputdata = {}
         success = False
 
@@ -692,6 +685,7 @@ class StreamHandler():
 
         #Data Write loop
         for day, dps in outputdata.items():
+            existing_data = None
             filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".gz"
             if len(dps)>0:
                 try:

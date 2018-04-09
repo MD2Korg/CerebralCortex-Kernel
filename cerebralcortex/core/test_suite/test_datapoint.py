@@ -32,7 +32,11 @@ from cerebralcortex.core.datatypes.datapoint import DataPoint
 
 class TestDataPoints(unittest.TestCase):
 
-    def test_01_simple_parsing(self):
+    def test_01_sort_dedup(self):
+        """
+        Duplication removal and sort of a DataPoint list
+        :return:
+        """
         dps = []
         dps.append(DataPoint(parser.parse("2018-02-21 23:28:21"), None, -21600000, [2,2]))
         dps.append(DataPoint(parser.parse("2018-02-21 23:28:23"), None, -21600000, [3,3]))
