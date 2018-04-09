@@ -44,8 +44,6 @@ from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
 class CerebralCortex:
     def __init__(self, configuration_filepath=None, timezone='UTC'):
 
-        # if not configuration_filepath:
-        #     configuration_filepath = os.path.join(os.path.dirname(__file__), 'core/resources/cc_configuration.yml')
         self.config_filepath = configuration_filepath
         self.config = Configuration(configuration_filepath).config
         self.debug = self.config["cc"]["debug"]
