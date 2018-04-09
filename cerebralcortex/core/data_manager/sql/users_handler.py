@@ -62,7 +62,6 @@ class UserHandler():
 
         rows = self.execute(qry, vals)
         if len(rows) == 0:
-            print("No record found - get_user_metadata.")
             return []
         else:
             return rows["user_metadata"]
@@ -83,7 +82,6 @@ class UserHandler():
             user_uuid = rows[0]["identifier"]
             return user_uuid
         else:
-            print("No record found - get_user_uuid")
             return ""
 
     def login_user(self, username: str, password: str) -> bool:
@@ -101,7 +99,6 @@ class UserHandler():
 
         rows = self.execute(qry, vals)
         if len(rows) == 0:
-            print("No record found - login_user")
             return False
         else:
             return True

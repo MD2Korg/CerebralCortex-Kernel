@@ -197,7 +197,6 @@ class StreamHandler():
                         data = curfile.read()
                         data = gzip.decompress(data)
                 else:
-                    print(filename.replace("pickle",""), "does not exist.")
                     return []
                 if data is not None and data!=b'':
                     clean_data = self.filter_sort_datapoints(data)
@@ -258,7 +257,6 @@ class StreamHandler():
                         data = curfile.read()
                         data = gzip.decompress(data)
                 else:
-                    print(filename.replace("pickle",""), "does not exist.")
                     return []
                 if data is not None and data!=b'':
                     clean_data = self.filter_sort_datapoints(data)
