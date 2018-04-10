@@ -23,6 +23,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from typing import List
+import json
 
 class KafkaHandler():
 
@@ -41,17 +43,16 @@ class KafkaHandler():
         except Exception as e:
             raise Exception("Error publishing message. Topic: "+str(topic)+" - "+str(e))
 
-    def subscribe_to_topic(self, topic: str, auto_offset_reset: str="largest"):
+    def subscribe_to_topic(self, topic: str)->dict:
         """
 
         :param topic:
         :param auto_offset_reset - smallest (start of the topic) OR largest (end of a topic)
         """
-
+        msgs = []
         if not topic:
             raise ValueError("Topic parameter is missing.")
 
         self.consumer.subscribe(topic)
-        for message in self.consumer:
-            # json.loads(message.value.decode('utf8').replace("'", '"'))
-            return message
+        for message in self.consumer: #TODO: this is a test-code.
+            yield json.loads(message.value.decode('utf8'))

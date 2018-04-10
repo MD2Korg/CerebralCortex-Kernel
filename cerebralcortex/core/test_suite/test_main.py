@@ -43,7 +43,7 @@ class TestCerebralCortex(unittest.TestCase, TestKafkaMessaging):
         with open(test_conf["sample_data"]["data_folder"] + test_conf["sample_data"]["json_file"], "r") as md:
             self.metadata = json.loads(md.read())
 
-        self.CC = CerebralCortex(config_filepath)
+        self.CC = CerebralCortex(config_filepath, auto_offset_reset="smallest")
         self.cc_conf = self.CC.config
 
         self.owner_id = self.metadata["owner"]

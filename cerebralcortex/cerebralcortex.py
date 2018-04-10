@@ -42,7 +42,7 @@ from cerebralcortex.core.data_manager.raw.data import RawData
 from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
 
 class CerebralCortex:
-    def __init__(self, configuration_filepath=None, timezone='UTC'):
+    def __init__(self, configuration_filepath=None, timezone='UTC', auto_offset_reset="largest"):
 
         self.config_filepath = configuration_filepath
         self.config = Configuration(configuration_filepath).config
@@ -56,7 +56,7 @@ class CerebralCortex:
         self.TimeSeriesData = TimeSeriesData(self)
         self.FileIO = FileIO()
         #TODO: disabled because uwsgi losses connection, need more investigation
-        self.MessagingQueue = MessagingQueue(self)
+        self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
 
         #self.logging.log(error_message="Object created: ", error_type=self.logtypes.DEBUG)
 
@@ -391,10 +391,10 @@ class CerebralCortex:
             raise Exception("Error publishing message. Topic: "+str(topic)+" - "+str(e))
 
 
-    def kafka_subscribe_to_topic(self, topic: str, auto_offset_reset: str="largest"):
+    def kafka_subscribe_to_topic(self, topic: str):
         """
 
         :param topic:
         :param auto_offset_reset:
         """
-        return self.MessagingQueue.subscribe_to_topic(topic, auto_offset_reset)
+        return self.MessagingQueue.subscribe_to_topic(topic)

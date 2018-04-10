@@ -24,15 +24,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import json
-import os
-import unittest
-from dateutil import parser
-from datetime import datetime
-from cerebralcortex.core.file_manager.file_io import FileIO
-from cerebralcortex.core.data_manager.raw.file_to_db import FileToDB
-from cerebralcortex.cerebralcortex import CerebralCortex
-
 class TestKafkaMessaging():
 
     test_topic_name = "test_topic"
@@ -40,17 +31,12 @@ class TestKafkaMessaging():
 
     def test_01_produce_message(self):
         try:
-            pass
-            #self.CC.kafka_produce_message(self.test_topic_name, self.test_message)
+            self.CC.kafka_produce_message(self.test_topic_name, self.test_message)
         except Exception as e:
             print(e)
             raise
 
     def test_02_consume_message(self):
-        msg = self.CC.kafka_subscribe_to_topic(self.test_topic_name, auto_offset_reset="smallest")
-        print(msg)
-
-
-
-if __name__ == '__main__':
-    unittest.main()
+        for msg in self.CC.kafka_subscribe_to_topic(self.test_topic_name):
+            self.assertEqual(msg, self.test_message)
+            break
