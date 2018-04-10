@@ -182,8 +182,8 @@ class StreamHandler():
                     clean_data = self.filter_sort_datapoints(data)
                     self.compress_store_pickle(filename, clean_data,hdfs)
                     clean_data = self.convert_to_localtime(clean_data, localtime)
-                    day_start_time = datetime.fromtimestamp(day_start_time.timestamp(), clean_data[0].start_time.tzinfo)
-                    day_end_time = datetime.fromtimestamp(day_end_time.timestamp(), clean_data[0].start_time.tzinfo)
+                    #day_start_time = datetime.fromtimestamp(day_start_time.timestamp(), clean_data[0].start_time.tzinfo)
+                    #day_end_time = datetime.fromtimestamp(day_end_time.timestamp(), clean_data[0].start_time.tzinfo)
                     day_block.extend(self.subset_data(clean_data, day_start_time, day_end_time))
             day_block = self.filter_sort_datapoints(day_block)
             if start_time is not None or end_time is not None:
@@ -243,8 +243,8 @@ class StreamHandler():
                     clean_data = self.filter_sort_datapoints(data)
                     self.compress_store_pickle(filename, clean_data)
                     clean_data = self.convert_to_localtime(clean_data, localtime)
-                    day_start_time = datetime.fromtimestamp(day_start_time.timestamp(), clean_data[0].start_time.tzinfo)
-                    day_end_time = datetime.fromtimestamp(day_end_time.timestamp(), clean_data[0].start_time.tzinfo)
+                    #day_start_time = datetime.fromtimestamp(day_start_time.timestamp(), clean_data[0].start_time.tzinfo)
+                    #day_end_time = datetime.fromtimestamp(day_end_time.timestamp(), clean_data[0].start_time.tzinfo)
                     day_block.extend(self.subset_data(clean_data, day_start_time, day_end_time))
 
             day_block = self.filter_sort_datapoints(day_block)
