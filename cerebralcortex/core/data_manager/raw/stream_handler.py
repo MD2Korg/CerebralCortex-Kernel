@@ -698,7 +698,7 @@ class StreamHandler():
             if len(dps)>0:
                 try:
                     if hdfs.exists(filename):
-                        curfile = hdfs.open(filename,"")
+                        curfile = hdfs.open(filename,"rb")
                         existing_data=curfile.read()
                         curfile.close()
                     if existing_data is not None and existing_data!=b'':
