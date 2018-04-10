@@ -90,7 +90,10 @@ def convert_sample(sample, stream_name):
     if "RAW--org.md2k." in stream_name or "CU_AUDIO_FEATURE--" in stream_name:
         return sample
     try:
-        if sample.startswith("[") or sample.startswith("{"):
+        if isinstance(sample, str):
+            sample = sample.strip()
+
+        if sample[0]=="[" or sample[0]=="{":
             return json.loads(sample)
         elif isinstance(sample, str) and "," in sample:
             tmp = []

@@ -81,7 +81,7 @@ class CerebralCortex:
         :param data_type:
         :return:
         """
-        warnings.warn("user_id is not a required parameter. This will be removed in CerebralCortex 3.0 version.", PendingDeprecationWarning)
+        warnings.warn("user_id is not a required parameter. This will be removed in CerebralCortex version3.0.", PendingDeprecationWarning)
         return self.RawData.get_stream(stream_id, user_id, day, start_time, end_time, localtime, data_type)
 
     def get_stream_samples(self, stream_id, day, start_time=None, end_time=None) -> List[DataPoint]:
