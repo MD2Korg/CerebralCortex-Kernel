@@ -157,7 +157,6 @@ class StreamHandler():
     def read_hdfs_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None, localtime:bool=True):
         # Using libhdfs,
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
-        data = None
 
         if localtime:
             days = [datetime.strftime(datetime.strptime(day,  '%Y%m%d')-timedelta(hours=24),"%Y%m%d"), day, datetime.strftime(datetime.strptime(day,  '%Y%m%d')+timedelta(hours=24),"%Y%m%d")]
@@ -222,7 +221,6 @@ class StreamHandler():
 
 
     def read_filesystem_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None, localtime:bool=True):
-        data = None
         if localtime:
             days = [datetime.strftime(datetime.strptime(day,  '%Y%m%d')-timedelta(hours=24),"%Y%m%d"), day, datetime.strftime(datetime.strptime(day,  '%Y%m%d')+timedelta(hours=24),"%Y%m%d")]
             day_start_time = datetime.strptime(day,  '%Y%m%d')

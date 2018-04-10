@@ -397,4 +397,4 @@ class CerebralCortex:
         :param topic:
         :param auto_offset_reset:
         """
-        return self.MessagingQueue.subscribe_to_topic(topic)
+        return self.MessagingQueue.subscribe_to_topic(topic, auto_offset_reset)

@@ -41,10 +41,11 @@ class KafkaHandler():
         except Exception as e:
             raise Exception("Error publishing message. Topic: "+str(topic)+" - "+str(e))
 
-    def subscribe_to_topic(self, topic: str):
+    def subscribe_to_topic(self, topic: str, auto_offset_reset: str="largest"):
         """
 
         :param topic:
+        :param auto_offset_reset - smallest (start of the topic) OR largest (end of a topic)
         """
 
         if not topic:

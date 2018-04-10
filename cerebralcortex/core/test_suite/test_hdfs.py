@@ -180,32 +180,4 @@ class TestStreamHandler():
         self.assertEqual(utc_data[8].start_time, parser.parse("2018-01-02 21:17:16.206000+00:00"))
 
 
-class TestHDFS(unittest.TestCase, TestStreamHandler):
-    def setUp(self):
-        # parser = argparse.ArgumentParser('Test suite for CerebralCortex')
-        # parser.add_argument("-c", "--config_filepath", help="CC Configuration file path", required=True)
-        # parser.add_argument("-tc", "--test_config_filepath", help="CC test suite congiguration path",required=True)
-        #
-        # args = vars(parser.parse_args())
 
-        test_config_filepath = "resources/cc_test_configuration.yml"#args["test_config_filepath"]
-        config_filepath ="../../../../CerebralCortex-DockerCompose/cc_config_file/cc_vagrant_configuration.yml" #args["config_filepath"]
-
-        with open(test_config_filepath) as test_conf:
-            test_conf = yaml.load(test_conf)
-
-        with open(test_conf["sample_data"]["data_folder"] + test_conf["sample_data"]["json_file"], "r") as md:
-            self.metadata = json.loads(md.read())
-
-        self.CC = CerebralCortex(config_filepath)
-        self.cc_conf = self.CC.config
-
-        self.owner_id = self.metadata["owner"]
-        self.stream_id = self.metadata["identifier"]
-        self.stream_name = self.metadata["name"]
-        self.test_data_folder = test_conf["sample_data"]["data_folder"]
-        self.gz_file = self.test_data_folder + test_conf["sample_data"]["gz_file"]
-        self.days = ["20180221", "20180222", "20180224"]
-
-        # generate sample raw data file
-        self.data = gen_raw_data(self.gz_file, 10000, True, "float")
