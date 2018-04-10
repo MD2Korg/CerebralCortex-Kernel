@@ -170,12 +170,14 @@ class StreamHandler():
                 gz_filename = filename.replace(".pickle", ".gz")
                 data = None
                 if hdfs.exists(filename):
-                    with hdfs.open(filename, "rb") as curfile:
-                        data = curfile.read()
+                    curfile=hdfs.open(filename, "rb")
+                    data = curfile.read()
+                    curfile.close()
                 elif hdfs.exists(gz_filename):
-                    with hdfs.open(gz_filename, "rb") as curfile:
-                        data = curfile.read()
-                        data = gzip.decompress(data)
+                    curfile=hdfs.open(gz_filename, "rb")
+                    data = curfile.read()
+                    data = gzip.decompress(data)
+                    curfile.close()
 
                 if data is not None and data!=b'':
                     clean_data = self.filter_sort_datapoints(data)
@@ -194,12 +196,14 @@ class StreamHandler():
             data = None
             try:
                 if hdfs.exists(filename):
-                    with hdfs.open(filename, "rb") as curfile:
-                        data = curfile.read()
+                    curfile=hdfs.open(filename, "rb")
+                    data = curfile.read()
+                    curfile.close()
                 elif hdfs.exists(gz_filename):
-                    with hdfs.open(gz_filename, "rb") as curfile:
-                        data = curfile.read()
-                        data = gzip.decompress(data)
+                    curfile=hdfs.open(gz_filename, "rb")
+                    data = curfile.read()
+                    data = gzip.decompress(data)
+                    curfile.close()
                 else:
                     return []
                 if data is not None and data!=b'':
@@ -229,12 +233,14 @@ class StreamHandler():
                 filename = self.filesystem_path+str(owner_id)+"/"+str(stream_id)+"/"+str(d)+".pickle"
                 gz_filename = filename.replace(".pickle", ".gz")
                 if os.path.exists(filename):
-                    with open(filename, "rb") as curfile:
-                        data = curfile.read()
+                    curfile= open(filename, "rb")
+                    data = curfile.read()
+                    curfile.close()
                 elif os.path.exists(gz_filename):
-                    with open(gz_filename, "rb") as curfile:
-                        data = curfile.read()
-                        data = gzip.decompress(data)
+                    curfile=open(gz_filename, "rb")
+                    data = curfile.read()
+                    data = gzip.decompress(data)
+                    curfile.close()
                 if data is not None and data!=b'':
                     clean_data = self.filter_sort_datapoints(data)
                     self.compress_store_pickle(filename, clean_data)
@@ -254,12 +260,14 @@ class StreamHandler():
 
             try:
                 if os.path.exists(filename):
-                    with open(filename, "rb") as curfile:
-                        data = curfile.read()
+                    curfile=open(filename, "rb")
+                    data = curfile.read()
+                    curfile.close()
                 elif os.path.exists(gz_filename):
-                    with open(gz_filename, "rb") as curfile:
-                        data = curfile.read()
-                        data = gzip.decompress(data)
+                    curfile=open(gz_filename, "rb")
+                    data = curfile.read()
+                    data = gzip.decompress(data)
+                    curfile.close()
                 else:
                     return []
                 if data is not None and data!=b'':
@@ -292,8 +300,9 @@ class StreamHandler():
                         # moved inside if condition so if exist do not even pickle/compress
                         data = pickle.dumps(data)
                         compressed_data = gzip.compress(data)
-                        with open(gz_filename, "wb") as gzwrite:
-                            gzwrite.write(compressed_data)
+                        gzwrite=open(gz_filename, "wb")
+                        gzwrite.write(compressed_data)
+                        gzwrite.close()
                     if os.path.exists(filename):
                         if os.path.getsize(gz_filename)>0:
                             os.remove(filename)
@@ -307,8 +316,9 @@ class StreamHandler():
                         # moved inside if condition so if exist do not even pickle/compress
                         data = pickle.dumps(data)
                         compressed_data = gzip.compress(data)
-                        with hdfs.open(gz_filename, "wb") as gzwrite:
-                            gzwrite.write(compressed_data)
+                        gzwrite=hdfs.open(gz_filename, "wb")
+                        gzwrite.write(compressed_data)
+                        gzwrite.close()
                     if hdfs.exists(filename):
                         if hdfs.info(gz_filename)["size"]>0:
                             hdfs.delete(filename)
@@ -690,18 +700,21 @@ class StreamHandler():
             if len(dps)>0:
                 try:
                     if hdfs.exists(filename):
-                        with hdfs.open(filename, "rb") as curfile:
-                            existing_data = curfile.read()
+                        curfile = hdfs.open(filename,"")
+                        existing_data=curfile.read()
+                        curfile.close()
                     if existing_data is not None and existing_data!=b'':
                         existing_data = gzip.decompress(existing_data)
                         existing_data = pickle.loads(existing_data)
                         dps.extend(existing_data)
                         #dps = existing_data
                     dps = self.filter_sort_datapoints(dps)
-                    with hdfs.open(filename, "wb") as f:
-                        dps = pickle.dumps(dps)
-                        dps = gzip.compress(dps)
-                        f.write(dps)
+                    f= hdfs.open(filename, "wb")
+                    dps = pickle.dumps(dps)
+                    dps = gzip.compress(dps)
+                    f.write(dps)
+                    f.close()
+
                     if hdfs.exists(filename.replace(".gz", ".pickle")):
                         hdfs.delete(filename.replace(".gz", ".pickle"))
                     success = True
@@ -735,18 +748,20 @@ class StreamHandler():
             if len(dps)>0:
                 try:
                     if os.path.exists(filename):
-                        with open(filename, "rb") as curfile:
-                            existing_data = curfile.read()
+                        curfile= open(filename, "rb")
+                        existing_data = curfile.read()
+                        curfile.close()
                     if existing_data is not None and existing_data!=b'':
                         existing_data = gzip.decompress(existing_data)
                         existing_data = pickle.loads(existing_data)
                         dps.extend(existing_data)
                         #dps = existing_data
                     dps = self.filter_sort_datapoints(dps)
-                    with open(filename, "wb") as f:
-                        dps = pickle.dumps(dps)
-                        dps = gzip.compress(dps)
-                        f.write(dps)
+                    f=open(filename, "wb")
+                    dps = pickle.dumps(dps)
+                    dps = gzip.compress(dps)
+                    f.write(dps)
+                    f.close()
                     if os.path.exists(filename.replace(".gz", ".pickle")):
                         os.remove(filename.replace(".gz", ".pickle"))
                     success = True

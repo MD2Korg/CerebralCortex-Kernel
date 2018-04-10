@@ -25,10 +25,7 @@
 
 
 import datetime
-import pickle
 import unittest
-from dateutil import parser
-from cerebralcortex.core.datatypes.datapoint import DataPoint
 
 from cerebralcortex.core.util.data_types import  convert_sample, convert_sample_type
 
