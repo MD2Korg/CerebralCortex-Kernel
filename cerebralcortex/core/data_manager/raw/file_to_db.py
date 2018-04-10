@@ -33,13 +33,17 @@ import os.path
 import pyarrow
 
 
-from cassandra.cluster import Cluster
-from cassandra.query import BatchStatement, BatchType
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
 from influxdb import InfluxDBClient
 from cerebralcortex.core.util.data_types import convert_sample, serialize_obj
 from cerebralcortex.core.log_manager.log_handler import LogTypes
+
+try:
+    from cassandra.cluster import Cluster
+    from cassandra.query import BatchStatement, BatchType
+except ImportError:
+    pass
 
 '''It is responsible to read .gz files and insert data in Cassandra/ScyllaDB OR HDFS and Influx. 
 This class is only for CC internal use.'''
