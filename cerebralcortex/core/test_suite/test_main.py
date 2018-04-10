@@ -33,10 +33,10 @@ from cerebralcortex.core.test_suite.util.gen_test_data import gen_raw_data
 from cerebralcortex.core.test_suite.test_hdfs_and_filesystem import TestFileToDB, TestStreamHandler
 from cerebralcortex.core.test_suite.test_kafka import TestKafkaMessaging
 from cerebralcortex.core.test_suite.test_sample_parsing import TestSampleParsing
+from cerebralcortex.core.test_suite.test_minio import TestMinio
 
 
-
-class TestCerebralCortex(unittest.TestCase, TestSampleParsing, TestKafkaMessaging, TestStreamHandler):
+class TestCerebralCortex(unittest.TestCase, TestMinio):#TestSampleParsing, TestKafkaMessaging, TestStreamHandler):
     def setUp(self):
         warnings.simplefilter("ignore")
         test_config_filepath = "./resources/cc_test_configuration.yml"#args["test_config_filepath"]
