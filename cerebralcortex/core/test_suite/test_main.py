@@ -30,7 +30,7 @@ import warnings
 
 from cerebralcortex.cerebralcortex import CerebralCortex
 from cerebralcortex.core.test_suite.util.gen_test_data import gen_raw_data
-from cerebralcortex.core.test_suite.test_hdfs import TestFileToDB, TestStreamHandler
+from cerebralcortex.core.test_suite.test_hdfs_and_filesystem import TestFileToDB, TestStreamHandler
 from cerebralcortex.core.test_suite.test_kafka import TestKafkaMessaging
 from cerebralcortex.core.test_suite.test_sample_parsing import TestSampleParsing
 
@@ -39,8 +39,8 @@ from cerebralcortex.core.test_suite.test_sample_parsing import TestSampleParsing
 class TestCerebralCortex(unittest.TestCase, TestSampleParsing, TestKafkaMessaging, TestStreamHandler):
     def setUp(self):
         warnings.simplefilter("ignore")
-        test_config_filepath = "resources/cc_test_configuration.yml"#args["test_config_filepath"]
-        config_filepath ="../../../../CerebralCortex-DockerCompose/cc_config_file/cc_vagrant_configuration.yml" #args["config_filepath"]
+        test_config_filepath = "./resources/cc_test_configuration.yml"#args["test_config_filepath"]
+        config_filepath ="./../../../../CerebralCortex-DockerCompose/cc_config_file/cc_vagrant_configuration.yml" #args["config_filepath"]
 
         with open(test_config_filepath) as test_conf:
             test_conf = yaml.load(test_conf)
