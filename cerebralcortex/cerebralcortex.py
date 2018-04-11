@@ -57,6 +57,7 @@ class CerebralCortex:
         self.FileIO = FileIO()
         #TODO: disabled because uwsgi losses connection, need more investigation
         self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
+        warnings.simplefilter('always', DeprecationWarning)
 
         #self.logging.log(error_message="Object created: ", error_type=self.logtypes.DEBUG)
 
@@ -153,16 +154,18 @@ class CerebralCortex:
         """
 
         :param user_id:
-        :return:
+        :return: dict with the keys: stream_ids, identifier (DO NOT USE THIS KEY, USE stream_ids KEY), owner, name, data_descriptor, execution_context, annotations, type, start_time, end_time
         """
+        warnings.warn("PLEASE USE stream_ids KEY IN DICT OBJECT TO GET ALL STREAM IDS OF A STREAM NAME. This method will be removed in CerebralCortex version 2.2.4.", DeprecationWarning)
         return self.SqlData.get_user_streams_metadata(user_id)
 
     def get_user_streams(self, user_id: uuid) -> dict:
         """
 
         :param user_id:
-        :return:
+        :return: dict with the keys: stream_ids, name, data_descriptor, execution_context, annotations, type, start_time, end_time
         """
+        warnings.warn("PLEASE USE stream_ids KEY IN DICT OBJECT TO GET ALL STREAM IDS OF A STREAM NAME. This method will be removed in CerebralCortex version 2.2.4.", DeprecationWarning)
         return self.SqlData.get_user_streams(user_id)
 
     def get_all_users(self, study_name: str) -> dict:

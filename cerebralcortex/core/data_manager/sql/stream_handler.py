@@ -142,9 +142,11 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            return []
+            return {}
         else:
             for row in rows:
+                stream_ids = self.get_stream_id(str(user_id), row["name"])
+                row["stream_ids"] = [d['identifier'] for d in stream_ids]
                 result[row["name"]] = row
             return result
 
@@ -157,7 +159,7 @@ class StreamHandler():
         if not user_id:
             return {}
         result = {}
-        qry = "select data_descriptor,execution_context,annotations, start_time, end_time from " + self.datastreamTable + " where owner = %(owner)s"
+        qry = "select name, data_descriptor,execution_context,annotations, start_time, end_time from " + self.datastreamTable + " where owner = %(owner)s"
         vals = {'owner': str(user_id)}
 
         rows = self.execute(qry, vals)
@@ -166,6 +168,8 @@ class StreamHandler():
             return {}
         else:
             for row in rows:
+                stream_ids = self.get_stream_id(str(user_id), row["name"])
+                row["stream_ids"] = [d['identifier'] for d in stream_ids]
                 result[row["name"]] = row
             return result
 
