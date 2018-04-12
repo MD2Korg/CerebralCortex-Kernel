@@ -26,7 +26,7 @@
 
 import inspect
 import syslog
-
+from datetime import datetime
 
 class LogTypes():
     EXCEPTION = 1,
@@ -50,7 +50,7 @@ class LogHandler():
         file_name = execution_stats[1][1]
         line_number = execution_stats[1][2]
 
-        error_message = "[" + str(file_name) + " - " + str(method_name) + " - " + str(line_number) + "] - " + str(error_message)
+        error_message = str(datetime.now())+" - [" + str(file_name) + " - " + str(method_name) + " - " + str(line_number) + "] - " + str(error_message)
 
         if self.debug:
             print(error_message)

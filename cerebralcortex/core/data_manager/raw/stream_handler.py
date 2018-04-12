@@ -40,7 +40,6 @@ from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.util.data_types import convert_sample, deserialize_obj
 from pytz import timezone as pytimezone
-from cerebralcortex.core.util.debuging_decorators import log_execution_time
 
 try:
     from cassandra.cluster import Cluster
@@ -224,7 +223,7 @@ class StreamHandler():
                                  error_type=self.logtypes.CRITICAL)
                 return []
 
-    @log_execution_time
+
     def read_filesystem_day_file(self, owner_id:uuid, stream_id:uuid, day:str, start_time:datetime=None, end_time:datetime=None, localtime:bool=True):
         if localtime:
             days = [datetime.strftime(datetime.strptime(day,  '%Y%m%d')-timedelta(hours=24),"%Y%m%d"), day, datetime.strftime(datetime.strptime(day,  '%Y%m%d')+timedelta(hours=24),"%Y%m%d")]
@@ -731,7 +730,6 @@ class StreamHandler():
                         error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
         return success
 
-    @log_execution_time
     def write_filesystem_day_file(self, participant_id, stream_id, data):
         existing_data = None
         outputdata = {}
