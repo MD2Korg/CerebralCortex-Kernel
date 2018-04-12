@@ -1,6 +1,4 @@
 wheel==0.29.0
-numpy==1.14.2
-scipy==1.0.1
 pytz==2017.2
 mysql-connector-python-rf==2.2.2
 PyYAML==3.12
