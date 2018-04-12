@@ -241,7 +241,8 @@ class StreamHandler():
                 elif os.path.exists(gz_filename):
                     curfile=open(gz_filename, "rb")
                     data = curfile.read()
-                    data = gzip.decompress(data)
+                    if data!=b'':
+                        data = gzip.decompress(data)
                     curfile.close()
                 if data is not None and data!=b'':
                     clean_data = self.filter_sort_datapoints(data)
@@ -743,6 +744,7 @@ class StreamHandler():
 
         #Data Write loop
         for day, dps in outputdata.items():
+            existing_data = None
             filename = self.filesystem_path+str(participant_id)+"/"+str(stream_id)
             if not os.path.exists(filename):
                 os.makedirs(filename, exist_ok=True)
