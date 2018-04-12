@@ -82,6 +82,26 @@ class StreamHandler():
         rows = self.execute(qry, vals)
         return rows
 
+    def user_has_stream(self, user_id: uuid, stream_name: str) ->bool:
+        """
+        Returns true if a user has a stream available
+        :param user_id: 
+        :param stream_name: 
+        :return: 
+        """
+        if not stream_name or not user_id:
+            return []
+
+        qry = "select identifier from " + self.datastreamTable + " where owner=%s and name = %s"
+        vals = str(user_id),str(stream_name)
+
+        rows = self.execute(qry, vals)
+
+        if len(rows) == 0:
+            return False
+        else:
+            return True
+    
     def get_stream_duration(self, stream_id: uuid) -> dict:
         """
 
@@ -125,7 +145,7 @@ class StreamHandler():
                 results.append(row)
             return results
 
-    def get_user_streams(self, user_id: uuid) -> List:
+    def get_user_streams(self, user_id: uuid) -> dict:
 
         """
 
@@ -134,7 +154,7 @@ class StreamHandler():
         """
         if not user_id:
             print("User ID cannot be empty.")
-            return []
+            return {}
         result = {}
         qry = 'SELECT * FROM ' + self.datastreamTable + ' where owner=%(owner)s'
         vals = {'owner': str(user_id)}

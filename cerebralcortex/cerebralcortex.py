@@ -200,6 +200,15 @@ class CerebralCortex:
         :return:
         """
         return self.SqlData.get_stream_metadata(stream_id)
+    
+    def user_has_stream(self, user_id: uuid, stream_name: str) ->bool:
+        """
+        Returns true if a user has a stream available
+        :param user_id: 
+        :param stream_name: 
+        :return: 
+        """
+        return self.SqlData.user_has_stream(user_id, stream_name)
 
     ################### USER RELATED METHODS ##################################
 
