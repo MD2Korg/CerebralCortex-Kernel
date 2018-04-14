@@ -137,7 +137,7 @@ class FileToDB():
         if influxdb_insert or nosql_insert:
             if self.data_play_type=="mydb":
                 for filename in filenames:
-                    if os.path.exists(zip_filepath + filename):
+                    if os.path.exists(str(zip_filepath + filename)):
                         all_data = self.line_to_sample(zip_filepath + filename, stream_id, owner, owner_name, name, data_descriptor,
                                                        influxdb_insert, nosql_insert)
                         if influxdb_insert:
