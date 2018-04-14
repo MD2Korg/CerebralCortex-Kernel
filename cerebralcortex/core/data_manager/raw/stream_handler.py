@@ -104,6 +104,51 @@ class StreamHandler():
         else:
             return DataStream()
 
+    def get_stream_by_name(self, stream_name: uuid, user_id: uuid=None, start_time: datetime = None, end_time: datetime = None, localtime:bool=False,
+                           data_type=DataSet.COMPLETE) -> DataStream:
+        """
+        Return stream data for all stream-ids related to a stream-name
+        :param stream_name:
+        :param day:
+        :param start_time:
+        :param end_time:
+        :param data_type:
+        :return:
+        """
+        if stream_name is None or user_id is None:
+            return []
+
+        # query datastream(mysql) for metadata
+        # datastream_metadata = self.sql_data.get_stream_metadata(stream_name)
+        # if len(datastream_metadata)>0:
+        #     owner_id = datastream_metadata[0]["owner"]
+        #     if data_type == DataSet.COMPLETE:
+        #         if self.nosql_store=="hdfs":
+        #             dps = self.read_hdfs_day_file(owner_id, stream_name, day, start_time, end_time, localtime)
+        #         elif self.nosql_store=="filesystem":
+        #             dps =  self.read_filesystem_day_file(owner_id, stream_name, day, start_time, end_time, localtime)
+        #         else:
+        #             dps = self.load_cassandra_data(stream_name, day, start_time, end_time)
+        #         stream = self.map_datapoint_and_metadata_to_datastream(stream_name, datastream_metadata, dps, localtime)
+        #     elif data_type == DataSet.ONLY_DATA:
+        #         if self.nosql_store=="hdfs":
+        #             return self.read_hdfs_day_file(owner_id, stream_name, day, start_time, end_time, localtime)
+        #         elif self.nosql_store=="filesystem":
+        #             return self.read_filesystem_day_file(owner_id, stream_name, day, start_time, end_time, localtime)
+        #         else:
+        #             return self.load_cassandra_data(stream_name, day, start_time, end_time)
+        #     elif data_type == DataSet.ONLY_METADATA:
+        #         stream = self.map_datapoint_and_metadata_to_datastream(stream_name, datastream_metadata, None)
+        #     else:
+        #         self.logging.log(
+        #             error_message="STREAM ID: " + stream_name + "Failed to get data stream. Invalid type parameter.",
+        #             error_type=self.logtypes.DEBUG)
+        #         return None
+        #     return stream
+        # else:
+        #     return DataStream()
+
+
     def map_datapoint_and_metadata_to_datastream(self, stream_id: int, datastream_info: dict,
                                                  data: object, localtime:bool=True) -> DataStream:
         """

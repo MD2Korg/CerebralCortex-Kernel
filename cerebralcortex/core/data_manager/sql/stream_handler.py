@@ -494,7 +494,7 @@ class StreamHandler():
                     if len(msgs)>int(record_limit):
                         yield msgs
                         msgs = []
-                    msgs.append({"metadata": json.loads(row["metadata"]), "day":row["day"], "filename":json.loads(row["files_list"])})
+                    msgs.append({"owner_id":row["owner_id"], "stream_id":row["stream_id"],"stream_name":row["stream_name"], "metadata": json.loads(row["metadata"]), "day":row["day"], "filename":json.loads(row["files_list"])})
                 yield msgs
             else:
                 yield []
