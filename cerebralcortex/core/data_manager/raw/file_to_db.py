@@ -146,6 +146,8 @@ class FileToDB():
                             if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
                                 nosql_data.extend(all_data["nosql_data"])
                                 all_data["nosql_data"].clear()
+                    else:
+                        print("Path does not exist:", str(zip_filepath + filename))
             else:
                 if os.path.exists(zip_filepath + str(filenames[0])):
                     all_data = self.line_to_sample(zip_filepath + str(filenames[0]), stream_id, owner, owner_name, name, data_descriptor,
