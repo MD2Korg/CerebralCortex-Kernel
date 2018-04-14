@@ -35,9 +35,10 @@ from cerebralcortex.core.test_suite.test_kafka import TestKafkaMessaging
 from cerebralcortex.core.test_suite.test_sample_parsing import TestSampleParsing
 from cerebralcortex.core.test_suite.test_minio import TestMinio
 from cerebralcortex.core.test_suite.test_users import TestUserMySQLMethods
+from cerebralcortex.core.test_suite.test_datapoint import TestDataPoints
 
 
-class TestCerebralCortex(unittest.TestCase, TestUserMySQLMethods, TestMinio,TestSampleParsing, TestKafkaMessaging, TestStreamHandler):
+class TestCerebralCortex(unittest.TestCase, TestDataPoints, TestUserMySQLMethods, TestMinio,TestSampleParsing, TestKafkaMessaging, TestStreamHandler):
     def setUp(self):
         warnings.simplefilter("ignore")
         test_config_filepath = "./resources/cc_test_configuration.yml"#args["test_config_filepath"]
@@ -57,6 +58,7 @@ class TestCerebralCortex(unittest.TestCase, TestUserMySQLMethods, TestMinio,Test
         self.stream_name = self.metadata["name"]
         self.test_data_folder = test_conf["sample_data"]["data_folder"]
         self.gz_file = self.test_data_folder + test_conf["sample_data"]["gz_file"]
+        self.corupt_data = test_conf["sample_data"]["corupt_data"]
         self.days = ["20180221", "20180222", "20180224"]
 
         # generate sample raw data file

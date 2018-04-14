@@ -27,10 +27,11 @@
 from dateutil import parser
 import unittest
 from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
+from cerebralcortex.core.data_manager.raw.file_to_db import FileToDB
 
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 
-class TestDataPoints(unittest.TestCase):
+class TestDataPoints():
 
     def test_01_sort_dedup(self):
         """
@@ -50,3 +51,9 @@ class TestDataPoints(unittest.TestCase):
         self.assertEqual(clean_data[1],dps[3])
         self.assertEqual(clean_data[2],dps[1])
         self.assertEqual(clean_data[3],dps[5])
+
+    # def test_02_line_to_sample(self):
+    #     file_to_db = FileToDB(self.CC)
+    #     msg = {"metadata":self.metadata, "day":"20180412", "filename": self.corupt_data+","}
+    #     data = file_to_db.file_processor(msg, "resources/test_data/raw/file_to_sample/", False, True)
+    #     print(data)
