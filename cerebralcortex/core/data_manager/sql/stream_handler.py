@@ -478,9 +478,9 @@ class StreamHandler():
             like_cols += '%s not like "%s" and ' % ("stream_name", blacklist_regex["txt_match"][btm])
 
         if regex_cols!="" and like_cols!="":
-            qry = "SELECT day, files_list, metadata from "+self.dataReplayTable+" where " + regex_cols +" "+like_cols+"  processed=0"
+            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from "+self.dataReplayTable+" where " + regex_cols +" "+like_cols+"  processed=0"
         elif regex_cols!="" and like_cols=="":
-            qry = "SELECT day, files_list, metadata from "+self.dataReplayTable+" where " + re.sub("and $", "", regex_cols)+"  processed=0"
+            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from "+self.dataReplayTable+" where " + re.sub("and $", "", regex_cols)+"  processed=0"
         elif regex_cols=="" and like_cols!="":
             qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from "+self.dataReplayTable+" where " + re.sub("and $", "", like_cols)+"  processed=0"
         else:
