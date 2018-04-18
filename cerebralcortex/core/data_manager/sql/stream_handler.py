@@ -284,9 +284,10 @@ class StreamHandler():
         """
         all_days = []
         stream_days = self.get_stream_duration(stream_id)
-        days = stream_days["end_time"]-stream_days["start_time"]
-        for day in range(days.days+1):
-            all_days.append((stream_days["start_time"]+timedelta(days=day)).strftime('%Y%m%d'))
+        if stream_days["end_time"] is not None and stream_days["start_time"] is not None:
+            days = stream_days["end_time"]-stream_days["start_time"]
+            for day in range(days.days+1):
+                all_days.append((stream_days["start_time"]+timedelta(days=day)).strftime('%Y%m%d'))
 
         return all_days
 
