@@ -72,7 +72,7 @@ class StreamHandler():
         :return:
         """
         if stream_id is None or day is None:
-            return []
+            return DataStream()
         
         # query datastream(mysql) for metadata
         datastream_metadata = self.sql_data.get_stream_metadata(stream_id)
@@ -99,7 +99,7 @@ class StreamHandler():
                 self.logging.log(
                     error_message="STREAM ID: " + stream_id + "Failed to get data stream. Invalid type parameter.",
                     error_type=self.logtypes.DEBUG)
-                return None
+                return DataStream()
             return stream
         else:
             return DataStream()
