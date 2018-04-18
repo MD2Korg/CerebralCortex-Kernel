@@ -85,6 +85,14 @@ class CerebralCortex:
         warnings.warn("user_id is not a required parameter. This will be removed in CerebralCortex version3.0.", PendingDeprecationWarning)
         return self.RawData.get_stream(stream_id, user_id, day, start_time, end_time, localtime, data_type)
 
+    def get_stream_days(self, stream_id: uuid) -> List:
+        """
+        Returns a list of days (string format: YearMonthDay (e.g., 20171206) for a given stream-id
+        :param stream_id:
+        :param dd_stream_id:
+        """
+        return self.SqlData.get_stream_days(stream_id)
+
     def get_stream_by_name(self, stream_name: uuid, user_id: uuid=None, start_time: datetime = None, end_time: datetime = None, localtime:bool=False,
                            data_type=DataSet.COMPLETE) -> DataStream:
         """
