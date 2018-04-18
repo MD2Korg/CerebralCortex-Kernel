@@ -26,7 +26,7 @@
 import json
 import uuid
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 import traceback
 from pytz import timezone
@@ -275,6 +275,20 @@ class StreamHandler():
             return []
         else:
             return rows
+
+    def get_stream_days(self, stream_id: uuid) -> List:
+        """
+        Returns a list of days (string format: YearMonthDay (e.g., 20171206) for a given stream-id
+        :param stream_id:
+        :param dd_stream_id:
+        """
+        all_days = []
+        stream_days = self.get_stream_duration(stream_id)
+        days = stream_days["end_time"]-stream_days["start_time"]
+        for day in range(days.days+1):
+            all_days.append((stream_days["start_time"]+timedelta(days=day)).strftime('%Y%m%d'))
+
+        return all_days
 
     def get_stream_name(self, stream_id: uuid) -> str:
         """

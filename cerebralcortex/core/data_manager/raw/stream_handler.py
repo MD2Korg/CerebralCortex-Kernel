@@ -117,6 +117,32 @@ class StreamHandler():
         """
         if stream_name is None or user_id is None:
             return []
+        days = []
+        all_stream_days = {}
+        # get all stream ids for a stream name
+        stream_ids = self.sql_data.get_stream_id(user_id, stream_name)
+        for sid in stream_ids:
+            all_stream_days[sid] = self.get_stream_days(sid)
+
+        #     days.extend(self.get_stream_days(sid))
+        # all_stream_days = list(set(days))
+
+        if start_time is not None and end_time is not None:
+            time_diff = end_time-start_time
+            for day in range(time_diff.days+1):
+                days.append((start_time+timedelta(days=day)).strftime('%Y%m%d'))
+        elif start_time is not None and end_time is None:
+            # make day out of start-time, just one day data
+            days = [start_time.strftime("%Y%m%d")]
+        elif start_time is None and end_time is not None:
+            raise ValueError("Start time cannot be None if end time is provided.")
+            return []
+        else:
+            # get all days data
+            for sid in stream_ids:
+                days.extend(self.get_stream_days(sid))
+            days = list(set(days))
+
 
         # query datastream(mysql) for metadata
         # datastream_metadata = self.sql_data.get_stream_metadata(stream_name)
