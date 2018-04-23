@@ -24,20 +24,20 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import datetime
-import json
-import uuid
-import traceback
 import gzip
+import json
 import os
+import traceback
+import uuid
+
 import os.path
 import pyarrow
-
+from influxdb import InfluxDBClient
 
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
-from influxdb import InfluxDBClient
-from cerebralcortex.core.util.data_types import convert_sample, serialize_obj
 from cerebralcortex.core.log_manager.log_handler import LogTypes
+from cerebralcortex.core.util.data_types import convert_sample, serialize_obj
 
 try:
     from cassandra.cluster import Cluster
@@ -45,11 +45,11 @@ try:
 except ImportError:
     pass
 
-'''It is responsible to read .gz files and insert data in Cassandra/ScyllaDB OR HDFS and Influx. 
-This class is only for CC internal use.'''
-
 
 class FileToDB():
+    '''This class is responsible to read .gz files and insert data in Cassandra/ScyllaDB OR HDFS and Influx.
+    This class is only for CC internal use.'''
+
     def __init__(self, CC):
         self.config = CC.config
 
@@ -86,16 +86,18 @@ class FileToDB():
         self.influx_batch_size = 10000
         self.influx_day_datapoints_limit = 37000
 
-        if self.nosql_store=="hdfs":
+        if self.nosql_store == "hdfs":
             self.hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
 
-    #@log_execution_time
     def file_processor(self, msg: dict, zip_filepath: str, influxdb_insert: bool = False, nosql_insert: bool = True):
 
         """
-        :param msg:
-        :param zip_filepath:
-        :return:
+        Process raw .gz files' data and json metadata files, convert into DataStream object format and store data in CC data-stores
+        :param msg: Kafka message in json format
+        :param zip_filepath: data folder path where all the gz/json files are located
+        :param influxdb_insert: Turn on/off influxdb data ingestion
+        :param nosql_insert: Turn on/off nosql data ingestion
+
         """
 
         if not msg:
@@ -135,13 +137,14 @@ class FileToDB():
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
         if influxdb_insert or nosql_insert:
-            if self.data_play_type=="mydb":
+            if self.data_play_type == "mydb":
                 for filename in filenames:
                     if os.path.exists(str(zip_filepath + filename)):
-                        all_data = self.line_to_sample(zip_filepath + filename, stream_id, owner, owner_name, name, data_descriptor,
+                        all_data = self.line_to_sample(zip_filepath + filename, stream_id, owner, owner_name, name,
+                                                       data_descriptor,
                                                        influxdb_insert, nosql_insert)
                         if influxdb_insert:
-                            influxdb_data = influxdb_data+all_data["influxdb_data"]
+                            influxdb_data = influxdb_data + all_data["influxdb_data"]
                         if nosql_insert:
                             if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
                                 nosql_data.extend(all_data["nosql_data"])
@@ -150,35 +153,36 @@ class FileToDB():
                         print("Path does not exist:", str(zip_filepath + filename))
             else:
                 if os.path.exists(zip_filepath + str(filenames[0])):
-                    all_data = self.line_to_sample(zip_filepath + str(filenames[0]), stream_id, owner, owner_name, name, data_descriptor,
+                    all_data = self.line_to_sample(zip_filepath + str(filenames[0]), stream_id, owner, owner_name, name,
+                                                   data_descriptor,
                                                    influxdb_insert, nosql_insert)
                     if influxdb_insert:
-                        influxdb_data = influxdb_data+all_data["influxdb_data"]
+                        influxdb_data = influxdb_data + all_data["influxdb_data"]
                     if nosql_insert:
                         nosql_data = all_data["nosql_data"]
 
-            if (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="filesystem":
+            if (nosql_insert and len(nosql_data) > 0) and self.nosql_store == "filesystem":
                 self.rawData.write_filesystem_day_file(owner, stream_id, nosql_data)
                 self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
                                                    annotations, stream_type, nosql_data[0].start_time,
                                                    nosql_data[len(nosql_data) - 1].start_time)
 
-            if (nosql_insert and len(nosql_data) > 0) and self.nosql_store=="hdfs":
+            if (nosql_insert and len(nosql_data) > 0) and self.nosql_store == "hdfs":
                 self.rawData.write_hdfs_day_file(owner, stream_id, nosql_data)
                 self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
                                                    annotations, stream_type, nosql_data[0].start_time,
                                                    nosql_data[len(nosql_data) - 1].start_time)
 
-
-            #if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
-            if (nosql_insert and len(nosql_data) > 0) and (self.nosql_store=="cassandra" or self.nosql_store=="scylladb"):
+            # if not self.sql_data.is_day_processed(owner, stream_id, stream_day):
+            if (nosql_insert and len(nosql_data) > 0) and (
+                    self.nosql_store == "cassandra" or self.nosql_store == "scylladb"):
                 # connect to cassandra
                 cluster = Cluster([self.host_ip], port=self.host_port)
                 session = cluster.connect(self.keyspace_name)
                 qry_with_endtime = session.prepare(
                     "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
 
-                for data_block in self.line_to_batch_block(stream_id, owner, nosql_data, qry_with_endtime):
+                for data_block in self.line_to_batch_block(stream_id, nosql_data, qry_with_endtime):
                     session.execute(data_block)
 
                 self.sql_data.save_stream_metadata(stream_id, name, owner, data_descriptor, execution_context,
@@ -197,71 +201,25 @@ class FileToDB():
                     influxdb_client.write_points(influxdb_data, protocol="line")
                 except:
                     self.logging.log(
-                        error_message="STREAM ID: " + str(stream_id)+ "Owner ID: " + str(owner)+ "Files: " + str(msg["filename"]) + " - Error in writing data to influxdb. " + str(
+                        error_message="STREAM ID: " + str(stream_id) + "Owner ID: " + str(owner) + "Files: " + str(
+                            msg["filename"]) + " - Error in writing data to influxdb. " + str(
                             traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
             nosql_data.clear()
             all_data.clear()
 
             # mark day as processed in data_replay table
-            if self.data_play_type=="mydb":
+            if self.data_play_type == "mydb":
                 self.sql_data.mark_processed_day(owner, stream_id, stream_day)
 
-    # def write_hdfs_stream_file(self, participant_id, stream_id, filename, data):
-    #     # Using libhdfs
-    #
-    #     day = data[0][2]
-    #
-    #     filename = str(participant_id)+"/"+str(stream_id)+"/"+str(day)+"/"+str(filename[-39:])
-    #     filename = filename.replace(".gz",".pickle")
-    #
-    #     filename = self.raw_files_dir+filename
-    #     picked_data = pickle.dumps(data)
-    #     with self.hdfs.open(filename, "wb") as f:
-    #         f.write(picked_data)
-    #
-    # def write_hdfs_day_file(self, participant_id, stream_id, data):
-    #     # Using libhdfs
-    #
-    #     existing_data = None
-    #     outputdata = {}
-    #
-    #     #Data Processing loop
-    #     for row in data:
-    #         day = row.start_time.strftime("%Y%m%d")
-    #         if day not in outputdata:
-    #             outputdata[day] = []
-    #         outputdata[day].append(row)
-    #
-    #     #Data Write loop
-    #     for day, dps in outputdata.items():
-    #         filename = self.raw_files_dir+str(participant_id)+"/"+str(stream_id)+"/"+str(day)+".pickle"
-    #         if len(dps)>0:
-    #             try:
-    #                 if self.hdfs.exists(filename):
-    #                     with self.hdfs.open(filename, "rb") as curfile:
-    #                         existing_data = curfile.read()
-    #                 if existing_data is not None and existing_data!=b'':
-    #                     existing_data = pickle.loads(existing_data)
-    #                     existing_data.extend(dps)
-    #                     dps = existing_data
-    #                 with self.hdfs.open(filename, "wb") as f:
-    #                     tmp = pickle.dumps(dps)
-    #                     f.write(tmp)
-    #                     tmp = None
-    #                     #pickle.dump(dps, f)
-    #             except Exception as ex:
-    #                 self.logging.log(
-    #                     error_message="Error in writing data to HDFS. STREAM ID: " + str(stream_id)+ "Owner ID: " + str(participant_id)+ "Files: " + str(filename)+" - Exception: "+str(ex), error_type=self.logtypes.DEBUG)
-
-    def line_to_batch_block(self, stream_id: uuid, owner_id: uuid, lines: str, insert_qry: str):
+    def line_to_batch_block(self, stream_id: uuid, lines: str, insert_qry: str):
 
         """
-
+        Convert gz files' raw data lines into CQL batch queries
         :param stream_id:
         :param lines:
-        :param qry_without_endtime:
-        :param qry_with_endtime:
+        :param insert_qry:
+
         """
         batch = BatchStatement(batch_type=BatchType.UNLOGGED)
         batch.clear()
@@ -285,16 +243,20 @@ class FileToDB():
                 line_number += 1
         yield batch
 
-
     def line_to_sample(self, filename, stream_id, stream_owner_id, stream_owner_name, stream_name,
                        data_descriptor, influxdb_insert, nosql_insert):
 
         """
         Converts a gz file lines into sample values format and influxdb object
+        :param filename:
         :param stream_id:
-        :param lines:
-        :param qry_without_endtime:
-        :param qry_with_endtime:
+        :param stream_owner_id:
+        :param stream_owner_name:
+        :param stream_name:
+        :param data_descriptor:
+        :param influxdb_insert:
+        :param nosql_insert:
+
         """
 
         grouped_samples = []
@@ -332,17 +294,17 @@ class FileToDB():
                         start_time = int(ts) / 1000.0
                         offset = int(offset)
                         # TODO: improve the performance of sample parsing
-                        if nosql_insert==True:
+                        if nosql_insert == True:
                             values = convert_sample(sample, stream_name)
-                        elif influxdb_insert==True and stream_name not in blacklist_streams and line_count<self.influx_day_datapoints_limit:
+                        elif influxdb_insert == True and stream_name not in blacklist_streams and line_count < self.influx_day_datapoints_limit:
                             values = convert_sample(sample, stream_name)
-
 
                         ############### START INFLUXDB BLOCK
-                        if influxdb_insert and line_count<self.influx_day_datapoints_limit:
+                        if influxdb_insert and line_count < self.influx_day_datapoints_limit:
                             if stream_name not in blacklist_streams:
                                 measurement_and_tags = '%s,owner_id=%s,owner_name=%s,stream_id=%s' % (
-                                str(stream_name.replace(" ","_")), str(stream_owner_id), str(stream_owner_name), str(stream_id))
+                                    str(stream_name.replace(" ", "_")), str(stream_owner_id), str(stream_owner_name),
+                                    str(stream_id))
 
                                 try:
                                     if isinstance(values, list):
@@ -355,22 +317,22 @@ class FileToDB():
                                                 dd = data_descriptor[i]
                                                 if "NAME" in dd:
                                                     fields += ptrn % (
-                                                    str(dd["NAME"]).replace(" ", "-"), sample_val)
+                                                        str(dd["NAME"]).replace(" ", "-"), sample_val)
                                                 else:
                                                     fields += ptrn % ('value_' + str(i), sample_val)
                                             else:
                                                 fields += ptrn % ('value_' + str(i), sample_val)
                                     elif len(data_descriptor) > 0:
-                                            dd = data_descriptor[0]
-                                            if isinstance(values, str):
-                                                ptrn = '%s="%s",'
-                                            else:
-                                                ptrn = '%s=%s,'
-                                            if "NAME" in dd:
-                                                fields = ptrn % (
+                                        dd = data_descriptor[0]
+                                        if isinstance(values, str):
+                                            ptrn = '%s="%s",'
+                                        else:
+                                            ptrn = '%s=%s,'
+                                        if "NAME" in dd:
+                                            fields = ptrn % (
                                                 str(dd["NAME"]).replace(" ", "-"), values)
-                                            else:
-                                                fields = ptrn % ('value_0', values)
+                                        else:
+                                            fields = ptrn % ('value_0', values)
                                     else:
                                         if isinstance(values, str):
                                             ptrn = '%s="%s",'
@@ -395,7 +357,7 @@ class FileToDB():
                         ############### END INFLUXDB BLOCK
 
                         ############### START OF NO-SQL (HDFS) DATA BLOCK
-                        if nosql_insert and  (self.nosql_store=="hdfs" or self.nosql_store=="filesystem"):
+                        if nosql_insert and (self.nosql_store == "hdfs" or self.nosql_store == "filesystem"):
 
                             start_time_dt = datetime.datetime.utcfromtimestamp(
                                 start_time)
@@ -405,7 +367,7 @@ class FileToDB():
                         ############### END OF NO-SQL (HDFS) DATA BLOCK
 
                         ############### START OF NO-SQL (Cassandra/ScyllaDB) DATA BLOCK
-                        elif nosql_insert and self.nosql_store!="hdfs":
+                        elif nosql_insert and self.nosql_store != "hdfs":
 
                             start_time_dt = datetime.datetime.utcfromtimestamp(
                                 start_time)
@@ -428,7 +390,8 @@ class FileToDB():
                                 datapoints.append(DataPoint(start_time_dt, None, offset, values))
                                 line_number += 1
 
-                if (nosql_insert and len(datapoints) > 0) and (self.nosql_store!="hdfs" or self.nosql_store!="filesystem"):
+                if (nosql_insert and len(datapoints) > 0) and (
+                        self.nosql_store != "hdfs" or self.nosql_store != "filesystem"):
                     if not last_start_time:
                         last_start_time = datetime.datetime.utcfromtimestamp(start_time)
                     grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
@@ -438,7 +401,8 @@ class FileToDB():
                     line_protocol = ""
                 return {"nosql_data": grouped_samples, "influxdb_data": line_protocol}
         except:
-            self.logging.log(error_message="STREAM ID: " + str(stream_id) + " - Cannot process file data. " + str(traceback.format_exc()), error_type=self.logtypes.MISSING_DATA)
+            self.logging.log(error_message="STREAM ID: " + str(stream_id) + " - Cannot process file data. " + str(
+                traceback.format_exc()), error_type=self.logtypes.MISSING_DATA)
             if line_count > self.influx_day_datapoints_limit:
                 line_protocol = ""
             return {"nosql_data": grouped_samples, "influxdb_data": line_protocol}

@@ -9,6 +9,9 @@ def get_timezone(tz_offset:float, common_only:bool=False):
     :param common_only:
     :return:
     """
+    if tz_offset is None or tz_offset=="":
+        raise ValueError("Offset cannot be None or empty.")
+
     # pick one of the timezone collections
     timezones = pytz.common_timezones if common_only else pytz.all_timezones
 
