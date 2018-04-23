@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2018, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -32,8 +32,6 @@ from minio.error import ResponseError
 
 
 class MinioHandler():
-    def __init__(self):
-        pass
 
     ###################################################################
     ################## GET DATA METHODS ###############################
@@ -43,6 +41,7 @@ class MinioHandler():
         """
         returns all available buckets in Minio storage
         :return: [{bucket-name: str, last_modified: str}], in case of an error [{"error": str}]
+        :rtype: List
         """
         bucket_list = []
         try:
@@ -56,11 +55,12 @@ class MinioHandler():
         except Exception as e:
             return [{"error": str(e)}]
 
-    def get_bucket_objects(self, bucket_name: str) -> List:
+    def get_bucket_objects(self, bucket_name: str) -> dict:
         """
         returns a list of all objects stored in the specified Minio bucket
         :param bucket_name:
         :return:{object-name:{stat1:str, stat2, str}},  in case of an error [{"error": str}]
+        :rtype: dict
         """
         objects_in_bucket = {}
         try:
@@ -86,6 +86,7 @@ class MinioHandler():
         :param bucket_name:
         :param object_name:
         :return: {stat1:str, stat2, str},  in case of an error {"error": str}
+        :rtype: dict
         """
         try:
             if self.is_bucket(bucket_name):
@@ -105,6 +106,7 @@ class MinioHandler():
         :param bucket_name:
         :param object_name:
         :return: object (HttpResponse), in case of an error {"error": str}
+        :rtype: dict
         """
         try:
             if self.is_bucket(bucket_name):
@@ -119,12 +121,13 @@ class MinioHandler():
         """
 
         :param bucket_name:
-        :return: True/False, in case of an error {"error": str}
+        :return: True/False
+        :rtype: bool
         """
         try:
             return self.minioClient.bucket_exists(bucket_name)
-        except ResponseError as e:
-            return {"error": str(e)}
+        except:
+            raise ResponseError
 
     ###################################################################
     ################## STORE DATA METHODS #############################
@@ -132,16 +135,18 @@ class MinioHandler():
 
     def create_bucket(self, bucket_name: str) -> bool:
         """
-        creates a bucket
+        creates a new bucket
         :param bucket_name:
+        :return: True/False
+        :rtype: bool
         """
         if not bucket_name:
-            return {"error": "Bucket name cannot be empty"}
+            raise ValueError("Bucket name cannot be empty")
         try:
             self.minioClient.make_bucket(bucket_name, location=self.CC.timezone)
             return True
-        except ResponseError as e:
-            return {"error": str(e)}
+        except:
+            raise ResponseError
 
     def upload_object(self, bucket_name: str, object_name: str, object_filepath: object) -> bool:
         """
@@ -149,15 +154,16 @@ class MinioHandler():
         :param bucket_name:
         :param object_name:
         :param object_filepath: it shall contain full path of a file with file name (e.g., /home/nasir/obj.zip)
-        :return: True/False, in case of an error {"error": str}
+        :return: True/False
+        :rtype: bool
         """
         if not object_filepath:
-            return {"error": "File name cannot be empty"}
+            raise ValueError("File name cannot be empty")
         try:
             file_stat = os.stat(object_filepath)
             file_data = open(object_filepath, 'rb')
             self.minioClient.put_object(bucket_name, object_name, file_data,
                                         file_stat.st_size, content_type='application/zip')
             return True
-        except ResponseError as e:
-            return {"error": str(e)}
+        except:
+            raise ResponseError
