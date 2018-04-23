@@ -35,13 +35,13 @@ class ConfigHandler():
         with open(filepath, 'r') as ymlfile:
             self.config = yaml.load(ymlfile)
 
-        if self.config["hdfs"]["raw_files_dir"][-1] !="/":
+        if self.config["hdfs"]["raw_files_dir"]!="" and self.config["hdfs"]["raw_files_dir"][-1] !="/":
             self.config["hdfs"]["raw_files_dir"]+="/"
 
-        if self.config["data_ingestion"]["filesystem_path"][-1] !="/":
+        if self.config["data_ingestion"]["filesystem_path"]!="" and self.config["data_ingestion"]["filesystem_path"][-1] !="/":
             self.config["data_ingestion"]["filesystem_path"]+="/"
 
-        if self.config["data_replay"]["data_dir"][-1] !="/":
+        if self.config["data_replay"]["data_dir"][-1]!="" and self.config["data_replay"]["data_dir"][-1] !="/":
             self.config["data_replay"]["data_dir"]+="/"
 
 

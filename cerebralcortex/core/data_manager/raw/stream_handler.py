@@ -444,7 +444,8 @@ class StreamHandler():
         """
 
         if len(data) > 0:
-            possible_tz = pytimezone(get_timezone(data[0].offset))
+            if localtime:
+                possible_tz = pytimezone(get_timezone(data[0].offset))
             for dp in data:
                 if localtime:
                     if dp.end_time is not None:
