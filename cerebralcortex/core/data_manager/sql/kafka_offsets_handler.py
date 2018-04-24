@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2018, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -27,11 +27,11 @@ import json
 
 
 class KafkaOffsetsHandler:
-    
+
     def store_or_update_Kafka_offset(self, topic: str, topic_partition: str, offset_start: str, offset_until: str):
 
         """
-
+        Store/update Kafka offsets. Offsets helps to track what messages have been process.
         :param topic:
         :param topic_partition:
         :param offset_start:
@@ -43,14 +43,14 @@ class KafkaOffsetsHandler:
         qry = "REPLACE INTO " + self.kafkaOffsetsTable + " (topic, topic_partition, offset_start, offset_until) VALUES(%s, %s, %s, %s)"
         vals = str(topic), str(topic_partition), str(offset_start), json.dumps(offset_until)
         self.execute(qry, vals, commit=True)
-        #self.dbConnection.commit()
 
     def get_kafka_offsets(self, topic: str) -> dict:
 
         """
-
+        Return Kafka offsets for each partition
         :param topic:
-        :return:
+        :return: dict{partitionID: offset....}
+        :rtype dict
         """
         if not topic:
             raise ValueError("Topic name cannot be empty")
@@ -58,8 +58,6 @@ class KafkaOffsetsHandler:
         qry = "SELECT * from " + self.kafkaOffsetsTable + " where topic = %(topic)s  order by id DESC"
         vals = {'topic': str(topic)}
         rows = self.execute(qry, vals)
-        #rows = self.cursor.fetchall()
-
         if rows:
             return rows
         else:

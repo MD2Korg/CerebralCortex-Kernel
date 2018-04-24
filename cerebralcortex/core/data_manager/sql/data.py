@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2018, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -25,11 +25,11 @@
 
 import mysql.connector
 import mysql.connector.pooling
-from cerebralcortex.core.log_manager.log_handler import LogTypes
+
+from cerebralcortex.core.data_manager.sql.kafka_offsets_handler import KafkaOffsetsHandler
 from cerebralcortex.core.data_manager.sql.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.sql.users_handler import UserHandler
-from cerebralcortex.core.log_manager.logging import CCLogging
-from cerebralcortex.core.data_manager.sql.kafka_offsets_handler import KafkaOffsetsHandler
+from cerebralcortex.core.log_manager.log_handler import LogTypes
 
 
 class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
@@ -55,26 +55,21 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
         self.poolSize = self.config['mysql']['connection_pool_size']
         self.pool = self.create_pool(pool_name=self.poolName, pool_size=self.poolSize)
 
-        # self.dbConnection = mysql.connector.connect(host=self.hostIP, port=self.hostPort, user=self.dbUser,
-        #                                             password=self.dbPassword, database=self.database)
-        # self.cursor = self.dbConnection.cursor(dictionary=True)
-
-
-    def create_pool(self, pool_name="CC_Pool", pool_size=10):
+    def create_pool(self, pool_name: str = "CC_Pool", pool_size: int = 10):
         """
         Create a connection pool, after created, the request of connecting
         MySQL could get a connection from this pool instead of request to
         create a connection.
         :param pool_name: the name of pool, default is "CC_Pool"
-        :param pool_size: the size of pool, default is 10
+        :param pool_size: the size of pool, default is 10 (min=1 and max=32)
         :return: connection pool
         """
         dbconfig = {
-            "host":self.hostIP,
-            "port":self.hostPort,
-            "user":self.dbUser,
-            "password":self.dbPassword,
-            "database":self.database,
+            "host": self.hostIP,
+            "port": self.hostPort,
+            "user": self.dbUser,
+            "password": self.dbPassword,
+            "database": self.database,
         }
 
         pool = mysql.connector.pooling.MySQLConnectionPool(
@@ -95,7 +90,7 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
             cursor.close()
             conn.close()
         except Exception as exp:
-            self.logging.log(error_message="Cannot close connection: "+str(exp), error_type=self.logtypes.DEBUG)
+            self.logging.log(error_message="Cannot close connection: " + str(exp), error_type=self.logtypes.DEBUG)
 
     def execute(self, sql, args=None, commit=False):
         """
@@ -121,30 +116,3 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
             res = cursor.fetchall()
             self.close(conn, cursor)
             return res
-
-    # def executemany(self, sql, args, commit=False):
-    #     """
-    #     Execute with many args. Similar with executemany() function in pymysql.
-    #     args should be a sequence.
-    #     :param sql: sql clause
-    #     :param args: args
-    #     :param commit: commit or not.
-    #     :return: if commit, return None, else, return result
-    #     """
-    #     # get connection form connection pool instead of create one.
-    #     conn = self.pool.get_connection()
-    #     cursor = conn.cursor()
-    #     cursor.executemany(sql, args)
-    #     if commit is True:
-    #         conn.commit()
-    #         self.close(conn, cursor)
-    #         return None
-    #     else:
-    #         res = cursor.fetchall()
-    #         self.close(conn, cursor)
-    #         return res
-
-    # def __del__(self):
-    #     if self.dbConnection:
-    #         self.dbConnection.close()
-

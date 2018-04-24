@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2018, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -28,7 +28,6 @@ import random
 import string
 import uuid
 from datetime import datetime
-from typing import List
 
 from pytz import timezone
 
@@ -39,16 +38,16 @@ class UserHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_user_metadata(self, user_id: uuid, username: str = None) -> List:
+    def get_user_metadata(self, user_id: uuid = None, username: str = None) -> dict:
         """
-
+        Get user metadata based on user uuid or username
         :param user_id:
         :param username:
-        :return:
+        :return: user metadata
+        :rtype dict
         """
         if not user_id and not username:
-            print("User ID/name cannot be empty.")
-            return []
+            raise ValueError("User ID/name cannot be empty.")
 
         if user_id and not username:
             qry = "select user_metadata from user where identifier=%(identifier)s"
@@ -62,16 +61,17 @@ class UserHandler():
 
         rows = self.execute(qry, vals)
         if len(rows) == 0:
-            return []
+            return {}
         else:
             return rows["user_metadata"]
 
     def get_user_uuid(self, username: str) -> str:
 
         """
-
+        Find user UUID of a user name
         :param username:
-        :return:
+        :return: string format of a user UUID
+        :rtype: str
         """
 
         qry = "SELECT identifier from " + self.userTable + " where username = %(username)s"
@@ -86,10 +86,11 @@ class UserHandler():
 
     def login_user(self, username: str, password: str) -> bool:
         """
-
+        Authenticate a user based on username and password
         :param username:
         :param password:
-        :return:
+        :return: return True if authentication is successful, False otherwise
+        :rtype bool
         """
         if not username or not password:
             raise ValueError("User name and password cannot be empty/null.")
@@ -105,11 +106,12 @@ class UserHandler():
 
     def is_auth_token_valid(self, token_owner: str, auth_token: str, auth_token_expiry_time: datetime) -> bool:
         """
-
+        Validate whether a token is valid or expired based on the token expiry datetime stored in MySQL
         :param token_owner:
         :param auth_token:
         :param auth_token_expiry_time:
-        :return:
+        :return: True if token is valid, False otherwise
+        :rtype bool
         """
         if not auth_token or not auth_token_expiry_time:
             raise ValueError("Auth token and auth-token expiry time cannot be null/empty.")
@@ -137,14 +139,14 @@ class UserHandler():
 
     def update_auth_token(self, username: str, auth_token: str, auth_token_issued_time: datetime,
                           auth_token_expiry_time: datetime) -> str:
-
         """
-
+        Update authentication token with new expiry time and token
         :param username:
         :param auth_token:
         :param auth_token_issued_time:
         :param auth_token_expiry_time:
-        :return uuid of the current user
+        :return: User's UUID for which authentication token has been updated
+        :rtype str
         """
         if not auth_token and not auth_token_expiry_time and not auth_token_issued_time:
             raise ValueError("Auth token and auth-token issue/expiry time cannot be null/empty.")
@@ -160,9 +162,11 @@ class UserHandler():
 
     def gen_random_pass(self, string_type: str, size: int = 8) -> str:
         """
+        Generate a random password
         :param string_type:
         :param size:
-        :return:
+        :return: randome password
+        :rtype str
         """
         if (string_type == "varchar"):
             chars = string.ascii_lowercase + string.digits
@@ -175,8 +179,10 @@ class UserHandler():
 
     def encrypt_user_password(self, user_password: str) -> str:
         """
+        Encrypt a password based on sha256
         :param user_password:
-        :return:
+        :return: encrypted password
+        :rtype str
         """
         hash_pwd = hashlib.sha256(user_password.encode('utf-8'))
         return hash_pwd.hexdigest()
