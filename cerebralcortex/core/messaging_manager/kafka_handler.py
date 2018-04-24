@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2018, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -28,9 +28,9 @@ import json
 
 class KafkaHandler():
 
-    def produce_message(self, topic: str, msg: str):
+    def produce_message(self, topic: str, msg: dict):
         """
-
+        Produce a message on Kafka topic
         :param topic:
         :param msg:
         """
@@ -43,13 +43,14 @@ class KafkaHandler():
         except Exception as e:
             raise Exception("Error publishing message. Topic: "+str(topic)+" - "+str(e))
 
-    def subscribe_to_topic(self, topic: str)->dict:
+    def subscribe_to_topic(self, topic: str)-> dict:
         """
-
+        Subscribe to a topic on Kafka to consume messages
         :param topic:
         :param auto_offset_reset - smallest (start of the topic) OR largest (end of a topic)
+        :return: Kafka message
+        :rtype: dict
         """
-        msgs = []
         if not topic:
             raise ValueError("Topic parameter is missing.")
 

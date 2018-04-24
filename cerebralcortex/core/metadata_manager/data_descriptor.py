@@ -28,6 +28,12 @@ class DataDescriptor:
                  type_string: str = None,
                  unit: str = None,
                  descriptive_statistic: str = None):
+        """
+
+        :param type_string:
+        :param unit:
+        :param descriptive_statistic:
+        """
         self._type = type_string
         self._unit = unit
         self._descriptive_statistic = descriptive_statistic

@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2018, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -28,34 +28,45 @@ import inspect
 import syslog
 from datetime import datetime
 
+
 class LogTypes():
     EXCEPTION = 1,
     CRITICAL = 2,
     ERROR = 3,
-    WARNING=4,
+    WARNING = 4,
     MISSING_DATA = 5,
     DEBUG = 6
 
 
 class LogHandler():
-    def logsyslog(self,loglevel,message):
+    def logsyslog(self, loglevel: str, message: str):
+        """
+        Initialize logging
+        :param loglevel:
+        :param message:
+        """
         syslog.openlog(ident="CerebralCortex")
         syslog.syslog(loglevel, message)
         syslog.closelog()
 
-    def log(self, error_message="", error_type=LogTypes.EXCEPTION):
-
+    def log(self, error_message: str = "", error_type=LogTypes.EXCEPTION):
+        """
+        Log errors and warnings in log file and print on console of debug is set to True
+        :param error_message:
+        :param error_type:
+        """
         execution_stats = inspect.stack()
         method_name = execution_stats[1][3]
         file_name = execution_stats[1][1]
         line_number = execution_stats[1][2]
 
-        error_message = str(datetime.now())+" - [" + str(file_name) + " - " + str(method_name) + " - " + str(line_number) + "] - " + str(error_message)
+        error_message = str(datetime.now()) + " - [" + str(file_name) + " - " + str(method_name) + " - " + str(
+            line_number) + "] - " + str(error_message)
 
         if self.debug:
             print(error_message)
 
-        if error_type==LogTypes.CRITICAL:
+        if error_type == LogTypes.CRITICAL:
             self.logsyslog(syslog.LOG_CRIT, error_message)
         elif error_type == LogTypes.ERROR:
             self.logsyslog(syslog.LOG_ERR, error_message)

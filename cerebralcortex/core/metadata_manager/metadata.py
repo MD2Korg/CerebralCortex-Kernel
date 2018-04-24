@@ -31,4 +31,7 @@ from cerebralcortex.core.metadata_manager.annotations import Annotations
 
 class Metadata(Annotations, DataDescriptor, ExecutionContext):
     def __init__(self):
+        """
+        Metadata of a stream
+        """
         pass

@@ -30,6 +30,13 @@ class ExecutionContext:
                  input_parameters: dict = None,
                  input_streams: dict = None,
                  metadata: dict = None):
+        """
+
+        :param processing_module:
+        :param input_parameters:
+        :param input_streams:
+        :param metadata:
+        """
         self._processing_module = processing_module
         self._input_parameters = input_parameters
         self._input_streams = input_streams
@@ -37,7 +44,7 @@ class ExecutionContext:
 
     def get_execution_context(self, processing_module: dict, algorithm: dict) -> dict:
         """
-        Please have a look at /kernel/schema/examples/ for schema and field details
+        Have a look at https://github.com/MD2Korg/CerebralCortex-DataAnalysis/tree/master/core/resources/metadata for schema and field details
         :param processing_module:
         :param algorithm:
         """

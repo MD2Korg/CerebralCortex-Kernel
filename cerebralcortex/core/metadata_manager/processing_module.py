@@ -30,6 +30,13 @@ class ExecutionContext:
                  input_parameters: dict = None,
                  input_streams: dict = None,
                  metadata: dict = None):
+        """
+
+        :param processing_module:
+        :param input_parameters:
+        :param input_streams:
+        :param metadata:
+        """
         self._processing_module = processing_module
         self._input_parameters = input_parameters
         self._input_streams = input_streams

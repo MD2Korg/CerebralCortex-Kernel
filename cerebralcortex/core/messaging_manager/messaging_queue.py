@@ -32,8 +32,9 @@ from kafka import KafkaConsumer
 class MessagingQueue(KafkaHandler):
     def __init__(self, CC: object, auto_offset_reset: str="latest"):
         """
-
+        Messaging queue module support pub/sub system in CerebralCortex
         :param CC:
+        :param auto_offset_reset: smallest (start of the topic) OR largest (end of a topic)
         """
         self.config = CC.config
         self.hostIP = self.config['kafkaserver']['host']

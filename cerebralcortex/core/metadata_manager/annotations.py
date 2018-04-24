@@ -28,6 +28,11 @@ class Annotations:
     def __init__(self,
                  name: str = None,
                  stream_identifier: int = None):
+        """
+
+        :param name:
+        :param stream_identifier:
+        """
         self._name = name
         self._stream_identifier = stream_identifier
 

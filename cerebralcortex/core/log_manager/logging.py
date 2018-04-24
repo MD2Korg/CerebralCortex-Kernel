@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2018, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -30,4 +30,8 @@ from cerebralcortex.core.log_manager.log_handler import LogHandler
 
 class CCLogging(LogHandler):
     def __init__(self, CC):
+        """
+        Log all the errors and warnings
+        :param CC:
+        """
         self.debug = CC.debug

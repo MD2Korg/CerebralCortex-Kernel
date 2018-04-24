@@ -27,10 +27,12 @@ import datetime
 import gzip
 import json
 import traceback
+from typing import List
+
+from pympler import asizeof
+
 from cerebralcortex.core.datatypes.datastream import DataStream, DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
-from pympler import asizeof
-from typing import List
 
 
 class ReadHandler():
@@ -49,7 +51,6 @@ class ReadHandler():
             data = file.read()
             file.close()
         return data
-
 
     def file_processor(self, msg: dict, zip_filepath: str) -> DataStream:
         """
@@ -99,7 +100,9 @@ class ReadHandler():
                             datapoints)
             return ds
         except Exception as e:
-            self.logging.log(error_message="In Kafka preprocessor - Error in processing file: " + str(msg["filename"])+" Owner-ID: "+owner + "Stream Name: "+name + " - " + str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            self.logging.log(error_message="In Kafka preprocessor - Error in processing file: " + str(
+                msg["filename"]) + " Owner-ID: " + owner + "Stream Name: " + name + " - " + str(traceback.format_exc()),
+                             error_type=self.logtypes.CRITICAL)
             return DataStream
 
     def row_to_datapoint(self, row: str) -> DataPoint:
@@ -131,7 +134,7 @@ class ReadHandler():
         gzip_file_content = gzip_file_content.decode('utf-8')
         return gzip_file_content
 
-    def get_chunk_size(self, data:List[DataPoint])->int:
+    def get_chunk_size(self, data: List[DataPoint]) -> int:
         """
         get chunk size of DataPoint objects in 0.75 MB blocks. This method is computationally heavy and not scalable.
         :param data:
