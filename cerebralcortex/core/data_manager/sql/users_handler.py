@@ -43,7 +43,7 @@ class UserHandler():
         Get user metadata based on user uuid or username
         :param user_id:
         :param username:
-        :return: user metadata
+        :return: user_metadata
         :rtype dict
         """
         if not user_id and not username:

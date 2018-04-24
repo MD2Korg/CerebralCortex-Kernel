@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2018, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -42,9 +42,10 @@ class StreamHandler():
 
     def get_stream_metadata(self, stream_id: uuid) -> dict:
         """
-
+        Get stream metadata
         :param stream_id:
-        :return:
+        :return: identifier, owner, name, data_descriptor,execution_context,annotations, type, start_time, end_time, tmp (tmp is just a primary key ID)
+        :rtype dict
         """
         qry = "SELECT * from " + self.datastreamTable + " where identifier=%(identifier)s"
         vals = {"identifier": str(stream_id)}
@@ -52,17 +53,16 @@ class StreamHandler():
         return rows
 
     def get_stream_metadata_by_user(self, user_id: uuid, stream_name: str = None, start_time: datetime = None,
-                                     end_time: datetime = None) -> List:
+                                     end_time: datetime = None) -> dict:
         """
-        Returns all the stream ids and name that belongs to an owner-id
+        Returns stream ids and metadata of a stream name belong to a user
         :param user_id:
-        :return:
+        :return: identifier, data_descriptor,execution_context,annotations, start_time, end_time
+        :rtype: dict
         """
-        stream_ids_names = {}
         vals = []
         if not user_id:
-            print("User ID cannot be empty/None.")
-            return None
+            raise ValueError("User ID cannot be empty/None.")
 
         qry = "SELECT identifier, data_descriptor,execution_context,annotations, start_time, end_time from " + self.datastreamTable
         where_clause = " where owner=%s "
@@ -87,10 +87,10 @@ class StreamHandler():
         Returns true if a user has a stream available
         :param user_id: 
         :param stream_name: 
-        :return: 
+        :return: True if owner has a stream, False otherwise
         """
         if not stream_name or not user_id:
-            return []
+            raise ValueError("Strea name and User ID are required fields.")
 
         qry = "select identifier from " + self.datastreamTable + " where owner=%s and name = %s"
         vals = str(user_id),str(stream_name)
@@ -104,12 +104,13 @@ class StreamHandler():
     
     def get_stream_duration(self, stream_id: uuid) -> dict:
         """
-
+        Get time duration (start time - end time) of a stream
         :param stream_id:
-        :return:
+        :return:start_time, end_time
+        :rtype dict
         """
         if not stream_id:
-            return None
+            raise ValueError("Stream ID is a required field.")
 
         qry = "select start_time, end_time from " + self.datastreamTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(stream_id)}
@@ -121,16 +122,17 @@ class StreamHandler():
         else:
             return {"start_time": rows[0]["start_time"], "end_time": rows[0]["end_time"]}
 
-    def get_all_users(self, study_name: str) -> List:
+    def get_all_users(self, study_name: str) -> List[dict]:
 
         """
-
+        Get all users id and user name for a particular study
         :param study_name:
-        :return:
+        :return: List of dicts (keys=identifier, username)
+        :rtype List
         """
         if not study_name:
-            print("Study name cannot be empty.")
-            return []
+            raise ValueError("Study name is a requied field.")
+
         results = []
         qry = 'SELECT identifier, username FROM ' + self.userTable + ' where user_metadata->"$.study_name"=%(study_name)s'
         vals = {'study_name': str(study_name)}
@@ -138,7 +140,6 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            print("No record found - get_all_users")
             return []
         else:
             for row in rows:
@@ -148,13 +149,15 @@ class StreamHandler():
     def get_user_streams(self, user_id: uuid) -> dict:
 
         """
-
+        Returns all user streams with name and metadata attached to it. Do not use "identifier" field as it doesn't
+        represents all the stream-ids linked to a stream name. Use stream_ids field in dict to get all stream-ids of a stream name.
         :param user_id:
-        :return:
+        :return: identifier, owner, name, data_descriptor,execution_context,annotations, type, start_time, end_time, tmp, stream_ids (this contains all the stream ids of a stream name)
+        :rtype: dict
         """
         if not user_id:
-            print("User ID cannot be empty.")
-            return {}
+            raise ValueError("User ID is a required field.")
+
         result = {}
         qry = 'SELECT * FROM ' + self.datastreamTable + ' where owner=%(owner)s'
         vals = {'owner': str(user_id)}
@@ -162,7 +165,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            return {}
+            return result
         else:
             for row in rows:
                 stream_ids = self.get_stream_id(str(user_id), row["name"])
@@ -172,12 +175,14 @@ class StreamHandler():
 
     def get_user_streams_metadata(self, user_id: str) -> dict:
         """
-
+        Get all streams metadata of a user
         :param user_id:
-        :return:
+        :return: name, data_descriptor,execution_context,annotations, start_time, end_time
+        :rtype: dict
         """
         if not user_id:
-            return {}
+            raise ValueError("User ID is a required field.")
+
         result = {}
         qry = "select name, data_descriptor,execution_context,annotations, start_time, end_time from " + self.datastreamTable + " where owner = %(owner)s"
         vals = {'owner': str(user_id)}
@@ -185,7 +190,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            return {}
+            return result
         else:
             for row in rows:
                 stream_ids = self.get_stream_id(str(user_id), row["name"])
@@ -195,12 +200,13 @@ class StreamHandler():
 
     def get_user_name(self, user_id: uuid) -> str:
         """
-
+        Get username of a user's UUID
         :param user_id:
-        :return:
+        :return: user id
+        :rtype: str
         """
         if not user_id:
-            return None
+            raise ValueError("User ID is a required field.")
 
         qry = "select username from " + self.userTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(user_id)}
@@ -214,9 +220,11 @@ class StreamHandler():
         
     def is_user(self, user_id: uuid=None, user_name:uuid=None) -> bool:
         """
-
+        Check whether a username or user ID exists in MySQL
         :param user_id:
-        :return:
+        :param user_name
+        :return: True if user exist, False otherwise
+        :rtype: bool
         """
         if user_id and user_name:
             qry = "select username from " + self.userTable + " where identifier = %s and username=%s"
@@ -228,8 +236,7 @@ class StreamHandler():
             qry = "select username from " + self.userTable + " where username = %(username)s"
             vals = {'username': str(user_name)}
         else:
-            print("Wrong parameters.")
-            return False
+            raise ValueError("Wrong parameters.")
 
         rows = self.execute(qry, vals)
 
@@ -240,12 +247,13 @@ class StreamHandler():
 
     def get_user_id(self, user_name: str) -> str:
         """
-
+        Get user's UUID
         :param user_name:
-        :return:
+        :return: user's UUID
+        :rtype: str
         """
         if not user_name:
-            return None
+            raise ValueError("User name is a required field.")
 
         qry = "select identifier from " + self.userTable + " where username = %(username)s"
         vals = {'username': str(user_name)}
@@ -257,14 +265,16 @@ class StreamHandler():
         else:
             return rows[0]["identifier"]
 
-    def get_stream_id(self, user_id:uuid, stream_name: str) -> List:
+    def get_stream_id(self, user_id:uuid, stream_name: str) -> dict:
         """
+        Get a stream ids of stream name linked to a user
         :param user_id
         :param stream_name:
-        :return:
+        :return: List of stream ids
+        :rtype: dict
         """
         if not stream_name or not user_id:
-            return []
+            raise ValueError("User ID and stream name are required field.")
 
         qry = "select identifier from " + self.datastreamTable + " where owner=%s and name = %s"
         vals = str(user_id),str(stream_name)
@@ -272,7 +282,7 @@ class StreamHandler():
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
-            return []
+            return {}
         else:
             return rows
 
@@ -281,7 +291,11 @@ class StreamHandler():
         Returns a list of days (string format: YearMonthDay (e.g., 20171206) for a given stream-id
         :param stream_id:
         :param dd_stream_id:
+        :return: list of days (format YYYYMMDD)
+        :rtype: List
         """
+        if not stream_id:
+            raise ValueError("Stream ID is a required field.")
         all_days = []
         stream_days = self.get_stream_duration(stream_id)
         if stream_days["end_time"] is not None and stream_days["start_time"] is not None:
@@ -293,13 +307,13 @@ class StreamHandler():
 
     def get_stream_name(self, stream_id: uuid) -> str:
         """
-
+        Get strea name linked to a stream UUID
         :param stream_id:
-        :return:
+        :return: stream name
+        :rtype: str
         """
         if not stream_id:
-            print("Stream ID cannot be empty.")
-            return ""
+            raise ValueError("Stream ID is a required field.")
 
         qry = "select name from " + self.datastreamTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(stream_id)}
@@ -314,9 +328,10 @@ class StreamHandler():
     def is_stream(self, stream_id: uuid)->bool:
 
         """
-
+        Checks whether a stream exist
         :param stream_id:
-        :return:
+        :return: True if a stream ID exist, False otherwise
+        :rtype: bool
         """
         qry = "SELECT * from " + self.datastreamTable + " where identifier = %(identifier)s"
         vals = {'identifier': str(stream_id)}
@@ -336,16 +351,17 @@ class StreamHandler():
                              data_descriptor: dict,
                              execution_context: dict,
                              annotations: dict, stream_type: str, start_time: datetime, end_time: datetime):
-
         """
         Update a record if stream already exists, insert a new record otherwise.
         :param stream_id:
-        :param owner_id:
         :param stream_name:
+        :param owner_id:
         :param data_descriptor:
         :param execution_context:
         :param annotations:
         :param stream_type:
+        :param start_time:
+        :param end_time:
         """
         isQueryReady = 0
 
@@ -391,13 +407,11 @@ class StreamHandler():
                 
     def annotations_status(self, stream_id: uuid, owner_id: uuid, annotations: dict) -> str:
         """
-        This method will check if the stream already exist with the same data (as provided in params) except annotations.
+        This method will check whether the stream already exist with the same data (as provided in params) except annotations.
         :param stream_id:
         :param owner_id:
-        :param name:
-        :param data_descriptor:
-        :param execution_context:
-        :param stream_type:
+        :param annotations:
+        :return:
         """
         qry = "select annotations from " + self.datastreamTable + " where identifier = %s and owner=%s"
         vals = stream_id, owner_id
@@ -411,12 +425,13 @@ class StreamHandler():
         else:
             return "new"
 
-    def check_end_time(self, stream_id: uuid, end_time: datetime) -> str:
+    def check_end_time(self, stream_id: uuid, end_time: datetime):
         """
-
+        Check whether end time was changed of a stream-id
         :param stream_id:
         :param end_time:
-        :return:
+        :return: It returns a datetime object if end-time was changed. Otherwise, it returns status as unchanged
+        :rtype: str OR datetime
         """
         localtz = timezone(self.time_zone)
 
@@ -466,12 +481,26 @@ class StreamHandler():
             self.logging.log(error_message="STREAM ID: "+stream_id+" - No record found. "+str(traceback.format_exc()), error_type=self.logtypes.DEBUG)
 
 
-    def mark_processed_day(self, owner_id, stream_id, day):
+    def mark_processed_day(self, owner_id: uuid, stream_id: uuid, day: str):
+        """
+        Mark row as processed if the data has been processed/ingested. This is used for data replay.
+        :param owner_id:
+        :param stream_id:
+        :param day:
+        """
         qry = "UPDATE "+self.dataReplayTable+" set processed=1 where owner_id=%s and stream_id=%s and day=%s"
         vals = str(owner_id), str(stream_id), str(day)
         self.execute(qry, vals, commit=True)
 
-    def is_day_processed(self, owner_id, stream_id, day)->bool:
+    def is_day_processed(self, owner_id:uuid, stream_id:uuid, day:str)->bool:
+        """
+        Checks whether data is processed for a given user-id and stream-id
+        :param owner_id:
+        :param stream_id:
+        :param day:
+        :return: True if day is processed, False otherwise
+        :rtype: bool
+        """
         if day is not None:
             qry = "SELECT processed from "+self.dataReplayTable+" where owner_id=%s and stream_id=%s and day=%s"
             vals = str(owner_id), str(stream_id), str(day)
@@ -483,6 +512,12 @@ class StreamHandler():
         return False
 
     def get_replay_batch(self, record_limit:int=5000)-> List:
+        """
+        This method helps in data replay. Yield a batch of data rows that needs to be processed and ingested in CerebralCortex
+        :param record_limit:
+        :return: List of dicts (keys=owner_id, stream_id, stream_name, day, files_list, metadata)
+        :rtype: dict
+        """
         blacklist_regex = self.config["blacklist"]
         regex_cols = "" #regex match on columns
         like_cols = "" # like operator on columns
