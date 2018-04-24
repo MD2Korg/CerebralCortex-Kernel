@@ -29,7 +29,7 @@ import os
 import pickle
 import traceback
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import List
 
@@ -39,7 +39,7 @@ from pytz import timezone as pytimezone
 
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.datastream import DataStream
-from cerebralcortex.core.util.data_types import convert_sample, deserialize_obj
+from cerebralcortex.core.util.data_types import deserialize_obj
 from cerebralcortex.core.util.data_types import serialize_obj
 from cerebralcortex.core.util.datetime_helper_methods import get_timezone
 
@@ -213,9 +213,19 @@ class StreamHandler():
                 error_message="STREAM ID: " + stream_id + " - Error in mapping datapoints and metadata to datastream. " + str(
                     traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
-
     def read_hdfs_day_file(self, owner_id: uuid, stream_id: uuid, day: str, start_time: datetime = None,
-                           end_time: datetime = None, localtime: bool = True):
+                           end_time: datetime = None, localtime: bool = True) -> List[DataPoint]:
+        """
+        Read and Process (read, unzip, unpickle, remove duplicates) data from HDFS
+        :param owner_id:
+        :param stream_id:
+        :param day: format (YYYYMMDD)
+        :param start_time:
+        :param end_time:
+        :param localtime:
+        :return: returns unique (based on start time) list of DataPoints
+        :rtype: DataPoint
+        """
         # Using libhdfs,
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
 
@@ -283,7 +293,18 @@ class StreamHandler():
                 return []
 
     def read_filesystem_day_file(self, owner_id: uuid, stream_id: uuid, day: str, start_time: datetime = None,
-                                 end_time: datetime = None, localtime: bool = True):
+                                 end_time: datetime = None, localtime: bool = True) -> List[DataPoint]:
+        """
+        Read and Process (read, unzip, unpickle, remove duplicates) data from a file system
+        :param owner_id:
+        :param stream_id:
+        :param day: format (YYYYMMDD)
+        :param start_time:
+        :param end_time:
+        :param localtime:
+        :return: returns unique (based on start time) list of DataPoints
+        :rtype: DataPoint
+        """
         if localtime:
             days = [datetime.strftime(datetime.strptime(day, '%Y%m%d') - timedelta(hours=24), "%Y%m%d"), day,
                     datetime.strftime(datetime.strptime(day, '%Y%m%d') + timedelta(hours=24), "%Y%m%d")]
@@ -350,10 +371,10 @@ class StreamHandler():
 
     def compress_store_pickle(self, filename: str, data: pickle, hdfs: object = None):
         """
-
+        Compress (using gzip compression) pickled binary object and store it to HDFS or File System
         :param filename: pickle file name
-        :param data: pickled data
-        :param hdfs: hdfs connection object
+        :param data: pickled data (binary object)
+        :param hdfs: hdfs connection object, store in a file system if object is None
         """
         gz_filename = filename.replace(".pickle", ".gz")
         if len(data) > 0:
@@ -393,7 +414,16 @@ class StreamHandler():
                         if hdfs.info(gz_filename)["size"] == 0:
                             hdfs.delete(gz_filename)
 
-    def subset_data(self, data, start_time: datetime = None, end_time: datetime = None):
+    def subset_data(self, data: List[DataPoint], start_time: datetime = None, end_time: datetime = None) -> List[
+        DataPoint]:
+        """
+        It accepts list of DataPoints and subset it based on start/end time
+        :param data: List of DataPoint
+        :param start_time:
+        :param end_time:
+        :return: data
+        :rtype: List[DataPoint]
+        """
         subset_data = []
         if start_time.tzinfo is None or start_time.tzinfo == "":
             start_time = start_time.replace(tzinfo=data[0].start_time.tzinfo)
@@ -418,7 +448,13 @@ class StreamHandler():
         else:
             return data
 
-    def filter_sort_datapoints(self, data):
+    def filter_sort_datapoints(self, data: List[DataPoint]) -> List[DataPoint]:
+        """
+        Remove duplicate datapoints and sort them based on the start time
+        :param data:
+        :return: contains unique and sorted list of Datapoints
+        :rtype: List[DataPoint]
+        """
         if len(data) > 0:
             if not isinstance(data, list):
                 data = deserialize_obj(data)
@@ -427,7 +463,13 @@ class StreamHandler():
         else:
             return data
 
-    def dedup(self, data):
+    def dedup(self, data: List[DataPoint]) -> List[DataPoint]:
+        """
+        Remove duplicate datapoints based on the start time
+        :param data:
+        :return: contains list of unique Datapoints
+        :rtype: List[DataPoint]
+        """
         result = [data[0]]
         for dp in data[1:]:
             if dp.start_time == result[-1].start_time:
@@ -438,9 +480,10 @@ class StreamHandler():
 
     def convert_to_localtime(self, data: List[DataPoint], localtime) -> List[DataPoint]:
         """
-        convert UTC time to local time
-        :param data:
-        :return:
+        Adds timezone to time. If locatime is false then it adds UTC timezone to start/end time
+        :param data: List[DataPoint]
+        :return: List of DataPoints with timezone embedded to start/end time
+        :rtype: List[DataPoint]
         """
 
         if len(data) > 0:
@@ -464,9 +507,10 @@ class StreamHandler():
 
     def convert_to_UTCtime(self, data: List[DataPoint]) -> List[DataPoint]:
         """
-        convert UTC time to local time
-        :param data:
-        :return:
+        convert start/end time of a DataPoint to UTC time
+        :param data: List[DataPoint]
+        :return: List of DataPoints with timezone embedded to start/end time
+        :rtype: List[DataPoint]
         """
         local_tz_data = []
         if len(data) > 0:
@@ -478,47 +522,16 @@ class StreamHandler():
                 local_tz_data.append(dp)
         return local_tz_data
 
-    # def convert_to_localtime(self, data: List[DataPoint], localtime) -> List[DataPoint]:
-    #     """
-    #     convert UTC time to local time
-    #     :param data:
-    #     :return:
-    #     """
-    #     #local_tz_data = []
-    #     if len(data)>0:
-    #         for dp in data:
-    #             if localtime:
-    #                 if dp.end_time is not None:
-    #                     dp.end_time += timedelta(milliseconds=dp.offset)
-    #                 dp.start_time += timedelta(milliseconds=dp.offset)
-    #             else:
-    #                 if dp.end_time is not None:
-    #                     dp.end_time = dp.end_time.replace(tzinfo=pytz.utc)
-    #                 dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
-    #     return data
-
-    # def convert_to_UTCtime(self, data: List[DataPoint]) -> List[DataPoint]:
-    #     """
-    #     convert local time to UTC time
-    #     :param data:
-    #     :return:
-    #     """
-    #     if data[0].offset==0 or data[0].offset is None or data[0].offset=="":
-    #         raise ValueError("Offset cannot be None, 0, and/or empty. Please set the same time offsets you received using get_stream.")
-    #
-    #     if len(data)>0:
-    #         for dp in data:
-    #             if dp.end_time is not None:
-    #                 dp.end_time -= timedelta(milliseconds=dp.offset)
-    #             dp.start_time -= timedelta(milliseconds=dp.offset)
-    #     return data
-
-    def load_cassandra_data(self, stream_id, day, start_time=None, end_time=None) -> List:
+    def load_cassandra_data(self, stream_id: uuid, day: str, start_time: datetime = None, end_time: datetime = None) -> \
+    List[DataPoint]:
         """
-
+        Get data from Cassandra/SyllaDB and convert it into list of DataPoint
         :param stream_id:
-        :param datapoints:
-        :param batch_size:
+        :param day: format (YYYYMMDD)
+        :param start_time:
+        :param end_time:
+        :return: list of datapoints
+        :rtype: List[DataPoint]
         """
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
@@ -563,11 +576,11 @@ class StreamHandler():
 
     def parse_row(self, row: str) -> List:
         """
-
+        Unpickle an object of List[DataPoint]
         :param row:
-        :return:
+        :return: list of DataPoint
+        :rtype: List[DataPoint]
         """
-        updated_rows = []
         try:
             return deserialize_obj(row[2])
         except Exception as e:
@@ -575,39 +588,42 @@ class StreamHandler():
                              error_type=self.logtypes.CRITICAL)
             return []
 
-    def parse_row_raw_sample(self, row: str, stream_name) -> List:
-        """
+    # def parse_row_raw_sample(self, row: str, stream_name:str) -> List[DataPoint]:
+    #     """
+    #
+    #     :param row:
+    #     :param stream_name:
+    #     :return:
+    #     """
+    #     updated_rows = []
+    #     try:
+    #         rows = json.loads(row[2])
+    #         for r in rows:
+    #             # Caasandra timezone is already in UTC. Adding timezone again would double the timezone value
+    #             if self.time_zone != 'UTC':
+    #                 localtz = pytimezone(self.time_zone)
+    #                 start_time = localtz.localize(datetime.fromtimestamp(r[0]))
+    #             else:
+    #                 sample_timezone = timezone(timedelta(milliseconds=r[1]))
+    #                 start_time = datetime.fromtimestamp(r[0], sample_timezone)
+    #             sample = convert_sample(r[2], stream_name)
+    #             updated_rows.append(DataPoint(start_time=start_time, sample=sample))
+    #         return updated_rows
+    #     except Exception as e:
+    #         self.logging.log(error_message="Row: " + row + " - Cannot parse row. " + str(traceback.format_exc()),
+    #                          error_type=self.logtypes.CRITICAL)
+    #         return []
 
-        :param row:
-        :return:
+    def get_stream_samples(self, stream_id: uuid, day: str, start_time: datetime = None, end_time: datetime = None) -> \
+    List[DataPoint]:
         """
-        updated_rows = []
-        try:
-            rows = json.loads(row[2])
-            for r in rows:
-                # Caasandra timezone is already in UTC. Adding timezone again would double the timezone value
-                if self.time_zone != 'UTC':
-                    localtz = pytimezone(self.time_zone)
-                    start_time = localtz.localize(datetime.fromtimestamp(r[0]))
-                else:
-                    sample_timezone = timezone(timedelta(milliseconds=r[1]))
-                    start_time = datetime.fromtimestamp(r[0], sample_timezone)
-                sample = convert_sample(r[2], stream_name)
-                updated_rows.append(DataPoint(start_time=start_time, sample=sample))
-            return updated_rows
-        except Exception as e:
-            self.logging.log(error_message="Row: " + row + " - Cannot parse row. " + str(traceback.format_exc()),
-                             error_type=self.logtypes.CRITICAL)
-            return []
-
-    def get_stream_samples(self, stream_id, day, start_time=None, end_time=None) -> List[DataPoint]:
-        """
-        returns list of DataPoint objects
+        Get data from Cassandra/ScyllaDB and convert it into a list of DataPoint format
         :param stream_id:
-        :param day:
+        :param day: format (YYYYMMDD)
         :param start_time:
         :param end_time:
-        :return:
+        :return: list of DataPoint objects
+        :rtype: List[DataPoint]
         """
         try:
             cluster = Cluster([self.hostIP], port=self.hostPort)
@@ -625,7 +641,6 @@ class StreamHandler():
             else:
                 qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "'"
 
-            # TODO: secure it
             rows = session.execute(qry)
             dps = self.row_to_datapoints(rows)
 
@@ -641,8 +656,9 @@ class StreamHandler():
     def row_to_datapoints(self, rows: object) -> List[DataPoint]:
         """
         Convert Cassandra rows into DataPoint list
-        :param rows:
-        :return:
+        :param rows: Cassandra row object
+        :return: list of DataPoint objects
+        :rtype: List[DataPoint]
         """
         dps = []
         try:
@@ -676,8 +692,9 @@ class StreamHandler():
     def save_stream(self, datastream: DataStream, localtime=False):
 
         """
-        Saves datastream raw data in Cassandra and metadata in MySQL.
+        Stores metadata in MySQL and raw data in HDFS, file system, Cassandra, OR ScyllaDB (nosql data store could be changed in CC yaml file)
         :param datastream:
+        :param localtime: if localtime is True then all DataPoints in a DataStream would be converted to UTC from localtime
         """
         owner_id = datastream.owner
         stream_name = datastream.name
@@ -742,13 +759,16 @@ class StreamHandler():
                 error_message="STREAM ID: " + stream_id + " - Cannot save stream. " + str(traceback.format_exc()),
                 error_type=self.logtypes.CRITICAL)
 
-    def write_hdfs_day_file(self, participant_id: uuid, stream_id: uuid, data: DataPoint):
+    def write_hdfs_day_file(self, participant_id: uuid, stream_id: uuid, data: List[DataPoint]) -> bool:
         """
-
+        Stores data in HDFS. If data contains multiple days then one file will be created for each day
         :param participant_id:
         :param stream_id:
         :param data:
+        :return True if data is successfully stored
+        :rtype bool
         """
+
         # Using libhdfs
         hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         outputdata = {}
@@ -798,7 +818,15 @@ class StreamHandler():
                             filename) + " - Exception: " + str(ex), error_type=self.logtypes.DEBUG)
         return success
 
-    def write_filesystem_day_file(self, participant_id, stream_id, data):
+    def write_filesystem_day_file(self, participant_id: uuid, stream_id: uuid, data: List[DataPoint]) -> bool:
+        """
+        Stores data in file system. If data contains multiple days then one file will be created for each day
+        :param participant_id:
+        :param stream_id:
+        :param data:
+        :return True if data is successfully stored
+        :rtype bool
+        """
         existing_data = None
         outputdata = {}
         success = False
@@ -848,12 +876,14 @@ class StreamHandler():
                             filename) + " - Exception: " + str(ex), error_type=self.logtypes.DEBUG)
         return success
 
-    def save_raw_data(self, stream_id: uuid, datapoints: DataPoint):
+    def save_raw_data(self, stream_id: uuid, datapoints: List[DataPoint]) -> bool:
 
         """
-
+        Pickle list of DataPoint objects and store it in Cassandra/ScyllaDB
         :param stream_id:
         :param datapoints:
+        :return True if data is successfully ingested
+        :rtype bool
         """
         datapoints = self.serialize_datapoints_batch(datapoints)
         success = False
@@ -886,14 +916,15 @@ class StreamHandler():
         return success
 
     def datapoints_to_cassandra_sql_batch(self, stream_id: uuid, datapoints: DataPoint, qry_without_endtime: str,
-                                          qry_with_endtime: str):
-
+                                          qry_with_endtime: str) -> BatchStatement:
         """
-
+        Convert List of DataPoint objects to Cassandra/ScyllaDB batch
         :param stream_id:
         :param datapoints:
         :param qry_without_endtime:
         :param qry_with_endtime:
+        :return Cassandra/ScyllaDB batch
+        :rtype BatchStatement(batch_type=BatchType.UNLOGGED)
         """
         batch = BatchStatement(batch_type=BatchType.UNLOGGED)
         batch.clear()
@@ -920,11 +951,13 @@ class StreamHandler():
                 dp_number += 1
         yield batch
 
-    def serialize_datapoints_batch(self, data):
+    def serialize_datapoints_batch(self, data: List[DataPoint]):
 
         """
         Converts list of datapoints into batches and pickle it
         :param data:
+        :return picked format of List of DataPoint objects
+        :rtype pickle
         """
 
         grouped_samples = []
