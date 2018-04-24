@@ -29,7 +29,10 @@ from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
 
 class RawData(StreamHandler):
     def __init__(self, CC):
+        """
 
+        :param CC: CerebralCortex object reference
+        """
         self.config = CC.config
         self.sql_data = CC.SqlData
 

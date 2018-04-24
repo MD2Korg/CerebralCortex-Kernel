@@ -54,7 +54,7 @@ class CerebralCortex:
         self.RawData = RawData(self)
         self.ObjectData = ObjectData(self)
         self.TimeSeriesData = TimeSeriesData(self)
-        self.FileIO = FileIO()
+        self.FileIO = FileIO(self)
         #TODO: disabled because uwsgi losses connection, need more investigation
         self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
         warnings.simplefilter('always', DeprecationWarning)

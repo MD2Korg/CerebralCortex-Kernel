@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2018, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -31,10 +31,10 @@ class DataPoint:
     def __init__(self,
                  start_time: datetime = None,
                  end_time: datetime = None,
-                 offset: str=None,
+                 offset: str = None,
                  sample: Any = None):
         """
-
+        DataPoint is the lowest data representations entity in CerebralCortex.
         :param start_time:
         :param end_time:
         :param offset: in milliseconds
@@ -81,21 +81,23 @@ class DataPoint:
         return self._start_time
 
     @classmethod
-    def from_tuple(cls, start_time: datetime, sample: Any, end_time: datetime = None, offset: str=None):
+    def from_tuple(cls, start_time: datetime, sample: Any, end_time: datetime = None, offset: str = None):
         return cls(start_time=start_time, end_time=end_time, offset=offset, sample=sample)
 
     def __str__(self):
-        return 'DataPoint(' + ', '.join(map(str, [self._start_time, self._end_time, self._offset, self._sample]))+')\n'
+        return 'DataPoint(' + ', '.join(
+            map(str, [self._start_time, self._end_time, self._offset, self._sample])) + ')\n'
 
     def __repr__(self):
-        return 'DataPoint(' + ', '.join(map(str, [self._start_time, self._end_time, self._offset, self._sample]))+')\n'
+        return 'DataPoint(' + ', '.join(
+            map(str, [self._start_time, self._end_time, self._offset, self._sample])) + ')\n'
 
     def __lt__(self, dp):
-        #if hasattr(dp, 'getKey'):
+        # if hasattr(dp, 'getKey'):
         return self.getKey().__lt__(dp.getKey())
 
     def __eq__(self, dp):
-        return self._start_time==dp.start_time
+        return self._start_time == dp.start_time
 
     def __hash__(self):
         return hash(('start_time', self.start_time))

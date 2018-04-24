@@ -24,14 +24,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-import uuid
 import re
+import traceback
+import uuid
 from datetime import datetime, timedelta
 from typing import List
-import traceback
-from pytz import timezone
 
-from cerebralcortex.core.util.debuging_decorators import log_execution_time
+from pytz import timezone
 
 
 class StreamHandler():
@@ -53,7 +52,7 @@ class StreamHandler():
         return rows
 
     def get_stream_metadata_by_user(self, user_id: uuid, stream_name: str = None, start_time: datetime = None,
-                                     end_time: datetime = None) -> dict:
+                                    end_time: datetime = None) -> dict:
         """
         Returns stream ids and metadata of a stream name belong to a user
         :param user_id:
@@ -77,12 +76,12 @@ class StreamHandler():
             where_clause += " and end_time>=%s "
             vals.append(end_time)
 
-        qry = qry+where_clause
+        qry = qry + where_clause
         vals = tuple(vals)
         rows = self.execute(qry, vals)
         return rows
 
-    def user_has_stream(self, user_id: uuid, stream_name: str) ->bool:
+    def user_has_stream(self, user_id: uuid, stream_name: str) -> bool:
         """
         Returns true if a user has a stream available
         :param user_id: 
@@ -93,7 +92,7 @@ class StreamHandler():
             raise ValueError("Strea name and User ID are required fields.")
 
         qry = "select identifier from " + self.datastreamTable + " where owner=%s and name = %s"
-        vals = str(user_id),str(stream_name)
+        vals = str(user_id), str(stream_name)
 
         rows = self.execute(qry, vals)
 
@@ -101,7 +100,7 @@ class StreamHandler():
             return False
         else:
             return True
-    
+
     def get_stream_duration(self, stream_id: uuid) -> dict:
         """
         Get time duration (start time - end time) of a stream
@@ -217,8 +216,8 @@ class StreamHandler():
             return ""
         else:
             return rows[0]["username"]
-        
-    def is_user(self, user_id: uuid=None, user_name:uuid=None) -> bool:
+
+    def is_user(self, user_id: uuid = None, user_name: uuid = None) -> bool:
         """
         Check whether a username or user ID exists in MySQL
         :param user_id:
@@ -265,7 +264,7 @@ class StreamHandler():
         else:
             return rows[0]["identifier"]
 
-    def get_stream_id(self, user_id:uuid, stream_name: str) -> dict:
+    def get_stream_id(self, user_id: uuid, stream_name: str) -> dict:
         """
         Get a stream ids of stream name linked to a user
         :param user_id
@@ -277,7 +276,7 @@ class StreamHandler():
             raise ValueError("User ID and stream name are required field.")
 
         qry = "select identifier from " + self.datastreamTable + " where owner=%s and name = %s"
-        vals = str(user_id),str(stream_name)
+        vals = str(user_id), str(stream_name)
 
         rows = self.execute(qry, vals)
 
@@ -299,9 +298,9 @@ class StreamHandler():
         all_days = []
         stream_days = self.get_stream_duration(stream_id)
         if stream_days["end_time"] is not None and stream_days["start_time"] is not None:
-            days = stream_days["end_time"]-stream_days["start_time"]
-            for day in range(days.days+1):
-                all_days.append((stream_days["start_time"]+timedelta(days=day)).strftime('%Y%m%d'))
+            days = stream_days["end_time"] - stream_days["start_time"]
+            for day in range(days.days + 1):
+                all_days.append((stream_days["start_time"] + timedelta(days=day)).strftime('%Y%m%d'))
 
         return all_days
 
@@ -325,7 +324,7 @@ class StreamHandler():
         else:
             return rows[0]["name"]
 
-    def is_stream(self, stream_id: uuid)->bool:
+    def is_stream(self, stream_id: uuid) -> bool:
 
         """
         Checks whether a stream exist
@@ -345,7 +344,6 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-
 
     def save_stream_metadata(self, stream_id: uuid, stream_name: str, owner_id: uuid,
                              data_descriptor: dict,
@@ -391,20 +389,22 @@ class StreamHandler():
             qry = "UPDATE " + self.datastreamTable + " set annotations=JSON_ARRAY_APPEND(annotations, '$.annotations',  CAST(%s AS JSON)) where identifier=%s"
             vals = json.dumps(annotations, default=str), str(stream_id)
             isQueryReady = 1
-        
+
         elif (annotation_status == "new"):
             qry = "INSERT INTO " + self.datastreamTable + " (identifier, owner, name, data_descriptor, execution_context, annotations, type, start_time, end_time) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
             vals = str(stream_id), str(owner_id), str(stream_name), json.dumps(
                 data_descriptor), json.dumps(execution_context, default=str), json.dumps(
                 annotations, default=str), stream_type, start_time, end_time
-            isQueryReady = 1        
-        # if nothing is changed then isQueryReady would be 0 and no database transaction would be performed
+            isQueryReady = 1
+            # if nothing is changed then isQueryReady would be 0 and no database transaction would be performed
         if isQueryReady == 1:
             try:
                 self.execute(qry, vals, commit=True)
             except:
-                self.logging.log(error_message="Query: "+str(qry)+" - cannot be processed. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
-                
+                self.logging.log(
+                    error_message="Query: " + str(qry) + " - cannot be processed. " + str(traceback.format_exc()),
+                    error_type=self.logtypes.CRITICAL)
+
     def annotations_status(self, stream_id: uuid, owner_id: uuid, annotations: dict) -> str:
         """
         This method will check whether the stream already exist with the same data (as provided in params) except annotations.
@@ -451,7 +451,9 @@ class StreamHandler():
             else:
                 return "unchanged"
         else:
-            self.logging.log(error_message="STREAM ID: "+stream_id+" - No record found. "+str(traceback.format_exc()), error_type=self.logtypes.DEBUG)
+            self.logging.log(
+                error_message="STREAM ID: " + stream_id + " - No record found. " + str(traceback.format_exc()),
+                error_type=self.logtypes.DEBUG)
 
     def update_start_time(self, stream_id: uuid, new_start_time: datetime):
         """
@@ -478,8 +480,9 @@ class StreamHandler():
                 vals = new_start_time, str(stream_id)
                 self.execute(qry, vals, commit=True)
         else:
-            self.logging.log(error_message="STREAM ID: "+stream_id+" - No record found. "+str(traceback.format_exc()), error_type=self.logtypes.DEBUG)
-
+            self.logging.log(
+                error_message="STREAM ID: " + stream_id + " - No record found. " + str(traceback.format_exc()),
+                error_type=self.logtypes.DEBUG)
 
     def mark_processed_day(self, owner_id: uuid, stream_id: uuid, day: str):
         """
@@ -488,11 +491,11 @@ class StreamHandler():
         :param stream_id:
         :param day:
         """
-        qry = "UPDATE "+self.dataReplayTable+" set processed=1 where owner_id=%s and stream_id=%s and day=%s"
+        qry = "UPDATE " + self.dataReplayTable + " set processed=1 where owner_id=%s and stream_id=%s and day=%s"
         vals = str(owner_id), str(stream_id), str(day)
         self.execute(qry, vals, commit=True)
 
-    def is_day_processed(self, owner_id:uuid, stream_id:uuid, day:str)->bool:
+    def is_day_processed(self, owner_id: uuid, stream_id: uuid, day: str) -> bool:
         """
         Checks whether data is processed for a given user-id and stream-id
         :param owner_id:
@@ -502,16 +505,16 @@ class StreamHandler():
         :rtype: bool
         """
         if day is not None:
-            qry = "SELECT processed from "+self.dataReplayTable+" where owner_id=%s and stream_id=%s and day=%s"
+            qry = "SELECT processed from " + self.dataReplayTable + " where owner_id=%s and stream_id=%s and day=%s"
             vals = str(owner_id), str(stream_id), str(day)
             rows = self.execute(qry, vals)
-            if rows[0]["processed"]==1:
+            if rows[0]["processed"] == 1:
                 return True
             else:
                 return False
         return False
 
-    def get_replay_batch(self, record_limit:int=5000)-> List:
+    def get_replay_batch(self, record_limit: int = 5000) -> List:
         """
         This method helps in data replay. Yield a batch of data rows that needs to be processed and ingested in CerebralCortex
         :param record_limit:
@@ -519,32 +522,37 @@ class StreamHandler():
         :rtype: dict
         """
         blacklist_regex = self.config["blacklist"]
-        regex_cols = "" #regex match on columns
-        like_cols = "" # like operator on columns
+        regex_cols = ""  # regex match on columns
+        like_cols = ""  # like operator on columns
         for breg in blacklist_regex["regzex"]:
             regex_cols += '%s NOT REGEXP "%s" and ' % ("stream_name", blacklist_regex["regzex"][breg])
 
         for btm in blacklist_regex["txt_match"]:
             like_cols += '%s not like "%s" and ' % ("stream_name", blacklist_regex["txt_match"][btm])
 
-        if regex_cols!="" and like_cols!="":
-            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from "+self.dataReplayTable+" where " + regex_cols +" "+like_cols+"  processed=0"
-        elif regex_cols!="" and like_cols=="":
-            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from "+self.dataReplayTable+" where " + re.sub("and $", "", regex_cols)+"  processed=0"
-        elif regex_cols=="" and like_cols!="":
-            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from "+self.dataReplayTable+" where " + re.sub("and $", "", like_cols)+"  processed=0"
+        if regex_cols != "" and like_cols != "":
+            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + regex_cols + " " + like_cols + "  processed=0"
+        elif regex_cols != "" and like_cols == "":
+            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + re.sub(
+                "and $", "", regex_cols) + "  processed=0"
+        elif regex_cols == "" and like_cols != "":
+            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + re.sub(
+                "and $", "", like_cols) + "  processed=0"
         else:
             qry = ""
 
-        if qry!="":
+        if qry != "":
             rows = self.execute(qry)
             msgs = []
-            if len(rows)>0:
+            if len(rows) > 0:
                 for row in rows:
-                    if len(msgs)>int(record_limit):
+                    if len(msgs) > int(record_limit):
                         yield msgs
                         msgs = []
-                    msgs.append({"owner_id":row["owner_id"], "stream_id":row["stream_id"],"stream_name":row["stream_name"], "metadata": json.loads(row["metadata"]), "day":row["day"], "filename":json.loads(row["files_list"])})
+                    msgs.append(
+                        {"owner_id": row["owner_id"], "stream_id": row["stream_id"], "stream_name": row["stream_name"],
+                         "metadata": json.loads(row["metadata"]), "day": row["day"],
+                         "filename": json.loads(row["files_list"])})
                 yield msgs
             else:
                 yield []

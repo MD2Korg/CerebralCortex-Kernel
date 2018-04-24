@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2018, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -30,34 +30,34 @@ import traceback
 from cerebralcortex.core.datatypes.datastream import DataStream, DataPoint
 from cerebralcortex.core.datatypes.stream_types import StreamTypes
 from pympler import asizeof
-
-from cerebralcortex.core.util.debuging_decorators import log_execution_time
+from typing import List
 
 
 class ReadHandler():
-    def __init__(self):
-        pass
 
     def read_file(self, filepath: str) -> str:
         """
-
+        Read a file and return contents
         :param filepath:
-        :return:
+        :return: file contents
+        :rtype: str
         """
         if not filepath:
-            return None
+            raise ValueError("File path is required field.")
 
         with open(filepath, "r") as file:
             data = file.read()
             file.close()
         return data
 
-    @log_execution_time
+
     def file_processor(self, msg: dict, zip_filepath: str) -> DataStream:
         """
+        Process a Kafka or MySQL msg. Parse compressed files. Convert json metadata and data in DataStream object.
         :param msg:
         :param zip_filepath:
-        :return:
+        :return: DataStream object with metadata and data
+        :rtype: DataStream
         """
 
         if not isinstance(msg["metadata"], dict):
@@ -99,15 +99,16 @@ class ReadHandler():
                             datapoints)
             return ds
         except Exception as e:
-            print("In Kafka preprocessor - Error in processing file: " + str(msg["filename"])+" Owner-ID: "+owner + "Stream Name: "+name + " - " + str(traceback.format_exc()))
-            return []
+            self.logging.log(error_message="In Kafka preprocessor - Error in processing file: " + str(msg["filename"])+" Owner-ID: "+owner + "Stream Name: "+name + " - " + str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            return DataStream
 
-    def row_to_datapoint(self, row: str) -> dict:
+    def row_to_datapoint(self, row: str) -> DataPoint:
         """
-            Format data based on mCerebrum's current GZ-CSV format into what Cerebral
+        Format data based on mCerebrum's current GZ-CSV format into what Cerebral
         Cortex expects
         :param row:
-        :return:
+        :return: single DataPoint
+        :rtype: DataPoint
         """
         ts, offset, values = row.split(',', 2)
         ts = int(ts) / 1000.0
@@ -117,12 +118,12 @@ class ReadHandler():
         ts = datetime.datetime.fromtimestamp(ts, timezone)
         return DataPoint(start_time=ts, sample=values)
 
-    #@log_execution_time
     def get_gzip_file_contents(self, filepath: str) -> str:
         """
         Read and return gzip compressed file contents
         :param filepath:
-        :return:
+        :return: gzip_file_content
+        :rtype: str
         """
         fp = gzip.open(filepath)
         gzip_file_content = fp.read()
@@ -130,8 +131,13 @@ class ReadHandler():
         gzip_file_content = gzip_file_content.decode('utf-8')
         return gzip_file_content
 
-    def get_chunk_size(self, data):
-
+    def get_chunk_size(self, data:List[DataPoint])->int:
+        """
+        get chunk size of DataPoint objects in 0.75 MB blocks. This method is computationally heavy and not scalable.
+        :param data:
+        :return: size of a list
+        :rtype: int
+        """
         if len(data) > 0:
             chunk_size = 750000 / (asizeof.asizeof(data) / len(data))  # 0.75MB chunk size without metadata
             return round(chunk_size)

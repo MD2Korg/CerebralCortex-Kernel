@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2018, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -24,13 +24,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import datetime
-import uuid
 from typing import List
 from uuid import UUID
 
-from cerebralcortex.core.metadata_manager.metadata import DataDescriptor, ExecutionContext
-
 from cerebralcortex.core.datatypes.datapoint import DataPoint
+from cerebralcortex.core.metadata_manager.metadata import DataDescriptor, ExecutionContext
 
 
 class DataStream:
@@ -45,8 +43,22 @@ class DataStream:
                  start_time: datetime = None,
                  end_time: datetime = None,
                  data: List[DataPoint] = None,
-                 stream_timezone = None
+                 stream_timezone=None
                  ):
+        """
+        DataStream object contains the list of DataPoint objects and metadata linked to it.
+        :param identifier:
+        :param owner:
+        :param name:
+        :param data_descriptor:
+        :param execution_context:
+        :param annotations:
+        :param stream_type:
+        :param start_time:
+        :param end_time:
+        :param data:
+        :param stream_timezone:
+        """
         self._identifier = identifier
         self._owner = owner
         self._name = name
@@ -158,8 +170,8 @@ class DataStream:
     #     :param end_time:
     #     :return:
     #     """
-        # annotation_stream_id = Metadata.get_annotation_id(self.identifier, annotation_stream_name)
-        # return SqlData.get_annotation_stream(annotation_stream_id, self.identifier, annotation, start_time, end_time)
+    # annotation_stream_id = Metadata.get_annotation_id(self.identifier, annotation_stream_name)
+    # return SqlData.get_annotation_stream(annotation_stream_id, self.identifier, annotation, start_time, end_time)
 
     @classmethod
     def from_datastream(cls, input_streams: List):

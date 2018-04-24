@@ -25,5 +25,8 @@
 
 
 class StreamTypes():
+    """
+    CerebralCortex supports two types of streams (datastream and annotationstream)
+    """
     DATASTREAM = 1
     ANNOTATIONSTREAM = 2

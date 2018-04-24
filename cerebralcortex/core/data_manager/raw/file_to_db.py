@@ -51,6 +51,10 @@ class FileToDB():
     This class is only for CC internal use.'''
 
     def __init__(self, CC):
+        """
+
+        :param CC: CerebralCortex Configurations
+        """
         self.config = CC.config
 
         self.rawData = CC.RawData

@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2018, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -24,11 +24,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cerebralcortex.core.file_manager.read_handler import ReadHandler
-from cerebralcortex.core.log_manager.log_handler import LogTypes
-from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.file_manager.write_handler import WriteHandler
 
 
 class FileIO(ReadHandler, WriteHandler):
-    def __init__(self):
-        pass
+    def __init__(self, CC):
+        """
+        All file IO related operations
+        :param CC: CerebralCortex object reference
+        """
+        self.CC = CC

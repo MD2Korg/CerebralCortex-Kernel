@@ -27,7 +27,11 @@ from cerebralcortex.core.config_manager.config_handler import ConfigHandler
 
 
 class Configuration(ConfigHandler):
-    def __init__(self, config_filepath):
+    def __init__(self, config_filepath:str):
+        """
+
+        :param config_filepath: CerebralCortex configuration file path
+        """
         self.config_filepath = config_filepath
         if config_filepath is not None:
             self.load_file(config_filepath)

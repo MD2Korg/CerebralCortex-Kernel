@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2018, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -24,8 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-from datetime import datetime
 import traceback
+from datetime import datetime
 
 from influxdb import InfluxDBClient
 
@@ -33,8 +33,6 @@ from cerebralcortex.core.datatypes.datastream import DataStream
 
 
 class InfluxdbHandler():
-    def __init__(self):
-        pass
 
     ###################################################################
     ################## STORE DATA METHODS #############################
@@ -43,6 +41,8 @@ class InfluxdbHandler():
     def store_data_to_influxdb(self, datastream: DataStream):
 
         """
+        Store a datastream to InfluxDB
+        TODO: This needs to be updated with the new structure
         :param datastream:
         """
         st = datetime.now()
@@ -102,4 +102,5 @@ class InfluxdbHandler():
         try:
             client.write_points(influx_data)
         except:
-            self.logging.log(error_message="STREAM ID: "+stream_identifier+" - Cannot save raw data. "+str(traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+            self.logging.log(error_message="STREAM ID: " + stream_identifier + " - Cannot save raw data. " + str(
+                traceback.format_exc()), error_type=self.logtypes.CRITICAL)

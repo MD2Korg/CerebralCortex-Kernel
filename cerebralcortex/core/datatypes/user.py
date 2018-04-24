@@ -38,6 +38,18 @@ class User:
                  user_role: datetime = None,
                  user_metadata: dict = None,
                  active: bool = 1):
+        """
+        Contains user related fields
+        :param identifier:
+        :param username:
+        :param password:
+        :param token:
+        :param token_issued_at:
+        :param token_expiry:
+        :param user_role:
+        :param user_metadata:
+        :param active:
+        """
         self._identifier = identifier
         self._username = username
         self._password = password

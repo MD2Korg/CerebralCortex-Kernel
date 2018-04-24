@@ -34,7 +34,10 @@ from cerebralcortex.core.log_manager.log_handler import LogTypes
 
 class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
     def __init__(self, CC):
+        """
 
+        :param CC: CerebralCortex object reference
+        """
         self.config = CC.config
 
         self.time_zone = CC.timezone

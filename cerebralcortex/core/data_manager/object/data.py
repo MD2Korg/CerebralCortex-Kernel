@@ -32,6 +32,10 @@ from cerebralcortex.core.data_manager.object.minio_handler import MinioHandler
 
 class ObjectData(MinioHandler):
     def __init__(self, CC):
+        """
+
+        :param CC: CerebralCortex object reference
+        """
         self.CC = CC
         self.config = CC.config
 
