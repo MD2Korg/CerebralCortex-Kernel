@@ -126,8 +126,8 @@ class MinioHandler():
         """
         try:
             return self.minioClient.bucket_exists(bucket_name)
-        except:
-            raise ResponseError
+        except Exception as e:
+            raise e
 
     ###################################################################
     ################## STORE DATA METHODS #############################
@@ -145,8 +145,8 @@ class MinioHandler():
         try:
             self.minioClient.make_bucket(bucket_name, location=self.CC.timezone)
             return True
-        except:
-            raise ResponseError
+        except Exception as e:
+            raise e
 
     def upload_object(self, bucket_name: str, object_name: str, object_filepath: object) -> bool:
         """
@@ -165,5 +165,5 @@ class MinioHandler():
             self.minioClient.put_object(bucket_name, object_name, file_data,
                                         file_stat.st_size, content_type='application/zip')
             return True
-        except:
-            raise ResponseError
+        except Exception as e:
+            raise e
