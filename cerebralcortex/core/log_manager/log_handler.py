@@ -63,9 +63,6 @@ class LogHandler():
         error_message = str(datetime.now()) + " - [" + str(file_name) + " - " + str(method_name) + " - " + str(
             line_number) + "] - " + str(error_message)
 
-        if self.debug:
-            print(error_message)
-
         if error_type == LogTypes.CRITICAL:
             self.logsyslog(syslog.LOG_CRIT, error_message)
         elif error_type == LogTypes.ERROR:
@@ -81,3 +78,9 @@ class LogHandler():
             self.logsyslog(syslog.LOG_ERR, error_message)
         else:
             self.logsyslog(syslog.LOG_INFO, error_message)
+
+        if self.debug:
+            print(error_message)
+
+        if self.throw_exception:
+            raise Exception(error_message)

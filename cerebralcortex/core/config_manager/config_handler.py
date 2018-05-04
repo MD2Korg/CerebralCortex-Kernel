@@ -41,7 +41,7 @@ class ConfigHandler():
         if self.config["data_ingestion"]["filesystem_path"]!="" and self.config["data_ingestion"]["filesystem_path"][-1] !="/":
             self.config["data_ingestion"]["filesystem_path"]+="/"
 
-        if self.config["data_replay"]["data_dir"][-1]!="" and self.config["data_replay"]["data_dir"][-1] !="/":
+        if self.config["data_replay"]["data_dir"]!="" and self.config["data_replay"]["data_dir"][-1] !="/":
             self.config["data_replay"]["data_dir"]+="/"
 
 

@@ -35,3 +35,4 @@ class CCLogging(LogHandler):
         :param CC:
         """
         self.debug = CC.debug
+        self.throw_exception = CC.config["cc"]["throw_exception"]
