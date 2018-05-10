@@ -810,6 +810,7 @@ class StreamHandler():
                         hdfs.delete(filename.replace(".gz", ".pickle"))
                     success = True
                 except Exception as ex:
+                    success = False
                     # delete file if file was opened and no data was written to it
                     if hdfs.exists(filename):
                         if hdfs.info(filename)["size"] == 0:
