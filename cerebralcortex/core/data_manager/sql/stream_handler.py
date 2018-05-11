@@ -521,6 +521,8 @@ class StreamHandler():
         :return: List of dicts (keys=owner_id, stream_id, stream_name, day, files_list, metadata)
         :rtype: dict
         """
+        good_participants = ['1c3e4944-1d23-4654-be10-c37b5806d00d', '1bdf0668-a632-4290-ad94-c6269f9e924a', '56b8d410-341c-4e90-ad7c-3e8bf1cbb0b6', '34521ae7-012a-400f-8794-3d76ff4e70ab', '3ca29402-0a0d-4f08-8f6c-5b57672809f6', 'f5abb4f1-ad31-4964-988c-14769501a8f7', 'a60bbc2d-4d45-4896-b533-15c2cd54cf60', '17b79ee0-4d3c-44ac-bfea-90b1f0540d4b', 'cdd98fba-4d2c-45d1-94b3-4b6b6077b58e', '16db9568-bd11-494f-b712-28a2266ea3d0', '94eb0755-56a3-4235-b759-8dc2ced70875', '5b1ab5af-701b-4717-9c43-98ab90a89325', 'bb23dbbc-b679-4849-b1d8-63279cad50e2', 'cd6f425b-92fe-4bdf-b277-53a558fc7c27', '44e31af4-7a40-4124-8dc4-d14b12dd66c7', 'c87dcc5b-2846-4eca-b6c2-ecc7ea58bbc7', 'c9b351d9-124b-4119-8be8-cb7c0f7e7994', '900b0dc1-b236-4364-bbab-0371af4eef84', 'b64eaa81-425f-446a-a521-9fdd9429f77b', '51ebb070-7d34-40b3-8520-55d2e318438a', 'ec7bb904-196c-4040-997e-d5e23ad1a553', '03996723-2411-4167-b14b-eb11dfc33124', 'd609008d-6efb-4cd0-ab84-6c0de55198db', '36f6e239-816a-4508-9126-3b612741c26d', 'f4aafd07-9711-4850-a6b6-63efa2fe25c6', 'ac9b4778-0bb5-4384-b4ed-3a5738ba99a4', 'ac3c89bc-11bb-447a-b226-5a4a935e9653', '95a070a7-086b-4f3d-a5ba-0a877f7fabf7', 'e44afc25-08b9-432e-ba89-7f0fc80b95cf', '9b7483ba-9c6f-4c67-bf48-549384ac66c7', '03c26210-7c9f-4bf2-b1c2-59d0bd64ffac', '94291262-3794-449e-a4c8-f62de9529977', '28fba926-ef44-4874-a209-ac6680441822', '342d9d87-787d-4836-9f61-4d59ed9f3289', '9324c6d7-3fdc-4614-8199-0c102f1b67c0', 'e7500981-9b13-4238-a855-52b91ed6244d', '6bf8a6da-a8c3-45c4-8aa3-75649cd1772d', '055bed5b-60ec-43e6-9110-137f2a36d65b', '135c9c3b-a5cf-47a4-9fcf-4fc418c5eb96', '843651b8-938f-4b33-9e5e-58a00a568c59', '4e13c9d7-58c9-4ab5-b111-f5c0a8ed05e2', '3b9ff2e4-dfec-4022-8994-1a0c4db7227a', '21e618f1-2cc1-4179-b001-62b05b3b1f7e', '3833df3d-dc81-4467-bdd9-16a7d99f7edb', '1b524925-07d8-42ea-8876-ada7298369ec', '63f5e202-6b13-491a-bdfc-9f13b7e4c036', '36caadf6-9bd5-4bac-9f13-75d2f439b4de', 'c73670a9-16ca-43bb-b7b9-110558e31798', 'f611477f-7b2e-4f36-81da-c6cdee27d7a1', '55675812-1eac-44e0-a57d-30a5a9ae083e', 'c696b0e8-299f-4270-9218-25f973bc64b4', '351fbcd3-c1ec-416c-bed7-195fe5d1f41d', '50846a75-cde7-44d0-878d-bedc39726f75', '0a11d9aa-1e9c-4f5e-94cf-faa6e796a855', '35daf881-da7c-4779-a8e9-20a3985094e2', '274739ff-aa7f-4b93-a409-67217327140c', 'df2b2506-6a64-4f94-8b7c-171a373387a3', '37733a30-f84c-416d-977f-ac3a5b2a68c4', 'f77f3c8b-49e6-44fe-92a1-c0b07bbea9e9', 'c5677eca-f00e-45af-ab0c-7388438c85e3', '059a9d92-4d36-40cb-84cc-408f9210821b', '805f3a7b-a197-4834-a4e4-a56da3dde6b1', '8cd3bb5b-32f7-4275-b789-bbcd7de0ee53', 'c6574c0d-ceca-4584-af55-d8e7e282ed8d']
+
         blacklist_regex = self.config["blacklist"]
         regex_cols = ""  # regex match on columns
         like_cols = ""  # like operator on columns
@@ -549,10 +551,11 @@ class StreamHandler():
                     if len(msgs) > int(record_limit):
                         yield msgs
                         msgs = []
-                    msgs.append(
-                        {"owner_id": row["owner_id"], "stream_id": row["stream_id"], "stream_name": row["stream_name"],
-                         "metadata": json.loads(row["metadata"]), "day": row["day"],
-                         "filename": json.loads(row["files_list"])})
+                    if row["owner_id"] in good_participants:
+                        msgs.append(
+                            {"owner_id": row["owner_id"], "stream_id": row["stream_id"], "stream_name": row["stream_name"],
+                             "metadata": json.loads(row["metadata"]), "day": row["day"],
+                             "filename": json.loads(row["files_list"])})
                 yield msgs
             else:
                 yield []
