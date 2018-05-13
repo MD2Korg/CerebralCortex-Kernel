@@ -704,7 +704,7 @@ class StreamHandler():
         annotations = datastream.annotations
         stream_type = datastream.datastream_type
         data = datastream.data
-        if len(data) > 0 and (data[0].offset == "" or data[0].offset is None):
+        if isinstance(data, list) and len(data) > 0 and (data[0].offset == "" or data[0].offset is None):
             raise ValueError(
                 "Offset cannot be None and/or empty. Please set the same time offsets you received using get_stream.")
 
