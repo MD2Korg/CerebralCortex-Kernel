@@ -139,7 +139,7 @@ class CerebralCortex:
         """
         return self.SqlData.get_stream_name(stream_id)
 
-    def get_stream_id(self, user_id: uuid, stream_name: str) -> List:
+    def get_stream_id(self, user_id: uuid, stream_name: str) -> dict:
         """
 
         :param stream_name:
