@@ -30,9 +30,10 @@ from cerebralcortex.core.data_manager.sql.kafka_offsets_handler import KafkaOffs
 from cerebralcortex.core.data_manager.sql.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.sql.users_handler import UserHandler
 from cerebralcortex.core.log_manager.log_handler import LogTypes
+from cerebralcortex.core.data_manager.sql.cache_handler import CacheHandler
 
 
-class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler):
+class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
     def __init__(self, CC):
         """
 
