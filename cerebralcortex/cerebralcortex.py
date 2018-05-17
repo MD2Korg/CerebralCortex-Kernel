@@ -431,3 +431,25 @@ class CerebralCortex:
         :param auto_offset_reset:
         """
         return self.MessagingQueue.subscribe_to_topic(topic)
+
+    ################### CACHE RELATED METHODS ##################################
+
+    def set_cache_value(self, key: str, value: str) -> bool:
+        """
+        Creates a new cache entry in the cache. Values are overwritten for
+        existing keys.
+        :param key: key in the cache
+        :param value: value associated with the key
+        :return True on successful insert
+        :rtype bool
+        """
+        return self.SqlData.set_cache_value(key, value)
+
+    def get_cache_value(self, key: str) -> str:
+        """
+        Retrieves value from the cache for the given key.
+        :param key: key in the cache
+        :return The value in the cache
+        :rtype str
+        """
+        return self.SqlData.get_cache_value(key)
