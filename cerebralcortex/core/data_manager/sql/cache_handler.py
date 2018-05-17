@@ -21,6 +21,7 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import traceback
 
 class CacheHandler:
     def set_cache_value(self, key: str, value: str) -> bool:
@@ -37,6 +38,7 @@ class CacheHandler:
 
         qry = "INSERT INTO cc_cache(cache_key,cache_value) VALUES ('%s','%s') ON DUPLICATE KEY UPDATE cache_value = '%s';" % (key,value,value)
         try:
+            self.logging.log(qry)
             self.execute(qry,commit=True)
             return True
         except Exception as e:
