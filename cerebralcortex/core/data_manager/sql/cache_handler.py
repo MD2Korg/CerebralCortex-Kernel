@@ -40,7 +40,7 @@ class CacheHandler:
             self.execute(qry,commit=True)
             return True
         except Exception as e:
-            self.CC.logging.log(str(traceback.format_exc()))
+            self.logging.log(str(traceback.format_exc()))
             return False
 
 
@@ -57,9 +57,14 @@ class CacheHandler:
         qry = "select cache_value from cc_cache where cache_key=%(key)s"
         vals = {"key": str(key)}
 
-        rows = self.execute(qry, vals)
-        if len(rows) == 0:
+        try:
+            rows = self.execute(qry, vals)
+            if len(rows) == 0:
+                return None
+            else:
+                return rows[0]["cache_value"]
+        except Exception as e:
+            self.logging.log(traceback.format_exc())
             return None
-        else:
-            return rows[0]["cache_value"]
+
 
