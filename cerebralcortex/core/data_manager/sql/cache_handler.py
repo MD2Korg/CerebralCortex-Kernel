@@ -36,9 +36,8 @@ class CacheHandler:
         if not key or not len(key):
             raise ValueError("Key cannot be empty.")
 
-        qry = "INSERT INTO cc_cache(cache_key,cache_value) VALUES ('%s','%s') ON DUPLICATE KEY UPDATE cache_value = '%s';" % (key,value,value)
+        qry = 'INSERT INTO cc_cache(cache_key,cache_value) VALUES(QUOTE("%s"),QUOTE("%s")) ON DUPLICATE KEY UPDATE cache_value = QUOTE("%s");' % (key,value,value)
         try:
-            self.logging.log(qry)
             self.execute(qry,commit=True)
             return True
         except Exception as e:
@@ -56,7 +55,7 @@ class CacheHandler:
         if not key and not len(key):
             raise ValueError("Key cannot be empty.")
 
-        qry = "select cache_value from cc_cache where cache_key=%(key)s"
+        qry = "select cache_value from cc_cache where cache_key=QUOTE(%(key)s)"
         vals = {"key": str(key)}
 
         try:
