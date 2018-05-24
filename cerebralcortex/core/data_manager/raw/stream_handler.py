@@ -921,7 +921,7 @@ class StreamHandler():
         return success
 
     def datapoints_to_cassandra_sql_batch(self, stream_id: uuid, datapoints: DataPoint, qry_without_endtime: str,
-                                          qry_with_endtime: str) -> BatchStatement:
+                                          qry_with_endtime: str) -> object: #don't put return type as BatchStatement because it can cause errors when Cassandra is selected as NoSQL store
         """
         Convert List of DataPoint objects to Cassandra/ScyllaDB batch
         :param stream_id:
