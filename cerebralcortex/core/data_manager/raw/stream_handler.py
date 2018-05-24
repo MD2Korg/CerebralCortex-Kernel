@@ -741,9 +741,11 @@ class StreamHandler():
                     status = self.write_hdfs_day_file(owner_id, stream_id, data)
                 elif self.nosql_store == "filesystem":
                     status = self.write_filesystem_day_file(owner_id, stream_id, data)
-                else:
+                elif self.nosql_store=="cassandra" or self.nosql_store=="scylladb":
                     # save raw sensor data in Cassandra
                     status = self.save_raw_data(stream_id, data)
+                else:
+                    raise Exception("Acceptable parameters are: cassandra, scylladb, hdfs, filesystem. Please check CC config (data_ingestion->nosql_store)")
 
                 if status:
                     # save metadata in SQL store
