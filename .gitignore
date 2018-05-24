@@ -1,3 +1,5 @@
 MD2K*
 build/
 dist/
+__pycache__
+*.pyc
