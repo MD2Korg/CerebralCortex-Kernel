@@ -87,8 +87,6 @@ class TestStreamHandler():
         data = self.CC.RawData.convert_to_UTCtime(data)
         self.assertEqual(parser.parse("2018-02-22 21:14:51.133000+00:00"), data[0].start_time)
 
-        print("done")
-
     def test03_get_stream(self):
         data_len = []
         start_times = []
