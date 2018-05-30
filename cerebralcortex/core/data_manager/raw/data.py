@@ -39,6 +39,7 @@ class RawData(StreamHandler):
         self.time_zone = CC.timezone
 
         self.logging = CC.logging
+        self.TimeSeriesData = CC.TimeSeriesData
         self.logtypes = LogTypes()
 
         self.host_ip = self.config['cassandra']['host']
