@@ -755,7 +755,7 @@ class StreamHandler():
                                                        stream_type, new_start_time, new_end_time)
                     try:
                         if ingestInfluxDB:
-                            self.TimeSeriesData.store_data_to_influxdb(datastream=datastream)
+                            self.timeSeriesData.store_data_to_influxdb(datastream=datastream)
                     except:
                         raise Exception
                 else:
