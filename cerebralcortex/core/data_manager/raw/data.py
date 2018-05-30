@@ -25,7 +25,7 @@
 
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
-
+from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
 
 class RawData(StreamHandler):
     def __init__(self, CC):
@@ -39,7 +39,7 @@ class RawData(StreamHandler):
         self.time_zone = CC.timezone
 
         self.logging = CC.logging
-        self.timeSeriesData = CC.TimeSeriesData
+        self.timeSeriesData = TimeSeriesData(CC)
         self.logtypes = LogTypes()
 
         self.host_ip = self.config['cassandra']['host']
