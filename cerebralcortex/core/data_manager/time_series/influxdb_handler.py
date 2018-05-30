@@ -84,9 +84,7 @@ class InfluxdbHandler():
                         else:
                             object['fields']['value_' + str(i)] = sample_val
                 else:
-                    dd = data_descriptor[0]
-
-                    if "NAME" in dd:
+                    if len(data_descriptor)>0 and "NAME" in data_descriptor[0]:
                         object['fields'][dd["NAME"]] = values
                     else:
                         object['fields']['value_0'] = values

@@ -689,7 +689,7 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    def save_stream(self, datastream: DataStream, localtime=False):
+    def save_stream(self, datastream: DataStream, localtime=False, ingestInfluxDB=False):
 
         """
         Stores metadata in MySQL and raw data in HDFS, file system, Cassandra, OR ScyllaDB (nosql data store could be changed in CC yaml file)
@@ -753,6 +753,11 @@ class StreamHandler():
                                                        data_descriptor, execution_context,
                                                        annotations,
                                                        stream_type, new_start_time, new_end_time)
+                    try:
+                        if ingestInfluxDB:
+                            self.TimeSeriesData.store_data_to_influxdb(datastream=datastream)
+                    except:
+                        raise Exception
                 else:
                     print(
                         "Something went wrong in saving data points. Please check error logs /var/log/cerebralcortex.log")
