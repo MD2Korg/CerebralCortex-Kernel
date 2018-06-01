@@ -364,7 +364,7 @@ class FileToDB():
                                         filename) + " - Error in writing data to influxdb. " + str(
                                         traceback.format_exc()), error_type=self.logtypes.CRITICAL)
                         else:
-                            print("Something is not correct")
+                            print("Something is not correct", str(influxdb_insert), str(influxdb_client), str(line_count))
 
                         ############### END INFLUXDB BLOCK
 
