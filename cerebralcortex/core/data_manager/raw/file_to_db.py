@@ -363,8 +363,7 @@ class FileToDB():
                                     error_message="STREAM ID: " + str(stream_id) + "Owner ID: " + str(stream_owner_id) + "Files: " + str(
                                         filename) + " - Error in writing data to influxdb. " + str(
                                         traceback.format_exc()), error_type=self.logtypes.CRITICAL)
-                        else:
-                            print("Something is not correct", str(influxdb_insert), str(influxdb_client), str(line_count))
+
 
                         ############### END INFLUXDB BLOCK
 
