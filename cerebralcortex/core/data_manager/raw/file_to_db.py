@@ -142,7 +142,7 @@ class FileToDB():
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
 
-        if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
+        if influxdb_insert:
             influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort,
                                              username=self.influxdbUser,
                                              password=self.influxdbPassword, database=self.influxdbDatabase)
