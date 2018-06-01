@@ -88,7 +88,7 @@ class FileToDB():
         self.batch_size = 100
         self.sample_group_size = 99
         self.influx_batch_size = 10000
-        self.influx_day_datapoints_limit = 37000
+        self.influx_day_datapoints_limit = 10000
 
         if self.nosql_store == "hdfs":
             self.hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
@@ -356,12 +356,15 @@ class FileToDB():
                         elif influxdb_client is not None and influxdb_insert and line_count > self.influx_day_datapoints_limit:
                             try:
                                 influxdb_client.write_points(line_protocol, protocol="line")
+                                line_protocol = ""
                                 line_count=0
                             except:
                                 self.logging.log(
                                     error_message="STREAM ID: " + str(stream_id) + "Owner ID: " + str(stream_owner_id) + "Files: " + str(
                                         filename) + " - Error in writing data to influxdb. " + str(
                                         traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+                        else:
+                            print("Something is not correct")
 
                         ############### END INFLUXDB BLOCK
 
@@ -409,6 +412,7 @@ class FileToDB():
                 if influxdb_client is not None and influxdb_insert and line_protocol is not None and line_protocol!="":
                     try:
                         influxdb_client.write_points(line_protocol, protocol="line")
+                        line_protocol = ""
                         line_count=0
                     except:
                         self.logging.log(
