@@ -88,7 +88,7 @@ class FileToDB():
         self.batch_size = 100
         self.sample_group_size = 99
         self.influx_batch_size = 10000
-        self.influx_day_datapoints_limit = 37000
+        self.influx_day_datapoints_limit = 3000000
 
         if self.nosql_store == "hdfs":
             self.hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
