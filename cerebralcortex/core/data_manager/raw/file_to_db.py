@@ -137,6 +137,7 @@ class FileToDB():
         influxdb_data = ""
         nosql_data = []
         all_data = []
+        influxdb_client = None
         print("PROCESSING (owner, stream): ", owner, stream_id)
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
