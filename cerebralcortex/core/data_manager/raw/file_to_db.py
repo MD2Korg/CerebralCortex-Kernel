@@ -88,7 +88,7 @@ class FileToDB():
         self.batch_size = 100
         self.sample_group_size = 99
         self.influx_batch_size = 10000
-        self.influx_day_datapoints_limit = 30000000
+        self.influx_day_datapoints_limit = 37000
 
         if self.nosql_store == "hdfs":
             self.hdfs = pyarrow.hdfs.connect(self.hdfs_ip, self.hdfs_port)
@@ -140,13 +140,18 @@ class FileToDB():
         print("PROCESSING (owner, stream): ", owner, stream_id)
         if isinstance(stream_id, str):
             stream_id = uuid.UUID(stream_id)
+
+        if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
+            influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort,
+                                             username=self.influxdbUser,
+                                             password=self.influxdbPassword, database=self.influxdbDatabase)
         if influxdb_insert or nosql_insert:
             if self.data_play_type == "mydb":
                 for filename in filenames:
                     if os.path.exists(str(zip_filepath + filename)):
                         all_data = self.line_to_sample(zip_filepath + filename, stream_id, owner, owner_name, name,
                                                        data_descriptor,
-                                                       influxdb_insert, nosql_insert)
+                                                       influxdb_insert, influxdb_client, nosql_insert)
                         if influxdb_insert:
                             influxdb_data = influxdb_data + all_data["influxdb_data"]
                         if nosql_insert:
@@ -159,7 +164,7 @@ class FileToDB():
                 if os.path.exists(zip_filepath + str(filenames[0])):
                     all_data = self.line_to_sample(zip_filepath + str(filenames[0]), stream_id, owner, owner_name, name,
                                                    data_descriptor,
-                                                   influxdb_insert, nosql_insert)
+                                                   influxdb_insert, influxdb_client, nosql_insert)
                     if influxdb_insert:
                         influxdb_data = influxdb_data + all_data["influxdb_data"]
                     if nosql_insert:
@@ -197,17 +202,7 @@ class FileToDB():
                 session.shutdown()
                 cluster.shutdown()
 
-            if influxdb_insert and len(influxdb_data) > 0 and influxdb_data is not None:
-                try:
-                    influxdb_client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort,
-                                                     username=self.influxdbUser,
-                                                     password=self.influxdbPassword, database=self.influxdbDatabase)
-                    influxdb_client.write_points(influxdb_data, protocol="line")
-                except:
-                    self.logging.log(
-                        error_message="STREAM ID: " + str(stream_id) + "Owner ID: " + str(owner) + "Files: " + str(
-                            msg["filename"]) + " - Error in writing data to influxdb. " + str(
-                            traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+
 
             nosql_data.clear()
             all_data.clear()
@@ -248,7 +243,7 @@ class FileToDB():
         yield batch
 
     def line_to_sample(self, filename, stream_id, stream_owner_id, stream_owner_name, stream_name,
-                       data_descriptor, influxdb_insert, nosql_insert):
+                       data_descriptor, influxdb_insert, influxdb_client, nosql_insert):
 
         """
         Converts a gz file lines into sample values format and influxdb object
@@ -357,6 +352,15 @@ class FileToDB():
                                     int(ts) * 1000000))  # line protocol requires nanoseconds accuracy for timestamp
                                 measurement_and_tags = ""
                                 fields = ""
+                        elif influxdb_client is not None and influxdb_insert and line_count > self.influx_day_datapoints_limit:
+                            try:
+                                influxdb_client.write_points(line_protocol, protocol="line")
+                                line_count=0
+                            except:
+                                self.logging.log(
+                                    error_message="STREAM ID: " + str(stream_id) + "Owner ID: " + str(stream_owner_id) + "Files: " + str(
+                                        filename) + " - Error in writing data to influxdb. " + str(
+                                        traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
                         ############### END INFLUXDB BLOCK
 
@@ -401,8 +405,16 @@ class FileToDB():
                     grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
                     ############### END OF NO-SQL DATA BLOCK
 
-                if line_count > self.influx_day_datapoints_limit:
-                    line_protocol = ""
+                if influxdb_client is not None and influxdb_insert and line_protocol is not None and line_protocol!="":
+                    try:
+                        influxdb_client.write_points(line_protocol, protocol="line")
+                        line_count=0
+                    except:
+                        self.logging.log(
+                            error_message="STREAM ID: " + str(stream_id) + "Owner ID: " + str(stream_owner_id) + "Files: " + str(
+                                filename) + " - Error in writing data to influxdb. " + str(
+                                traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+
                 return {"nosql_data": grouped_samples, "influxdb_data": line_protocol}
         except:
             self.logging.log(error_message="STREAM ID: " + str(stream_id) + " - Cannot process file data. " + str(
