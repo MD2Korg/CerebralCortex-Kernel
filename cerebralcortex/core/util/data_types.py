@@ -98,10 +98,11 @@ def convert_sample(sample, stream_name):
         elif isinstance(sample, str) and "," in sample:
             tmp = []
             for val in sample.split(','):
+                val = str(val).strip()
                 try:
                     tmp.append(float(val))
                 except:
-                    tmp.append(str(val).strip())
+                    tmp.append(val)
             return tmp
         else:
             try:
