@@ -101,7 +101,7 @@ def convert_sample(sample, stream_name):
                 try:
                     tmp.append(float(val))
                 except:
-                    tmp.append(val)
+                    tmp.append(str(val).strip())
             return tmp
         else:
             try:
