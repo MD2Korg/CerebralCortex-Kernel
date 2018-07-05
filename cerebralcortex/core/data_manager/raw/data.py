@@ -61,3 +61,7 @@ class RawData(StreamHandler):
         self.filesystem_path = self.config["data_ingestion"]["filesystem_path"]
         
         self.data_play_type = self.config["data_replay"]["replay_type"]
+        
+        self.minio_input_bucket = self.config['minio']['input_bucket_name']
+        self.minio_output_bucket = self.config['minio']['output_bucket_name']
+        self.minio_dir_prefix = self.config['minio']['dir_prefix']

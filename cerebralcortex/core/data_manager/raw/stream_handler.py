@@ -26,6 +26,7 @@
 import gzip
 import json
 import os
+import sys
 import pickle
 import traceback
 import uuid
@@ -88,6 +89,8 @@ class StreamHandler():
                     dps = self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
                 elif self.nosql_store == "filesystem":
                     dps = self.read_filesystem_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
+                elif self.nosql_store == "aws_s3":
+                    dps = self.read_aws_s3_file(owner_id, stream_id, day, start_time, end_time, localtime)
                 else:
                     dps = self.load_cassandra_data(stream_id, day, start_time, end_time)
                 stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps, localtime)
@@ -96,6 +99,8 @@ class StreamHandler():
                     return self.read_hdfs_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
                 elif self.nosql_store == "filesystem":
                     return self.read_filesystem_day_file(owner_id, stream_id, day, start_time, end_time, localtime)
+                elif self.nosql_store == "aws_s3":
+                    return self.read_aws_s3_file(owner_id, stream_id, day, start_time, end_time, localtime)
                 else:
                     return self.load_cassandra_data(stream_id, day, start_time, end_time)
             elif data_type == DataSet.ONLY_METADATA:
@@ -307,7 +312,7 @@ class StreamHandler():
         """
         # TODO: this method only works for .gz files. Update it to handle .pickle uncompressed if required
 
-        bucket_name = "cerebralcortex-mperf"
+        bucket_name = self.minio_input_bucket
 
         if localtime:
             days = [datetime.strftime(datetime.strptime(day, '%Y%m%d') - timedelta(hours=24), "%Y%m%d"), day,
@@ -317,7 +322,7 @@ class StreamHandler():
             day_block = []
             for d in days:
                 try:
-                    object_name = "cerebralcortex/data/"+str(owner_id) + "/" + str(stream_id)+"/"+str(d)+".gz"
+                    object_name = self.minio_dir_prefix+str(owner_id) + "/" + str(stream_id)+"/"+str(d)+".gz"
 
                     if self.ObjectData.is_object(bucket_name, object_name):
                         data = self.ObjectData.get_object(bucket_name, object_name)
@@ -336,7 +341,7 @@ class StreamHandler():
                 day_block = self.subset_data(day_block, start_time, end_time)
             return day_block
         else:
-            object_name = "cerebralcortex/data/"+str(owner_id) + "/" + str(stream_id)+"/"+str(day)+".gz"
+            object_name = self.minio_dir_prefix+str(owner_id) + "/" + str(stream_id)+"/"+str(day)+".gz"
             try:
                 if self.ObjectData.is_object(bucket_name, object_name):
                     data = self.ObjectData.get_object(bucket_name, object_name)
@@ -806,6 +811,8 @@ class StreamHandler():
                     status = self.write_hdfs_day_file(owner_id, stream_id, data)
                 elif self.nosql_store == "filesystem":
                     status = self.write_filesystem_day_file(owner_id, stream_id, data)
+                elif self.nosql_store == "aws_s3":
+                    status = self.write_aws_s3_file(owner_id, stream_id, data)
                 elif self.nosql_store=="cassandra" or self.nosql_store=="scylladb":
                     # save raw sensor data in Cassandra
                     status = self.save_raw_data(stream_id, data)
@@ -891,6 +898,54 @@ class StreamHandler():
                         error_message="Error in writing data to HDFS. STREAM ID: " + str(
                             stream_id) + "Owner ID: " + str(participant_id) + "Files: " + str(
                             filename) + " - Exception: " + str(ex), error_type=self.logtypes.DEBUG)
+        return success
+
+    def write_aws_s3_file(self, participant_id: uuid, stream_id: uuid, data: List[DataPoint]) -> bool:
+        """
+        Stores data in AWS-S3. If data contains multiple days then one file will be created for each day
+        :param participant_id:
+        :param stream_id:
+        :param data:
+        :return True if data is successfully stored
+        :rtype bool
+        """
+
+        bucket_name = self.minio_input_bucket
+        outputdata = {}
+        success = False
+
+        # Data Processing loop
+        for row in data:
+            day = row.start_time.strftime("%Y%m%d")
+            if day not in outputdata:
+                outputdata[day] = []
+
+            outputdata[day].append(row)
+
+        # Data Write loop
+        for day, dps in outputdata.items():
+            existing_data = None
+            object_name = self.raw_files_dir + str(participant_id) + "/" + str(stream_id) + "/" + str(day) + ".gz"
+
+            if len(dps) > 0:
+                try:
+                    if self.ObjectData.is_object(bucket_name, object_name):
+                        existing_data = self.ObjectData.get_object(bucket_name, object_name)
+                        existing_data = gzip.decompress(existing_data)
+                        existing_data = pickle.loads(existing_data)
+                        dps.extend(existing_data)
+
+                    dps = self.filter_sort_datapoints(dps)
+                    dps = pickle.dumps(dps)
+                    dps = gzip.compress(dps)
+
+                    success = self.ObjectData.upload_object_to_s3(bucket_name, object_name, dps, sys.getsizeof(dps))
+                except Exception as ex:
+                    success = False
+                    self.logging.log(
+                        error_message="Error in writing data to AWS-S3. STREAM ID: " + str(
+                            stream_id) + "Owner ID: " + str(participant_id) + "Files: " + str(
+                            object_name) + " - Exception: " + str(ex), error_type=self.logtypes.DEBUG)
         return success
 
     def write_filesystem_day_file(self, participant_id: uuid, stream_id: uuid, data: List[DataPoint]) -> bool:

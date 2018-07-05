@@ -184,3 +184,20 @@ class MinioHandler():
             return True
         except Exception as e:
             raise e
+
+    def upload_object_to_s3(self, bucket_name: str, object_name: str, file_data: object, obj_length:int) -> bool:
+        """
+        Uploads an object to AWS-S3 storage
+        :param bucket_name: 
+        :param object_name: 
+        :param file_data: 
+        :param obj_length: 
+        :return: 
+        """
+        try:
+            self.minioClient.put_object(bucket_name, object_name, file_data,
+                                        obj_length, content_type='application/zip')
+            return True
+        except Exception as e:
+            raise e
+            return False
