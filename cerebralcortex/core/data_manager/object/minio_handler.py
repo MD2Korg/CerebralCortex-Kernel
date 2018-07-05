@@ -129,6 +129,23 @@ class MinioHandler():
         except Exception as e:
             raise e
 
+    def is_object(self, bucket_name: str, object_name: str) -> dict:
+        """
+        Return True if object exists in a bucket, false otherwise
+        :param bucket_name:
+        :param object_name:
+        :return: {stat1:str, stat2, str},  in case of an error {"error": str}
+        :rtype: dict
+        """        
+        try:
+            if self.is_bucket(bucket_name):
+                self.minioClient.stat_object(bucket_name, object_name)
+                return True
+            else:
+                return False
+        except Exception as e:
+            return False
+
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################

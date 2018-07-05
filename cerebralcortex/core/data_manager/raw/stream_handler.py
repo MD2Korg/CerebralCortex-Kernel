@@ -292,6 +292,71 @@ class StreamHandler():
                     error_type=self.logtypes.CRITICAL)
                 return []
 
+    def read_aws_s3_file(self, owner_id: uuid, stream_id: uuid, day: str, start_time: datetime = None,
+                           end_time: datetime = None, localtime: bool = True) -> List[DataPoint]:
+        """
+        Read and Process (read, unzip, unpickle, remove duplicates) data from AWS-S3
+        :param owner_id:
+        :param stream_id:
+        :param day: format (YYYYMMDD)
+        :param start_time:
+        :param end_time:
+        :param localtime:
+        :return: returns unique (based on start time) list of DataPoints
+        :rtype: DataPoint
+        """
+        # TODO: this method only works for .gz files. Update it to handle .pickle uncompressed if required
+
+        bucket_name = "cerebralcortex-mperf"
+
+        if localtime:
+            days = [datetime.strftime(datetime.strptime(day, '%Y%m%d') - timedelta(hours=24), "%Y%m%d"), day,
+                    datetime.strftime(datetime.strptime(day, '%Y%m%d') + timedelta(hours=24), "%Y%m%d")]
+            day_start_time = datetime.strptime(day, '%Y%m%d')
+            day_end_time = day_start_time + timedelta(hours=24)
+            day_block = []
+            for d in days:
+                try:
+                    object_name = "cerebralcortex/data/"+str(owner_id) + "/" + str(stream_id)+"/"+str(d)+".gz"
+
+                    if self.ObjectData.is_object(bucket_name, object_name):
+                        data = self.ObjectData.get_object(bucket_name, object_name)
+                        data = gzip.decompress(data)
+                        if data is not None and data != b'':
+                            clean_data = self.filter_sort_datapoints(data)
+                            clean_data = self.convert_to_localtime(clean_data, localtime)
+                            day_block.extend(self.subset_data(clean_data, day_start_time, day_end_time))
+                except:
+                    self.logging.log(
+                        error_message="Error loading from AWS-S3: Cannot parse row. " + str(traceback.format_exc()),
+                        error_type=self.logtypes.CRITICAL)
+
+            day_block = self.filter_sort_datapoints(day_block)
+            if start_time is not None or end_time is not None:
+                day_block = self.subset_data(day_block, start_time, end_time)
+            return day_block
+        else:
+            object_name = "cerebralcortex/data/"+str(owner_id) + "/" + str(stream_id)+"/"+str(day)+".gz"
+            try:
+                if self.ObjectData.is_object(bucket_name, object_name):
+                    data = self.ObjectData.get_object(bucket_name, object_name)
+                    data = gzip.decompress(data)
+                else:
+                    return []
+                if data is not None and data != b'':
+                    clean_data = self.filter_sort_datapoints(data)
+                    clean_data = self.convert_to_localtime(clean_data, localtime)
+                    if start_time is not None or end_time is not None:
+                        clean_data = self.subset_data(clean_data, start_time, end_time)
+                    return clean_data
+                else:
+                    return []
+            except Exception as e:
+                self.logging.log(
+                    error_message="Error loading from AWS-S3: Cannot parse row. " + str(traceback.format_exc()),
+                    error_type=self.logtypes.CRITICAL)
+                return []
+
     def read_filesystem_day_file(self, owner_id: uuid, stream_id: uuid, day: str, start_time: datetime = None,
                                  end_time: datetime = None, localtime: bool = True) -> List[DataPoint]:
         """

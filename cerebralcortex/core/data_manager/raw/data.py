@@ -41,6 +41,8 @@ class RawData(StreamHandler):
         self.logging = CC.logging
         self.timeSeriesData = TimeSeriesData(CC)
         self.logtypes = LogTypes()
+        
+        self.ObjectData = CC.ObjectData
 
         self.host_ip = self.config['cassandra']['host']
         self.host_port = self.config['cassandra']['port']
