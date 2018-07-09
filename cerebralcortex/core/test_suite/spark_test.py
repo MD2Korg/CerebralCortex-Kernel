@@ -1,6 +1,6 @@
 # THIS TMP FILE IS FOR AWS-S3
 
-
+import time
 from cerebralcortex.cerebralcortex import CerebralCortex
 from cerebralcortex.core.util.spark_helper import get_or_create_sc
 
@@ -24,3 +24,4 @@ def example_method(user_id, cc_config):
     CC = CerebralCortex(cc_config)
     user_name = CC.get_user_name(user_id)
     print("User ID:", user_id, "User Name:", user_name)
+    time.sleep(10)
