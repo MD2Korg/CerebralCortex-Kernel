@@ -83,8 +83,8 @@ class StreamHandler():
 
         # query datastream(mysql) for metadata
         datastream_metadata = self.sql_data.get_stream_metadata(stream_id)
-        dd = self.read_aws_s3_file(owner_id, stream_id, day, start_time, end_time, localtime)
-        self.write_aws_s3_file(owner_id,stream_id,dd)
+        self.read_aws_s3_file(owner_id, stream_id, day, start_time, end_time, localtime)
+
         if len(datastream_metadata) > 0:
             owner_id = datastream_metadata[0]["owner"]
             if data_type == DataSet.COMPLETE:
@@ -950,8 +950,9 @@ class StreamHandler():
                     dps = pickle.dumps(dps)
                     dps = gzip.compress(dps)
                     dps = BytesIO(dps)
-                    dps.seek(0, os.SEEK_END)
-                    success = self.ObjectData.upload_object_to_s3(bucket_name, object_name, dps, dps.tell())
+                    obj_size = dps.seek(0, os.SEEK_END)
+                    dps.seek(0) # set file pointer back to start, otherwise minio would complain as size 0
+                    success = self.ObjectData.upload_object_to_s3(bucket_name, object_name, dps, obj_size)
                 except Exception as ex:
                     success = False
                     self.logging.log(

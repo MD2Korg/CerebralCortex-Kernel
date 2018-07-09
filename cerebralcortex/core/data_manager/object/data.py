@@ -23,7 +23,6 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from minio import Minio
 
@@ -48,5 +47,8 @@ class ObjectData(MinioHandler):
         self.secret_key = self.config["minio"]["secret_key"]
         self.secure = self.config["minio"]["secure"]
 
-        db_url = str(self.host) + ":" + str(self.port)
-        self.minioClient = Minio(self.host, access_key=self.access_key, secret_key=self.secret_key, secure=self.secure)
+        if self.config["data_ingestion"]["nosql_store"]=="aws_s3":
+            db_url = str(self.host)
+        else:
+            db_url = str(self.host) + ":" + str(self.port)
+        self.minioClient = Minio(db_url, access_key=self.access_key, secret_key=self.secret_key, secure=self.secure)
