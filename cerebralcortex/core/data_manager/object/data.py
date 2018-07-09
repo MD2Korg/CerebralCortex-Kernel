@@ -49,4 +49,4 @@ class ObjectData(MinioHandler):
         self.secure = self.config["minio"]["secure"]
 
         db_url = str(self.host) + ":" + str(self.port)
-        self.minioClient = Minio(db_url, access_key=self.access_key, secret_key=self.secret_key, secure=self.secure)
+        self.minioClient = Minio(self.host, access_key=self.access_key, secret_key=self.secret_key, secure=self.secure)

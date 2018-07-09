@@ -33,6 +33,7 @@ import uuid
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import List
+from io import BytesIO
 
 import pyarrow
 import pytz
@@ -82,7 +83,8 @@ class StreamHandler():
 
         # query datastream(mysql) for metadata
         datastream_metadata = self.sql_data.get_stream_metadata(stream_id)
-        self.read_aws_s3_file(owner_id, stream_id, day, start_time, end_time, localtime)
+        dd = self.read_aws_s3_file(owner_id, stream_id, day, start_time, end_time, localtime)
+        self.write_aws_s3_file(owner_id,stream_id,dd)
         if len(datastream_metadata) > 0:
             owner_id = datastream_metadata[0]["owner"]
             if data_type == DataSet.COMPLETE:
@@ -345,8 +347,14 @@ class StreamHandler():
             object_name = self.minio_dir_prefix+str(owner_id) + "/" + str(stream_id)+"/"+str(day)+".gz"
             try:
                 if self.ObjectData.is_object(bucket_name, object_name):
-                    data = self.ObjectData.get_object(bucket_name, object_name)
-                    data = gzip.decompress(data)
+                    http_resp = self.ObjectData.get_object(bucket_name, object_name)
+                    if http_resp.status==200:
+                        data = gzip.decompress(http_resp.data)
+                    else:
+                        self.logging.log(
+                            error_message=http_resp.status+" HTTP-STATUS, Cannot get data from AWS-S3. " + str(traceback.format_exc()),
+                            error_type=self.logtypes.CRITICAL)
+                        return []
                 else:
                     return []
                 if data is not None and data != b'':
@@ -911,7 +919,7 @@ class StreamHandler():
         :rtype bool
         """
 
-        bucket_name = self.minio_input_bucket
+        bucket_name = self.minio_output_bucket
         outputdata = {}
         success = False
 
@@ -926,21 +934,24 @@ class StreamHandler():
         # Data Write loop
         for day, dps in outputdata.items():
             existing_data = None
-            object_name = self.raw_files_dir + str(participant_id) + "/" + str(stream_id) + "/" + str(day) + ".gz"
+            object_name = self.minio_dir_prefix + str(participant_id) + "/" + str(stream_id) + "/" + str(day) + ".gz"
 
             if len(dps) > 0:
                 try:
-                    if self.ObjectData.is_object(bucket_name, object_name):
+                    try:
+                        self.ObjectData.is_object(bucket_name, object_name)
                         existing_data = self.ObjectData.get_object(bucket_name, object_name)
                         existing_data = gzip.decompress(existing_data)
                         existing_data = pickle.loads(existing_data)
                         dps.extend(existing_data)
-
+                    except:
+                        pass
                     dps = self.filter_sort_datapoints(dps)
                     dps = pickle.dumps(dps)
                     dps = gzip.compress(dps)
-
-                    success = self.ObjectData.upload_object_to_s3(bucket_name, object_name, dps, sys.getsizeof(dps))
+                    dps = BytesIO(dps)
+                    dps.seek(0, os.SEEK_END)
+                    success = self.ObjectData.upload_object_to_s3(bucket_name, object_name, dps, dps.tell())
                 except Exception as ex:
                     success = False
                     self.logging.log(

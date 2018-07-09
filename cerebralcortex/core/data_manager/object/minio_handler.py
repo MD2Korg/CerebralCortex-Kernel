@@ -144,7 +144,7 @@ class MinioHandler():
             else:
                 return False
         except Exception as e:
-            return False
+            raise e
 
     ###################################################################
     ################## STORE DATA METHODS #############################
