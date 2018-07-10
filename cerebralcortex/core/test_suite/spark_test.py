@@ -1,7 +1,6 @@
 # THIS TMP FILE IS FOR AWS-S3
 
-import time
-from cerebralcortex.core.test_suite.spark_test import nasir
+
 from cerebralcortex.cerebralcortex import CerebralCortex
 from cerebralcortex.core.util.spark_helper import get_or_create_sc
 
