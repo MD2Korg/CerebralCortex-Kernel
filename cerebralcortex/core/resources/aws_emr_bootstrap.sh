@@ -1,5 +1,24 @@
-#!/bin/bash -xe
+#!/bin/bash
+set -e
+# update pythong to 3.6
+sudo yum update -y
+sudo yum install -y python36
+sudo yum install -y python36-devel
 
-sudo yum update
-sudo yum install python36
-sudo yum install git
+# install git
+sudo yum install -y git
+
+# Install pythong packages
+sudo pip-3.6 install --egg mysql-connector-python-rf
+sudo pip-3.6 install wheel==0.29.0
+sudo pip-3.6 install pytz==2017.2
+sudo pip-3.6 install PyYAML==3.12
+sudo pip-3.6 install minio==2.2.4
+sudo pip-3.6 install kafka==1.3.5
+sudo pip-3.6 install influxdb==5.0.0
+sudo pip-3.6 install pyarrow==0.8.0
+sudo pip-3.6 install pympler==0.5
+sudo pip-3.6 install hdfs3==0.3.0
+
+# copy cc config file to home dir
+aws s3 cp s3://cerebralcortex-resources/cc_config/cc_aws_config.yml ~/
