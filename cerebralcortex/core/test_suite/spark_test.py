@@ -4,7 +4,7 @@ import time
 from cerebralcortex.cerebralcortex import CerebralCortex
 from cerebralcortex.core.util.spark_helper import get_or_create_sc
 
-cc_config = "~/cc_aws_config.yml"
+cc_config = "/home/hadoop/cc_aws_config.yml"
 CC = CerebralCortex(cc_config)
 spark_context = get_or_create_sc(type="sparkContext")
 
