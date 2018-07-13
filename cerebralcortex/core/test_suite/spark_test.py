@@ -29,7 +29,7 @@ def run_spark_job():
         print(study_name, "- study has 0 users.")
 
 def aws_s3_read_write():
-    ds = CC.get_stream("5b5d304d-3588-369e-ad68-d839d7718495","dd13f25f-77a0-4a2c-83af-bb187b79a389","20171226")
+    ds = CC.get_stream("21bc8ead-130c-3e16-8054-3f02c5343f86","00ab666c-afb8-476e-9872-6472b4e66b68","20180123")
     print(ds.data[:5])
 
     ds._identifier = str(uuid.UUID('{00000000-5087-3d56-ad0e-0b27c3c83182}'))
