@@ -83,7 +83,6 @@ class StreamHandler():
 
         # query datastream(mysql) for metadata
         datastream_metadata = self.sql_data.get_stream_metadata(stream_id)
-        self.read_aws_s3_file(owner_id, stream_id, day, start_time, end_time, localtime)
 
         if len(datastream_metadata) > 0:
             owner_id = datastream_metadata[0]["owner"]
