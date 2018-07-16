@@ -252,10 +252,14 @@ class StreamHandler():
                     data = curfile.read()
                     curfile.close()
                 elif hdfs.exists(gz_filename):
+
                     curfile = hdfs.open(gz_filename, "rb")
                     data = curfile.read()
-                    data = gzip.decompress(data)
-                    curfile.close()
+                    try:
+                        data = gzip.decompress(data)
+                    except:
+                        curfile.close()
+                        hdfs.delete(gz_filename)
 
                 if data is not None and data != b'':
                     clean_data = self.filter_sort_datapoints(data)
@@ -280,8 +284,11 @@ class StreamHandler():
                 elif hdfs.exists(gz_filename):
                     curfile = hdfs.open(gz_filename, "rb")
                     data = curfile.read()
-                    data = gzip.decompress(data)
-                    curfile.close()
+                    try:
+                        data = gzip.decompress(data)
+                    except:
+                        curfile.close()
+                        hdfs.delete(gz_filename)
                 else:
                     return []
                 if data is not None and data != b'':
@@ -400,8 +407,11 @@ class StreamHandler():
                 elif os.path.exists(gz_filename):
                     curfile = open(gz_filename, "rb")
                     data = curfile.read()
-                    if data != b'':
-                        data = gzip.decompress(data)
+                    if data is not None and data != b'':
+                        try:
+                            data = gzip.decompress(data)
+                        except:
+                            os.remove(gz_filename)
                     curfile.close()
                 if data is not None and data != b'':
                     clean_data = self.filter_sort_datapoints(data)
@@ -428,7 +438,10 @@ class StreamHandler():
                 elif os.path.exists(gz_filename):
                     curfile = open(gz_filename, "rb")
                     data = curfile.read()
-                    data = gzip.decompress(data)
+                    try:
+                        data = gzip.decompress(data)
+                    except:
+                        os.remove(gz_filename)
                     curfile.close()
                 else:
                     return []
