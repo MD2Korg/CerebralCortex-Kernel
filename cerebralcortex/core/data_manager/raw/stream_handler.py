@@ -335,11 +335,16 @@ class StreamHandler():
 
                     if self.ObjectData.is_object(bucket_name, object_name):
                         data = self.ObjectData.get_object(bucket_name, object_name)
-                        data = gzip.decompress(data)
-                        if data is not None and data != b'':
-                            clean_data = self.filter_sort_datapoints(data)
-                            clean_data = self.convert_to_localtime(clean_data, localtime)
-                            day_block.extend(self.subset_data(clean_data, day_start_time, day_end_time))
+                        if data.status==200:
+                            data = gzip.decompress(data.data)
+                            if data is not None and data != b'':
+                                clean_data = self.filter_sort_datapoints(data)
+                                clean_data = self.convert_to_localtime(clean_data, localtime)
+                                day_block.extend(self.subset_data(clean_data, day_start_time, day_end_time))
+                        else:
+                            self.logging.log(
+                                error_message="HTTP-STATUS: "+data.status+" - Cannot get "+str(object_name)+" from AWS-S3. " + str(traceback.format_exc()),
+                                error_type=self.logtypes.CRITICAL)
                 except:
                     self.logging.log(
                         error_message="Error loading from AWS-S3: Cannot parse row. " + str(traceback.format_exc()),

@@ -24,7 +24,7 @@ sudo pip-3.6 install hdfs3==0.3.0
 sudo pip-3.6 install pandas
 sudo pip-3.6 install geopy
 sudo pip-3.6 install scikit-learn
-sudo pip-3.6 install numpy
+sudo pip-3.6 install numpy==1.14.2
 sudo pip-3.6 install scipy
 sudo pip-3.6 install pympler
 sudo pip-3.6 install shapely
