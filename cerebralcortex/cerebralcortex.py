@@ -329,6 +329,17 @@ class CerebralCortex:
         """
         return self.ObjectData.upload_object(bucket_name, object_name, object_filepath)
 
+    def upload_object_s3(self, bucket_name: str, object_name: str, object_: object, obj_size) -> bool:
+        """
+        Uploads an object to Minio storage
+        :param bucket_name:
+        :param object_name:
+        :param object_: object that needs to be stored
+        :param obj_size object size
+        :return: True/False, in case of an error {"error": str}
+        """
+        return self.ObjectData.upload_object_to_s3(bucket_name, object_name, object_, obj_size)
+
     def get_buckets(self) -> List:
         """
         returns all available buckets in Minio storage

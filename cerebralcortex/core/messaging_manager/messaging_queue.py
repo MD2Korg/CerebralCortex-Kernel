@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
+import boto3
 from kafka import KafkaProducer
 from cerebralcortex.core.messaging_manager.kafka_handler import KafkaHandler
 from kafka import KafkaConsumer
@@ -37,12 +38,15 @@ class MessagingQueue(KafkaHandler):
         :param auto_offset_reset: smallest (start of the topic) OR largest (end of a topic)
         """
         self.config = CC.config
-        self.hostIP = self.config['kafkaserver']['host']
-        self.hostPort = self.config['kafkaserver']['port']
-        self.auto_offset_reset= auto_offset_reset
-        self.producer = KafkaProducer(bootstrap_servers=str(self.hostIP)+":"+str(self.hostPort), api_version=(0,10),
-                                      value_serializer=lambda v: json.dumps(v).encode('utf-8'),
-                                      compression_type='gzip')
+        if self.config['messaging_service_type']['messaging_service']=="kafka":
+            self.hostIP = self.config['kafkaserver']['host']
+            self.hostPort = self.config['kafkaserver']['port']
+            self.auto_offset_reset= auto_offset_reset
+            self.producer = KafkaProducer(bootstrap_servers=str(self.hostIP)+":"+str(self.hostPort), api_version=(0,10),
+                                          value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+                                          compression_type='gzip')
 
-        self.consumer = KafkaConsumer(bootstrap_servers=str(self.hostIP)+":"+str(self.hostPort), api_version=(0,10),
-                                      auto_offset_reset=self.auto_offset_reset)
+            self.consumer = KafkaConsumer(bootstrap_servers=str(self.hostIP)+":"+str(self.hostPort), api_version=(0,10),
+                                          auto_offset_reset=self.auto_offset_reset)
+        elif self.config['messaging_service_type']['messaging_service']=="kinesis":
+            self.kinesis_client = boto3.client(self.config['aws_kinesis']['host'], region_name=self.config['aws_kinesis']['region_name'])

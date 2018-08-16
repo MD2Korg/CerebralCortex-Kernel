@@ -1,5 +1,6 @@
 wheel==0.29.0
 pytz==2017.2
+boto3==1.7.76
 mysql-connector-python-rf==2.2.2
 PyYAML==3.12
 minio==2.2.4

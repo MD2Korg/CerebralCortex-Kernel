@@ -25,11 +25,11 @@
 
 import json
 
-class KafkaHandler():
+class KinesisHandler():
 
-    def produce_message(self, topic: str, msg: dict):
+    def produce_message(self, topic: str, msg: dict, partitionKey="Some-Random-partition"):
         """
-        Produce a message on Kafka topic
+        Produce a message on kinesis topic
         :param topic:
         :param msg:
         """
@@ -37,8 +37,10 @@ class KafkaHandler():
         if not topic and not msg:
             raise ValueError("Topic and Message are required parameters.")
         try:
-            self.producer.send(topic, msg)
-            self.producer.flush()
+            put_response = self.kinesis_client.put_record(
+                StreamName=topic,
+                Data=json.dumps(msg),
+                PartitionKey=partitionKey)
         except Exception as e:
             raise Exception("Error publishing message. Topic: "+str(topic)+" - "+str(e))
 
