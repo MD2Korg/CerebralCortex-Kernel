@@ -340,7 +340,6 @@ class CerebralCortex:
         """
         return self.ObjectData.upload_object_to_s3(bucket_name, object_name, object_, obj_size)
 
-
     def get_buckets(self) -> List:
         """
         returns all available buckets in Minio storage
