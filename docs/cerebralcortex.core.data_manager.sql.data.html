@@ -1,0 +1,317 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module cerebralcortex.core.data_manager.sql.data</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="cerebralcortex.html"><font color="#ffffff">cerebralcortex</font></a>.<a href="cerebralcortex.core.html"><font color="#ffffff">core</font></a>.<a href="cerebralcortex.core.data_manager.html"><font color="#ffffff">data_manager</font></a>.<a href="cerebralcortex.core.data_manager.sql.html"><font color="#ffffff">sql</font></a>.data</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/usr/local/lib/python3.6/dist-packages/MD2K_Cerebral_Cortex-2.2.3-py3.6.egg/cerebralcortex/core/data_manager/sql/data.py">/usr/local/lib/python3.6/dist-packages/MD2K_Cerebral_Cortex-2.2.3-py3.6.egg/cerebralcortex/core/data_manager/sql/data.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;(c)&nbsp;2018,&nbsp;MD2K&nbsp;Center&nbsp;of&nbsp;Excellence<br>
+#&nbsp;-&nbsp;Nasir&nbsp;Ali&nbsp;&lt;nasir.ali08@gmail.com&gt;<br>
+#&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#<br>
+#&nbsp;Redistribution&nbsp;and&nbsp;use&nbsp;in&nbsp;source&nbsp;and&nbsp;binary&nbsp;forms,&nbsp;with&nbsp;or&nbsp;without<br>
+#&nbsp;modification,&nbsp;are&nbsp;permitted&nbsp;provided&nbsp;that&nbsp;the&nbsp;following&nbsp;conditions&nbsp;are&nbsp;met:<br>
+#<br>
+#&nbsp;*&nbsp;Redistributions&nbsp;of&nbsp;source&nbsp;code&nbsp;must&nbsp;retain&nbsp;the&nbsp;above&nbsp;copyright&nbsp;notice,&nbsp;this<br>
+#&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer.<br>
+#<br>
+#&nbsp;*&nbsp;Redistributions&nbsp;in&nbsp;binary&nbsp;form&nbsp;must&nbsp;reproduce&nbsp;the&nbsp;above&nbsp;copyright&nbsp;notice,<br>
+#&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer&nbsp;in&nbsp;the&nbsp;documentation<br>
+#&nbsp;and/or&nbsp;other&nbsp;materials&nbsp;provided&nbsp;with&nbsp;the&nbsp;distribution.<br>
+#<br>
+#&nbsp;THIS&nbsp;SOFTWARE&nbsp;IS&nbsp;PROVIDED&nbsp;BY&nbsp;THE&nbsp;COPYRIGHT&nbsp;HOLDERS&nbsp;AND&nbsp;CONTRIBUTORS&nbsp;"AS&nbsp;IS"<br>
+#&nbsp;AND&nbsp;ANY&nbsp;EXPRESS&nbsp;OR&nbsp;IMPLIED&nbsp;WARRANTIES,&nbsp;INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;TO,&nbsp;THE<br>
+#&nbsp;IMPLIED&nbsp;WARRANTIES&nbsp;OF&nbsp;MERCHANTABILITY&nbsp;AND&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;PARTICULAR&nbsp;PURPOSE&nbsp;ARE<br>
+#&nbsp;DISCLAIMED.&nbsp;IN&nbsp;NO&nbsp;EVENT&nbsp;SHALL&nbsp;THE&nbsp;COPYRIGHT&nbsp;HOLDER&nbsp;OR&nbsp;CONTRIBUTORS&nbsp;BE&nbsp;LIABLE<br>
+#&nbsp;FOR&nbsp;ANY&nbsp;DIRECT,&nbsp;INDIRECT,&nbsp;INCIDENTAL,&nbsp;SPECIAL,&nbsp;EXEMPLARY,&nbsp;OR&nbsp;CONSEQUENTIAL<br>
+#&nbsp;DAMAGES&nbsp;(INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;TO,&nbsp;PROCUREMENT&nbsp;OF&nbsp;SUBSTITUTE&nbsp;GOODS&nbsp;OR<br>
+#&nbsp;SERVICES;&nbsp;LOSS&nbsp;OF&nbsp;USE,&nbsp;DATA,&nbsp;OR&nbsp;PROFITS;&nbsp;OR&nbsp;BUSINESS&nbsp;INTERRUPTION)&nbsp;HOWEVER<br>
+#&nbsp;CAUSED&nbsp;AND&nbsp;ON&nbsp;ANY&nbsp;THEORY&nbsp;OF&nbsp;LIABILITY,&nbsp;WHETHER&nbsp;IN&nbsp;CONTRACT,&nbsp;STRICT&nbsp;LIABILITY,<br>
+#&nbsp;OR&nbsp;TORT&nbsp;(INCLUDING&nbsp;NEGLIGENCE&nbsp;OR&nbsp;OTHERWISE)&nbsp;ARISING&nbsp;IN&nbsp;ANY&nbsp;WAY&nbsp;OUT&nbsp;OF&nbsp;THE&nbsp;USE<br>
+#&nbsp;OF&nbsp;THIS&nbsp;SOFTWARE,&nbsp;EVEN&nbsp;IF&nbsp;ADVISED&nbsp;OF&nbsp;THE&nbsp;POSSIBILITY&nbsp;OF&nbsp;SUCH&nbsp;DAMAGE.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="mysql.html">mysql</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="cerebralcortex.core.data_manager.sql.cache_handler.html#CacheHandler">cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler</a>(<a href="builtins.html#object">builtins.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="cerebralcortex.core.data_manager.sql.data.html#SqlData">SqlData</a>(<a href="cerebralcortex.core.data_manager.sql.stream_handler.html#StreamHandler">cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler</a>, <a href="cerebralcortex.core.data_manager.sql.users_handler.html#UserHandler">cerebralcortex.core.data_manager.sql.users_handler.UserHandler</a>, <a href="cerebralcortex.core.data_manager.sql.kafka_offsets_handler.html#KafkaOffsetsHandler">cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler</a>, <a href="cerebralcortex.core.data_manager.sql.cache_handler.html#CacheHandler">cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler</a>)
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="cerebralcortex.core.data_manager.sql.kafka_offsets_handler.html#KafkaOffsetsHandler">cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler</a>(<a href="builtins.html#object">builtins.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="cerebralcortex.core.data_manager.sql.data.html#SqlData">SqlData</a>(<a href="cerebralcortex.core.data_manager.sql.stream_handler.html#StreamHandler">cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler</a>, <a href="cerebralcortex.core.data_manager.sql.users_handler.html#UserHandler">cerebralcortex.core.data_manager.sql.users_handler.UserHandler</a>, <a href="cerebralcortex.core.data_manager.sql.kafka_offsets_handler.html#KafkaOffsetsHandler">cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler</a>, <a href="cerebralcortex.core.data_manager.sql.cache_handler.html#CacheHandler">cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler</a>)
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="cerebralcortex.core.data_manager.sql.stream_handler.html#StreamHandler">cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler</a>(<a href="builtins.html#object">builtins.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="cerebralcortex.core.data_manager.sql.data.html#SqlData">SqlData</a>(<a href="cerebralcortex.core.data_manager.sql.stream_handler.html#StreamHandler">cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler</a>, <a href="cerebralcortex.core.data_manager.sql.users_handler.html#UserHandler">cerebralcortex.core.data_manager.sql.users_handler.UserHandler</a>, <a href="cerebralcortex.core.data_manager.sql.kafka_offsets_handler.html#KafkaOffsetsHandler">cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler</a>, <a href="cerebralcortex.core.data_manager.sql.cache_handler.html#CacheHandler">cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler</a>)
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="cerebralcortex.core.data_manager.sql.users_handler.html#UserHandler">cerebralcortex.core.data_manager.sql.users_handler.UserHandler</a>(<a href="builtins.html#object">builtins.object</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="cerebralcortex.core.data_manager.sql.data.html#SqlData">SqlData</a>(<a href="cerebralcortex.core.data_manager.sql.stream_handler.html#StreamHandler">cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler</a>, <a href="cerebralcortex.core.data_manager.sql.users_handler.html#UserHandler">cerebralcortex.core.data_manager.sql.users_handler.UserHandler</a>, <a href="cerebralcortex.core.data_manager.sql.kafka_offsets_handler.html#KafkaOffsetsHandler">cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler</a>, <a href="cerebralcortex.core.data_manager.sql.cache_handler.html#CacheHandler">cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler</a>)
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SqlData">class <strong>SqlData</strong></a>(<a href="cerebralcortex.core.data_manager.sql.stream_handler.html#StreamHandler">cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler</a>, <a href="cerebralcortex.core.data_manager.sql.users_handler.html#UserHandler">cerebralcortex.core.data_manager.sql.users_handler.UserHandler</a>, <a href="cerebralcortex.core.data_manager.sql.kafka_offsets_handler.html#KafkaOffsetsHandler">cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler</a>, <a href="cerebralcortex.core.data_manager.sql.cache_handler.html#CacheHandler">cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler</a>)</font></td></tr>
+    
+<tr><td bgcolor="#ffc8d8"><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="cerebralcortex.core.data_manager.sql.data.html#SqlData">SqlData</a></dd>
+<dd><a href="cerebralcortex.core.data_manager.sql.stream_handler.html#StreamHandler">cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler</a></dd>
+<dd><a href="cerebralcortex.core.data_manager.sql.users_handler.html#UserHandler">cerebralcortex.core.data_manager.sql.users_handler.UserHandler</a></dd>
+<dd><a href="cerebralcortex.core.data_manager.sql.kafka_offsets_handler.html#KafkaOffsetsHandler">cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler</a></dd>
+<dd><a href="cerebralcortex.core.data_manager.sql.cache_handler.html#CacheHandler">cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="SqlData-__init__"><strong>__init__</strong></a>(self, CC)</dt><dd><tt>:param&nbsp;CC:&nbsp;CerebralCortex&nbsp;object&nbsp;reference</tt></dd></dl>
+
+<dl><dt><a name="SqlData-close"><strong>close</strong></a>(self, conn, cursor)</dt><dd><tt>close&nbsp;connection&nbsp;of&nbsp;mysql.<br>
+:param&nbsp;conn:<br>
+:param&nbsp;cursor:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="SqlData-create_pool"><strong>create_pool</strong></a>(self, pool_name:str='CC_Pool', pool_size:int=10)</dt><dd><tt>Create&nbsp;a&nbsp;connection&nbsp;pool,&nbsp;after&nbsp;created,&nbsp;the&nbsp;request&nbsp;of&nbsp;connecting<br>
+MySQL&nbsp;could&nbsp;get&nbsp;a&nbsp;connection&nbsp;from&nbsp;this&nbsp;pool&nbsp;instead&nbsp;of&nbsp;request&nbsp;to<br>
+create&nbsp;a&nbsp;connection.<br>
+:param&nbsp;pool_name:&nbsp;the&nbsp;name&nbsp;of&nbsp;pool,&nbsp;default&nbsp;is&nbsp;"CC_Pool"<br>
+:param&nbsp;pool_size:&nbsp;the&nbsp;size&nbsp;of&nbsp;pool,&nbsp;default&nbsp;is&nbsp;10&nbsp;(min=1&nbsp;and&nbsp;max=32)<br>
+:return:&nbsp;connection&nbsp;pool</tt></dd></dl>
+
+<dl><dt><a name="SqlData-execute"><strong>execute</strong></a>(self, sql, args=None, commit=False)</dt><dd><tt>Execute&nbsp;a&nbsp;sql,&nbsp;it&nbsp;could&nbsp;be&nbsp;with&nbsp;args&nbsp;and&nbsp;with&nbsp;out&nbsp;args.&nbsp;The&nbsp;usage&nbsp;is<br>
+similar&nbsp;with&nbsp;<a href="#SqlData-execute">execute</a>()&nbsp;function&nbsp;in&nbsp;module&nbsp;pymysql.<br>
+:param&nbsp;sql:&nbsp;sql&nbsp;clause<br>
+:param&nbsp;args:&nbsp;args&nbsp;need&nbsp;by&nbsp;sql&nbsp;clause<br>
+:param&nbsp;commit:&nbsp;whether&nbsp;to&nbsp;commit<br>
+:return:&nbsp;if&nbsp;commit,&nbsp;return&nbsp;None,&nbsp;else,&nbsp;return&nbsp;result</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="cerebralcortex.core.data_manager.sql.stream_handler.html#StreamHandler">cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler</a>:<br>
+<dl><dt><a name="SqlData-annotations_status"><strong>annotations_status</strong></a>(self, stream_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, owner_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, annotations:dict) -&gt; str</dt><dd><tt>This&nbsp;method&nbsp;will&nbsp;check&nbsp;whether&nbsp;the&nbsp;stream&nbsp;already&nbsp;exist&nbsp;with&nbsp;the&nbsp;same&nbsp;data&nbsp;(as&nbsp;provided&nbsp;in&nbsp;params)&nbsp;except&nbsp;annotations.<br>
+:param&nbsp;stream_id:<br>
+:param&nbsp;owner_id:<br>
+:param&nbsp;annotations:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="SqlData-check_end_time"><strong>check_end_time</strong></a>(self, stream_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, end_time:datetime.datetime)</dt><dd><tt>Check&nbsp;whether&nbsp;end&nbsp;time&nbsp;was&nbsp;changed&nbsp;of&nbsp;a&nbsp;stream-id<br>
+:param&nbsp;stream_id:<br>
+:param&nbsp;end_time:<br>
+:return:&nbsp;It&nbsp;returns&nbsp;a&nbsp;datetime&nbsp;object&nbsp;if&nbsp;end-time&nbsp;was&nbsp;changed.&nbsp;Otherwise,&nbsp;it&nbsp;returns&nbsp;status&nbsp;as&nbsp;unchanged<br>
+:rtype:&nbsp;str&nbsp;OR&nbsp;datetime</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_all_users"><strong>get_all_users</strong></a>(self, study_name:str) -&gt; List[dict]</dt><dd><tt>Get&nbsp;all&nbsp;users&nbsp;id&nbsp;and&nbsp;user&nbsp;name&nbsp;for&nbsp;a&nbsp;particular&nbsp;study<br>
+:param&nbsp;study_name:<br>
+:return:&nbsp;List&nbsp;of&nbsp;dicts&nbsp;(keys=identifier,&nbsp;username)<br>
+:rtype&nbsp;List</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_replay_batch"><strong>get_replay_batch</strong></a>(self, record_limit:int=5000) -&gt; List</dt><dd><tt>This&nbsp;method&nbsp;helps&nbsp;in&nbsp;data&nbsp;replay.&nbsp;Yield&nbsp;a&nbsp;batch&nbsp;of&nbsp;data&nbsp;rows&nbsp;that&nbsp;needs&nbsp;to&nbsp;be&nbsp;processed&nbsp;and&nbsp;ingested&nbsp;in&nbsp;CerebralCortex<br>
+:param&nbsp;record_limit:<br>
+:return:&nbsp;List&nbsp;of&nbsp;dicts&nbsp;(keys=owner_id,&nbsp;stream_id,&nbsp;stream_name,&nbsp;day,&nbsp;files_list,&nbsp;metadata)<br>
+:rtype:&nbsp;dict</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_stream_days"><strong>get_stream_days</strong></a>(self, stream_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;) -&gt; List</dt><dd><tt>Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;days&nbsp;(string&nbsp;format:&nbsp;YearMonthDay&nbsp;(e.g.,&nbsp;20171206)&nbsp;for&nbsp;a&nbsp;given&nbsp;stream-id<br>
+:param&nbsp;stream_id:<br>
+:param&nbsp;dd_stream_id:<br>
+:return:&nbsp;list&nbsp;of&nbsp;days&nbsp;(format&nbsp;YYYYMMDD)<br>
+:rtype:&nbsp;List</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_stream_duration"><strong>get_stream_duration</strong></a>(self, stream_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;) -&gt; dict</dt><dd><tt>Get&nbsp;time&nbsp;duration&nbsp;(start&nbsp;time&nbsp;-&nbsp;end&nbsp;time)&nbsp;of&nbsp;a&nbsp;stream<br>
+:param&nbsp;stream_id:<br>
+:return:start_time,&nbsp;end_time<br>
+:rtype&nbsp;dict</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_stream_id"><strong>get_stream_id</strong></a>(self, user_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, stream_name:str) -&gt; dict</dt><dd><tt>Get&nbsp;a&nbsp;stream&nbsp;ids&nbsp;of&nbsp;stream&nbsp;name&nbsp;linked&nbsp;to&nbsp;a&nbsp;user<br>
+:param&nbsp;user_id<br>
+:param&nbsp;stream_name:<br>
+:return:&nbsp;List&nbsp;of&nbsp;stream&nbsp;ids<br>
+:rtype:&nbsp;dict</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_stream_metadata"><strong>get_stream_metadata</strong></a>(self, stream_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;) -&gt; dict</dt><dd><tt>Get&nbsp;stream&nbsp;metadata<br>
+:param&nbsp;stream_id:<br>
+:return:&nbsp;identifier,&nbsp;owner,&nbsp;name,&nbsp;data_descriptor,execution_context,annotations,&nbsp;type,&nbsp;start_time,&nbsp;end_time,&nbsp;tmp&nbsp;(tmp&nbsp;is&nbsp;just&nbsp;a&nbsp;primary&nbsp;key&nbsp;ID)<br>
+:rtype&nbsp;dict</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_stream_metadata_by_user"><strong>get_stream_metadata_by_user</strong></a>(self, user_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, stream_name:str=None, start_time:datetime.datetime=None, end_time:datetime.datetime=None) -&gt; dict</dt><dd><tt>Returns&nbsp;stream&nbsp;ids&nbsp;and&nbsp;metadata&nbsp;of&nbsp;a&nbsp;stream&nbsp;name&nbsp;belong&nbsp;to&nbsp;a&nbsp;user<br>
+:param&nbsp;user_id:<br>
+:return:&nbsp;identifier,&nbsp;data_descriptor,execution_context,annotations,&nbsp;start_time,&nbsp;end_time<br>
+:rtype:&nbsp;dict</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_stream_name"><strong>get_stream_name</strong></a>(self, stream_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;) -&gt; str</dt><dd><tt>Get&nbsp;strea&nbsp;name&nbsp;linked&nbsp;to&nbsp;a&nbsp;stream&nbsp;UUID<br>
+:param&nbsp;stream_id:<br>
+:return:&nbsp;stream&nbsp;name<br>
+:rtype:&nbsp;str</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_user_id"><strong>get_user_id</strong></a>(self, user_name:str) -&gt; str</dt><dd><tt>Get&nbsp;user's&nbsp;UUID<br>
+:param&nbsp;user_name:<br>
+:return:&nbsp;user's&nbsp;UUID<br>
+:rtype:&nbsp;str</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_user_name"><strong>get_user_name</strong></a>(self, user_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;) -&gt; str</dt><dd><tt>Get&nbsp;username&nbsp;of&nbsp;a&nbsp;user's&nbsp;UUID<br>
+:param&nbsp;user_id:<br>
+:return:&nbsp;user&nbsp;id<br>
+:rtype:&nbsp;str</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_user_streams"><strong>get_user_streams</strong></a>(self, user_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;) -&gt; dict</dt><dd><tt>Returns&nbsp;all&nbsp;user&nbsp;streams&nbsp;with&nbsp;name&nbsp;and&nbsp;metadata&nbsp;attached&nbsp;to&nbsp;it.&nbsp;Do&nbsp;not&nbsp;use&nbsp;"identifier"&nbsp;field&nbsp;as&nbsp;it&nbsp;doesn't<br>
+represents&nbsp;all&nbsp;the&nbsp;stream-ids&nbsp;linked&nbsp;to&nbsp;a&nbsp;stream&nbsp;name.&nbsp;Use&nbsp;stream_ids&nbsp;field&nbsp;in&nbsp;dict&nbsp;to&nbsp;get&nbsp;all&nbsp;stream-ids&nbsp;of&nbsp;a&nbsp;stream&nbsp;name.<br>
+:param&nbsp;user_id:<br>
+:return:&nbsp;identifier,&nbsp;owner,&nbsp;name,&nbsp;data_descriptor,execution_context,annotations,&nbsp;type,&nbsp;start_time,&nbsp;end_time,&nbsp;tmp,&nbsp;stream_ids&nbsp;(this&nbsp;contains&nbsp;all&nbsp;the&nbsp;stream&nbsp;ids&nbsp;of&nbsp;a&nbsp;stream&nbsp;name)<br>
+:rtype:&nbsp;dict</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_user_streams_metadata"><strong>get_user_streams_metadata</strong></a>(self, user_id:str) -&gt; dict</dt><dd><tt>Get&nbsp;all&nbsp;streams&nbsp;metadata&nbsp;of&nbsp;a&nbsp;user<br>
+:param&nbsp;user_id:<br>
+:return:&nbsp;name,&nbsp;data_descriptor,execution_context,annotations,&nbsp;start_time,&nbsp;end_time<br>
+:rtype:&nbsp;dict</tt></dd></dl>
+
+<dl><dt><a name="SqlData-is_day_processed"><strong>is_day_processed</strong></a>(self, owner_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, stream_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, day:str) -&gt; bool</dt><dd><tt>Checks&nbsp;whether&nbsp;data&nbsp;is&nbsp;processed&nbsp;for&nbsp;a&nbsp;given&nbsp;user-id&nbsp;and&nbsp;stream-id<br>
+:param&nbsp;owner_id:<br>
+:param&nbsp;stream_id:<br>
+:param&nbsp;day:<br>
+:return:&nbsp;True&nbsp;if&nbsp;day&nbsp;is&nbsp;processed,&nbsp;False&nbsp;otherwise<br>
+:rtype:&nbsp;bool</tt></dd></dl>
+
+<dl><dt><a name="SqlData-is_stream"><strong>is_stream</strong></a>(self, stream_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;) -&gt; bool</dt><dd><tt>Checks&nbsp;whether&nbsp;a&nbsp;stream&nbsp;exist<br>
+:param&nbsp;stream_id:<br>
+:return:&nbsp;True&nbsp;if&nbsp;a&nbsp;stream&nbsp;ID&nbsp;exist,&nbsp;False&nbsp;otherwise<br>
+:rtype:&nbsp;bool</tt></dd></dl>
+
+<dl><dt><a name="SqlData-is_user"><strong>is_user</strong></a>(self, user_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;=None, user_name:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;=None) -&gt; bool</dt><dd><tt>Check&nbsp;whether&nbsp;a&nbsp;username&nbsp;or&nbsp;user&nbsp;ID&nbsp;exists&nbsp;in&nbsp;MySQL<br>
+:param&nbsp;user_id:<br>
+:param&nbsp;user_name<br>
+:return:&nbsp;True&nbsp;if&nbsp;user&nbsp;exist,&nbsp;False&nbsp;otherwise<br>
+:rtype:&nbsp;bool</tt></dd></dl>
+
+<dl><dt><a name="SqlData-mark_processed_day"><strong>mark_processed_day</strong></a>(self, owner_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, stream_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, day:str)</dt><dd><tt>Mark&nbsp;row&nbsp;as&nbsp;processed&nbsp;if&nbsp;the&nbsp;data&nbsp;has&nbsp;been&nbsp;processed/ingested.&nbsp;This&nbsp;is&nbsp;used&nbsp;for&nbsp;data&nbsp;replay.<br>
+:param&nbsp;owner_id:<br>
+:param&nbsp;stream_id:<br>
+:param&nbsp;day:</tt></dd></dl>
+
+<dl><dt><a name="SqlData-save_stream_metadata"><strong>save_stream_metadata</strong></a>(self, stream_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, stream_name:str, owner_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, data_descriptor:dict, execution_context:dict, annotations:dict, stream_type:str, start_time:datetime.datetime, end_time:datetime.datetime)</dt><dd><tt>Update&nbsp;a&nbsp;record&nbsp;if&nbsp;stream&nbsp;already&nbsp;exists,&nbsp;insert&nbsp;a&nbsp;new&nbsp;record&nbsp;otherwise.<br>
+:param&nbsp;stream_id:<br>
+:param&nbsp;stream_name:<br>
+:param&nbsp;owner_id:<br>
+:param&nbsp;data_descriptor:<br>
+:param&nbsp;execution_context:<br>
+:param&nbsp;annotations:<br>
+:param&nbsp;stream_type:<br>
+:param&nbsp;start_time:<br>
+:param&nbsp;end_time:</tt></dd></dl>
+
+<dl><dt><a name="SqlData-update_start_time"><strong>update_start_time</strong></a>(self, stream_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, new_start_time:datetime.datetime)</dt><dd><tt>update&nbsp;start&nbsp;time&nbsp;only&nbsp;if&nbsp;the&nbsp;new-start-time&nbsp;is&nbsp;older&nbsp;than&nbsp;the&nbsp;existing&nbsp;start-time<br>
+:param&nbsp;stream_id:<br>
+:param&nbsp;new_start_time:<br>
+:return:</tt></dd></dl>
+
+<dl><dt><a name="SqlData-user_has_stream"><strong>user_has_stream</strong></a>(self, user_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, stream_name:str) -&gt; bool</dt><dd><tt>Returns&nbsp;true&nbsp;if&nbsp;a&nbsp;user&nbsp;has&nbsp;a&nbsp;stream&nbsp;available<br>
+:param&nbsp;user_id:&nbsp;<br>
+:param&nbsp;stream_name:&nbsp;<br>
+:return:&nbsp;True&nbsp;if&nbsp;owner&nbsp;has&nbsp;a&nbsp;stream,&nbsp;False&nbsp;otherwise</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="cerebralcortex.core.data_manager.sql.stream_handler.html#StreamHandler">cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="cerebralcortex.core.data_manager.sql.users_handler.html#UserHandler">cerebralcortex.core.data_manager.sql.users_handler.UserHandler</a>:<br>
+<dl><dt><a name="SqlData-encrypt_user_password"><strong>encrypt_user_password</strong></a>(self, user_password:str) -&gt; str</dt><dd><tt>Encrypt&nbsp;a&nbsp;password&nbsp;based&nbsp;on&nbsp;sha256<br>
+:param&nbsp;user_password:<br>
+:return:&nbsp;encrypted&nbsp;password<br>
+:rtype&nbsp;str</tt></dd></dl>
+
+<dl><dt><a name="SqlData-gen_random_pass"><strong>gen_random_pass</strong></a>(self, string_type:str, size:int=8) -&gt; str</dt><dd><tt>Generate&nbsp;a&nbsp;random&nbsp;password<br>
+:param&nbsp;string_type:<br>
+:param&nbsp;size:<br>
+:return:&nbsp;randome&nbsp;password<br>
+:rtype&nbsp;str</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_user_metadata"><strong>get_user_metadata</strong></a>(self, user_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;=None, username:str=None) -&gt; dict</dt><dd><tt>Get&nbsp;user&nbsp;metadata&nbsp;based&nbsp;on&nbsp;user&nbsp;uuid&nbsp;or&nbsp;username<br>
+:param&nbsp;user_id:<br>
+:param&nbsp;username:<br>
+:return:&nbsp;user_metadata<br>
+:rtype&nbsp;dict</tt></dd></dl>
+
+<dl><dt><a name="SqlData-get_user_uuid"><strong>get_user_uuid</strong></a>(self, username:str) -&gt; str</dt><dd><tt>Find&nbsp;user&nbsp;UUID&nbsp;of&nbsp;a&nbsp;user&nbsp;name<br>
+:param&nbsp;username:<br>
+:return:&nbsp;string&nbsp;format&nbsp;of&nbsp;a&nbsp;user&nbsp;UUID<br>
+:rtype:&nbsp;str</tt></dd></dl>
+
+<dl><dt><a name="SqlData-is_auth_token_valid"><strong>is_auth_token_valid</strong></a>(self, token_owner:str, auth_token:str, auth_token_expiry_time:datetime.datetime) -&gt; bool</dt><dd><tt>Validate&nbsp;whether&nbsp;a&nbsp;token&nbsp;is&nbsp;valid&nbsp;or&nbsp;expired&nbsp;based&nbsp;on&nbsp;the&nbsp;token&nbsp;expiry&nbsp;datetime&nbsp;stored&nbsp;in&nbsp;MySQL<br>
+:param&nbsp;token_owner:<br>
+:param&nbsp;auth_token:<br>
+:param&nbsp;auth_token_expiry_time:<br>
+:return:&nbsp;True&nbsp;if&nbsp;token&nbsp;is&nbsp;valid,&nbsp;False&nbsp;otherwise<br>
+:rtype&nbsp;bool</tt></dd></dl>
+
+<dl><dt><a name="SqlData-login_user"><strong>login_user</strong></a>(self, username:str, password:str) -&gt; bool</dt><dd><tt>Authenticate&nbsp;a&nbsp;user&nbsp;based&nbsp;on&nbsp;username&nbsp;and&nbsp;password<br>
+:param&nbsp;username:<br>
+:param&nbsp;password:<br>
+:return:&nbsp;return&nbsp;True&nbsp;if&nbsp;authentication&nbsp;is&nbsp;successful,&nbsp;False&nbsp;otherwise<br>
+:rtype&nbsp;bool</tt></dd></dl>
+
+<dl><dt><a name="SqlData-update_auth_token"><strong>update_auth_token</strong></a>(self, username:str, auth_token:str, auth_token_issued_time:datetime.datetime, auth_token_expiry_time:datetime.datetime) -&gt; str</dt><dd><tt>Update&nbsp;authentication&nbsp;token&nbsp;with&nbsp;new&nbsp;expiry&nbsp;time&nbsp;and&nbsp;token<br>
+:param&nbsp;username:<br>
+:param&nbsp;auth_token:<br>
+:param&nbsp;auth_token_issued_time:<br>
+:param&nbsp;auth_token_expiry_time:<br>
+:return:&nbsp;User's&nbsp;UUID&nbsp;for&nbsp;which&nbsp;authentication&nbsp;token&nbsp;has&nbsp;been&nbsp;updated<br>
+:rtype&nbsp;str</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="cerebralcortex.core.data_manager.sql.kafka_offsets_handler.html#KafkaOffsetsHandler">cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler</a>:<br>
+<dl><dt><a name="SqlData-get_kafka_offsets"><strong>get_kafka_offsets</strong></a>(self, topic:str) -&gt; dict</dt><dd><tt>Return&nbsp;Kafka&nbsp;offsets&nbsp;for&nbsp;each&nbsp;partition<br>
+:param&nbsp;topic:<br>
+:return:&nbsp;dict{partitionID:&nbsp;offset....}<br>
+:rtype&nbsp;dict</tt></dd></dl>
+
+<dl><dt><a name="SqlData-store_or_update_Kafka_offset"><strong>store_or_update_Kafka_offset</strong></a>(self, topic:str, topic_partition:str, offset_start:str, offset_until:str)</dt><dd><tt>Store/update&nbsp;Kafka&nbsp;offsets.&nbsp;Offsets&nbsp;helps&nbsp;to&nbsp;track&nbsp;what&nbsp;messages&nbsp;have&nbsp;been&nbsp;process.<br>
+:param&nbsp;topic:<br>
+:param&nbsp;topic_partition:<br>
+:param&nbsp;offset_start:<br>
+:param&nbsp;offset_until:</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="cerebralcortex.core.data_manager.sql.cache_handler.html#CacheHandler">cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler</a>:<br>
+<dl><dt><a name="SqlData-get_cache_value"><strong>get_cache_value</strong></a>(self, key:str) -&gt; str</dt><dd><tt>Returns&nbsp;the&nbsp;cache&nbsp;value&nbsp;cached&nbsp;for&nbsp;the&nbsp;key<br>
+:param&nbsp;key:&nbsp;key&nbsp;in&nbsp;the&nbsp;cache<br>
+:return:&nbsp;value<br>
+:rtype&nbsp;str</tt></dd></dl>
+
+<dl><dt><a name="SqlData-set_cache_value"><strong>set_cache_value</strong></a>(self, key:str, value:str) -&gt; bool</dt><dd><tt>Inserts&nbsp;a&nbsp;new&nbsp;key,value&nbsp;pair&nbsp;in&nbsp;the&nbsp;cache&nbsp;table.&nbsp;<br>
+Existing&nbsp;value&nbsp;will&nbsp;be&nbsp;overwritten.<br>
+:param&nbsp;key:&nbsp;key&nbsp;of&nbsp;the&nbsp;cache&nbsp;entry<br>
+:param&nbsp;value:&nbsp;cache&nbsp;entry&nbsp;value<br>
+:return:&nbsp;status&nbsp;None&nbsp;if&nbsp;update&nbsp;fails<br>
+:rtype&nbsp;bool</tt></dd></dl>
+
+</td></tr></table></td></tr></table>
+</body></html>

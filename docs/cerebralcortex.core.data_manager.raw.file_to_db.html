@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module cerebralcortex.core.data_manager.raw.file_to_db</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="cerebralcortex.html"><font color="#ffffff">cerebralcortex</font></a>.<a href="cerebralcortex.core.html"><font color="#ffffff">core</font></a>.<a href="cerebralcortex.core.data_manager.html"><font color="#ffffff">data_manager</font></a>.<a href="cerebralcortex.core.data_manager.raw.html"><font color="#ffffff">raw</font></a>.file_to_db</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/usr/local/lib/python3.6/dist-packages/MD2K_Cerebral_Cortex-2.2.3-py3.6.egg/cerebralcortex/core/data_manager/raw/file_to_db.py">/usr/local/lib/python3.6/dist-packages/MD2K_Cerebral_Cortex-2.2.3-py3.6.egg/cerebralcortex/core/data_manager/raw/file_to_db.py</a></font></td></tr></table>
+    <p><tt>#&nbsp;Copyright&nbsp;(c)&nbsp;2017,&nbsp;MD2K&nbsp;Center&nbsp;of&nbsp;Excellence<br>
+#&nbsp;-&nbsp;Nasir&nbsp;Ali&nbsp;&lt;nasir.ali08@gmail.com&gt;<br>
+#&nbsp;All&nbsp;rights&nbsp;reserved.<br>
+#<br>
+#&nbsp;Redistribution&nbsp;and&nbsp;use&nbsp;in&nbsp;source&nbsp;and&nbsp;binary&nbsp;forms,&nbsp;with&nbsp;or&nbsp;without<br>
+#&nbsp;modification,&nbsp;are&nbsp;permitted&nbsp;provided&nbsp;that&nbsp;the&nbsp;following&nbsp;conditions&nbsp;are&nbsp;met:<br>
+#<br>
+#&nbsp;*&nbsp;Redistributions&nbsp;of&nbsp;source&nbsp;code&nbsp;must&nbsp;retain&nbsp;the&nbsp;above&nbsp;copyright&nbsp;notice,&nbsp;this<br>
+#&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer.<br>
+#<br>
+#&nbsp;*&nbsp;Redistributions&nbsp;in&nbsp;binary&nbsp;form&nbsp;must&nbsp;reproduce&nbsp;the&nbsp;above&nbsp;copyright&nbsp;notice,<br>
+#&nbsp;this&nbsp;list&nbsp;of&nbsp;conditions&nbsp;and&nbsp;the&nbsp;following&nbsp;disclaimer&nbsp;in&nbsp;the&nbsp;documentation<br>
+#&nbsp;and/or&nbsp;other&nbsp;materials&nbsp;provided&nbsp;with&nbsp;the&nbsp;distribution.<br>
+#<br>
+#&nbsp;THIS&nbsp;SOFTWARE&nbsp;IS&nbsp;PROVIDED&nbsp;BY&nbsp;THE&nbsp;COPYRIGHT&nbsp;HOLDERS&nbsp;AND&nbsp;CONTRIBUTORS&nbsp;"AS&nbsp;IS"<br>
+#&nbsp;AND&nbsp;ANY&nbsp;EXPRESS&nbsp;OR&nbsp;IMPLIED&nbsp;WARRANTIES,&nbsp;INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;TO,&nbsp;THE<br>
+#&nbsp;IMPLIED&nbsp;WARRANTIES&nbsp;OF&nbsp;MERCHANTABILITY&nbsp;AND&nbsp;FITNESS&nbsp;FOR&nbsp;A&nbsp;PARTICULAR&nbsp;PURPOSE&nbsp;ARE<br>
+#&nbsp;DISCLAIMED.&nbsp;IN&nbsp;NO&nbsp;EVENT&nbsp;SHALL&nbsp;THE&nbsp;COPYRIGHT&nbsp;HOLDER&nbsp;OR&nbsp;CONTRIBUTORS&nbsp;BE&nbsp;LIABLE<br>
+#&nbsp;FOR&nbsp;ANY&nbsp;DIRECT,&nbsp;INDIRECT,&nbsp;INCIDENTAL,&nbsp;SPECIAL,&nbsp;EXEMPLARY,&nbsp;OR&nbsp;CONSEQUENTIAL<br>
+#&nbsp;DAMAGES&nbsp;(INCLUDING,&nbsp;BUT&nbsp;NOT&nbsp;LIMITED&nbsp;TO,&nbsp;PROCUREMENT&nbsp;OF&nbsp;SUBSTITUTE&nbsp;GOODS&nbsp;OR<br>
+#&nbsp;SERVICES;&nbsp;LOSS&nbsp;OF&nbsp;USE,&nbsp;DATA,&nbsp;OR&nbsp;PROFITS;&nbsp;OR&nbsp;BUSINESS&nbsp;INTERRUPTION)&nbsp;HOWEVER<br>
+#&nbsp;CAUSED&nbsp;AND&nbsp;ON&nbsp;ANY&nbsp;THEORY&nbsp;OF&nbsp;LIABILITY,&nbsp;WHETHER&nbsp;IN&nbsp;CONTRACT,&nbsp;STRICT&nbsp;LIABILITY,<br>
+#&nbsp;OR&nbsp;TORT&nbsp;(INCLUDING&nbsp;NEGLIGENCE&nbsp;OR&nbsp;OTHERWISE)&nbsp;ARISING&nbsp;IN&nbsp;ANY&nbsp;WAY&nbsp;OUT&nbsp;OF&nbsp;THE&nbsp;USE<br>
+#&nbsp;OF&nbsp;THIS&nbsp;SOFTWARE,&nbsp;EVEN&nbsp;IF&nbsp;ADVISED&nbsp;OF&nbsp;THE&nbsp;POSSIBILITY&nbsp;OF&nbsp;SUCH&nbsp;DAMAGE.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="datetime.html">datetime</a><br>
+<a href="gzip.html">gzip</a><br>
+</td><td width="25%" valign=top><a href="json.html">json</a><br>
+<a href="os.html">os</a><br>
+</td><td width="25%" valign=top><a href="pyarrow.html">pyarrow</a><br>
+<a href="traceback.html">traceback</a><br>
+</td><td width="25%" valign=top><a href="uuid.html">uuid</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="cerebralcortex.core.data_manager.raw.file_to_db.html#FileToDB">FileToDB</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="FileToDB">class <strong>FileToDB</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>This&nbsp;class&nbsp;is&nbsp;responsible&nbsp;to&nbsp;read&nbsp;.gz&nbsp;files&nbsp;and&nbsp;insert&nbsp;data&nbsp;in&nbsp;Cassandra/ScyllaDB&nbsp;OR&nbsp;HDFS&nbsp;and&nbsp;Influx.<br>
+This&nbsp;class&nbsp;is&nbsp;only&nbsp;for&nbsp;CC&nbsp;internal&nbsp;use.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="FileToDB-__init__"><strong>__init__</strong></a>(self, CC)</dt><dd><tt>:param&nbsp;CC:&nbsp;CerebralCortex&nbsp;Configurations</tt></dd></dl>
+
+<dl><dt><a name="FileToDB-file_processor"><strong>file_processor</strong></a>(self, msg:dict, zip_filepath:str, influxdb_insert:bool=False, nosql_insert:bool=True)</dt><dd><tt>Process&nbsp;raw&nbsp;.gz&nbsp;files'&nbsp;data&nbsp;and&nbsp;json&nbsp;metadata&nbsp;files,&nbsp;convert&nbsp;into&nbsp;DataStream&nbsp;<a href="builtins.html#object">object</a>&nbsp;format&nbsp;and&nbsp;store&nbsp;data&nbsp;in&nbsp;CC&nbsp;data-stores<br>
+:param&nbsp;msg:&nbsp;Kafka&nbsp;message&nbsp;in&nbsp;json&nbsp;format<br>
+:param&nbsp;zip_filepath:&nbsp;data&nbsp;folder&nbsp;path&nbsp;where&nbsp;all&nbsp;the&nbsp;gz/json&nbsp;files&nbsp;are&nbsp;located<br>
+:param&nbsp;influxdb_insert:&nbsp;Turn&nbsp;on/off&nbsp;influxdb&nbsp;data&nbsp;ingestion<br>
+:param&nbsp;nosql_insert:&nbsp;Turn&nbsp;on/off&nbsp;nosql&nbsp;data&nbsp;ingestion</tt></dd></dl>
+
+<dl><dt><a name="FileToDB-line_to_batch_block"><strong>line_to_batch_block</strong></a>(self, stream_id:&lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;, lines:str, insert_qry:str)</dt><dd><tt>Convert&nbsp;gz&nbsp;files'&nbsp;raw&nbsp;data&nbsp;lines&nbsp;into&nbsp;CQL&nbsp;batch&nbsp;queries<br>
+:param&nbsp;stream_id:<br>
+:param&nbsp;lines:<br>
+:param&nbsp;insert_qry:</tt></dd></dl>
+
+<dl><dt><a name="FileToDB-line_to_sample"><strong>line_to_sample</strong></a>(self, filename, stream_id, stream_owner_id, stream_owner_name, stream_name, data_descriptor, influxdb_insert, influxdb_client, nosql_insert)</dt><dd><tt>Converts&nbsp;a&nbsp;gz&nbsp;file&nbsp;lines&nbsp;into&nbsp;sample&nbsp;values&nbsp;format&nbsp;and&nbsp;influxdb&nbsp;<a href="builtins.html#object">object</a><br>
+:param&nbsp;filename:<br>
+:param&nbsp;stream_id:<br>
+:param&nbsp;stream_owner_id:<br>
+:param&nbsp;stream_owner_name:<br>
+:param&nbsp;stream_name:<br>
+:param&nbsp;data_descriptor:<br>
+:param&nbsp;influxdb_insert:<br>
+:param&nbsp;nosql_insert:</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>
