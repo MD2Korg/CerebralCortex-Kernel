@@ -268,8 +268,11 @@ class StreamHandler():
                     try:
                         data = gzip.decompress(data)
                     except:
-                        curfile.close()
-                        hdfs.delete(gz_filename)
+                        self.logging.log(
+                            error_message="Error! cannot decompress GZ file. FILE: "+gz_filename+" --- " + str(traceback.format_exc()),
+                            error_type=self.logtypes.CRITICAL)
+                        #curfile.close()
+                        #hdfs.delete(gz_filename)
 
                 if data is not None and data != b'':
                     clean_data = self.filter_sort_datapoints(data)
@@ -297,8 +300,11 @@ class StreamHandler():
                     try:
                         data = gzip.decompress(data)
                     except:
-                        curfile.close()
-                        hdfs.delete(gz_filename)
+                        #curfile.close()
+                        self.logging.log(
+                            error_message="Error! cannot decompress GZ file. FILE: "+gz_filename+" --- " + str(traceback.format_exc()),
+                            error_type=self.logtypes.CRITICAL)
+                        #hdfs.delete(gz_filename)
                 else:
                     return []
                 if data is not None and data != b'':
@@ -426,7 +432,10 @@ class StreamHandler():
                         try:
                             data = gzip.decompress(data)
                         except:
-                            os.remove(gz_filename)
+                            self.logging.log(
+                                error_message="Error! cannot decompress GZ file. FILE: "+gz_filename+" --- " + str(traceback.format_exc()),
+                                error_type=self.logtypes.CRITICAL)
+                            #os.remove(gz_filename)
                     curfile.close()
                 if data is not None and data != b'':
                     clean_data = self.filter_sort_datapoints(data)
@@ -456,7 +465,10 @@ class StreamHandler():
                     try:
                         data = gzip.decompress(data)
                     except:
-                        os.remove(gz_filename)
+                        self.logging.log(
+                            error_message="Error! cannot decompress GZ file. FILE: "+gz_filename+" --- " + str(traceback.format_exc()),
+                            error_type=self.logtypes.CRITICAL)
+                        #os.remove(gz_filename)
                     curfile.close()
                 else:
                     return []
