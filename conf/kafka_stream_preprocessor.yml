@@ -1,0 +1,17 @@
+#########################################################################
+########################### Messaging Service ###########################
+#########################################################################
+messaging_service: kafka
+
+messaging_service_type:
+  messaging_service: "kinesis" #acceptable parameters are kinesis OR kafka !!!!IMPORTANT!!! If you want to use aws-kinesis, make sure aws credentials are setup on the machine
+
+kafkaserver:
+  host: 127.0.0.1
+  port: 9092
+
+aws_kinesis:
+  host: "kinesis"
+  region_name: "us-east-1"
+  stream_name: "cerebralcortex" #not required
+  partition_batch_size: 1000

@@ -24,15 +24,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-
-
-
-
-
-
-
-
-
 import gzip
 import json
 import os
@@ -56,8 +47,9 @@ from cerebralcortex.core.util.data_types import serialize_obj
 from cerebralcortex.core.util.datetime_helper_methods import get_timezone
 
 try:
-    from cassandra.cluster import Cluster
-    from cassandra.query import BatchStatement, BatchType
+    #from cassandra.cluster import Cluster
+    #from cassandra.query import BatchStatement, BatchType
+    pass
 except ImportError:
     pass
 
@@ -104,7 +96,7 @@ class StreamHandler():
                 elif self.nosql_store == "aws_s3":
                     dps = self.read_aws_s3_file(owner_id, stream_id, day, start_time, end_time, localtime)
                 else:
-                    dps = self.load_cassandra_data(stream_id, day, start_time, end_time)
+                    raise ValueError(self.nosql_store+" - Unknown NoSQL storage. Only hdfs, filesystem, and aws_s3 are NoSQL storages are supported.")
                 stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, dps, localtime)
             elif data_type == DataSet.ONLY_DATA:
                 if self.nosql_store == "hdfs":
@@ -114,14 +106,11 @@ class StreamHandler():
                 elif self.nosql_store == "aws_s3":
                     return self.read_aws_s3_file(owner_id, stream_id, day, start_time, end_time, localtime)
                 else:
-                    return self.load_cassandra_data(stream_id, day, start_time, end_time)
+                    raise ValueError(self.nosql_store+" - Unknown NoSQL storage. Only hdfs, filesystem, and aws_s3 are NoSQL storages are supported.")
             elif data_type == DataSet.ONLY_METADATA:
                 stream = self.map_datapoint_and_metadata_to_datastream(stream_id, datastream_metadata, None)
             else:
-                self.logging.log(
-                    error_message="STREAM ID: " + stream_id + "Failed to get data stream. Invalid type parameter.",
-                    error_type=self.logtypes.DEBUG)
-                return DataStream()
+                raise ValueError("STREAM ID: " + str(stream_id) + "Failed to get data stream. Invalid type parameter.")
             return stream
         else:
             return DataStream()
@@ -506,9 +495,9 @@ class StreamHandler():
                         gzwrite = open(gz_filename, "wb")
                         gzwrite.write(compressed_data)
                         gzwrite.close()
-                    if os.path.exists(filename):
-                        if os.path.getsize(gz_filename) > 0:
-                            os.remove(filename)
+                        if os.path.exists(filename):
+                            if os.path.getsize(gz_filename) > 0:
+                                os.remove(filename)
                 except:
                     if os.path.exists(gz_filename):
                         if os.path.getsize(gz_filename) == 0:
@@ -522,9 +511,9 @@ class StreamHandler():
                         gzwrite = hdfs.open(gz_filename, "wb")
                         gzwrite.write(compressed_data)
                         gzwrite.close()
-                    if hdfs.exists(filename):
-                        if hdfs.info(gz_filename)["size"] > 0:
-                            hdfs.delete(filename)
+                        if hdfs.exists(filename):
+                            if hdfs.info(gz_filename)["size"] > 0:
+                                hdfs.delete(filename)
                 except:
                     print("Error in generating gz file.")
                     # delete file if file was opened and no data was written to it
@@ -606,20 +595,22 @@ class StreamHandler():
 
         if len(data) > 0:
             if localtime:
-                possible_tz = pytimezone(get_timezone(data[0].offset))
-            for dp in data:
                 if localtime:
-                    if dp.end_time is not None:
-                        dp.end_time = dp.end_time.replace(tzinfo=pytz.utc)
-                        dp.end_time = datetime.fromtimestamp(dp.end_time.timestamp(),
-                                                             possible_tz)  # possible_tz.localize(dp.end_time)
-                    dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
-                    dp.start_time = datetime.fromtimestamp(dp.start_time.timestamp(),
-                                                           possible_tz)  # possible_tz.localize(dp.start_time)
-                else:
-                    if dp.end_time is not None:
-                        dp.end_time = dp.end_time.replace(tzinfo=pytz.utc)
-                    dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
+                    possible_tz = pytimezone(get_timezone(data[0].offset))
+                    for dp in data:
+
+                        if dp.end_time is not None:
+                            dp.end_time = dp.end_time.replace(tzinfo=pytz.utc)
+                            dp.end_time = datetime.fromtimestamp(dp.end_time.timestamp(),
+                                                                 possible_tz)
+                        dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
+                        dp.start_time = datetime.fromtimestamp(dp.start_time.timestamp(),
+                                                               possible_tz)
+                # TODO: for now, disabled it. Storing stream method already store all the data in UTC.
+                # else:
+                #     if dp.end_time is not None:
+                #         dp.end_time = dp.end_time.replace(tzinfo=pytz.utc)
+                #     dp.start_time = dp.start_time.replace(tzinfo=pytz.utc)
 
         return data
 
@@ -640,71 +631,71 @@ class StreamHandler():
                 local_tz_data.append(dp)
         return local_tz_data
 
-    def load_cassandra_data(self, stream_id: uuid, day: str, start_time: datetime = None, end_time: datetime = None) -> \
-    List[DataPoint]:
-        """
-        Get data from Cassandra/SyllaDB and convert it into list of DataPoint
-        :param stream_id:
-        :param day: format (YYYYMMDD)
-        :param start_time:
-        :param end_time:
-        :return: list of datapoints
-        :rtype: List[DataPoint]
-        """
-        if isinstance(stream_id, str):
-            stream_id = uuid.UUID(stream_id)
-        where_clause = ""
-        vals = {"identifier": stream_id, "day": day}
-        try:
-            cluster = Cluster([self.host_ip], port=self.host_port, protocol_version=4)
+    # def load_cassandra_data(self, stream_id: uuid, day: str, start_time: datetime = None, end_time: datetime = None) -> \
+    # List[DataPoint]:
+    #     """
+    #     Get data from Cassandra/SyllaDB and convert it into list of DataPoint
+    #     :param stream_id:
+    #     :param day: format (YYYYMMDD)
+    #     :param start_time:
+    #     :param end_time:
+    #     :return: list of datapoints
+    #     :rtype: List[DataPoint]
+    #     """
+    #     if isinstance(stream_id, str):
+    #         stream_id = uuid.UUID(stream_id)
+    #     where_clause = ""
+    #     vals = {"identifier": stream_id, "day": day}
+    #     try:
+    #         cluster = Cluster([self.host_ip], port=self.host_port, protocol_version=4)
+    #
+    #         session = cluster.connect(self.keyspace_name)
+    #
+    #         if start_time is not None and end_time is not None:
+    #             where_clause = " and start_time>=? and end_time<=?"
+    #             vals["start_time"] = start_time
+    #             vals["end_time"] = end_time
+    #
+    #         elif start_time is not None and end_time is None:
+    #             where_clause = " and start_time>=? "
+    #             vals["start_time"] = start_time
+    #         elif start_time is None and end_time is not None:
+    #             where_clause = " and end_time<=?"
+    #             vals["end_time"] = end_time
+    #
+    #         query = session.prepare(
+    #             "SELECT start_time,end_time, blob_obj FROM " + self.datapoint_table + " where identifier=? and day=? " + where_clause + " ALLOW FILTERING").bind(
+    #             vals)
+    #
+    #         data = []
+    #         rows = session.execute(query, timeout=None)
+    #         for row in rows:
+    #             data += self.parse_row(row)
+    #
+    #         session.shutdown()
+    #         cluster.shutdown()
+    #         if not data:
+    #             return []
+    #         return data
+    #     except Exception as e:
+    #         self.logging.log(
+    #             error_message="WHERE CLAUSE:" + where_clause + " - Error in loading cassandra data. " + str(
+    #                 traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+    #         return []
 
-            session = cluster.connect(self.keyspace_name)
-
-            if start_time is not None and end_time is not None:
-                where_clause = " and start_time>=? and end_time<=?"
-                vals["start_time"] = start_time
-                vals["end_time"] = end_time
-
-            elif start_time is not None and end_time is None:
-                where_clause = " and start_time>=? "
-                vals["start_time"] = start_time
-            elif start_time is None and end_time is not None:
-                where_clause = " and end_time<=?"
-                vals["end_time"] = end_time
-
-            query = session.prepare(
-                "SELECT start_time,end_time, blob_obj FROM " + self.datapoint_table + " where identifier=? and day=? " + where_clause + " ALLOW FILTERING").bind(
-                vals)
-
-            data = []
-            rows = session.execute(query, timeout=None)
-            for row in rows:
-                data += self.parse_row(row)
-
-            session.shutdown()
-            cluster.shutdown()
-            if not data:
-                return []
-            return data
-        except Exception as e:
-            self.logging.log(
-                error_message="WHERE CLAUSE:" + where_clause + " - Error in loading cassandra data. " + str(
-                    traceback.format_exc()), error_type=self.logtypes.CRITICAL)
-            return []
-
-    def parse_row(self, row: str) -> List:
-        """
-        Unpickle an object of List[DataPoint]
-        :param row:
-        :return: list of DataPoint
-        :rtype: List[DataPoint]
-        """
-        try:
-            return deserialize_obj(row[2])
-        except Exception as e:
-            self.logging.log(error_message="Row: " + row + " - Cannot parse row. " + str(traceback.format_exc()),
-                             error_type=self.logtypes.CRITICAL)
-            return []
+    # def parse_row(self, row: str) -> List:
+    #     """
+    #     Unpickle an object of List[DataPoint]
+    #     :param row:
+    #     :return: list of DataPoint
+    #     :rtype: List[DataPoint]
+    #     """
+    #     try:
+    #         return deserialize_obj(row[2])
+    #     except Exception as e:
+    #         self.logging.log(error_message="Row: " + row + " - Cannot parse row. " + str(traceback.format_exc()),
+    #                          error_type=self.logtypes.CRITICAL)
+    #         return []
 
     # def parse_row_raw_sample(self, row: str, stream_name:str) -> List[DataPoint]:
     #     """
@@ -732,77 +723,77 @@ class StreamHandler():
     #                          error_type=self.logtypes.CRITICAL)
     #         return []
 
-    def get_stream_samples(self, stream_id: uuid, day: str, start_time: datetime = None, end_time: datetime = None) -> \
-    List[DataPoint]:
-        """
-        Get data from Cassandra/ScyllaDB and convert it into a list of DataPoint format
-        :param stream_id:
-        :param day: format (YYYYMMDD)
-        :param start_time:
-        :param end_time:
-        :return: list of DataPoint objects
-        :rtype: List[DataPoint]
-        """
-        try:
-            cluster = Cluster([self.hostIP], port=self.hostPort)
-            session = cluster.connect(self.keyspaceName)
+    # def get_stream_samples(self, stream_id: uuid, day: str, start_time: datetime = None, end_time: datetime = None) -> \
+    # List[DataPoint]:
+    #     """
+    #     Get data from Cassandra/ScyllaDB and convert it into a list of DataPoint format
+    #     :param stream_id:
+    #     :param day: format (YYYYMMDD)
+    #     :param start_time:
+    #     :param end_time:
+    #     :return: list of DataPoint objects
+    #     :rtype: List[DataPoint]
+    #     """
+    #     try:
+    #         cluster = Cluster([self.hostIP], port=self.hostPort)
+    #         session = cluster.connect(self.keyspaceName)
+    #
+    #         if start_time and end_time:
+    #             qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "' and start_time>='" + str(
+    #                 start_time) + "' and start_time<='" + str(end_time) + "' ALLOW FILTERING"
+    #         elif start_time and not end_time:
+    #             qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "' and start_time>='" + str(
+    #                 start_time) + "' ALLOW FILTERING"
+    #         elif not start_time and end_time:
+    #             qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "' and start_time<='" + str(
+    #                 end_time) + "' ALLOW FILTERING"
+    #         else:
+    #             qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "'"
+    #
+    #         rows = session.execute(qry)
+    #         dps = self.row_to_datapoints(rows)
+    #
+    #         session.shutdown()
+    #         cluster.shutdown()
+    #         return dps
+    #     except Exception as e:
+    #         self.logging.log(
+    #             error_message="ID: " + stream_id + " - Cannot get stream samples. " + str(traceback.format_exc()),
+    #             error_type=self.logtypes.CRITICAL)
+    #         return []
 
-            if start_time and end_time:
-                qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "' and start_time>='" + str(
-                    start_time) + "' and start_time<='" + str(end_time) + "' ALLOW FILTERING"
-            elif start_time and not end_time:
-                qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "' and start_time>='" + str(
-                    start_time) + "' ALLOW FILTERING"
-            elif not start_time and end_time:
-                qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "' and start_time<='" + str(
-                    end_time) + "' ALLOW FILTERING"
-            else:
-                qry = "SELECT sample from " + self.datapointTable + " where identifier=" + stream_id + " and day='" + day + "'"
-
-            rows = session.execute(qry)
-            dps = self.row_to_datapoints(rows)
-
-            session.shutdown()
-            cluster.shutdown()
-            return dps
-        except Exception as e:
-            self.logging.log(
-                error_message="ID: " + stream_id + " - Cannot get stream samples. " + str(traceback.format_exc()),
-                error_type=self.logtypes.CRITICAL)
-            return []
-
-    def row_to_datapoints(self, rows: object) -> List[DataPoint]:
-        """
-        Convert Cassandra rows into DataPoint list
-        :param rows: Cassandra row object
-        :return: list of DataPoint objects
-        :rtype: List[DataPoint]
-        """
-        dps = []
-        try:
-            if rows:
-                for row in rows:
-                    sample = row[2]
-                    # Caasandra timezone is already in UTC. Adding timezone again would double the timezone value
-                    if self.time_zone != 'UTC':
-                        localtz = pytimezone(self.time_zone)
-                        if row[0]:
-                            start_time = localtz.localize(row[0])
-                        if row[1]:
-                            end_time = localtz.localize(row[1])
-                    else:
-                        if row[0]:
-                            start_time = row[0]
-                        if row[1]:
-                            end_time = row[1]
-
-                    dps.append(DataPoint(start_time, end_time, sample))
-            return dps
-        except Exception as e:
-            self.logging.log(
-                error_message="ROW: " + row + " - Cannot convert row to datapoints. " + str(traceback.format_exc()),
-                error_type=self.logtypes.CRITICAL)
-            return []
+    # def row_to_datapoints(self, rows: object) -> List[DataPoint]:
+    #     """
+    #     Convert Cassandra rows into DataPoint list
+    #     :param rows: Cassandra row object
+    #     :return: list of DataPoint objects
+    #     :rtype: List[DataPoint]
+    #     """
+    #     dps = []
+    #     try:
+    #         if rows:
+    #             for row in rows:
+    #                 sample = row[2]
+    #                 # Caasandra timezone is already in UTC. Adding timezone again would double the timezone value
+    #                 if self.time_zone != 'UTC':
+    #                     localtz = pytimezone(self.time_zone)
+    #                     if row[0]:
+    #                         start_time = localtz.localize(row[0])
+    #                     if row[1]:
+    #                         end_time = localtz.localize(row[1])
+    #                 else:
+    #                     if row[0]:
+    #                         start_time = row[0]
+    #                     if row[1]:
+    #                         end_time = row[1]
+    #
+    #                 dps.append(DataPoint(start_time, end_time, sample))
+    #         return dps
+    #     except Exception as e:
+    #         self.logging.log(
+    #             error_message="ROW: " + row + " - Cannot convert row to datapoints. " + str(traceback.format_exc()),
+    #             error_type=self.logtypes.CRITICAL)
+    #         return []
 
     ###################################################################
     ################## STORE DATA METHODS #############################
@@ -1058,122 +1049,122 @@ class StreamHandler():
                             filename) + " - Exception: " + str(ex), error_type=self.logtypes.DEBUG)
         return success
 
-    def save_raw_data(self, stream_id: uuid, datapoints: List[DataPoint]) -> bool:
+    # def save_raw_data(self, stream_id: uuid, datapoints: List[DataPoint]) -> bool:
+    #
+    #     """
+    #     Pickle list of DataPoint objects and store it in Cassandra/ScyllaDB
+    #     :param stream_id:
+    #     :param datapoints:
+    #     :return True if data is successfully ingested
+    #     :rtype bool
+    #     """
+    #     datapoints = self.serialize_datapoints_batch(datapoints)
+    #     success = False
+    #     try:
+    #         cluster = Cluster([self.host_ip], port=self.host_port, protocol_version=4)
+    #
+    #         session = cluster.connect(self.keyspace_name)
+    #
+    #         qry_without_endtime = session.prepare(
+    #             "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, blob_obj) VALUES (?, ?, ?, ?)")
+    #         qry_with_endtime = session.prepare(
+    #             "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
+    #
+    #         if isinstance(stream_id, str):
+    #             stream_id = uuid.UUID(stream_id)
+    #
+    #         for data_block in self.datapoints_to_cassandra_sql_batch(stream_id, datapoints, qry_without_endtime,
+    #                                                                  qry_with_endtime):
+    #             session.execute(data_block)
+    #             data_block.clear()
+    #
+    #         session.shutdown()
+    #         cluster.shutdown()
+    #         success = True
+    #     except Exception as e:
+    #         self.logging.log(
+    #             error_message="STREAM ID: " + str(stream_id) + " - Cannot save raw data. " + str(
+    #                 traceback.format_exc()),
+    #             error_type=self.logtypes.CRITICAL)
+    #     return success
 
-        """
-        Pickle list of DataPoint objects and store it in Cassandra/ScyllaDB
-        :param stream_id:
-        :param datapoints:
-        :return True if data is successfully ingested
-        :rtype bool
-        """
-        datapoints = self.serialize_datapoints_batch(datapoints)
-        success = False
-        try:
-            cluster = Cluster([self.host_ip], port=self.host_port, protocol_version=4)
+    # def datapoints_to_cassandra_sql_batch(self, stream_id: uuid, datapoints: DataPoint, qry_without_endtime: str,
+    #                                       qry_with_endtime: str) -> object: #don't put return type as BatchStatement because it can cause errors when Cassandra is selected as NoSQL store
+    #     """
+    #     Convert List of DataPoint objects to Cassandra/ScyllaDB batch
+    #     :param stream_id:
+    #     :param datapoints:
+    #     :param qry_without_endtime:
+    #     :param qry_with_endtime:
+    #     :return Cassandra/ScyllaDB batch
+    #     :rtype BatchStatement(batch_type=BatchType.UNLOGGED)
+    #     """
+    #     batch = BatchStatement(batch_type=BatchType.UNLOGGED)
+    #     batch.clear()
+    #     dp_number = 1
+    #     for dp in datapoints:
+    #         day = dp[0].strftime("%Y%m%d")
+    #         sample = dp[3]
+    #         if dp[1]:
+    #             insert_qry = qry_with_endtime
+    #         else:
+    #             insert_qry = qry_without_endtime
+    #
+    #         if dp_number > self.batch_size:
+    #             yield batch
+    #             batch = BatchStatement(batch_type=BatchType.UNLOGGED)
+    #             # just to make sure batch does not have any existing entries.
+    #             batch.clear()
+    #             dp_number = 1
+    #         else:
+    #             if dp[1]:
+    #                 batch.add(insert_qry, (stream_id, day, dp[0], dp[1], sample))
+    #             else:
+    #                 batch.add(insert_qry, (stream_id, day, dp[0], sample))
+    #             dp_number += 1
+    #     yield batch
 
-            session = cluster.connect(self.keyspace_name)
-
-            qry_without_endtime = session.prepare(
-                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, blob_obj) VALUES (?, ?, ?, ?)")
-            qry_with_endtime = session.prepare(
-                "INSERT INTO " + self.datapoint_table + " (identifier, day, start_time, end_time, blob_obj) VALUES (?, ?, ?, ?, ?)")
-
-            if isinstance(stream_id, str):
-                stream_id = uuid.UUID(stream_id)
-
-            for data_block in self.datapoints_to_cassandra_sql_batch(stream_id, datapoints, qry_without_endtime,
-                                                                     qry_with_endtime):
-                session.execute(data_block)
-                data_block.clear()
-
-            session.shutdown()
-            cluster.shutdown()
-            success = True
-        except Exception as e:
-            self.logging.log(
-                error_message="STREAM ID: " + str(stream_id) + " - Cannot save raw data. " + str(
-                    traceback.format_exc()),
-                error_type=self.logtypes.CRITICAL)
-        return success
-
-    def datapoints_to_cassandra_sql_batch(self, stream_id: uuid, datapoints: DataPoint, qry_without_endtime: str,
-                                          qry_with_endtime: str) -> object: #don't put return type as BatchStatement because it can cause errors when Cassandra is selected as NoSQL store
-        """
-        Convert List of DataPoint objects to Cassandra/ScyllaDB batch
-        :param stream_id:
-        :param datapoints:
-        :param qry_without_endtime:
-        :param qry_with_endtime:
-        :return Cassandra/ScyllaDB batch
-        :rtype BatchStatement(batch_type=BatchType.UNLOGGED)
-        """
-        batch = BatchStatement(batch_type=BatchType.UNLOGGED)
-        batch.clear()
-        dp_number = 1
-        for dp in datapoints:
-            day = dp[0].strftime("%Y%m%d")
-            sample = dp[3]
-            if dp[1]:
-                insert_qry = qry_with_endtime
-            else:
-                insert_qry = qry_without_endtime
-
-            if dp_number > self.batch_size:
-                yield batch
-                batch = BatchStatement(batch_type=BatchType.UNLOGGED)
-                # just to make sure batch does not have any existing entries.
-                batch.clear()
-                dp_number = 1
-            else:
-                if dp[1]:
-                    batch.add(insert_qry, (stream_id, day, dp[0], dp[1], sample))
-                else:
-                    batch.add(insert_qry, (stream_id, day, dp[0], sample))
-                dp_number += 1
-        yield batch
-
-    def serialize_datapoints_batch(self, data: List[DataPoint]):
-
-        """
-        Converts list of datapoints into batches and pickle it
-        :param data:
-        :return picked format of List of DataPoint objects
-        :rtype pickle
-        """
-
-        grouped_samples = []
-        line_number = 1
-        current_day = None  # used to check boundry condition. For example, if half of the sample belong to next day
-        last_start_time = None
-        datapoints = []
-
-        for dp in data:
-
-            start_time = dp.start_time
-            end_time = dp.end_time
-
-            if line_number == 1:
-                datapoints = []
-                first_start_time = start_time
-                # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
-                start_day = first_start_time.strftime("%Y%m%d")
-
-                current_day = int(start_time.timestamp() / 86400)
-            if line_number > self.sample_group_size:
-                last_start_time = start_time
-                datapoints.append(DataPoint(start_time, end_time, dp.offset, dp.sample))
-                grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
-                line_number = 1
-            else:
-                if (int(start_time.timestamp() / 86400)) > current_day:
-                    start_day = start_time.strftime("%Y%m%d")
-                datapoints.append(DataPoint(start_time, end_time, dp.offset, dp.sample))
-                line_number += 1
-
-        if len(datapoints) > 0:
-            if not last_start_time:
-                last_start_time = start_time
-            grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
-
-        return grouped_samples
+    # def serialize_datapoints_batch(self, data: List[DataPoint]):
+    #
+    #     """
+    #     Converts list of datapoints into batches and pickle it
+    #     :param data:
+    #     :return picked format of List of DataPoint objects
+    #     :rtype pickle
+    #     """
+    #
+    #     grouped_samples = []
+    #     line_number = 1
+    #     current_day = None  # used to check boundry condition. For example, if half of the sample belong to next day
+    #     last_start_time = None
+    #     datapoints = []
+    #
+    #     for dp in data:
+    #
+    #         start_time = dp.start_time
+    #         end_time = dp.end_time
+    #
+    #         if line_number == 1:
+    #             datapoints = []
+    #             first_start_time = start_time
+    #             # TODO: if sample is divided into two days then it will move the block into fist day. Needs to fix
+    #             start_day = first_start_time.strftime("%Y%m%d")
+    #
+    #             current_day = int(start_time.timestamp() / 86400)
+    #         if line_number > self.sample_group_size:
+    #             last_start_time = start_time
+    #             datapoints.append(DataPoint(start_time, end_time, dp.offset, dp.sample))
+    #             grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
+    #             line_number = 1
+    #         else:
+    #             if (int(start_time.timestamp() / 86400)) > current_day:
+    #                 start_day = start_time.strftime("%Y%m%d")
+    #             datapoints.append(DataPoint(start_time, end_time, dp.offset, dp.sample))
+    #             line_number += 1
+    #
+    #     if len(datapoints) > 0:
+    #         if not last_start_time:
+    #             last_start_time = start_time
+    #         grouped_samples.append([first_start_time, last_start_time, start_day, serialize_obj(datapoints)])
+    #
+    #     return grouped_samples
