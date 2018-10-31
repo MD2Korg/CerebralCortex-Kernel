@@ -33,9 +33,12 @@ from datetime import datetime, timedelta
 from typing import List
 
 from cerebralcortex.core.datatypes.datapoint import DataPoint
+from cerebralcortex.core.util.data_types import deserialize_obj
 
-
-class NoSQLStorage():
+class FileSystemStorage():
+    
+    def __init__(self, obj):
+        self.obj = obj
 
     ###################################################################
     ################## GET DATA METHODS ###############################
@@ -62,7 +65,7 @@ class NoSQLStorage():
             day_block = []
             for d in days:
                 data = None
-                filename = self.filesystem_path + str(owner_id) + "/" + str(stream_id) + "/" + str(d) + ".pickle"
+                filename = self.obj.filesystem_path + str(owner_id) + "/" + str(stream_id) + "/" + str(d) + ".pickle"
                 gz_filename = filename.replace(".pickle", ".gz")
                 if os.path.exists(filename):
                     curfile = open(filename, "rb")
@@ -75,26 +78,27 @@ class NoSQLStorage():
                     if data is not None and data != b'':
                         try:
                             data = gzip.decompress(data)
+                            data = deserialize_obj(data)
                         except:
-                            self.logging.log(
+                            self.obj.logging.log(
                                 error_message="Error! cannot decompress GZ file. FILE: "+gz_filename+" --- " + str(traceback.format_exc()),
-                                error_type=self.logtypes.CRITICAL)
+                                error_type=self.obj.logtypes.CRITICAL)
                             #os.remove(gz_filename)
                     
                 if data is not None and data != b'':
-                    #clean_data = self.filter_sort_datapoints(data) TODO: Remove after testing. Already sorted and dedup during storage of data
-                    self.compress_store_pickle(filename, data)
-                    clean_data = self.convert_to_localtime(data, localtime)
+                    #clean_data = self.obj.filter_sort_datapoints(data) TODO: Remove after testing. Already sorted and dedup during storage of data
+                    self.obj.compress_store_pickle(filename, data)
+                    clean_data = self.obj.convert_to_localtime(data, localtime)
                     # day_start_time = datetime.fromtimestamp(day_start_time.timestamp(), clean_data[0].start_time.tzinfo)
                     # day_end_time = datetime.fromtimestamp(day_end_time.timestamp(), clean_data[0].start_time.tzinfo)
-                    day_block.extend(self.subset_data(clean_data, day_start_time, day_end_time))
+                    day_block.extend(self.obj.subset_data(clean_data, day_start_time, day_end_time))
 
-            day_block = self.filter_sort_datapoints(day_block)
+            day_block = self.obj.filter_sort_datapoints(day_block)
             if start_time is not None or end_time is not None:
-                day_block = self.subset_data(day_block, start_time, end_time)
+                day_block = self.obj.subset_data(day_block, start_time, end_time)
             return day_block
         else:
-            filename = self.filesystem_path + str(owner_id) + "/" + str(stream_id) + "/" + str(day) + ".pickle"
+            filename = self.obj.filesystem_path + str(owner_id) + "/" + str(stream_id) + "/" + str(day) + ".pickle"
             gz_filename = filename.replace(".pickle", ".gz")
             data = None
 
@@ -109,27 +113,28 @@ class NoSQLStorage():
                     curfile.close()
                     try:
                         data = gzip.decompress(data)
+                        data = deserialize_obj(data)
                     except:
-                        self.logging.log(
-                            error_message="Error! cannot decompress GZ file. FILE: "+gz_filename+" --- " + str(traceback.format_exc()),
-                            error_type=self.logtypes.CRITICAL)
+                        self.obj.logging.log(
+                            error_message="Error! cannot decompress GZ file and/or unpicle file. FILE: "+gz_filename+" --- " + str(traceback.format_exc()),
+                            error_type=self.obj.logtypes.CRITICAL)
                         #os.remove(gz_filename)
                     
                 else:
                     return []
                 if data is not None and data != b'':
-                    #clean_data = self.filter_sort_datapoints(data) TODO: Remove after testing. Already sorted and dedup during storage of data
-                    self.compress_store_pickle(filename, data)
-                    clean_data = self.convert_to_localtime(data, localtime)
+                    #clean_data = self.obj.filter_sort_datapoints(data) TODO: Remove after testing. Already sorted and dedup during storage of data
+                    self.obj.compress_store_pickle(filename, data)
+                    clean_data = self.obj.convert_to_localtime(data, localtime)
                     if start_time is not None or end_time is not None:
-                        clean_data = self.subset_data(clean_data, start_time, end_time)
+                        clean_data = self.obj.subset_data(clean_data, start_time, end_time)
                     return clean_data
                 else:
                     return []
             except Exception as e:
-                self.logging.log(
+                self.obj.logging.log(
                     error_message="Error loading from FileSystem: Cannot parse row. " + str(traceback.format_exc()),
-                    error_type=self.logtypes.CRITICAL)
+                    error_type=self.obj.logtypes.CRITICAL)
                 return []
 
     ###################################################################
@@ -159,7 +164,7 @@ class NoSQLStorage():
         # Data Write loop
         for day, dps in outputdata.items():
             existing_data = None
-            filename = self.filesystem_path + str(participant_id) + "/" + str(stream_id)
+            filename = self.obj.filesystem_path + str(participant_id) + "/" + str(stream_id)
             if not os.path.exists(filename):
                 os.makedirs(filename, exist_ok=True)
             filename = filename + "/" + str(day) + ".gz"
@@ -174,7 +179,7 @@ class NoSQLStorage():
                         existing_data = pickle.loads(existing_data)
                         dps.extend(existing_data)
                         # dps = existing_data
-                    dps = self.filter_sort_datapoints(dps)
+                    dps = self.obj.filter_sort_datapoints(dps)
                     f = open(filename, "wb")
                     dps = pickle.dumps(dps)
                     dps = gzip.compress(dps)
@@ -188,9 +193,9 @@ class NoSQLStorage():
                     if os.path.exists(filename):
                         if os.path.getsize(filename) == 0:
                             os.remove(filename)
-                    self.logging.log(
+                    self.obj.logging.log(
                         error_message="Error in writing data to FileSystem. STREAM ID: " + str(
                             stream_id) + "Owner ID: " + str(participant_id) + "Files: " + str(
-                            filename) + " - Exception: " + str(ex), error_type=self.logtypes.DEBUG)
+                            filename) + " - Exception: " + str(ex), error_type=self.obj.logtypes.DEBUG)
         return success
 

@@ -34,9 +34,9 @@ from io import BytesIO
 from typing import List
 
 from cerebralcortex.core.datatypes.datapoint import DataPoint
+from cerebralcortex.core.util.data_types import deserialize_obj
 
-
-class NoSQLStorage():
+class AwsS3Storage():
 
     ###################################################################
     ################## GET DATA METHODS ###############################
@@ -74,6 +74,7 @@ class NoSQLStorage():
                         if data.status==200:
                             data = gzip.decompress(data.data)
                             if data is not None and data != b'':
+                                data = deserialize_obj(data)
                                 #clean_data = self.filter_sort_datapoints(data) TODO: Remove after testing. Already sorted and dedup during storage of data
                                 clean_data = self.convert_to_localtime(data, localtime)
                                 day_block.extend(self.subset_data(clean_data, day_start_time, day_end_time))
@@ -105,6 +106,7 @@ class NoSQLStorage():
                 else:
                     return []
                 if data is not None and data != b'':
+                    data = deserialize_obj(data)
                     #clean_data = self.filter_sort_datapoints(data) TODO: Remove after testing. Already sorted and dedup during storage of data
                     clean_data = self.convert_to_localtime(data, localtime)
                     if start_time is not None or end_time is not None:

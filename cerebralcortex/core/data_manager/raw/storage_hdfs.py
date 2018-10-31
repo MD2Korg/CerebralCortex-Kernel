@@ -33,9 +33,9 @@ from typing import List
 import pyarrow
 
 from cerebralcortex.core.datatypes.datapoint import DataPoint
+from cerebralcortex.core.util.data_types import deserialize_obj
 
-
-class NoSQLStorage():
+class HDFSStorage():
 
     def read_file(self, owner_id: uuid, stream_id: uuid, day: str, start_time: datetime = None,
                            end_time: datetime = None, localtime: bool = False) -> List[DataPoint]:
@@ -75,6 +75,7 @@ class NoSQLStorage():
                     curfile.close()
                     try:
                         data = gzip.decompress(data)
+                        data = deserialize_obj(data)
                     except:
                         self.logging.log(
                             error_message="Error! cannot decompress GZ file. FILE: "+gz_filename+" --- " + str(traceback.format_exc()),
@@ -106,6 +107,7 @@ class NoSQLStorage():
                     curfile.close()
                     try:
                         data = gzip.decompress(data)
+                        data = deserialize_obj(data)
                     except:
                         self.logging.log(
                             error_message="Error! cannot decompress GZ file. FILE: "+gz_filename+" --- " + str(traceback.format_exc()),

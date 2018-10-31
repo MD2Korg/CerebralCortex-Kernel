@@ -28,7 +28,11 @@ from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
 from cerebralcortex.core.data_manager.object.data import ObjectData
 
-class RawData(StreamHandler):
+from cerebralcortex.core.data_manager.raw.storage_hdfs import HDFSStorage
+from cerebralcortex.core.data_manager.raw.storage_filesystem import FileSystemStorage
+from cerebralcortex.core.data_manager.raw.storage_aws_s3 import AwsS3Storage
+
+class RawData(StreamHandler, HDFSStorage, FileSystemStorage, AwsS3Storage):
     def __init__(self, CC):
         """
 
@@ -66,3 +70,13 @@ class RawData(StreamHandler):
         self.minio_input_bucket = self.config['minio']['input_bucket_name']
         self.minio_output_bucket = self.config['minio']['output_bucket_name']
         self.minio_dir_prefix = self.config['minio']['dir_prefix']
+        
+        # pseudo factory
+        if self.nosql_store == "hdfs":
+            self.nosql = HDFSStorage(self)
+        elif self.nosql_store=="filesystem":
+            self.nosql = FileSystemStorage(self)
+        elif self.nosql_store=="aws_s3":
+            self.nosql = AwsS3Storage(self)
+        else:
+            raise ValueError(self.nosql_store + " is not supported.")
