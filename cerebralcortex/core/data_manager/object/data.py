@@ -47,7 +47,7 @@ class ObjectData(MinioHandler):
         self.secret_key = self.config["minio"]["secret_key"]
         self.secure = self.config["minio"]["secure"]
 
-        if self.config["data_ingestion"]["nosql_store"]=="aws_s3":
+        if self.config["nosql_storage"]=="aws_s3":
             db_url = str(self.host)
         else:
             db_url = str(self.host) + ":" + str(self.port)

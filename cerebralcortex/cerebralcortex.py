@@ -52,11 +52,21 @@ class CerebralCortex:
         self.logtypes = LogTypes()
         self.SqlData = SqlData(self)
         self.RawData = RawData(self)
-        self.ObjectData = ObjectData(self)
-        self.TimeSeriesData = TimeSeriesData(self)
+
+        self.MessagingQueue = None
+        self.TimeSeriesData = None
         self.FileIO = FileIO(self)
-        self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
+
         warnings.simplefilter('always', DeprecationWarning)
+
+        if self.config["visualization_storage"]!="none":
+            self.TimeSeriesData = TimeSeriesData(self)
+
+        if self.config["messaging_service"]!="none":
+            self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
+
+        if "minio" in self.config:
+            self.ObjectData = ObjectData(self)
 
         # TODO: disabled because uwsgi losses connection, need more investigation
         # self.logging.log(error_message="Object created: ", error_type=self.logtypes.DEBUG)

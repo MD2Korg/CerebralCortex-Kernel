@@ -45,6 +45,10 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
 
         self.logging = CC.logging
         self.logtypes = LogTypes()
+        self.sql_store = self.config["relational_storage"]
+
+        if self.sql_store!="mysql":
+            raise Exception(self.sql_store+": SQL storage is not supported. Please install and configure MySQL.")
 
         self.hostIP = self.config['mysql']['host']
         self.hostPort = self.config['mysql']['port']

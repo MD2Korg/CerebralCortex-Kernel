@@ -75,6 +75,9 @@ class StreamHandler():
         # query datastream(mysql) for metadata
         datastream_metadata = self.sql_data.get_stream_metadata(stream_id)
 
+        # TODO: Add mProv REST API call to retrieve provenance data
+        # TODO: API call example? Format of the provenance data?
+
         if len(datastream_metadata) > 0:
             owner_id = datastream_metadata[0]["owner"]
             if data_type == DataSet.COMPLETE:
@@ -403,6 +406,9 @@ class StreamHandler():
                 status = self.nosql.write_file(owner_id, stream_id, data)
 
                 if status:
+                    # TODO: Add mProv REST API call to store provenance data
+                    # TODO: API call example?
+
                     # save metadata in SQL store
                     self.sql_data.save_stream_metadata(stream_id, stream_name, owner_id,
                                                        data_descriptor, execution_context,

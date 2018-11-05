@@ -23,6 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
@@ -44,39 +45,45 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage, AwsS3Storage):
         self.time_zone = CC.timezone
 
         self.logging = CC.logging
-        self.timeSeriesData = TimeSeriesData(CC)
-        self.logtypes = LogTypes()
-        
-        self.ObjectData = ObjectData(CC)
+        self.nosql_store = self.config['nosql_storage']
 
-        self.host_ip = self.config['cassandra']['host']
-        self.host_port = self.config['cassandra']['port']
-        self.keyspace_name = self.config['cassandra']['keyspace']
-        self.datapoint_table = self.config['cassandra']['datapoint_table']
-        self.batch_size = 64500
-        self.sample_group_size = 0 # disabled batching in row
 
-        self.hdfs_ip = self.config['hdfs']['host']
-        self.hdfs_port = self.config['hdfs']['port']
-        self.hdfs_user = self.config['hdfs']['hdfs_user']
-        self.hdfs_kerb_ticket = self.config['hdfs']['hdfs_kerb_ticket']
-        self.raw_files_dir = self.config['hdfs']['raw_files_dir']
-
-        self.nosql_store = self.config['data_ingestion']['nosql_store']
-        self.filesystem_path = self.config["data_ingestion"]["filesystem_path"]
-        
-        self.data_play_type = self.config["data_replay"]["replay_type"]
-        
-        self.minio_input_bucket = self.config['minio']['input_bucket_name']
-        self.minio_output_bucket = self.config['minio']['output_bucket_name']
-        self.minio_dir_prefix = self.config['minio']['dir_prefix']
-        
         # pseudo factory
         if self.nosql_store == "hdfs":
             self.nosql = HDFSStorage(self)
+            self.hdfs_ip = self.config['hdfs']['host']
+            self.hdfs_port = self.config['hdfs']['port']
+            self.hdfs_user = self.config['hdfs']['hdfs_user']
+            self.hdfs_kerb_ticket = self.config['hdfs']['hdfs_kerb_ticket']
+            self.raw_files_dir = self.config['hdfs']['raw_files_dir']
         elif self.nosql_store=="filesystem":
             self.nosql = FileSystemStorage(self)
+            self.filesystem_path = self.config["filesystem"]["filesystem_path"]
+            if not os.access(self.filesystem_path, os.W_OK):
+                raise Exception(self.filesystem_path+" path is writable. Please check your cerebralcortex.yml configurations.")
         elif self.nosql_store=="aws_s3":
             self.nosql = AwsS3Storage(self)
+            self.minio_input_bucket = self.config['minio']['input_bucket_name']
+            self.minio_output_bucket = self.config['minio']['output_bucket_name']
+            self.minio_dir_prefix = self.config['minio']['dir_prefix']
         else:
             raise ValueError(self.nosql_store + " is not supported.")
+
+        if self.config["visualization_storage"]!="none":
+            self.timeSeriesData = TimeSeriesData(CC)
+
+        self.logtypes = LogTypes()
+
+        if "minio" in self.config:
+            self.ObjectData = ObjectData(CC)
+
+
+
+
+
+        
+        #self.data_play_type = self.config["data_replay"]["replay_type"]
+        
+
+        
+

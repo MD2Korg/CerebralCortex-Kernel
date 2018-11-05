@@ -113,8 +113,7 @@ class TestStreamHandler():
 
         # test sub-set of stream
         ds = self.CC.get_stream(self.stream_id, self.owner_id, self.days[0], start_time, end_time, localtime=True)
-        if self.CC.config["data_ingestion"]["nosql_store"] == "hdfs" or self.CC.config["data_ingestion"][
-            "nosql_store"] == "filesystem":
+        if self.CC.config["nosql_storage"] == "hdfs" or self.CC.config["nosql_storage"] == "filesystem":
             self.assertEqual(len(ds.data), 293)
             self.assertEqual(ds.data[0].start_time, parser.parse("2018-02-21 17:28:21.163000-06:00"))
             self.assertEqual(ds.data[len(ds.data) - 1].start_time, parser.parse("2018-02-21 17:28:24.083000-06:00"))

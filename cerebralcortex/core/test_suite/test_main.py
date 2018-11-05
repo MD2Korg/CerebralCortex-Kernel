@@ -42,7 +42,7 @@ class TestCerebralCortex(unittest.TestCase, TestDataPoints, TestUserMySQLMethods
     def setUp(self):
         warnings.simplefilter("ignore")
         test_config_filepath = "./resources/cc_test_configuration.yml"#args["test_config_filepath"]
-        config_filepath ="./../../../../CerebralCortex-DockerCompose/cc_config_file/cc_vagrant_configuration.yml" #args["config_filepath"]
+        config_filepath ="./../../../conf/cerebralcortex.yml" #args["config_filepath"]
 
         with open(test_config_filepath) as test_conf:
             test_conf = yaml.load(test_conf)

@@ -42,6 +42,9 @@ class TimeSeriesData(InfluxdbHandler):
         self.logging = CC.logging
         self.logtypes = LogTypes()
 
+        if self.configuration['visualization_storage']=="none":
+            raise ValueError("visualization_storage param is set to none in cerebralcortex.yml. Please provide proper configuration for visualization storage.")
+
         self.influxdbIP = self.configuration['influxdb']['host']
         self.influxdbPort = self.configuration['influxdb']['port']
         self.influxdbDatabase = self.configuration['influxdb']['database']
