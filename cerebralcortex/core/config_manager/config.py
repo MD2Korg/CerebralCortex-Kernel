@@ -24,16 +24,24 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cerebralcortex.core.config_manager.config_handler import ConfigHandler
-
+import os.path
 
 class Configuration(ConfigHandler):
-    def __init__(self, config_filepath:str):
+    def __init__(self, config_dir:str, config_file_name:str="cerebralcortex.yml"):
         """
 
-        :param config_filepath: CerebralCortex configuration file path
+        :param config_dir: CerebralCortex configuration file path
         """
-        self.config_filepath = config_filepath
-        if config_filepath is not None:
-            self.load_file(config_filepath)
+
+        if config_dir[-1]!="/":
+            config_dir+="/"
+
+        self.config_filepath = config_dir+config_file_name
+
+        if not os.path.exists(self.config_filepath):
+            raise Exception(self.config_filepath+" does not exist. Please check configuration directory path and configuration file name.")
+
+        if config_dir is not None:
+            self.load_file(config_dir)
         else:
             self.config = None

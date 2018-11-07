@@ -514,7 +514,7 @@ class StreamHandler():
                 return False
         return False
 
-    def get_replay_batch(self, record_limit: int = 5000) -> List:
+    def get_replay_batch(self, record_limit: int = 5000, nosql_blacklist:dict={"regzex":"nonez", "txt_match":"nonez"}) -> List:
         """
         This method helps in data replay. Yield a batch of data rows that needs to be processed and ingested in CerebralCortex
         :param record_limit:
@@ -522,16 +522,13 @@ class StreamHandler():
         :rtype: dict
         """
 
-        #good_participants = []
-
-        blacklist_regex = self.config["blacklist"]
         regex_cols = ""  # regex match on columns
         like_cols = ""  # like operator on columns
-        for breg in blacklist_regex["regzex"]:
-            regex_cols += '%s NOT REGEXP "%s" and ' % ("stream_name", blacklist_regex["regzex"][breg])
+        for breg in nosql_blacklist["regzex"]:
+            regex_cols += '%s NOT REGEXP "%s" and ' % ("stream_name", nosql_blacklist["regzex"][breg])
 
-        for btm in blacklist_regex["txt_match"]:
-            like_cols += '%s not like "%s" and ' % ("stream_name", blacklist_regex["txt_match"][btm])
+        for btm in nosql_blacklist["txt_match"]:
+            like_cols += '%s not like "%s" and ' % ("stream_name", nosql_blacklist["txt_match"][btm])
 
         if regex_cols != "" and like_cols != "":
             qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + regex_cols + " " + like_cols + "  processed=0"

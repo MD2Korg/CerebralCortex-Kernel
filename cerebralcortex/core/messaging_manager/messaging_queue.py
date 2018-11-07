@@ -38,7 +38,7 @@ class MessagingQueue(KafkaHandler):
         :param auto_offset_reset: smallest (start of the topic) OR largest (end of a topic)
         """
         self.config = CC.config
-        if self.config['messaging_service_type']['messaging_service']=="kafka":
+        if self.config['messaging_service']=="kafka":
             self.hostIP = self.config['kafkaserver']['host']
             self.hostPort = self.config['kafkaserver']['port']
             self.auto_offset_reset= auto_offset_reset
@@ -48,5 +48,3 @@ class MessagingQueue(KafkaHandler):
 
             self.consumer = KafkaConsumer(bootstrap_servers=str(self.hostIP)+":"+str(self.hostPort), api_version=(0,10),
                                           auto_offset_reset=self.auto_offset_reset)
-        elif self.config['messaging_service_type']['messaging_service']=="kinesis":
-            self.kinesis_client = boto3.client(self.config['aws_kinesis']['host'], region_name=self.config['aws_kinesis']['region_name'])

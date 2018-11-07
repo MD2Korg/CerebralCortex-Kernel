@@ -13,23 +13,20 @@ nosql_storage: filesystem
 filesystem:
   filesystem_path: "/home/ali/cc_data/" # in case of nosql_store=filesystem, provide directory path where data shall be stored
 
-hdfs:
-  host: 127.0.0.1
-  port: 9001
-  raw_files_dir: "/cerebralcortex/data/"
-  #raw_files_dir: ""
-  hdfs_user: ""
-  hdfs_kerb_ticket: ""
-
-minio: # AWS-S3 UPDATE
-  host: s3.amazonaws.com # for amazon pass s3.amazonaws.com and for minio simpley pass minio
-  port: 9000
-  access_key: ''
-  secret_key: ''
-  input_bucket_name: 'cerebralcortex-mperf' # required for aws-s3
-  output_bucket_name: 'cerebralcortex-mperf-output' # required for aws-s3
-  dir_prefix: 'cerebralcortex/data/'
-  secure: False #ssl
+#hdfs:
+#  host: 127.0.0.1
+#  port: 9001
+#  raw_files_dir: "/cerebralcortex/data/"
+#
+#minio: # AWS-S3 UPDATE
+#  host: s3.amazonaws.com # for amazon pass s3.amazonaws.com and for minio simpley pass url of minio server
+#  port: 9000
+#  access_key: ''
+#  secret_key: ''
+#  input_bucket_name: 'cerebralcortex-mperf' # required for aws-s3
+#  output_bucket_name: 'cerebralcortex-mperf-output' # required for aws-s3
+#  dir_prefix: 'cerebralcortex/data/'
+#  secure: False #ssl
 
 #########################################################################
 ###################### Relational Storage ###############################
@@ -54,11 +51,29 @@ mysql:
 #########################################################################
 ###################### Visualization Data Storage #######################
 #########################################################################
-visualization_storage: influxdb
+visualization_storage: none
 
-influxdb:
-  host: influxdb
-  port: 8086
-  database: cerebralcortex_raw
-  db_user: ""
-  db_pass: ""
+#influxdb:
+#  host: influxdb
+#  port: 8086
+#  database: cerebralcortex_raw
+#  db_user: ""
+#  db_pass: ""
+
+#########################################################################
+########################### Messaging Service ###########################
+#########################################################################
+messaging_service: kafka
+
+kafka:
+  host: 127.0.0.1
+  port: 9092
+
+#########################################################################
+###################### Data Provenance Storage###########################
+#########################################################################
+data_provenance: none
+
+zack:
+  host: 127.0.0.1
+  port: 8080
