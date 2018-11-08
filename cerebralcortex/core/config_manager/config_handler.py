@@ -26,17 +26,17 @@
 import yaml
 
 class ConfigHandler():
-    def load_file(self, config_dir_path: str):
+    def load_file(self, filepath: str):
         """
         Helper function to load a yaml file
         :param config_dir_path: path to a yml configuration file for Cerebral Cortex
         """
 
-        if config_dir_path[-1]!="/":
-            config_dir_path += "/"
+        # if config_dir_path[-1]!="/":
+        #     config_dir_path += "/"
 
-        if ".yml" not in config_dir_path:
-            filepath = config_dir_path+"cerebralcortex.yml"
+        # if ".yml" not in config_dir_path:
+        #     filepath = config_dir_path+"cerebralcortex.yml"
 
         with open(filepath, 'r') as ymlfile:
             self.config = yaml.load(ymlfile)

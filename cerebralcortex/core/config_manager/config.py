@@ -42,6 +42,6 @@ class Configuration(ConfigHandler):
             raise Exception(self.config_filepath+" does not exist. Please check configuration directory path and configuration file name.")
 
         if config_dir is not None:
-            self.load_file(config_dir)
+            self.load_file(self.config_filepath)
         else:
             self.config = None

@@ -514,6 +514,9 @@ class StreamHandler():
                 return False
         return False
 
+    ###########################################################################################################################
+    ##                                          DATA REPLAY HELPER METHOD
+    ###########################################################################################################################
     def get_replay_batch(self, record_limit: int = 5000, nosql_blacklist:dict={"regzex":"nonez", "txt_match":"nonez"}) -> List:
         """
         This method helps in data replay. Yield a batch of data rows that needs to be processed and ingested in CerebralCortex
@@ -559,3 +562,8 @@ class StreamHandler():
                 yield []
         else:
             yield []
+
+    def add_to_data_replay_table(self, table_name, owner_id, stream_id, stream_name, day, files_list, dir_size, metadata):
+        qry = "INSERT IGNORE INTO "+table_name+" (owner_id, stream_id, stream_name, day, files_list, dir_size, metadata) VALUES(%s, %s, %s, %s, %s, %s, %s)"
+        vals = str(owner_id), str(stream_id), str(stream_name), str(day), json.dumps(files_list), dir_size, json.dumps(metadata)
+        self.execute(qry, vals, commit=True)

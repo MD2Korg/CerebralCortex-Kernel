@@ -38,7 +38,7 @@ class MessagingQueue(KafkaHandler):
         :param auto_offset_reset: smallest (start of the topic) OR largest (end of a topic)
         """
         self.config = CC.config
-        if self.config['messaging_service']=="kafka":
+        if self.config["messaging_service"]!="none" and "kafka" in self.config and self.config['messaging_service']=="kafka":
             self.hostIP = self.config['kafkaserver']['host']
             self.hostPort = self.config['kafkaserver']['port']
             self.auto_offset_reset= auto_offset_reset
