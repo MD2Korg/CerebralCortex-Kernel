@@ -39,8 +39,8 @@ class MessagingQueue(KafkaHandler):
         """
         self.config = CC.config
         if self.config["messaging_service"]!="none" and "kafka" in self.config and self.config['messaging_service']=="kafka":
-            self.hostIP = self.config['kafkaserver']['host']
-            self.hostPort = self.config['kafkaserver']['port']
+            self.hostIP = self.config['kafka']['host']
+            self.hostPort = self.config['kafka']['port']
             self.auto_offset_reset= auto_offset_reset
             self.producer = KafkaProducer(bootstrap_servers=str(self.hostIP)+":"+str(self.hostPort), api_version=(0,10),
                                           value_serializer=lambda v: json.dumps(v).encode('utf-8'),

@@ -33,6 +33,9 @@ from cerebralcortex.core.datatypes.datapoint import DataPoint
 
 class BlueprintStorage():
 
+    def __init__(self, obj):
+        self.obj = obj
+
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
