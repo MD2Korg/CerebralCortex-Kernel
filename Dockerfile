@@ -36,7 +36,4 @@ RUN cd CerebralCortex \
     && cd .. && rm -rf CerebralCortex
 
 VOLUME /cc_data
-
 WORKDIR /cc_app
-
-ENTRYPOINT bash
