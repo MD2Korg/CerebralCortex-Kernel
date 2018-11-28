@@ -53,14 +53,14 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage, AwsS3Storage):
             self.nosql = HDFSStorage(self)
             self.hdfs_ip = self.config['hdfs']['host']
             self.hdfs_port = self.config['hdfs']['port']
-            self.hdfs_user = self.config['hdfs']['hdfs_user']
-            self.hdfs_kerb_ticket = self.config['hdfs']['hdfs_kerb_ticket']
+            #self.hdfs_user = self.config['hdfs']['hdfs_user']
+            #self.hdfs_kerb_ticket = self.config['hdfs']['hdfs_kerb_ticket']
             self.raw_files_dir = self.config['hdfs']['raw_files_dir']
         elif self.nosql_store=="filesystem":
             self.nosql = FileSystemStorage(self)
             self.filesystem_path = self.config["filesystem"]["filesystem_path"]
             if not os.access(self.filesystem_path, os.W_OK):
-                raise Exception(self.filesystem_path+" path is writable. Please check your cerebralcortex.yml configurations.")
+                raise Exception(self.filesystem_path+" path is not writable. Please check your cerebralcortex.yml configurations.")
         elif self.nosql_store=="aws_s3":
             self.nosql = AwsS3Storage(self)
             self.minio_input_bucket = self.config['minio']['input_bucket_name']

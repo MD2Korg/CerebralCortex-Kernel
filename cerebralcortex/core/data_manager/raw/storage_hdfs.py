@@ -88,8 +88,8 @@ class HDFSStorage():
 
                 if data is not None and data != b'':
                     #clean_data = self.obj.filter_sort_datapoints(data)
-                    self.obj.compress_store_pickle(filename, clean_data, hdfs)
-                    clean_data = self.obj.convert_to_localtime(clean_data, localtime)
+                    self.obj.compress_store_pickle(filename, data, hdfs)
+                    clean_data = self.obj.convert_to_localtime(data, localtime)
                     day_block.extend(self.obj.subset_data(clean_data, day_start_time, day_end_time))
             day_block = self.obj.filter_sort_datapoints(day_block)
             if start_time is not None or end_time is not None:
@@ -145,7 +145,7 @@ class HDFSStorage():
         """
 
         # Using libhdfs
-        hdfs = pyarrow.hdfs.connect(self.obj.hdfs_ip, self.obj.hdfs_port)
+        hdfs = pyarrow.hdfs.connect("127.0.0.1", 9001)
         outputdata = {}
         success = False
 
