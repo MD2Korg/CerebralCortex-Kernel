@@ -145,7 +145,7 @@ class HDFSStorage():
         """
 
         # Using libhdfs
-        hdfs = pyarrow.hdfs.connect("127.0.0.1", 9001)
+        hdfs = pyarrow.hdfs.connect(self.obj.hdfs_ip, self.obj.hdfs_port)
         outputdata = {}
         success = False
 
