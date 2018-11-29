@@ -24,7 +24,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-import boto3
 from kafka import KafkaProducer
 from cerebralcortex.core.messaging_manager.kafka_handler import KafkaHandler
 from kafka import KafkaConsumer
