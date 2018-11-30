@@ -70,12 +70,12 @@ class HDFSStorage():
                 if hdfs.exists(filename):
                     curfile = hdfs.open(filename, "rb")
                     data = curfile.read()
-                    curfile.close()
+                    #curfile.close()
                 elif hdfs.exists(gz_filename):
 
                     curfile = hdfs.open(gz_filename, "rb")
                     data = curfile.read()
-                    curfile.close()
+                    #curfile.close()
                     try:
                         data = gzip.decompress(data)
                         data = deserialize_obj(data)
@@ -103,11 +103,11 @@ class HDFSStorage():
                 if hdfs.exists(filename):
                     curfile = hdfs.open(filename, "rb")
                     data = curfile.read()
-                    curfile.close()
+                    #curfile.close()
                 elif hdfs.exists(gz_filename):
                     curfile = hdfs.open(gz_filename, "rb")
                     data = curfile.read()
-                    curfile.close()
+                    #curfile.close()
                     try:
                         data = gzip.decompress(data)
                         data = deserialize_obj(data)
@@ -166,7 +166,7 @@ class HDFSStorage():
                     if hdfs.exists(filename):
                         curfile = hdfs.open(filename, "rb")
                         existing_data = curfile.read()
-                        curfile.close()
+                        #curfile.close()
                     if existing_data is not None and existing_data != b'':
                         existing_data = gzip.decompress(existing_data)
                         existing_data = pickle.loads(existing_data)
@@ -179,7 +179,7 @@ class HDFSStorage():
                     dps = pickle.dumps(dps)
                     dps = gzip.compress(dps)
                     f.write(dps)
-                    f.close()
+                    #f.close()
 
                     if hdfs.exists(filename.replace(".gz", ".pickle")):
                         hdfs.delete(filename.replace(".gz", ".pickle"))
