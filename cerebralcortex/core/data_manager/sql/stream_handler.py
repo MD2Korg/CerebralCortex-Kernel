@@ -548,13 +548,13 @@ class StreamHandler():
             like_cols += '%s not like "%s" and ' % ("stream_name", nosql_blacklist["txt_match"][btm])
 
         if regex_cols != "" and like_cols != "":
-            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + regex_cols + " " + like_cols + "  processed=0 and day='"+day+"'"
+            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + regex_cols + " " + like_cols + "  processed=0 and day='"+day+"' order by dir_size"
         elif regex_cols != "" and like_cols == "":
             qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + re.sub(
-                "and $", "", regex_cols) + "  processed=0 and day='"+day+"'"
+                "and $", "", regex_cols) + "  processed=0 and day='"+day+"' order by dir_size"
         elif regex_cols == "" and like_cols != "":
             qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + re.sub(
-                "and $", "", like_cols) + "  processed=0 and day='"+day+"'"
+                "and $", "", like_cols) + "  processed=0 and day='"+day+"' order by dir_size"
         else:
             qry = ""
 
