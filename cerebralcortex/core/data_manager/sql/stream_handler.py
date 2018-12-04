@@ -517,7 +517,21 @@ class StreamHandler():
     ###########################################################################################################################
     ##                                          DATA REPLAY HELPER METHOD
     ###########################################################################################################################
-    def get_replay_batch(self, record_limit: int = 5000, nosql_blacklist:dict={"regzex":"nonez", "txt_match":"nonez"}) -> List:
+    def get_all_data_days(self):
+        """
+        Returns a list of days where data is available
+        :return: List of days (yyyymmdd)
+        :rtype: list of strings
+        """
+        qry = "SELECT day from " + self.dataReplayTable
+        rows = self.execute(qry)
+        days = []
+        if len(rows) > 0:
+            for row in rows:
+                days.append(row["day"])
+        return days
+
+    def get_replay_batch(self, day, record_limit: int = 5000, nosql_blacklist:dict={"regzex":"nonez", "txt_match":"nonez"}) -> List:
         """
         This method helps in data replay. Yield a batch of data rows that needs to be processed and ingested in CerebralCortex
         :param record_limit:
@@ -534,13 +548,13 @@ class StreamHandler():
             like_cols += '%s not like "%s" and ' % ("stream_name", nosql_blacklist["txt_match"][btm])
 
         if regex_cols != "" and like_cols != "":
-            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + regex_cols + " " + like_cols + "  processed=0"
+            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + regex_cols + " " + like_cols + "  processed=0 and day='"+day+"'"
         elif regex_cols != "" and like_cols == "":
             qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + re.sub(
-                "and $", "", regex_cols) + "  processed=0"
+                "and $", "", regex_cols) + "  processed=0 and day='"+day+"'"
         elif regex_cols == "" and like_cols != "":
             qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + re.sub(
-                "and $", "", like_cols) + "  processed=0"
+                "and $", "", like_cols) + "  processed=0 and day='"+day+"'"
         else:
             qry = ""
 
