@@ -523,7 +523,7 @@ class StreamHandler():
         :return: List of days (yyyymmdd)
         :rtype: list of strings
         """
-        qry = "SELECT day from " + self.dataReplayTable
+        qry = "SELECT day from " + self.dataReplayTable + "where processed=0"
         rows = self.execute(qry)
         days = []
         if len(rows) > 0:
