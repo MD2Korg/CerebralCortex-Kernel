@@ -523,7 +523,7 @@ class StreamHandler():
         :return: List of days (yyyymmdd)
         :rtype: list of strings
         """
-        qry = "SELECT day from " + self.dataReplayTable + " where processed=0"
+        qry = "SELECT day from " + self.dataReplayTable + " where processed=0 group by day"
         rows = self.execute(qry)
         days = []
         if len(rows) > 0:
@@ -546,6 +546,9 @@ class StreamHandler():
 
         for btm in nosql_blacklist["txt_match"]:
             like_cols += '%s not like "%s" and ' % ("stream_name", nosql_blacklist["txt_match"][btm])
+
+        # if regex_cols!="" or like_cols!="":
+        #     where_clause = " where "
 
         if regex_cols != "" and like_cols != "":
             qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where processed=0 and " + regex_cols + " " + like_cols + "  processed=0 and day='"+day+"' order by dir_size"
