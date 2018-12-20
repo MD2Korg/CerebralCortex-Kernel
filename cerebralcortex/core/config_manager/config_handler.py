@@ -29,19 +29,27 @@ class ConfigHandler():
     def load_file(self, filepath: str):
         """
         Helper function to load a yaml file
-        :param filepath: path to a yml configuration file for Cerebral Cortex
+        :param config_dir_path: path to a yml configuration file for Cerebral Cortex
         """
+
+        # if config_dir_path[-1]!="/":
+        #     config_dir_path += "/"
+
+        # if ".yml" not in config_dir_path:
+        #     filepath = config_dir_path+"cerebralcortex.yml"
 
         with open(filepath, 'r') as ymlfile:
             self.config = yaml.load(ymlfile)
 
-        if self.config["hdfs"]["raw_files_dir"]!="" and self.config["hdfs"]["raw_files_dir"][-1] !="/":
+
+
+        if "hdfs" in self.config and self.config["hdfs"]["raw_files_dir"]!="" and self.config["hdfs"]["raw_files_dir"][-1] !="/":
             self.config["hdfs"]["raw_files_dir"]+="/"
 
-        if self.config["data_ingestion"]["filesystem_path"]!="" and self.config["data_ingestion"]["filesystem_path"][-1] !="/":
-            self.config["data_ingestion"]["filesystem_path"]+="/"
-
-        if self.config["data_replay"]["data_dir"]!="" and self.config["data_replay"]["data_dir"][-1] !="/":
-            self.config["data_replay"]["data_dir"]+="/"
+        # if self.config["data_ingestion"]["filesystem_path"]!="" and self.config["data_ingestion"]["filesystem_path"][-1] !="/":
+        #     self.config["data_ingestion"]["filesystem_path"]+="/"
+        #
+        # if self.config["data_replay"]["data_dir"]!="" and self.config["data_replay"]["data_dir"][-1] !="/":
+        #     self.config["data_replay"]["data_dir"]+="/"
 
 
