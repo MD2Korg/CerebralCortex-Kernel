@@ -68,21 +68,31 @@ class HDFSStorage():
                 gz_filename = filename.replace(".pickle", ".gz")
                 data = None
                 if hdfs.exists(filename):
-                    curfile = hdfs.open(filename, "rb")
-                    data = curfile.read()
+                    try:
+                        curfile = hdfs.open(filename, "rb")
+                        data = curfile.read()
+                    except Exception as e:
+                        self.obj.logging.log(
+                            error_message="Error! cannot open file: "+gz_filename+" --- " + str(traceback.format_exc())+" - Exception: "+str(e),
+                            error_type=self.obj.logtypes.CRITICAL)
                     #curfile.close()
                 elif hdfs.exists(gz_filename):
-
-                    curfile = hdfs.open(gz_filename, "rb")
-                    data = curfile.read()
-                    #curfile.close()
                     try:
-                        data = gzip.decompress(data)
-                        data = deserialize_obj(data)
-                    except:
+                        curfile = hdfs.open(gz_filename, "rb")
+                        data = curfile.read()
+                    except Exception as e:
                         self.obj.logging.log(
-                            error_message="Error! cannot decompress GZ file. FILE: "+gz_filename+" --- " + str(traceback.format_exc()),
+                            error_message="Error! cannot open file: "+gz_filename+" --- " + str(traceback.format_exc())+" - Exception: "+str(e),
                             error_type=self.obj.logtypes.CRITICAL)
+                    #curfile.close()
+                    if data is not None and data != b'':
+                        try:
+                            data = gzip.decompress(data)
+                            data = deserialize_obj(data)
+                        except Exception as e:
+                            self.obj.logging.log(
+                                error_message="Error! cannot decompress GZ file. FILE: "+gz_filename+" --- " + str(traceback.format_exc())+" - Exception: "+str(e),
+                                error_type=self.obj.logtypes.CRITICAL)
                         #curfile.close()
                         #hdfs.delete(gz_filename)
 
@@ -101,19 +111,29 @@ class HDFSStorage():
             data = None
             try:
                 if hdfs.exists(filename):
-                    curfile = hdfs.open(filename, "rb")
-                    data = curfile.read()
-                    #curfile.close()
+                    try:
+                        curfile = hdfs.open(filename, "rb")
+                        data = curfile.read()
+                    except Exception as e:
+                        curfile.close()
+                        self.obj.logging.log(
+                            error_message="Error! cannot open file: "+gz_filename+" --- " + str(traceback.format_exc())+" - Exception: "+str(e),
+                            error_type=self.obj.logtypes.CRITICAL)
                 elif hdfs.exists(gz_filename):
-                    curfile = hdfs.open(gz_filename, "rb")
-                    data = curfile.read()
-                    #curfile.close()
+                    try:
+                        curfile = hdfs.open(gz_filename, "rb")
+                        data = curfile.read()
+                    except Exception as e:
+                        curfile.close()
+                        self.obj.logging.log(
+                            error_message="Error! cannot open file: "+gz_filename+" --- " + str(traceback.format_exc())+" - Exception: "+str(e),
+                            error_type=self.obj.logtypes.CRITICAL)
                     try:
                         data = gzip.decompress(data)
                         data = deserialize_obj(data)
-                    except:
+                    except Exception as e:
                         self.obj.logging.log(
-                            error_message="Error! cannot decompress GZ file. FILE: "+gz_filename+" --- " + str(traceback.format_exc()),
+                            error_message="Error! cannot decompress GZ file. FILE: "+gz_filename+" --- " + str(traceback.format_exc())+" - Exception: "+str(e),
                             error_type=self.obj.logtypes.CRITICAL)
                         #hdfs.delete(gz_filename)
                 else:
@@ -129,7 +149,7 @@ class HDFSStorage():
                     return []
             except Exception as e:
                 self.obj.logging.log(
-                    error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc()),
+                    error_message="Error loading from HDFS: Cannot parse row. " + str(traceback.format_exc())+" - Exception: "+str(e),
                     error_type=self.obj.logtypes.CRITICAL)
                 return []
 

@@ -249,27 +249,30 @@ class StreamHandler():
         :return: data
         :rtype: List[DataPoint]
         """
-        subset_data = []
-        if start_time.tzinfo is None or start_time.tzinfo == "":
-            start_time = start_time.replace(tzinfo=data[0].start_time.tzinfo)
-        if end_time.tzinfo is None or end_time.tzinfo == "":
-            end_time = end_time.replace(tzinfo=data[0].start_time.tzinfo)
+        if len(data)>0:
+            subset_data = []
+            if start_time.tzinfo is None or start_time.tzinfo == "":
+                start_time = start_time.replace(tzinfo=data[0].start_time.tzinfo)
+            if end_time.tzinfo is None or end_time.tzinfo == "":
+                end_time = end_time.replace(tzinfo=data[0].start_time.tzinfo)
 
-        if start_time is not None and end_time is not None:
-            for dp in data:
-                if dp.start_time >= start_time and dp.start_time <= end_time:
-                    subset_data.append(dp)
-            return subset_data
-        elif start_time is not None and end_time is None:
-            for dp in data:
-                if dp.start_time >= start_time:
-                    subset_data.append(dp)
-            return subset_data
-        elif start_time is None and end_time is not None:
-            for dp in data:
-                if dp.start_time <= end_time:
-                    subset_data.append(dp)
-            return subset_data
+            if start_time is not None and end_time is not None:
+                for dp in data:
+                    if dp.start_time >= start_time and dp.start_time <= end_time:
+                        subset_data.append(dp)
+                return subset_data
+            elif start_time is not None and end_time is None:
+                for dp in data:
+                    if dp.start_time >= start_time:
+                        subset_data.append(dp)
+                return subset_data
+            elif start_time is None and end_time is not None:
+                for dp in data:
+                    if dp.start_time <= end_time:
+                        subset_data.append(dp)
+                return subset_data
+            else:
+                return data
         else:
             return data
 
