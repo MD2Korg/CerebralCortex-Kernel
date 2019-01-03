@@ -27,6 +27,7 @@ import warnings
 import uuid
 from datetime import datetime
 from typing import List
+from pyspark.sql import SparkSession
 
 from cerebralcortex.core.config_manager.config import Configuration
 from cerebralcortex.core.data_manager.object.data import ObjectData
@@ -46,13 +47,13 @@ class CerebralCortex:
 
         self.config_filepath = configuration_filepath
         self.config = Configuration(configuration_filepath).config
+        self.sparkSession = SparkSession.builder.appName("CerebralCortex").getOrCreate()
         self.debug = self.config["cc"]["debug"]
         self.timezone = timezone
         self.logging = CCLogging(self)
         self.logtypes = LogTypes()
         self.SqlData = SqlData(self)
         self.RawData = RawData(self)
-
         self.MessagingQueue = None
         self.TimeSeriesData = None
         self.FileIO = FileIO(self)
@@ -79,10 +80,9 @@ class CerebralCortex:
         Saves datastream raw data in Cassandra and metadata in MySQL.
         :param datastream:
         """
-        self.RawData.save_stream(datastream=datastream, localtime=localtime,ingestInfluxDB=ingestInfluxDB)
+        self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB)
 
-    def get_stream(self, stream_id: uuid, user_id: uuid=None, day:str=None, start_time: datetime = None, end_time: datetime = None, localtime:bool=False,
-                   data_type=DataSet.COMPLETE) -> DataStream:
+    def get_stream(self, name:str, data_type=DataSet.COMPLETE) -> DataStream:
         """
 
         :param stream_id:
@@ -92,8 +92,7 @@ class CerebralCortex:
         :param data_type:
         :return:
         """
-        warnings.warn("user_id is not a required parameter. This parameter will be removed in CerebralCortex version3.0.", PendingDeprecationWarning)
-        return self.RawData.get_stream(stream_id, user_id, day, start_time, end_time, localtime, data_type)
+        return self.RawData.get_stream(name, data_type)
 
     def get_stream_days(self, stream_id: uuid) -> List:
         """

@@ -14,9 +14,9 @@ filesystem:
   filesystem_path: "/home/ali/IdeaProjects/CerebralCortex-Platform/mount_points/cc_data/" # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
 
 hdfs:
-  host: 127.0.0.1
+  host: localhost
   port: 9001
-  raw_files_dir: ""
+  raw_files_dir: "cerebralcortex/cerebralcortex/"
 
 #minio: # AWS-S3 UPDATE
 #  host: s3.amazonaws.com # for amazon pass s3.amazonaws.com and for minio simpley pass url of minio server

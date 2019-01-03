@@ -29,7 +29,7 @@ from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
 from cerebralcortex.core.data_manager.object.data import ObjectData
 
-from cerebralcortex.core.data_manager.raw.storage_hdfs import HDFSStorage
+from cerebralcortex.core.data_manager.raw.storage_hdfs_parquet import HDFSStorage
 from cerebralcortex.core.data_manager.raw.storage_filesystem import FileSystemStorage
 from cerebralcortex.core.data_manager.raw.storage_aws_s3 import AwsS3Storage
 
@@ -47,14 +47,15 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage, AwsS3Storage):
         self.logging = CC.logging
         self.nosql_store = self.config['nosql_storage']
 
+        self.sparkSession = CC.sparkSession
+
 
         # pseudo factory
         if self.nosql_store == "hdfs":
             self.nosql = HDFSStorage(self)
             self.hdfs_ip = self.config['hdfs']['host']
             self.hdfs_port = self.config['hdfs']['port']
-            #self.hdfs_user = self.config['hdfs']['hdfs_user']
-            #self.hdfs_kerb_ticket = self.config['hdfs']['hdfs_kerb_ticket']
+            self.hdfs_spark_url = "hdfs://"+str(self.hdfs_ip)+":"+str(self.hdfs_port)+"/"
             self.raw_files_dir = self.config['hdfs']['raw_files_dir']
         elif self.nosql_store=="filesystem":
             self.nosql = FileSystemStorage(self)

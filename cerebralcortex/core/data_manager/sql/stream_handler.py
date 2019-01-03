@@ -51,6 +51,18 @@ class StreamHandler():
         rows = self.execute(qry, vals)
         return rows
 
+    def get_stream_metadata_by_name(self, stream_name: str) -> dict:
+        """
+        Get stream metadata
+        :param stream_id:
+        :return: identifier, owner, name, data_descriptor,execution_context,annotations, type, start_time, end_time, tmp (tmp is just a primary key ID)
+        :rtype dict
+        """
+        qry = "SELECT * from " + self.datastreamTable +  ' where name=%(name)s'
+        vals = {'name': str(stream_name)}
+        rows = self.execute(qry, vals)
+        return rows
+
     def get_stream_metadata_by_user(self, user_id: uuid, stream_name: str = None, start_time: datetime = None,
                                     end_time: datetime = None) -> dict:
         """
