@@ -109,20 +109,26 @@ class StreamHandler():
         execution_context = datastream.execution_context
         annotations = datastream.annotations
         stream_type = datastream.datastream_type
+        stream_version = "1" #TODO: add version in DataStream
         data = datastream.data
 
         try:
 
             # get start and end time of a stream
             if data:
-                status = self.nosql.write_file(stream_name, data)
+                status = self.nosql.write_file(stream_name, owner_id, stream_version, data)
 
                 if status:
+                    new_df = data.sort(data.timestamp.desc()).take(1) # TODO: taking first or last row is expensive. Remove it from mysql table?
+                    first_raw = data.head(1)
+                    #last_row = data.tail(1)
+                    start_time = ""
+                    end_time = ""
                     # save metadata in SQL store
-                    self.sql_data.save_stream_metadata(stream_id, stream_name, owner_id,
-                                                       data_descriptor, execution_context,
-                                                       annotations,
-                                                       stream_type, "", "")
+                    # self.sql_data.save_stream_metadata(stream_id, stream_name, owner_id,
+                    #                                    data_descriptor, execution_context,
+                    #                                    annotations,
+                    #                                    stream_type, start_time, end_time)
                 else:
                     print(
                         "Something went wrong in saving data points.")

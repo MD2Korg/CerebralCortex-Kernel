@@ -47,15 +47,18 @@ class HDFSStorage():
         return df
 
 
-    def write_file(self, stream_name, data) -> bool:
+    def write_file(self, stream_name, owner_id, stream_version, data) -> bool:
 
 
         # Using libhdfs
         stream_name = "stream="+stream_name
-        hdfs_url = self.obj.hdfs_spark_url+self.obj.raw_files_dir+stream_name+"/"
+        version = "ver="+str(stream_version)
+        owner = "user="+str(owner_id)
+        hdfs_url = self.obj.hdfs_spark_url+self.obj.raw_files_dir+stream_name+"/"+version+"/"+owner_id+"/"
         success = False
         try:
-            data.write.save(hdfs_url, format='parquet')
+            #data.write.save(hdfs_url, format='parquet', mode='append')
+            data.write.format('parquet').mode('overwrite').format('parquet').save(hdfs_url)
             success = True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))

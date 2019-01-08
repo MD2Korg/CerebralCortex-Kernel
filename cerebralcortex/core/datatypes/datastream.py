@@ -87,7 +87,7 @@ class DataStream:
             return []
 
         return result
-
+    
     @property
     def identifier(self):
         return self._identifier

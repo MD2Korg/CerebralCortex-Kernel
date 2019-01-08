@@ -154,7 +154,7 @@ class CerebralCortex:
         :param stream_name:
         :return:
         """
-        return self.SqlData.get_stream_id(user_id, stream_name)
+        return self.SqlData.get_stream_metadata_hash(user_id, stream_name)
 
     def is_user(self, user_id: uuid=None, user_name:uuid=None) -> bool:
         """
@@ -229,7 +229,7 @@ class CerebralCortex:
         :param stream_id:
         :return:
         """
-        return self.SqlData.get_stream_metadata(stream_id)
+        return self.SqlData.get_stream_metadata_by_hash(stream_id)
     
     def user_has_stream(self, user_id: uuid, stream_name: str) ->bool:
         """
