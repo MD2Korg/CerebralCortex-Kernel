@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -24,22 +24,31 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-class Annotations:
-    def __init__(self,
-                 name: str = None,
-                 stream_identifier: int = None):
-        """
-
-        :param name:
-        :param stream_identifier:
-        """
-        self._name = name
-        self._stream_identifier = stream_identifier
+class AlgorithmMetadata:
+    def __init__(self):
+        self._module_name = None
+        self._version = None
+        self._authors = []
+        self._attributes = []
 
     @property
-    def name(self):
-        return self._name
+    def module_name(self):
+        return self._module_name
+
+    @module_name.setter
+    def unit(self, value):
+        self._module_name = value
 
     @property
-    def stream_identifier(self):
-        return self._stream_identifier
+    def version(self):
+        return self._version
+
+    @version.setter
+    def unit(self, value):
+        self._version = value
+
+    def set_author(self, key, value):
+        self._authors.append({key,value})
+
+    def set_attirubte(self, key, value):
+        self._attributes[key] = value

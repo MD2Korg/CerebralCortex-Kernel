@@ -24,13 +24,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-import re
 import traceback
 import uuid
-from datetime import datetime, timedelta
 from typing import List
-
-from pytz import timezone
 
 
 class StreamHandler():
@@ -43,7 +39,7 @@ class StreamHandler():
         """
         Get stream metadata
         :param metadata_hash:
-        :return: id, user_id, name, data_descriptor,execution_context,annotations, type, start_time, end_time, tmp (tmp is just a primary key ID)
+        :return: row_id, user_id, name, metadata_hash, metadata
         :rtype dict
         """
         qry = "SELECT * from " + self.datastreamTable + " where metadata_hash=%(metadata_hash)s"
@@ -55,19 +51,22 @@ class StreamHandler():
         """
         Get stream metadata
         :param stream_id:
-        :return: id, owner, name, data_descriptor,execution_context,annotations, type, start_time, end_time, tmp (tmp is just a primary key ID)
+        :return: row_id, user_id, name, metadata_hash, metadata
         :rtype dict
         """
         qry = "SELECT * from " + self.datastreamTable +  ' where name=%(name)s'
         vals = {'name': str(stream_name)}
         rows = self.execute(qry, vals)
-        return rows
+        if rows is not None and bool(rows):
+            return rows
+        else:
+            return []
 
     def get_stream_metadata_by_user(self, user_id: uuid, stream_name: str = None) -> dict:
         """
         Returns stream ids and metadata of a stream name belong to a user
         :param user_id:
-        :return: id, data_descriptor,execution_context,annotations, start_time, end_time
+        :return: row_id, user_id, name, metadata_hash, metadata
         :rtype: dict
         """
         vals = []
@@ -108,10 +107,7 @@ class StreamHandler():
 
     def stream_versions(self, user_id: uuid, stream_name: str) -> bool:
         """
-        Returns true if a user has a stream available
-        :param user_id:
-        :param stream_name:
-        :return: True if owner has a stream, False otherwise
+        Returns a list of all available version of a stream
         """
         if not stream_name or not user_id:
             raise ValueError("Strea name and User ID are required fields.")
@@ -130,26 +126,6 @@ class StreamHandler():
             return versions
         else:
             {}
-
-    # def get_stream_duration(self, stream_id: uuid) -> dict:
-    #     """
-    #     Get time duration (start time - end time) of a stream
-    #     :param stream_id:
-    #     :return:start_time, end_time
-    #     :rtype dict
-    #     """
-    #     if not stream_id:
-    #         raise ValueError("Stream ID is a required field.")
-    #
-    #     qry = "select start_time, end_time from " + self.datastreamTable + " where id = %(id)s"
-    #     vals = {'id': str(stream_id)}
-    #
-    #     rows = self.execute(qry, vals)
-    #
-    #     if len(rows) == 0:
-    #         return {"start_time": None, "end_time": None}
-    #     else:
-    #         return {"start_time": rows[0]["start_time"], "end_time": rows[0]["end_time"]}
 
     def get_all_users(self, study_name: str) -> List[dict]:
 
@@ -181,7 +157,7 @@ class StreamHandler():
         Returns all user streams with name and metadata attached to it. Do not use "id" field as it doesn't
         represents all the stream-ids linked to a stream name. Use stream_ids field in dict to get all stream-ids of a stream name.
         :param user_id:
-        :return: id, owner, name, data_descriptor,execution_context,annotations, type, start_time, end_time, tmp, stream_ids (this contains all the stream ids of a stream name)
+        :return: id, user_id, name, data_descriptor,execution_context,annotations, type, start_time, end_time, tmp, stream_ids (this contains all the stream ids of a stream name)
         :rtype: dict
         """
         if not user_id:
@@ -205,9 +181,6 @@ class StreamHandler():
     def get_user_streams_metadata(self, user_id: str) -> dict:
         """
         Get all streams metadata of a user
-        :param user_id:
-        :return: name, data_descriptor,execution_context,annotations, start_time, end_time
-        :rtype: dict
         """
         if not user_id:
             raise ValueError("User ID is a required field.")
@@ -230,9 +203,6 @@ class StreamHandler():
     def get_user_name(self, user_id: uuid) -> str:
         """
         Get username of a user's UUID
-        :param user_id:
-        :return: user id
-        :rtype: str
         """
         if not user_id:
             raise ValueError("User ID is a required field.")
@@ -250,10 +220,6 @@ class StreamHandler():
     def is_user(self, user_id: uuid = None, user_name: uuid = None) -> bool:
         """
         Check whether a username or user ID exists in MySQL
-        :param user_id:
-        :param user_name
-        :return: True if user exist, False otherwise
-        :rtype: bool
         """
         if user_id and user_name:
             qry = "select username from " + self.userTable + " where user_id = %s and username=%s"
@@ -277,9 +243,6 @@ class StreamHandler():
     def get_user_id(self, user_name: str) -> str:
         """
         Get user's UUID
-        :param user_name:
-        :return: user's UUID
-        :rtype: str
         """
         if not user_name:
             raise ValueError("User name is a required field.")
@@ -297,10 +260,6 @@ class StreamHandler():
     def get_stream_metadata_hash(self, user_id: uuid, stream_name: str) -> dict:
         """
         Get a stream ids of stream name linked to a user
-        :param user_id
-        :param stream_name:
-        :return: List of stream ids
-        :rtype: dict
         """
         if not stream_name or not user_id:
             raise ValueError("User ID and stream name are required field.")
@@ -315,31 +274,9 @@ class StreamHandler():
         else:
             return rows
 
-    # def get_stream_days(self, stream_id: uuid) -> List:
-    #     """
-    #     Returns a list of days (string format: YearMonthDay (e.g., 20171206) for a given stream-id
-    #     :param stream_id:
-    #     :param dd_stream_id:
-    #     :return: list of days (format YYYYMMDD)
-    #     :rtype: List
-    #     """
-    #     if not stream_id:
-    #         raise ValueError("Stream ID is a required field.")
-    #     all_days = []
-    #     stream_days = self.get_stream_duration(stream_id)
-    #     if stream_days["end_time"] is not None and stream_days["start_time"] is not None:
-    #         days = stream_days["end_time"] - stream_days["start_time"]
-    #         for day in range(days.days + 1):
-    #             all_days.append((stream_days["start_time"] + timedelta(days=day)).strftime('%Y%m%d'))
-    #
-    #     return all_days
-
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """
         Get strea name linked to a stream UUID
-        :param metadata_hash:
-        :return: stream name
-        :rtype: str
         """
         if not metadata_hash:
             raise ValueError("metadata_hash is a required field.")
@@ -358,9 +295,6 @@ class StreamHandler():
 
         """
         Checks whether a stream exist
-        :param stream_id:
-        :return: True if a stream ID exist, False otherwise
-        :rtype: bool
         """
         qry = "SELECT * from " + self.datastreamTable + " where name = %(name)s"
         vals = {'name': str(stream_name)}
@@ -378,15 +312,6 @@ class StreamHandler():
     def save_stream_metadata(self, stream_name: str, user_id: uuid, metadata: dict, stream_type: str):
         """
         Update a record if stream already exists, insert a new record otherwise.
-        :param stream_id:
-        :param stream_name:
-        :param user_id:
-        :param data_descriptor:
-        :param execution_context:
-        :param annotations:
-        :param stream_type:
-        :param start_time:
-        :param end_time:
         """
         isQueryReady = 0
 
@@ -436,64 +361,6 @@ class StreamHandler():
         metadata_hash = uuid.uuid3(uuid.NAMESPACE_DNS, text)
         return metadata_hash
 
-    # def check_end_time(self, stream_id: uuid, end_time: datetime):
-    #     """
-    #     Check whether end time was changed of a stream-id
-    #     :param stream_id:
-    #     :param end_time:
-    #     :return: It returns a datetime object if end-time was changed. Otherwise, it returns status as unchanged
-    #     :rtype: str OR datetime
-    #     """
-    #     localtz = timezone(self.time_zone)
-    # 
-    #     qry = "SELECT end_time from " + self.datastreamTable + " where id = %(id)s"
-    #     vals = {'id': str(stream_id)}
-    #     rows = self.execute(qry, vals)
-    # 
-    #     if rows:
-    #         old_end_time = rows[0]["end_time"]
-    #         if end_time.tzinfo is None:
-    #             end_time = localtz.localize(end_time)
-    #         if old_end_time.tzinfo is None:
-    #             old_end_time = localtz.localize(old_end_time)
-    # 
-    #         if old_end_time <= end_time:
-    #             return end_time
-    #         else:
-    #             return "unchanged"
-    #     else:
-    #         self.logging.log(
-    #             error_message="STREAM ID: " + stream_id + " - No record found. " + str(traceback.format_exc()),
-    #             error_type=self.logtypes.DEBUG)
-
-    # def update_start_time(self, stream_id: uuid, new_start_time: datetime):
-    #     """
-    #     update start time only if the new-start-time is older than the existing start-time
-    #     :param stream_id:
-    #     :param new_start_time:
-    #     :return:
-    #     """
-    #     localtz = timezone(self.time_zone)
-    #
-    #     qry = "SELECT start_time from " + self.datastreamTable + " where id = %(id)s"
-    #     vals = {'id': str(stream_id)}
-    #     rows = self.execute(qry, vals)
-    #
-    #     if rows:
-    #         old_start_time = rows[0]["start_time"]
-    #         if new_start_time.tzinfo is None:
-    #             new_start_time = localtz.localize(new_start_time)
-    #         if old_start_time.tzinfo is None:
-    #             old_start_time = localtz.localize(old_start_time)
-    #
-    #         if old_start_time > new_start_time:
-    #             qry = "UPDATE " + self.datastreamTable + " set start_time=%s where id=%s"
-    #             vals = new_start_time, str(stream_id)
-    #             self.execute(qry, vals, commit=True)
-    #     else:
-    #         self.logging.log(
-    #             error_message="STREAM ID: " + stream_id + " - No record found. " + str(traceback.format_exc()),
-    #             error_type=self.logtypes.DEBUG)
 
     ###########################################################################################################################
     ##                                          DATA REPLAY HELPER METHOD

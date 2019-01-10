@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -24,19 +24,27 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class DataDescriptor:
-    def __init__(self,
-                 type_string: str = None,
-                 unit: str = None,
-                 descriptive_statistic: str = None):
+    def __init__(self):
         """
 
         :param type_string:
         :param unit:
         :param descriptive_statistic:
         """
-        self._type = type_string
-        self._unit = unit
-        self._descriptive_statistic = descriptive_statistic
+        self._name = None
+        self._type = None
+        self._attributes = {}
+
+    def set_attirubte(self, key, value):
+        self._attributes[key] = value
+
+    @property
+    def name(self):
+        return self._unit
+
+    @name.setter
+    def unit(self, value):
+        self._name = value
 
     @property
     def type(self):
@@ -46,18 +54,3 @@ class DataDescriptor:
     def type(self, value):
         self._type = value
 
-    @property
-    def unit(self):
-        return self._unit
-
-    @unit.setter
-    def unit(self, value):
-        self._unit = value
-
-    @property
-    def descriptive_statistic(self):
-        return self._descriptive_statistic
-
-    @descriptive_statistic.setter
-    def descriptive_statistic(self, value):
-        self._descriptive_statistic = value

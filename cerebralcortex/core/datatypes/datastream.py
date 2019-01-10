@@ -28,48 +28,28 @@ from typing import List
 from uuid import UUID
 
 from cerebralcortex.core.datatypes.datapoint import DataPoint
-from cerebralcortex.core.metadata_manager.metadata import DataDescriptor, ExecutionContext
+from cerebralcortex.core.metadata_manager.metadata import DataDescriptor, AlgorithmMetadata
 
 
 class DataStream:
     def __init__(self,
-                 identifier: UUID = None,
-                 owner: UUID = None,
+                 user_id: UUID = None,
                  name: UUID = None,
-                 data_descriptor: List[DataDescriptor] = None,
-                 execution_context: ExecutionContext = None,
-                 annotations: List = None,
-                 stream_type: str = None,
-                 start_time: datetime = None,
-                 end_time: datetime = None,
-                 data: List[DataPoint] = None,
-                 stream_timezone=None
+                 #version: int = None,
+                 #metadata_hash: UUID = None,
+                 metadata: dict = None,
+                 data: object = None
                  ):
         """
         DataStream object contains the list of DataPoint objects and metadata linked to it.
-        :param identifier:
-        :param owner:
-        :param name:
-        :param data_descriptor:
-        :param execution_context:
-        :param annotations:
-        :param stream_type:
-        :param start_time:
-        :param end_time:
-        :param data:
-        :param stream_timezone:
+
         """
-        self._identifier = identifier
-        self._owner = owner
+        self._user_id = user_id
         self._name = name
-        self._data_descriptor = data_descriptor
-        self._datastream_type = stream_type
-        self._execution_context = execution_context
-        self._annotations = annotations
-        self._start_time = start_time
-        self._end_time = end_time
+        #self._version = version
+        #self._metadata_hash = metadata_hash
+        self._metadata = metadata
         self._data = data
-        self._stream_timezone = stream_timezone
 
     def find_annotation_references(self, identifier: int = None, name: str = None):
         result = self._annotations
@@ -87,16 +67,17 @@ class DataStream:
             return []
 
         return result
-    
-    @property
-    def identifier(self):
-        return self._identifier
+    def get_metadata(self, version=None):
+        return None
 
     @property
-    def owner(self):
-        return self._owner
+    def user_id(self):
+        return self._user_id
 
-    @property
+    @user_id.setter
+    def user_id(self, user_id):
+        self._user_id = user_id
+
     def name(self):
         return self._name
 
@@ -105,48 +86,12 @@ class DataStream:
         self._name = value
 
     @property
-    def star_time(self):
-        return self._start_time
+    def metadata(self):
+        return self._metadata
 
-    @star_time.setter
-    def start_time(self, val):
-        self._start_time = val
-
-    @property
-    def end_time(self):
-        return self._end_time
-
-    @end_time.setter
-    def end_time(self, val):
-        self._end_time = val
-
-    @property
-    def annotations(self):
-        return self._annotations
-
-    @annotations.setter
-    def annotations(self, value):
-        self._annotations = value
-
-    @property
-    def data_descriptor(self):
-        return self._data_descriptor
-
-    @data_descriptor.setter
-    def data_descriptor(self, value):
-        self._data_descriptor = value
-
-    @property
-    def execution_context(self):
-        return self._execution_context
-
-    @execution_context.setter
-    def execution_context(self, value):
-        self._execution_context = value
-
-    @property
-    def datastream_type(self):
-        return self._datastream_type
+    @metadata.setter
+    def metadata(self, metadata):
+        self._metadata = metadata
 
     @property
     def data(self):
@@ -175,7 +120,7 @@ class DataStream:
 
     @classmethod
     def from_datastream(cls, input_streams: List):
-        result = cls(owner=input_streams[0].owner)
+        result = cls(user_id=input_streams[0].user_id)
 
         # TODO: Something with provenance tracking from datastream list
 
@@ -183,7 +128,7 @@ class DataStream:
 
     def __str__(self):
         return "Stream(" + ', '.join(map(str, [self._identifier,
-                                               self._owner,
+                                               self._user_id,
                                                self._name,
                                                self._data_descriptor,
                                                self._datastream_type,
@@ -193,7 +138,7 @@ class DataStream:
 
     def __repr__(self):
         return "Stream(" + ', '.join(map(str, [self._identifier,
-                                               self._owner,
+                                               self._user_id,
                                                self._name,
                                                self._data_descriptor,
                                                self._datastream_type,

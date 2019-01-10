@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -24,14 +24,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cerebralcortex.core.metadata_manager.data_descriptor import DataDescriptor
-from cerebralcortex.core.metadata_manager.execution_context import ExecutionContext
+from cerebralcortex.core.metadata_manager.algorithm import AlgorithmMetadata
 
-from cerebralcortex.core.metadata_manager.annotations import Annotations
-
-
-class Metadata(Annotations, DataDescriptor, ExecutionContext):
+class Metadata(DataDescriptor, AlgorithmMetadata):
     def __init__(self):
         """
         Metadata of a stream
         """
-        pass

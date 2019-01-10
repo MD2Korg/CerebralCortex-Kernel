@@ -65,34 +65,26 @@ class StreamHandler():
         if len(stream_metadata) > 0:
             #owner_id = stream_metadata[0]["owner"]
             if data_type == DataSet.COMPLETE:
-                dps = self.nosql.read_file(stream_name)
-                stream = self.map_dataframe_to_metadata(stream_metadata[0]["identifier"], stream_metadata, dps)
+                df = self.nosql.read_file(stream_name)
+                stream = self.map_dataframe_to_metadata(stream_metadata, df)
             elif data_type == DataSet.ONLY_DATA:
                 stream = self.nosql.read_file(stream_name)
             elif data_type == DataSet.ONLY_METADATA:
-                stream = self.map_dataframe_to_metadata(stream_metadata[0]["identifier"], stream_metadata)
+                stream = self.map_dataframe_to_metadata(stream_metadata)
             else:
                 raise ValueError("STREAM ID: " + str(stream_metadata[0]["identifier"]) + "Failed to get data stream. Invalid type parameter.")
+            stream.get_metadata(1)
             return stream
         else:
             return DataStream()
 
-    def map_dataframe_to_metadata(self, stream_id: uuid, metadata: dict,
-                                  df) -> DataStream:
+    def map_dataframe_to_metadata(self, metadata: dict,
+                                  df=None) -> DataStream:
         try:
-            ownerID = metadata[0]["owner"]
-            name = metadata[0]["name"]
-            data_descriptor = json.loads(metadata[0]["data_descriptor"])
-            execution_context = json.loads(metadata[0]["execution_context"])
-            annotations = json.loads(metadata[0]["annotations"])
-            stream_type = metadata[0]["type"]
-            start_time = metadata[0]["start_time"]
-            end_time = metadata[0]["end_time"]
-            return DataStream(stream_id, ownerID, name, data_descriptor, execution_context, annotations,
-                              stream_type, start_time, end_time, df)
+            return DataStream(metadata, df)
         except Exception as e:
             self.logging.log(
-                error_message="STREAM ID: " + stream_id + " - Error in mapping datapoints and metadata to datastream. " + str(
+                error_message="STREAM Name:  - Error in mapping datapoints and metadata to datastream. " + str(
                     traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
 
@@ -100,7 +92,44 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    def save_stream(self, datastream: DataStream, ingestInfluxDB=False):
+    def save_stream(self, df, metadata, ingestInfluxDB=False):
+
+        user_id = datastream.owner
+        stream_name = datastream.name
+        stream_id = datastream.identifier
+        data_descriptor = datastream.data_descriptor
+        execution_context = datastream.execution_context
+        annotations = datastream.annotations
+        stream_type = datastream.datastream_type
+        stream_version = "1" #TODO: add version in DataStream
+        data = datastream.data
+
+        try:
+
+            # get start and end time of a stream
+            if data:
+                status = self.nosql.write_file(stream_name, user_id, stream_version, data)
+
+                if status:
+                    #new_df = data.sort(data.timestamp.desc()).take(1) # TODO: taking first or last row is expensive. Remove it from mysql table?
+                    #first_raw = data.head(1)
+                    #last_row = data.tail(1)
+                    start_time = ""
+                    end_time = ""
+                    # save metadata in SQL store
+                    self.sql_data.save_stream_metadata(stream_id, stream_name, owner_id,
+                                                       data_descriptor, execution_context,
+                                                       annotations,
+                                                       stream_type, start_time, end_time)
+                else:
+                    print(
+                        "Something went wrong in saving data points.")
+        except Exception as e:
+            self.logging.log(
+                error_message="STREAM ID: " + stream_id + " - Cannot save stream. " + str(traceback.format_exc()),
+                error_type=self.logtypes.CRITICAL)
+
+    def save_stream_old(self, datastream: DataStream, ingestInfluxDB=False):
 
         owner_id = datastream.owner
         stream_name = datastream.name

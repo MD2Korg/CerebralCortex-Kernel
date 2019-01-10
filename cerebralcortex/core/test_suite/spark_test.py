@@ -33,7 +33,7 @@ def aws_s3_read_write():
     print(ds.data[:5])
 
     ds._identifier = str(uuid.UUID('{00000000-5087-3d56-ad0e-0b27c3c83182}'))
-    ds._owner = str(uuid.UUID('{00000000-f81c-44d2-9db8-fea69f468d58}'))
+    ds._user_id = str(uuid.UUID('{00000000-f81c-44d2-9db8-fea69f468d58}'))
     CC.save_stream(ds)
 
 # test spark
