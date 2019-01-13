@@ -28,7 +28,6 @@ from typing import List
 from uuid import UUID
 
 from cerebralcortex.core.datatypes.datapoint import DataPoint
-from cerebralcortex.core.metadata_manager.metadata import DataDescriptor, AlgorithmMetadata
 
 
 class DataStream:
@@ -78,6 +77,7 @@ class DataStream:
     def user_id(self, user_id):
         self._user_id = user_id
 
+    @property
     def name(self):
         return self._name
 

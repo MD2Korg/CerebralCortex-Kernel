@@ -24,10 +24,31 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cerebralcortex.core.metadata_manager.data_descriptor import DataDescriptor
-from cerebralcortex.core.metadata_manager.algorithm import AlgorithmMetadata
+from cerebralcortex.core.metadata_manager.algorithm import ModuleMetadata
+import json
 
-class Metadata(DataDescriptor, AlgorithmMetadata):
-    def __init__(self):
+class Metadata():
+    def __init__(self, name):
         """
         Metadata of a stream
         """
+        self._name = name
+        self._dataDescriptor = []
+        self._algorithm = []
+
+    def add_dataDescriptor(self, dd):
+        self._dataDescriptor.append(dd)
+        return self
+
+    def add_algorithm(self, algo):
+        self._algorithm.append(algo)
+        return self
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__,
+                          sort_keys=True, indent=4)
+
+    @classmethod
+    def from_json(cls, json_str):
+        json_dict = json.loads(json_str)
+        return cls(**json_dict)

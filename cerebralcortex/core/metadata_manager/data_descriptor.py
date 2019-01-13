@@ -23,34 +23,26 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-class DataDescriptor:
+class DataDescriptor():
     def __init__(self):
-        """
-
-        :param type_string:
-        :param unit:
-        :param descriptive_statistic:
-        """
         self._name = None
         self._type = None
         self._attributes = {}
 
     def set_attirubte(self, key, value):
+        key = str(key).strip()
+        value = str(value).strip()
+        if key is None or key=="" or value is None or value=="":
+            raise ValueError("Key and/or value cannot be None or empty.")
         self._attributes[key] = value
+        return self
 
-    @property
-    def name(self):
-        return self._unit
+    def name(self, value):
+        if self._name is None:
+            self._name = value
+        return self
 
-    @name.setter
-    def unit(self, value):
-        self._name = value
-
-    @property
-    def type(self):
-        return self._type
-
-    @type.setter
     def type(self, value):
-        self._type = value
-
+        if self._type is None:
+            self._type = value
+        return self

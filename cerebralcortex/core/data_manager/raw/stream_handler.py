@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -88,45 +88,37 @@ class StreamHandler():
                     traceback.format_exc()), error_type=self.logtypes.CRITICAL)
 
 
-
+    def map_metadata(self, metadata):
+        self.metadata = metadata
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    def save_stream(self, df, metadata, ingestInfluxDB=False):
+    def save_stream(self, data, metadata, ingestInfluxDB=False):
 
-        user_id = datastream.owner
-        stream_name = datastream.name
-        stream_id = datastream.identifier
-        data_descriptor = datastream.data_descriptor
-        execution_context = datastream.execution_context
-        annotations = datastream.annotations
-        stream_type = datastream.datastream_type
-        stream_version = "1" #TODO: add version in DataStream
-        data = datastream.data
+        # user_id = datastream.owner
+        # stream_name = datastream.name
+        # stream_id = datastream.identifier
+        # data_descriptor = datastream.data_descriptor
+        # execution_context = datastream.execution_context
+        # annotations = datastream.annotations
+        # stream_type = datastream.datastream_type
+        # stream_version = "1" #TODO: add version in DataStream
 
         try:
 
             # get start and end time of a stream
             if data:
-                status = self.nosql.write_file(stream_name, user_id, stream_version, data)
+                status = self.nosql.write_file(stream_name, data)
 
                 if status:
-                    #new_df = data.sort(data.timestamp.desc()).take(1) # TODO: taking first or last row is expensive. Remove it from mysql table?
-                    #first_raw = data.head(1)
-                    #last_row = data.tail(1)
-                    start_time = ""
-                    end_time = ""
                     # save metadata in SQL store
-                    self.sql_data.save_stream_metadata(stream_id, stream_name, owner_id,
-                                                       data_descriptor, execution_context,
-                                                       annotations,
-                                                       stream_type, start_time, end_time)
+                    self.sql_data.save_stream_metadata(metadata)
                 else:
                     print(
                         "Something went wrong in saving data points.")
         except Exception as e:
             self.logging.log(
-                error_message="STREAM ID: " + stream_id + " - Cannot save stream. " + str(traceback.format_exc()),
+                error_message="STREAM ID:  - Cannot save stream. " + str(traceback.format_exc()),
                 error_type=self.logtypes.CRITICAL)
 
     def save_stream_old(self, datastream: DataStream, ingestInfluxDB=False):

@@ -24,31 +24,31 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-class AlgorithmMetadata:
+class ModuleMetadata:
     def __init__(self):
         self._module_name = None
         self._version = None
         self._authors = []
-        self._attributes = []
+        self._attributes = {}
 
-    @property
-    def module_name(self):
-        return self._module_name
+    def module_name(self, value):
+        if self._module_name is None:
+            self._module_name = value
+        return self
 
-    @module_name.setter
-    def unit(self, value):
-        self._module_name = value
-
-    @property
-    def version(self):
-        return self._version
-
-    @version.setter
-    def unit(self, value):
-        self._version = value
+    def version(self, value):
+        if self._version is None:
+            self._version = value
+        return self
 
     def set_author(self, key, value):
         self._authors.append({key,value})
+        return self
 
     def set_attirubte(self, key, value):
+        key = str(key).strip()
+        value = str(value).strip()
+        if key is None or key=="" or value is None or value=="":
+            raise ValueError("Key and/or value cannot be None or empty.")
         self._attributes[key] = value
+        return self

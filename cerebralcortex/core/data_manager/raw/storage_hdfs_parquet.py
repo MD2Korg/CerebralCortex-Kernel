@@ -54,15 +54,14 @@ class HDFSStorage():
         stream_name = "stream="+stream_name
         version = "ver="+str(stream_version)
         owner = "user="+str(owner_id)
-        hdfs_url = self.obj.hdfs_spark_url+self.obj.raw_files_dir+stream_name+"/"+version+"/"+owner_id+"/"
-        success = False
+        #hdfs_url = self.obj.hdfs_spark_url+self.obj.raw_files_dir+stream_name+"/"+version+"/"+owner_id+"/"
         try:
             #data.write.save(hdfs_url, format='parquet', mode='append')
-            data.write.format('parquet').mode('overwrite').format('parquet').save(hdfs_url)
-            success = True
+            #data.write.format('parquet').mode('overwrite').save(hdfs_url)
+            data.write.partitionBy([]).format('parquet').mode('overwrite').save(self.obj.hdfs_spark_url)
+            return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
-        return success
 
     def get_hdf_url(self, stream_name:str):
         hdfs_url = self.obj.hdfs_spark_url+self.obj.raw_files_dir
