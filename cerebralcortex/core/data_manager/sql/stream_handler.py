@@ -105,17 +105,17 @@ class StreamHandler():
         else:
             return False
 
-    def stream_versions(self, user_id: uuid, stream_name: str) -> bool:
+    def stream_versions(self, stream_name: str) -> bool:
         """
         Returns a list of all available version of a stream
         """
-        if not stream_name or not user_id:
-            raise ValueError("Strea name and User ID are required fields.")
+        if not stream_name:
+            raise ValueError("Stream_name is a required field.")
 
         versions = []
 
-        qry = "select version from " + self.datastreamTable + " where user_id=%s and name = %s order by version ASC"
-        vals = str(user_id), str(stream_name)
+        qry = "select version from " + self.datastreamTable + " where name = %(name)s order by version ASC"
+        vals = {"name":str(stream_name)}
 
         rows = self.execute(qry, vals)
 
@@ -125,7 +125,7 @@ class StreamHandler():
                 versions.append(version)
             return versions
         else:
-            {}
+            []
 
     def get_all_users(self, study_name: str) -> List[dict]:
 
@@ -309,25 +309,24 @@ class StreamHandler():
     ################## STORE DATA METHODS #############################
     ###################################################################
 
-    def save_stream_metadata(self, stream_name: str, user_id: uuid, metadata: dict, stream_type: str):
+    def save_stream_metadata(self, metadata_obj):
         """
         Update a record if stream already exists, insert a new record otherwise.
         """
         isQueryReady = 0
 
-        metadata_hash = self.metadata_to_hash(stream_name, user_id, metadata)
-        is_metadata_changed = self.is_metadata_changed(metadata_hash)
+        metadata_hash = metadata_obj.get_hash()
+        stream_name = metadata_obj.name
+
+        is_metadata_changed = self.is_metadata_changed(stream_name, metadata_hash)
         status = is_metadata_changed.get("status")
         version = is_metadata_changed.get("version")
 
-        if status == "changed":
-            # update annotations and end-time
-            qry = "UPDATE " + self.datastreamTable + " set metadata=metadata, version=%s where metadata_hash=%s"
-            vals = json.dumps(metadata, default=str), str(version), str(metadata_hash)
-            isQueryReady = 1
-        elif (is_metadata_changed == "new"):
-            qry = "INSERT INTO " + self.datastreamTable + " (user_id, name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s, %s)"
-            vals = str(user_id), str(stream_name), str(version), str(metadata_hash), json.dumps(metadata)
+        metadata_str = metadata_obj().to_json()
+
+        if (status == "new"):
+            qry = "INSERT INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
+            vals = str(stream_name), str(version), str(metadata_hash), json.dumps(metadata_str)
             isQueryReady = 1
 
             # if nothing is changed then isQueryReady would be 0 and no database transaction would be performed
@@ -339,27 +338,22 @@ class StreamHandler():
                     error_message="Query: " + str(qry) + " - cannot be processed. " + str(traceback.format_exc()),
                     error_type=self.logtypes.CRITICAL)
 
-    def is_metadata_changed(self, stream_name, user_id, metadata_hash) -> str:
+    def is_metadata_changed(self, stream_name, metadata_hash) -> str:
         version = 1
         qry = "select version from " + self.datastreamTable + " where metadata_hash = %(metadata_hash)s"
         vals = {"metadata_hash":metadata_hash}
         result = self.execute(qry, vals)
 
         if result:
-            return {"version": version, "status":"unchanged"}
+            return {"version": version, "status":"exist"}
         else:
-            stream_versions = self.stream_versions(user_id, stream_name)
+            stream_versions = self.stream_versions(stream_name)
             if bool(stream_versions):
-                version = max(stream_versions)
-                return {"version": version, "status":"changed"}
-            else:
+                version = max(stream_versions)+1
                 return {"version": version, "status":"new"}
+            else:
+                return {"version": 1, "status":"new"}
 
-
-    def metadata_to_hash(self, stream_name, user_id, metadata):
-        text = str(stream_name)+str(user_id)+str(metadata)
-        metadata_hash = uuid.uuid3(uuid.NAMESPACE_DNS, text)
-        return metadata_hash
 
 
     ###########################################################################################################################

@@ -56,7 +56,6 @@ class StreamHandler():
     ###################################################################
     def get_stream(self, stream_name:str, data_type=DataSet.COMPLETE) -> DataStream:
 
-        # query datastream(mysql) for metadata
         if stream_name is None or stream_name=="":
             raise ValueError("stream_name cannot be None or empty")
 
@@ -81,33 +80,31 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    def save_stream(self, data, metadata, ingestInfluxDB=False):
+    def save_stream(self, datastream, ingestInfluxDB=False):
 
-        # user_id = datastream.owner
-        # stream_name = datastream.name
-        # stream_id = datastream.identifier
-        # data_descriptor = datastream.data_descriptor
-        # execution_context = datastream.execution_context
-        # annotations = datastream.annotations
-        # stream_type = datastream.datastream_type
-        # stream_version = "1" #TODO: add version in DataStream
+        metadata = datastream.metadata
+        data = datastream.data
+        if len(metadata)>0:
+            stream_name = metadata[0].name # only supports one data-stream storage at a time
+            try:
 
-        try:
+                # get start and end time of a stream
+                if datastream:
+                    status = self.nosql.write_file(stream_name, data)
 
-            # get start and end time of a stream
-            if data:
-                status = self.nosql.write_file(stream_name, data)
-
-                if status:
-                    # save metadata in SQL store
-                    self.sql_data.save_stream_metadata(metadata)
-                else:
-                    print(
-                        "Something went wrong in saving data points.")
-        except Exception as e:
-            self.logging.log(
-                error_message="STREAM ID:  - Cannot save stream. " + str(traceback.format_exc()),
-                error_type=self.logtypes.CRITICAL)
+                    if status:
+                        # save metadata in SQL store
+                        for md in metadata:
+                            self.sql_data.save_stream_metadata(md)
+                    else:
+                        print(
+                            "Something went wrong in saving data points.")
+            except Exception as e:
+                self.logging.log(
+                    error_message="STREAM ID:  - Cannot save stream. " + str(traceback.format_exc()),
+                    error_type=self.logtypes.CRITICAL)
+        else:
+            raise Exception("Metadata cannot be empty.")
 
     def save_stream_old(self, datastream: DataStream, ingestInfluxDB=False):
 

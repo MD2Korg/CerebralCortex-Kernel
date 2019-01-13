@@ -23,18 +23,6 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import gzip
-import pickle
-import traceback
-import uuid
-from datetime import datetime, timedelta
-from typing import List
-
-import pyarrow
-
-from cerebralcortex.core.datatypes.datapoint import DataPoint
-from cerebralcortex.core.util.data_types import deserialize_obj
-
 class HDFSStorage():
 
     def __init__(self, obj):
@@ -46,19 +34,12 @@ class HDFSStorage():
         df = self.obj.sparkSession.read.load(hdfs_url)
         return df
 
+    def write_file(self, stream_name, data) -> bool:
 
-    def write_file(self, stream_name, owner_id, stream_version, data) -> bool:
-
-
-        # Using libhdfs
-        stream_name = "stream="+stream_name
-        version = "ver="+str(stream_version)
-        owner = "user="+str(owner_id)
-        #hdfs_url = self.obj.hdfs_spark_url+self.obj.raw_files_dir+stream_name+"/"+version+"/"+owner_id+"/"
+        hdfs_url = self.get_hdf_url(stream_name)
         try:
             #data.write.save(hdfs_url, format='parquet', mode='append')
-            #data.write.format('parquet').mode('overwrite').save(hdfs_url)
-            data.write.partitionBy([]).format('parquet').mode('overwrite').save(self.obj.hdfs_spark_url)
+            data.write.partitionBy(["ver","user"]).format('parquet').mode('overwrite').save(hdfs_url)
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))

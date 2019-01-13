@@ -26,13 +26,14 @@
 from cerebralcortex.core.metadata_manager.data_descriptor import DataDescriptor
 from cerebralcortex.core.metadata_manager.module_info import ModuleMetadata
 import json
+import uuid
 
 class Metadata():
-    def __init__(self, name):
+    def __init__(self):
         """
         Metadata of a stream
         """
-        self._name = name
+        self._name = None
         self._version = None
         self._metadata_hash = None
         self._dataDescriptor = []
@@ -65,6 +66,7 @@ class Metadata():
     @property
     def data_descriptor(self):
         return self._dataDescriptor
+
     @data_descriptor.setter
     def data_descriptor(self, value):
         self._dataDescriptor = value
@@ -85,15 +87,16 @@ class Metadata():
         self._module.append(algo)
         return self
 
-    def toJSON(self):
+    #@classmethod
+    def to_json(self):
         data_descriptor = []
         module_metadata = []
         metadata_json = {}
-        for dd_obj in self._dataDescriptor:
+        for dd_obj in self.data_descriptor:
             data_descriptor.append(dd_obj.__dict__)
-        for mm_obj in self._dataDescriptor:
+        for mm_obj in self.data_descriptor:
             module_metadata.append(mm_obj.__dict__)
-        metadata_json["name"] = self._name
+        metadata_json["name"] = self.name
         metadata_json["data_descriptor"] = data_descriptor
         metadata_json["module"] = module_metadata
         return metadata_json
@@ -121,3 +124,20 @@ class Metadata():
             metadata_list.append(cls)
 
         return metadata_list
+
+    @classmethod
+    def get_hash(self):
+        name = self.name
+        version = self.version
+        data_descriptor = ""
+        modulez = ""
+        for dd in self.data_descriptor:
+            data_descriptor += str(dd.name+dd.type)
+        for mm in self.modulez:
+            modulez += str(mm.module_name)+str(mm.version)+str(mm.author)
+        hash_string = str(name)+str(version)+str(data_descriptor)+str(modulez)
+        hash_string = hash_string.strip().lower().replace(" ", "")
+
+        return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
+
+
