@@ -52,3 +52,7 @@ class ModuleMetadata:
             raise ValueError("Key and/or value cannot be None or empty.")
         self._attributes[key] = value
         return self
+
+    def from_json(self, obj):
+        self.__dict__ = obj
+        return self

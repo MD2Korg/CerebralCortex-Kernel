@@ -70,14 +70,4 @@ class HDFSStorage():
             raise ValueError("Stream name cannot be empty.")
         else:
             hdfs_url = hdfs_url+"stream="+stream_name+"/"
-
-        # if stream_version is not None or stream_version!="":
-        #     hdfs_url = hdfs_url+stream_version+"/"
-        #
-        # if owner_id is not None and owner_id!="":
-        #     hdfs_url = hdfs_url+owner_id+"/"
-        #
-        # if day is not None or day!="":
-        #     hdfs_url = hdfs_url+day+"_*"
-
         return hdfs_url

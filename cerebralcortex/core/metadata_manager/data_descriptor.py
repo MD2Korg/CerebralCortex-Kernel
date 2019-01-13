@@ -46,3 +46,8 @@ class DataDescriptor():
         if self._type is None:
             self._type = value
         return self
+
+    def from_json(self, obj):
+        self.__dict__ = obj
+        return self
+

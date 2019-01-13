@@ -41,7 +41,7 @@ mysql:
   database: cerebralcortex
   db_user: root
   db_pass: pass
-  datastream_table: stream
+  datastream_table: stream_new
   kafka_offsets_table: kafka_offsets
   processing_module_table: processing_module
   data_replay_table: data_replay_md2k2

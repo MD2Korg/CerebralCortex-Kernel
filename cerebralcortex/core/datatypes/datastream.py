@@ -28,62 +28,61 @@ from typing import List
 from uuid import UUID
 
 from cerebralcortex.core.datatypes.datapoint import DataPoint
-
+from cerebralcortex.core.metadata_manager.metadata import Metadata
 
 class DataStream:
     def __init__(self,
-                 user_id: UUID = None,
-                 name: UUID = None,
-                 #version: int = None,
-                 #metadata_hash: UUID = None,
-                 metadata: dict = None,
-                 data: object = None
+                 data: object = None,
+                 metadata: Metadata = None
                  ):
         """
         DataStream object contains the list of DataPoint objects and metadata linked to it.
 
         """
-        self._user_id = user_id
-        self._name = name
-        #self._version = version
-        #self._metadata_hash = metadata_hash
-        self._metadata = metadata
         self._data = data
+        self._metadata = metadata
 
-    def find_annotation_references(self, identifier: int = None, name: str = None):
-        result = self._annotations
-        found = False
 
-        if identifier:
-            found = True
-            result = [a for a in result if a.stream_identifier == identifier]
-
-        if name:
-            found = True
-            result = [a for a in result if a.name == name]
-
-        if not found:
-            return []
-
-        return result
+    # def find_annotation_references(self, identifier: int = None, name: str = None):
+    #     result = self._annotations
+    #     found = False
+    #
+    #     if identifier:
+    #         found = True
+    #         result = [a for a in result if a.stream_identifier == identifier]
+    #
+    #     if name:
+    #         found = True
+    #         result = [a for a in result if a.name == name]
+    #
+    #     if not found:
+    #         return []
+    #
+    #     return result
     def get_metadata(self, version=None):
+        #version = str(version)
+        for md in self._metadata:
+            if md.version == version:
+                return md
+            else:
+                raise Exception("Version '"+str(version)+"' is not available for this stream.")
         return None
 
-    @property
-    def user_id(self):
-        return self._user_id
-
-    @user_id.setter
-    def user_id(self, user_id):
-        self._user_id = user_id
-
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        self._name = value
+    # @property
+    # def user_id(self):
+    #     return self._user_id
+    #
+    # @user_id.setter
+    # def user_id(self, user_id):
+    #     self._user_id = user_id
+    #
+    # @property
+    # def name(self):
+    #     return self._name
+    #
+    # @name.setter
+    # def name(self, value):
+    #     self._name = value
 
     @property
     def metadata(self):
@@ -97,12 +96,12 @@ class DataStream:
     def data(self):
         return self._data
 
-    @data.setter
-    def data(self, value):
-        result = []
-        for dp in value:
-            result.append(DataPoint(start_time=dp.start_time, end_time=dp.end_time, offset=dp.offset, sample=dp.sample))
-        self._data = result
+    # @data.setter
+    # def data(self, value):
+    #     result = []
+    #     for dp in value:
+    #         result.append(DataPoint(start_time=dp.start_time, end_time=dp.end_time, offset=dp.offset, sample=dp.sample))
+    #     self._data = result
 
     # TODO- cannot use it due to circular dependencies. Moving it to CC class
     # def filter(self, annotation_stream_name: uuid, annotation: str, start_time: datetime, end_time: datetime) -> List[
@@ -126,22 +125,22 @@ class DataStream:
 
         return result
 
-    def __str__(self):
-        return "Stream(" + ', '.join(map(str, [self._identifier,
-                                               self._user_id,
-                                               self._name,
-                                               self._data_descriptor,
-                                               self._datastream_type,
-                                               self._execution_context,
-                                               self._annotations,
-                                               self._data]))
-
-    def __repr__(self):
-        return "Stream(" + ', '.join(map(str, [self._identifier,
-                                               self._user_id,
-                                               self._name,
-                                               self._data_descriptor,
-                                               self._datastream_type,
-                                               self._execution_context,
-                                               self._annotations,
-                                               self._data]))
+    # def __str__(self):
+    #     return "Stream(" + ', '.join(map(str, [self._identifier,
+    #                                            self._user_id,
+    #                                            self._name,
+    #                                            self._data_descriptor,
+    #                                            self._datastream_type,
+    #                                            self._execution_context,
+    #                                            self._annotations,
+    #                                            self._data]))
+    #
+    # def __repr__(self):
+    #     return "Stream(" + ', '.join(map(str, [self._identifier,
+    #                                            self._user_id,
+    #                                            self._name,
+    #                                            self._data_descriptor,
+    #                                            self._datastream_type,
+    #                                            self._execution_context,
+    #                                            self._annotations,
+    #                                            self._data]))

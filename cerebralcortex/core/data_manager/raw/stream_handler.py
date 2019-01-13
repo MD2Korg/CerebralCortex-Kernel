@@ -41,7 +41,7 @@ from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.util.data_types import deserialize_obj
 from cerebralcortex.core.util.datetime_helper_methods import get_timezone
-
+from cerebralcortex.core.metadata_manager.metadata import Metadata
 
 class DataSet(Enum):
     COMPLETE = 1,
@@ -61,35 +61,23 @@ class StreamHandler():
             raise ValueError("stream_name cannot be None or empty")
 
         stream_metadata = self.sql_data.get_stream_metadata_by_name(stream_name)
+        metadata_obj = Metadata.from_json(stream_metadata)
 
         if len(stream_metadata) > 0:
-            #owner_id = stream_metadata[0]["owner"]
             if data_type == DataSet.COMPLETE:
                 df = self.nosql.read_file(stream_name)
-                stream = self.map_dataframe_to_metadata(stream_metadata, df)
+                stream = DataStream(df,metadata_obj)
             elif data_type == DataSet.ONLY_DATA:
-                stream = self.nosql.read_file(stream_name)
+                df = self.nosql.read_file(stream_name)
+                stream = DataStream(df)
             elif data_type == DataSet.ONLY_METADATA:
-                stream = self.map_dataframe_to_metadata(stream_metadata)
+                stream = DataStream(metadata_obj)
             else:
-                raise ValueError("STREAM ID: " + str(stream_metadata[0]["identifier"]) + "Failed to get data stream. Invalid type parameter.")
-            stream.get_metadata(1)
+                raise ValueError("Invalid type parameter: data_type "+str(data_type))
             return stream
         else:
             return DataStream()
 
-    def map_dataframe_to_metadata(self, metadata: dict,
-                                  df=None) -> DataStream:
-        try:
-            return DataStream(metadata, df)
-        except Exception as e:
-            self.logging.log(
-                error_message="STREAM Name:  - Error in mapping datapoints and metadata to datastream. " + str(
-                    traceback.format_exc()), error_type=self.logtypes.CRITICAL)
-
-
-    def map_metadata(self, metadata):
-        self.metadata = metadata
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################

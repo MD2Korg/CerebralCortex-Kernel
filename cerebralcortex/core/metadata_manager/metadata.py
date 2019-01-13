@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cerebralcortex.core.metadata_manager.data_descriptor import DataDescriptor
-from cerebralcortex.core.metadata_manager.algorithm import ModuleMetadata
+from cerebralcortex.core.metadata_manager.module_info import ModuleMetadata
 import json
 
 class Metadata():
@@ -33,22 +33,91 @@ class Metadata():
         Metadata of a stream
         """
         self._name = name
+        self._version = None
+        self._metadata_hash = None
         self._dataDescriptor = []
-        self._algorithm = []
+        self._module = []
 
-    def add_dataDescriptor(self, dd):
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+
+    @property
+    def version(self):
+        return self._version
+
+    @version.setter
+    def version(self, value):
+        self._version = int(value)
+
+    @property
+    def metadata_hash(self):
+        return self._metadata_hash
+
+    @metadata_hash.setter
+    def metadata_hash(self, value):
+        self._metadata_hash = value
+
+    @property
+    def data_descriptor(self):
+        return self._dataDescriptor
+    @data_descriptor.setter
+    def data_descriptor(self, value):
+        self._dataDescriptor = value
+
+    @property
+    def modulez(self):
+        return self._module
+
+    @modulez.setter
+    def modulez(self, value):
+        self._module = value
+
+    def add_dataDescriptor(self, dd: DataDescriptor):
         self._dataDescriptor.append(dd)
         return self
 
-    def add_algorithm(self, algo):
-        self._algorithm.append(algo)
+    def add_module(self, algo: ModuleMetadata):
+        self._module.append(algo)
         return self
 
     def toJSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__,
-                          sort_keys=True, indent=4)
+        data_descriptor = []
+        module_metadata = []
+        metadata_json = {}
+        for dd_obj in self._dataDescriptor:
+            data_descriptor.append(dd_obj.__dict__)
+        for mm_obj in self._dataDescriptor:
+            module_metadata.append(mm_obj.__dict__)
+        metadata_json["name"] = self._name
+        metadata_json["data_descriptor"] = data_descriptor
+        metadata_json["module"] = module_metadata
+        return metadata_json
 
     @classmethod
-    def from_json(cls, json_str):
-        json_dict = json.loads(json_str)
-        return cls(**json_dict)
+    def from_json(cls, json_list):
+        data_descriptor_list = []
+        module_list = []
+        metadata_list = []
+        for tmp in json_list:
+            metadata = json.loads(tmp.get("metadata"))
+            data_descriptors = metadata["data_descriptor"]
+            module_info = metadata["module"]
+            for dd in data_descriptors:
+                data_descriptor_list.append(DataDescriptor().from_json(dd))
+
+            for mm in module_info:
+                module_list.append(ModuleMetadata().from_json(mm))
+
+            cls.data_descriptor = data_descriptor_list
+            cls.modulez = module_list
+            cls.name = tmp["name"]
+            cls.version = int(tmp["version"])
+            cls.metadata_hash = tmp["metadata_hash"]
+            metadata_list.append(cls)
+
+        return metadata_list
