@@ -33,7 +33,7 @@ from cerebralcortex.core.config_manager.config import Configuration
 from cerebralcortex.core.data_manager.object.data import ObjectData
 from cerebralcortex.core.data_manager.sql.data import SqlData
 from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
-from cerebralcortex.core.datatypes.datapoint import DataPoint
+
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.file_manager.file_io import FileIO
 from cerebralcortex.core.log_manager.logging import CCLogging
@@ -73,80 +73,46 @@ class CerebralCortex:
         # self.logging.log(error_message="Object created: ", error_type=self.logtypes.DEBUG)
 
     ###########################################################################
-    ############### RAW DATA MANAGER METHODS ##################################
+    #                     RAW DATA MANAGER METHODS                            #
     ###########################################################################
-    def save_stream(self, datastream: DataStream, localtime=False, ingestInfluxDB=False):
+    def save_stream(self, datastream: DataStream, ingestInfluxDB=False):
         """
         Saves datastream raw data in Cassandra and metadata in MySQL.
         :param datastream:
         """
         self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB)
 
-    def get_stream(self, name:str, data_type=DataSet.COMPLETE) -> DataStream:
+    def get_stream(self, stream_name:str, version:str= "all", data_type=DataSet.COMPLETE) -> DataStream:
         """
-
-        :param stream_id:
-        :param day:
-        :param start_time:
-        :param end_time:
-        :param data_type:
-        :return:
-        """
-        return self.RawData.get_stream(name, data_type)
-
-    def get_stream_days(self, stream_id: uuid) -> List:
-        """
-        Returns a list of days (string format: YearMonthDay (e.g., 20171206) for a given stream-id
-        :param stream_id:
-        :param dd_stream_id:
-        """
-        return self.SqlData.get_stream_days(stream_id)
-
-    def get_stream_by_name(self, stream_name: uuid, user_id: uuid=None, start_time: datetime = None, end_time: datetime = None, localtime:bool=False,
-                           data_type=DataSet.COMPLETE) -> DataStream:
-        """
-        Return stream data for all stream-ids related to a stream-name
+        Retrieve data-stream with it's metadata
         :param stream_name:
-        :param day:
-        :param start_time:
-        :param end_time:
+        :param version: acceptable parameters are "all", "latest", or a specific version (i.e., 1.0)
         :param data_type:
         :return:
         """
-        return self.RawData.get_stream_by_name(stream_name, user_id, start_time, end_time, localtime, data_type)
-
-    def get_stream_samples(self, stream_id, day, start_time=None, end_time=None) -> List[DataPoint]:
-        """
-        returns list of DataPoint objects
-        :param stream_id:
-        :param day:
-        :param start_time:
-        :param end_time:
-        :return:
-        """
-        return self.RawData.get_stream_samples(stream_id, day, start_time, end_time)
+        return self.RawData.get_stream(stream_name=stream_name, version=version, data_type=data_type)
 
     ###########################################################################
-    ############### SQL DATA MANAGER METHODS ##################################
+    #               SQL DATA MANAGER METHODS                                  #
     ###########################################################################
 
     ################### STREAM RELATED METHODS ################################
 
-    def is_stream(self, stream_id: uuid) -> bool:
+    def is_stream(self, stream_name: uuid) -> bool:
         """
 
-        :param stream_id:
+        :param stream_name:
         :return:
         """
-        return self.SqlData.is_stream(stream_id)
+        return self.SqlData.is_stream(stream_name)
 
-    def get_stream_name(self, stream_id: uuid) -> str:
+    def get_stream_name(self, metadata_hash: uuid) -> str:
         """
 
-        :param stream_id:
+        :param metadata_hash:
         :return:
         """
-        return self.SqlData.get_stream_name(stream_id)
+        return self.SqlData.get_stream_name(metadata_hash)
 
     def get_stream_id(self, user_id: uuid, stream_name: str) -> dict:
         """
@@ -180,23 +146,23 @@ class CerebralCortex:
         """
         return self.SqlData.get_user_name(user_id)
 
-    def get_user_streams_metadata(self, user_id: str) -> uuid:
-        """
+    # def get_user_streams_metadata(self, user_id: str) -> uuid:
+    #     """
+    #
+    #     :param user_id:
+    #     :return: dict with the keys: stream_ids, identifier (DO NOT USE THIS KEY, USE stream_ids KEY), owner, name, data_descriptor, execution_context, annotations, type, start_time, end_time
+    #     """
+    #     warnings.warn("PLEASE USE stream_ids KEY IN DICT OBJECT TO GET ALL STREAM IDS OF A STREAM NAME. Identifier key will be removed in CerebralCortex version 2.2.4.", DeprecationWarning)
+    #     return self.SqlData.get_user_streams_metadata(user_id)
 
-        :param user_id:
-        :return: dict with the keys: stream_ids, identifier (DO NOT USE THIS KEY, USE stream_ids KEY), owner, name, data_descriptor, execution_context, annotations, type, start_time, end_time
-        """
-        warnings.warn("PLEASE USE stream_ids KEY IN DICT OBJECT TO GET ALL STREAM IDS OF A STREAM NAME. Identifier key will be removed in CerebralCortex version 2.2.4.", DeprecationWarning)
-        return self.SqlData.get_user_streams_metadata(user_id)
-
-    def get_user_streams(self, user_id: uuid) -> dict:
-        """
-
-        :param user_id:
-        :return: dict with the keys: stream_ids, name, data_descriptor, execution_context, annotations, type, start_time, end_time
-        """
-        warnings.warn("PLEASE USE stream_ids KEY IN DICT OBJECT TO GET ALL STREAM IDS OF A STREAM NAME. Identifier key will be removed in CerebralCortex version 2.2.4.", DeprecationWarning)
-        return self.SqlData.get_user_streams(user_id)
+    # def get_user_streams(self, user_id: uuid) -> dict:
+    #     """
+    #
+    #     :param user_id:
+    #     :return: dict with the keys: stream_ids, name, data_descriptor, execution_context, annotations, type, start_time, end_time
+    #     """
+    #     warnings.warn("PLEASE USE stream_ids KEY IN DICT OBJECT TO GET ALL STREAM IDS OF A STREAM NAME. Identifier key will be removed in CerebralCortex version 2.2.4.", DeprecationWarning)
+    #     return self.SqlData.get_user_streams(user_id)
 
     def get_all_users(self, study_name: str) -> dict:
         """
@@ -206,43 +172,43 @@ class CerebralCortex:
         """
         return self.SqlData.get_all_users(study_name)
 
-    def get_stream_duration(self, stream_id: uuid) -> dict:
+    # def get_stream_duration(self, stream_id: uuid) -> dict:
+    #     """
+    #
+    #     :param stream_id:
+    #     :return:
+    #     """
+    #     return self.SqlData.get_stream_duration(stream_id)
+
+    # def get_stream_metadata_by_user(self, user_id: uuid, stream_name: str = None, start_time: datetime = None,
+    #                                  end_time: datetime = None) -> List:
+    #     """
+    #     Returns all the stream ids and name that belongs to an owner-id
+    #     :param user_id:
+    #     :return:
+    #     """
+    #     return self.SqlData.get_stream_metadata_by_user(user_id, stream_name, start_time, end_time)
+
+    def get_stream_metadata(self, stream_name: str) -> List:
         """
 
-        :param stream_id:
+        :param stream_name:
         :return:
         """
-        return self.SqlData.get_stream_duration(stream_id)
-
-    def get_stream_metadata_by_user(self, user_id: uuid, stream_name: str = None, start_time: datetime = None,
-                                     end_time: datetime = None) -> List:
-        """
-        Returns all the stream ids and name that belongs to an owner-id
-        :param user_id:
-        :return:
-        """
-        return self.SqlData.get_stream_metadata_by_user(user_id, stream_name, start_time, end_time)
-
-    def get_stream_metadata(self, stream_id: uuid) -> dict:
-        """
-
-        :param stream_id:
-        :return:
-        """
-        return self.SqlData.get_stream_metadata_by_hash(stream_id)
+        return self.SqlData.get_stream_metadata_by_name(stream_name)
     
-    def user_has_stream(self, user_id: uuid, stream_name: str) ->bool:
-        """
-        Returns true if a user has a stream available
-        :param user_id: 
-        :param stream_name: 
-        :return: 
-        """
-        return self.SqlData.user_has_stream(user_id, stream_name)
+    # def user_has_stream(self, user_id: uuid, stream_name: str) ->bool:
+    #     """
+    #     Returns true if a user has a stream available
+    #     :param user_id:
+    #     :param stream_name:
+    #     :return:
+    #     """
+    #     return self.SqlData.user_has_stream(user_id, stream_name)
 
     ################### USER RELATED METHODS ##################################
 
-    def get_user_metadata(self, user_id, username: str = None) -> List:
+    def get_user_metadata(self, user_id:uuid=None, username: str = None) -> List:
         """
 
         :param user_id:
@@ -251,7 +217,7 @@ class CerebralCortex:
         """
         return self.SqlData.get_user_metadata(user_id, username)
 
-    def login_user(self, username: str, password: str) -> bool:
+    def connect(self, username: str, password: str) -> bool:
         """
 
         :param username:

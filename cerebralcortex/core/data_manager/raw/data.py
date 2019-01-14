@@ -51,12 +51,6 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage, AwsS3Storage):
         self.sparkSession = CC.sparkSession
 
         self.metadata = Metadata()
-        self.metadata\
-            .add_dataDescriptor(DataDescriptor().name("a1").type("t1").set_attirubte("k1", "v1").name("asdwe2"))\
-            .add_dataDescriptor(DataDescriptor().name("n2").type("t2").set_attirubte("k2", "v2"))\
-            .add_module(ModuleMetadata().module_name("mod1").version("v1").set_author("auth1", "auth1-email").set_author("auth2", "auth-email2").set_attirubte("k1", "v1"))
-
-        self.metadata.to_json()
 
 
         # pseudo factory

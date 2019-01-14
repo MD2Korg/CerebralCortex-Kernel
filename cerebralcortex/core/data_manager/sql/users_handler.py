@@ -38,7 +38,7 @@ class UserHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_user_metadata(self, user_id: uuid = None, username: str = None) -> dict:
+    def get_user_metadata(self, user_id: uuid = None, username: str = None) -> list:
         """
         Get user metadata based on user uuid or username
         :param user_id:
@@ -46,6 +46,7 @@ class UserHandler():
         :return: user_metadata
         :rtype dict
         """
+        result = []
         if not user_id and not username:
             raise ValueError("User ID/name cannot be empty.")
 
@@ -60,10 +61,12 @@ class UserHandler():
             vals = str(user_id), str(username)
 
         rows = self.execute(qry, vals)
-        if len(rows) == 0:
-            return {}
+        if len(rows) > 0:
+            for row in rows:
+                result.append(row)
+            return result
         else:
-            return rows["user_metadata"]
+            return []
 
     def get_user_uuid(self, username: str) -> str:
 

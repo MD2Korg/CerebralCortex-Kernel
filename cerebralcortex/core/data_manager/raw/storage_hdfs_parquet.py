@@ -23,16 +23,25 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from pyspark.sql.functions import lit
+
 class HDFSStorage():
 
     def __init__(self, obj):
         self.obj = obj
 
-    def read_file(self, stream_name:str):
+    def read_file(self, stream_name:str, version:str="all"):
 
-        hdfs_url = self.get_hdf_url(stream_name)
-        df = self.obj.sparkSession.read.load(hdfs_url)
-        return df
+        if version=="all":
+            hdfs_url = self.get_hdf_url(stream_name)
+            df = self.obj.sparkSession.read.load(hdfs_url)
+            return df
+        else:
+            hdfs_url = self.get_hdf_url(stream_name)
+            hdfs_url = hdfs_url+"ver="+str(version)
+            df = self.obj.sparkSession.read.load(hdfs_url)
+            df = df.withColumn('ver', lit(int(version)))
+            return df
 
     def write_file(self, stream_name, data) -> bool:
 

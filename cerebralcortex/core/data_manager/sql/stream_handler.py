@@ -35,77 +35,85 @@ class StreamHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_stream_metadata_by_hash(self, metadata_hash: uuid) -> dict:
-        """
-        Get stream metadata
-        :param metadata_hash:
-        :return: row_id, user_id, name, metadata_hash, metadata
-        :rtype dict
-        """
-        qry = "SELECT * from " + self.datastreamTable + " where metadata_hash=%(metadata_hash)s"
-        vals = {"metadata_hash": str(metadata_hash)}
-        rows = self.execute(qry, vals)
-        return rows
+    # def get_stream_metadata_by_hash(self, metadata_hash: uuid) -> dict:
+    #     """
+    #     Get stream metadata
+    #     :param metadata_hash:
+    #     :return: row_id, user_id, name, metadata_hash, metadata
+    #     :rtype dict
+    #     """
+    #     qry = "SELECT * from " + self.datastreamTable + " where metadata_hash=%(metadata_hash)s"
+    #     vals = {"metadata_hash": str(metadata_hash)}
+    #     rows = self.execute(qry, vals)
+    #     return rows
 
-    def get_stream_metadata_by_name(self, stream_name: str) -> dict:
+    def get_stream_metadata_by_name(self, stream_name: str, version:str="all") -> dict:
         """
         Get stream metadata
         :param stream_id:
         :return: row_id, user_id, name, metadata_hash, metadata
         :rtype dict
         """
-        qry = "SELECT * from " + self.datastreamTable +  ' where name=%(name)s'
-        vals = {'name': str(stream_name)}
+        result = []
+        if version=="all":
+            qry = "SELECT * from " + self.datastreamTable +  ' where name=%(name)s'
+            vals = {'name': str(stream_name)}
+        else:
+            qry = "SELECT * from " + self.datastreamTable +  ' where name=%s and version=%s'
+            vals = stream_name,version
+
         rows = self.execute(qry, vals)
         if rows is not None and bool(rows):
-            return rows
+            for row in rows:
+                result.append(row)
+            return result
         else:
             return []
 
-    def get_stream_metadata_by_user(self, user_id: uuid, stream_name: str = None) -> dict:
-        """
-        Returns stream ids and metadata of a stream name belong to a user
-        :param user_id:
-        :return: row_id, user_id, name, metadata_hash, metadata
-        :rtype: dict
-        """
-        vals = []
-        if not user_id:
-            raise ValueError("User ID cannot be empty/None.")
+    # def get_stream_metadata_by_user(self, user_id: uuid, stream_name: str = None) -> dict:
+    #     """
+    #     Returns stream ids and metadata of a stream name belong to a user
+    #     :param user_id:
+    #     :return: row_id, user_id, name, metadata_hash, metadata
+    #     :rtype: dict
+    #     """
+    #     vals = []
+    #     if not user_id:
+    #         raise ValueError("User ID cannot be empty/None.")
+    #
+    #     qry = "SELECT * from " + self.datastreamTable
+    #     where_clause = " where user_id=%s "
+    #     vals.append(user_id)
+    #     if stream_name:
+    #         where_clause += " and name=%s "
+    #         vals.append(stream_name)
+    #
+    #     qry = qry + where_clause
+    #     vals = tuple(vals)
+    #     rows = self.execute(qry, vals)
+    #     return rows
 
-        qry = "SELECT * from " + self.datastreamTable
-        where_clause = " where user_id=%s "
-        vals.append(user_id)
-        if stream_name:
-            where_clause += " and name=%s "
-            vals.append(stream_name)
+    # def user_has_stream(self, user_id: uuid, stream_name: str) -> bool:
+    #     """
+    #     Returns true if a user has a stream available
+    #     :param user_id:
+    #     :param stream_name:
+    #     :return: True if owner has a stream, False otherwise
+    #     """
+    #     if not stream_name or not user_id:
+    #         raise ValueError("Strea name and User ID are required fields.")
+    #
+    #     qry = "select stream_id from " + self.datastreamTable + " where user_id=%s and name = %s"
+    #     vals = str(user_id), str(stream_name)
+    #
+    #     rows = self.execute(qry, vals)
+    #
+    #     if len(rows) > 0:
+    #         return True
+    #     else:
+    #         return False
 
-        qry = qry + where_clause
-        vals = tuple(vals)
-        rows = self.execute(qry, vals)
-        return rows
-
-    def user_has_stream(self, user_id: uuid, stream_name: str) -> bool:
-        """
-        Returns true if a user has a stream available
-        :param user_id: 
-        :param stream_name: 
-        :return: True if owner has a stream, False otherwise
-        """
-        if not stream_name or not user_id:
-            raise ValueError("Strea name and User ID are required fields.")
-
-        qry = "select stream_id from " + self.datastreamTable + " where user_id=%s and name = %s"
-        vals = str(user_id), str(stream_name)
-
-        rows = self.execute(qry, vals)
-
-        if len(rows) > 0:
-            return True
-        else:
-            return False
-
-    def stream_versions(self, stream_name: str) -> bool:
+    def get_stream_versions(self, stream_name: str) -> bool:
         """
         Returns a list of all available version of a stream
         """
@@ -151,54 +159,54 @@ class StreamHandler():
                 results.append(row)
             return results
 
-    def get_user_streams(self, user_id: uuid) -> dict:
+    # def get_user_streams(self, user_id: uuid) -> dict:
+    #
+    #     """
+    #     Returns all user streams with name and metadata attached to it. Do not use "id" field as it doesn't
+    #     represents all the stream-ids linked to a stream name. Use stream_ids field in dict to get all stream-ids of a stream name.
+    #     :param user_id:
+    #     :return: id, user_id, name, data_descriptor,execution_context,annotations, type, start_time, end_time, tmp, stream_ids (this contains all the stream ids of a stream name)
+    #     :rtype: dict
+    #     """
+    #     if not user_id:
+    #         raise ValueError("User ID is a required field.")
+    #
+    #     result = {}
+    #     qry = 'SELECT * FROM ' + self.datastreamTable + ' where user_id=%(user_id)s'
+    #     vals = {'user_id': str(user_id)}
+    #
+    #     rows = self.execute(qry, vals)
+    #
+    #     if len(rows) == 0:
+    #         return result
+    #     else:
+    #         for row in rows:
+    #             stream_ids = self.get_stream_metadata_hash(str(user_id), row["name"])
+    #             row["stream_ids"] = [d['id'] for d in stream_ids]
+    #             result[row["name"]] = row
+    #         return result
 
-        """
-        Returns all user streams with name and metadata attached to it. Do not use "id" field as it doesn't
-        represents all the stream-ids linked to a stream name. Use stream_ids field in dict to get all stream-ids of a stream name.
-        :param user_id:
-        :return: id, user_id, name, data_descriptor,execution_context,annotations, type, start_time, end_time, tmp, stream_ids (this contains all the stream ids of a stream name)
-        :rtype: dict
-        """
-        if not user_id:
-            raise ValueError("User ID is a required field.")
-
-        result = {}
-        qry = 'SELECT * FROM ' + self.datastreamTable + ' where user_id=%(user_id)s'
-        vals = {'user_id': str(user_id)}
-
-        rows = self.execute(qry, vals)
-
-        if len(rows) == 0:
-            return result
-        else:
-            for row in rows:
-                stream_ids = self.get_stream_metadata_hash(str(user_id), row["name"])
-                row["stream_ids"] = [d['id'] for d in stream_ids]
-                result[row["name"]] = row
-            return result
-
-    def get_user_streams_metadata(self, user_id: str) -> dict:
-        """
-        Get all streams metadata of a user
-        """
-        if not user_id:
-            raise ValueError("User ID is a required field.")
-
-        result = {}
-        qry = "select name, metadata from " + self.datastreamTable + " where user_id = %(user_id)s"
-        vals = {'user_id': str(user_id)}
-
-        rows = self.execute(qry, vals)
-
-        if len(rows) == 0:
-            return result
-        else:
-            for row in rows:
-                stream_ids = self.get_stream_metadata_hash(str(user_id), row["name"])
-                row["stream_ids"] = [d['id'] for d in stream_ids]
-                result[row["name"]] = row
-            return result
+    # def get_user_streams_metadata(self, user_id: str) -> dict:
+    #     """
+    #     Get all streams metadata of a user
+    #     """
+    #     if not user_id:
+    #         raise ValueError("User ID is a required field.")
+    #
+    #     result = {}
+    #     qry = "select name, metadata from " + self.datastreamTable + " where user_id = %(user_id)s"
+    #     vals = {'user_id': str(user_id)}
+    #
+    #     rows = self.execute(qry, vals)
+    #
+    #     if len(rows) == 0:
+    #         return result
+    #     else:
+    #         for row in rows:
+    #             stream_ids = self.get_stream_metadata_hash(str(user_id), row["name"])
+    #             row["stream_ids"] = [d['id'] for d in stream_ids]
+    #             result[row["name"]] = row
+    #         return result
 
     def get_user_name(self, user_id: uuid) -> str:
         """
@@ -257,22 +265,23 @@ class StreamHandler():
         else:
             return rows[0]["user_id"]
 
-    def get_stream_metadata_hash(self, user_id: uuid, stream_name: str) -> dict:
+    def get_stream_metadata_hash(self, stream_name: str) -> dict:
         """
         Get a stream ids of stream name linked to a user
         """
-        if not stream_name or not user_id:
-            raise ValueError("User ID and stream name are required field.")
-
-        qry = "select metadata_hash from " + self.datastreamTable + " where user_id=%s and name = %s"
-        vals = str(user_id), str(stream_name)
+        if not stream_name:
+            raise ValueError("stream_name are required field.")
+        metadata_hashes = []
+        qry = "select metadata_hash from " + self.datastreamTable + " where name = %(name)s"
+        vals = {"name":str(stream_name)}
 
         rows = self.execute(qry, vals)
 
-        if len(rows) == 0:
-            return {}
+        if len(rows) > 0:
+            for row in rows:
+                metadata_hashes.append(row["metadata_hash"])
         else:
-            return rows
+            return []
 
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """
@@ -322,7 +331,7 @@ class StreamHandler():
         status = is_metadata_changed.get("status")
         version = is_metadata_changed.get("version")
 
-        metadata_str = metadata_obj().to_json()
+        metadata_str = metadata_obj.to_json()
 
         if (status == "new"):
             qry = "INSERT INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
@@ -347,7 +356,7 @@ class StreamHandler():
         if result:
             return {"version": version, "status":"exist"}
         else:
-            stream_versions = self.stream_versions(stream_name)
+            stream_versions = self.get_stream_versions(stream_name)
             if bool(stream_versions):
                 version = max(stream_versions)+1
                 return {"version": version, "status":"new"}

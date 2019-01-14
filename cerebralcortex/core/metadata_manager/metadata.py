@@ -87,16 +87,16 @@ class Metadata():
         self._module.append(algo)
         return self
 
-    #@classmethod
-    def to_json(self):
+    @classmethod
+    def to_json(cls):
         data_descriptor = []
         module_metadata = []
         metadata_json = {}
-        for dd_obj in self.data_descriptor:
+        for dd_obj in cls.data_descriptor:
             data_descriptor.append(dd_obj.__dict__)
-        for mm_obj in self.data_descriptor:
+        for mm_obj in cls.modulez:
             module_metadata.append(mm_obj.__dict__)
-        metadata_json["name"] = self.name
+        metadata_json["name"] = cls.name
         metadata_json["data_descriptor"] = data_descriptor
         metadata_json["module"] = module_metadata
         return metadata_json

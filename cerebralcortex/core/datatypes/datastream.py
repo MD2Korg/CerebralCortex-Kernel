@@ -30,10 +30,12 @@ from uuid import UUID
 from cerebralcortex.core.datatypes.datapoint import DataPoint
 from cerebralcortex.core.metadata_manager.metadata import Metadata
 
+
 class DataStream:
     def __init__(self,
                  data: object = None,
-                 metadata: Metadata = None
+                 metadata: Metadata = None,
+                 sql_obj: object = None
                  ):
         """
         DataStream object contains the list of DataPoint objects and metadata linked to it.
@@ -41,26 +43,9 @@ class DataStream:
         """
         self._data = data
         self._metadata = metadata
+        self._sql_obj = sql_obj
 
-
-    # def find_annotation_references(self, identifier: int = None, name: str = None):
-    #     result = self._annotations
-    #     found = False
-    #
-    #     if identifier:
-    #         found = True
-    #         result = [a for a in result if a.stream_identifier == identifier]
-    #
-    #     if name:
-    #         found = True
-    #         result = [a for a in result if a.name == name]
-    #
-    #     if not found:
-    #         return []
-    #
-    #     return result
     def get_metadata(self, version=None):
-        #version = str(version)
         for md in self._metadata:
             if md.version == version:
                 return md
@@ -68,21 +53,8 @@ class DataStream:
                 raise Exception("Version '"+str(version)+"' is not available for this stream.")
         return None
 
-    # @property
-    # def user_id(self):
-    #     return self._user_id
-    #
-    # @user_id.setter
-    # def user_id(self, user_id):
-    #     self._user_id = user_id
-    #
-    # @property
-    # def name(self):
-    #     return self._name
-    #
-    # @name.setter
-    # def name(self, value):
-    #     self._name = value
+    def update(self):
+        pass
 
     @property
     def metadata(self):
@@ -95,52 +67,3 @@ class DataStream:
     @property
     def data(self):
         return self._data
-
-    # @data.setter
-    # def data(self, value):
-    #     result = []
-    #     for dp in value:
-    #         result.append(DataPoint(start_time=dp.start_time, end_time=dp.end_time, offset=dp.offset, sample=dp.sample))
-    #     self._data = result
-
-    # TODO- cannot use it due to circular dependencies. Moving it to CC class
-    # def filter(self, annotation_stream_name: uuid, annotation: str, start_time: datetime, end_time: datetime) -> List[
-    #     DataPoint]:
-    #     """
-    #     This method maps datastream to derived annotation stream and returns a List of Datapoints
-    #     :param annotation_stream_name:
-    #     :param annotation:
-    #     :param start_time:
-    #     :param end_time:
-    #     :return:
-    #     """
-    # annotation_stream_id = Metadata.get_annotation_id(self.identifier, annotation_stream_name)
-    # return SqlData.get_annotation_stream(annotation_stream_id, self.identifier, annotation, start_time, end_time)
-
-    @classmethod
-    def from_datastream(cls, input_streams: List):
-        result = cls(user_id=input_streams[0].user_id)
-
-        # TODO: Something with provenance tracking from datastream list
-
-        return result
-
-    # def __str__(self):
-    #     return "Stream(" + ', '.join(map(str, [self._identifier,
-    #                                            self._user_id,
-    #                                            self._name,
-    #                                            self._data_descriptor,
-    #                                            self._datastream_type,
-    #                                            self._execution_context,
-    #                                            self._annotations,
-    #                                            self._data]))
-    #
-    # def __repr__(self):
-    #     return "Stream(" + ', '.join(map(str, [self._identifier,
-    #                                            self._user_id,
-    #                                            self._name,
-    #                                            self._data_descriptor,
-    #                                            self._datastream_type,
-    #                                            self._execution_context,
-    #                                            self._annotations,
-    #                                            self._data]))
