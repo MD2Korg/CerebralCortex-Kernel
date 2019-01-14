@@ -55,7 +55,7 @@ class StreamHandler():
         version = str(version).strip().replace(" ", "")
 
         if version!="all" and version!="latest":
-            if version not in all_versions:
+            if int(version) not in all_versions:
                 raise Exception("Version "+str(version)+" is not available for stream: "+str(stream_name))
 
         if version=="latest":

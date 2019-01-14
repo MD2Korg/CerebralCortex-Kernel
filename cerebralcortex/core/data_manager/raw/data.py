@@ -29,7 +29,7 @@ from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
 from cerebralcortex.core.data_manager.object.data import ObjectData
 
-from cerebralcortex.core.data_manager.raw.storage_hdfs_parquet import HDFSStorage
+from cerebralcortex.core.data_manager.raw.storage_hdfs import HDFSStorage
 from cerebralcortex.core.data_manager.raw.storage_filesystem import FileSystemStorage
 from cerebralcortex.core.data_manager.raw.storage_aws_s3 import AwsS3Storage
 from cerebralcortex.core.metadata_manager.metadata import Metadata, DataDescriptor, ModuleMetadata
