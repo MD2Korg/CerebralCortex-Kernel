@@ -87,6 +87,17 @@ class Metadata():
         self._module.append(algo)
         return self
 
+    def is_valid(self):
+        for dd_obj in self.data_descriptor:
+            if (dd_obj._name is None or dd_obj._name=="") or (dd_obj._type is None or dd_obj._type==""):
+                raise Exception("Name and/or type fields are missing in data descriptor.")
+        for mm_obj in self.modulez:
+            if (mm_obj._module_name is None or mm_obj._module_name=="") or (mm_obj._version is None or mm_obj._version==""):
+                raise Exception("Module name and/or version fields are missing in module info.")
+            if len(mm_obj._authors)==0:
+                raise Exception("Author information is missing.")
+        return True
+
     @classmethod
     def to_json(cls):
         data_descriptor = []
