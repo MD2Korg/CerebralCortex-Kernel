@@ -8,7 +8,7 @@ cc:
 #########################################################################
 ###################### NoSQL Storage ####################################
 #########################################################################
-nosql_storage: filesystem
+nosql_storage: hdfs
 
 filesystem:
   filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/hdfs/cerebralcortex/cerebralcortex/" # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
@@ -17,6 +17,13 @@ hdfs:
   host: localhost
   port: 9001
   raw_files_dir: "cerebralcortex/cerebralcortex/"
+
+#########################################################################
+###################### OBJECT Storage ###################################
+#########################################################################
+
+object_storage:
+  filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/hdfs/cerebralcortex/objects/"
 
 #minio: # AWS-S3 UPDATE
 #  host: s3.amazonaws.com # for amazon pass s3.amazonaws.com and for minio simpley pass url of minio server

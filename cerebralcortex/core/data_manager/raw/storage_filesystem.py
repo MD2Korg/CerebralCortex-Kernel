@@ -54,10 +54,9 @@ class FileSystemStorage():
             raise Exception("Cannot store dataframe: "+str(e))
 
     def get_storage_path(self, stream_name:str):
-        storage_url = self.obj.filesystem_path
+        storage_url = self.obj.hdfs_spark_url + self.obj.raw_files_dir
 
         if stream_name is None or stream_name=="":
-            raise ValueError("Stream name cannot be empty.")
+            return storage_url
         else:
-            storage_url = storage_url + "stream=" + stream_name + "/"
-        return storage_url
+            return storage_url + "stream=" + stream_name + "/"

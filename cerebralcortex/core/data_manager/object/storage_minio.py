@@ -30,7 +30,7 @@ import traceback
 
 from minio.error import ResponseError
 
-
+#TODO: For now, Minio is disabled as CC config doesn't provide an option to use mutliple object-storage
 class MinioHandler():
 
     ###################################################################
