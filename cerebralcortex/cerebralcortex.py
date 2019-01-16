@@ -43,7 +43,7 @@ from cerebralcortex.core.data_manager.raw.data import RawData
 from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
 
 class CerebralCortex:
-    def __init__(self, configuration_filepath=None, timezone='UTC', auto_offset_reset="largest"):
+    def __init__(self, configuration_filepath:str=None, timezone='UTC', auto_offset_reset="largest"):
 
         self.config_filepath = configuration_filepath
         self.config = Configuration(configuration_filepath).config

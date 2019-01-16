@@ -80,6 +80,11 @@ class Metadata():
         self._module = value
 
     def add_dataDescriptor(self, dd: DataDescriptor):
+        """
+
+        :param dd:
+        :return: 
+        """
         self._dataDescriptor.append(dd)
         return self
 
@@ -114,6 +119,11 @@ class Metadata():
 
     @classmethod
     def from_json(cls, json_list):
+        """
+
+        :param json_list:
+        :return:
+        """
         data_descriptor_list = []
         module_list = []
         metadata_list = []
