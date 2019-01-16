@@ -80,11 +80,7 @@ class Metadata():
         self._module = value
 
     def add_dataDescriptor(self, dd: DataDescriptor):
-        """
 
-        :param dd:
-        :return: 
-        """
         self._dataDescriptor.append(dd)
         return self
 
