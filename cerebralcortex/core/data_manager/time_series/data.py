@@ -37,8 +37,6 @@ class TimeSeriesData(InfluxdbHandler):
 
         self.sql_data = CC.SqlData
 
-        self.time_zone = CC.timezone
-
         self.logging = CC.logging
         self.logtypes = LogTypes()
 

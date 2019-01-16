@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -23,33 +23,46 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import warnings
 import uuid
+import warnings
 from datetime import datetime
 from typing import List
+
 from pyspark.sql import SparkSession
 
 from cerebralcortex.core.config_manager.config import Configuration
 from cerebralcortex.core.data_manager.object.data import ObjectData
+from cerebralcortex.core.data_manager.raw.data import RawData
+from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 from cerebralcortex.core.data_manager.sql.data import SqlData
 from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
-
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.file_manager.file_io import FileIO
-from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.log_manager.log_handler import LogTypes
-from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
-from cerebralcortex.core.data_manager.raw.data import RawData
+from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
 
+
 class CerebralCortex:
-    def __init__(self, configuration_filepath:str=None, timezone='UTC', auto_offset_reset="largest"):
+
+    def __init__(self, configuration_filepath: str = None, auto_offset_reset: str = "largest"):
+        """
+        CerebralCortex constructor
+        Args:
+            configuration_filepath (str): Directory path of cerebralcortex configurations.
+            auto_offset_reset (str): Kafka offset. Acceptable parameters are smallest or largest (default=largest)
+        Raises:
+            ValueError: If configuration_filepath is None or empty.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+        """
+        if configuration_filepath is None or configuration_filepath=="":
+            raise ValueError("config_file path cannot be None or blank.")
 
         self.config_filepath = configuration_filepath
         self.config = Configuration(configuration_filepath).config
         self.sparkSession = SparkSession.builder.appName("CerebralCortex").getOrCreate()
         self.debug = self.config["cc"]["debug"]
-        self.timezone = timezone
         self.logging = CCLogging(self)
         self.logtypes = LogTypes()
         self.SqlData = SqlData(self)
@@ -60,36 +73,53 @@ class CerebralCortex:
 
         warnings.simplefilter('always', DeprecationWarning)
 
-        if self.config["visualization_storage"]!="none":
+        if self.config["visualization_storage"] != "none":
             self.TimeSeriesData = TimeSeriesData(self)
 
-        if self.config["messaging_service"]!="none":
+        if self.config["messaging_service"] != "none":
             self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
 
         if "minio" in self.config:
             self.ObjectData = ObjectData(self)
 
-        # TODO: disabled because uwsgi losses connection, need more investigation
-        # self.logging.log(error_message="Object created: ", error_type=self.logtypes.DEBUG)
-
     ###########################################################################
     #                     RAW DATA MANAGER METHODS                            #
     ###########################################################################
-    def save_stream(self, datastream: DataStream, ingestInfluxDB=False):
+    def save_stream(self, datastream: DataStream, ingestInfluxDB:bool=False):
         """
-        Saves datastream raw data in Cassandra and metadata in MySQL.
-        :param datastream:
+        Saves datastream raw data in selected NoSQL storage and metadata in MySQL.
+
+        Args:
+            datastream (DataStream): a DataStream object
+            ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> ds = DataStream(dataframe, MetaData)
+            >>> CC.save_stream(ds)
         """
         self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB)
 
-    def get_stream(self, stream_name:str, version:str= "all", data_type=DataSet.COMPLETE) -> DataStream:
+    def get_stream(self, stream_name: str, version: str = "all", data_type=DataSet.COMPLETE) -> DataStream:
         """
-        Retrieve data-stream with it's metadata
-        :param stream_name:
-        :param version: acceptable parameters are "all", "latest", or a specific version (i.e., 1.0)
-        :param data_type:
-        :return:
+        Retrieve a data-stream with it's metadata.
+
+        Args:
+            stream_name (str): name of a stream
+            version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
+            data_type (DataSet):  DataSet.COMPLETE returns both Data and Metadata. DataSet.ONLY_DATA returns only Data. DataSet.ONLY_METADATA returns only metadata of a stream. (Default=DataSet.COMPLETE)
+
+        Returns:
+            DataStream: contains Data and/or metadata
+        Notes:
+            Please specify a version if you know the exact version of a stream. Getting all the stream data and then filtering versions won't be efficient.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> ds = CC.get_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> ds.data # an object of a dataframe
+            >>> ds.metadata # an object of MetaData class
+            >>> ds.get_metadata(version=1) # get the specific version metadata of a stream
         """
+
         return self.RawData.get_stream(stream_name=stream_name, version=version, data_type=data_type)
 
     ###########################################################################
@@ -98,31 +128,50 @@ class CerebralCortex:
 
     ################### STREAM RELATED METHODS ################################
 
-    def is_stream(self, stream_name: uuid) -> bool:
+    def is_stream(self, stream_name: str) -> bool:
         """
+        Returns true if provided stream exists.
 
-        :param stream_name:
-        :return:
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            bool: True if stream_name exist False otherwise
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.is_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> True
         """
         return self.SqlData.is_stream(stream_name)
 
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """
-
-        :param metadata_hash:
-        :return:
+        metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
+        Args:
+            metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.
+        Returns:
+            str: name of a stream
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
+            >>> ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST
         """
         return self.SqlData.get_stream_name(metadata_hash)
 
-    def get_stream_id(self, user_id: uuid, stream_name: str) -> dict:
+    def get_metadata_hash(self, stream_name: str) -> list:
         """
-
-        :param stream_name:
-        :return:
+        Get all the metadata_hash associated with a stream name.
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            list(str): list of all the metadata hashes
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_stream_name("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
         """
-        return self.SqlData.get_stream_metadata_hash(user_id, stream_name)
+        return self.SqlData.get_stream_metadata_hash(stream_name)
 
-    def is_user(self, user_id: uuid=None, user_name:uuid=None) -> bool:
+    def is_user(self, user_id: uuid = None, user_name: uuid = None) -> bool:
         """
 
         :param user_id:
@@ -196,7 +245,7 @@ class CerebralCortex:
         :return:
         """
         return self.SqlData.get_stream_metadata_by_name(stream_name)
-    
+
     # def user_has_stream(self, user_id: uuid, stream_name: str) ->bool:
     #     """
     #     Returns true if a user has a stream available
@@ -208,7 +257,7 @@ class CerebralCortex:
 
     ################### USER RELATED METHODS ##################################
 
-    def get_user_metadata(self, user_id:uuid=None, username: str = None) -> List:
+    def get_user_metadata(self, user_id: uuid = None, username: str = None) -> List:
         """
 
         :param user_id:
@@ -407,8 +456,7 @@ class CerebralCortex:
         try:
             self.MessagingQueue.produce_message(topic, msg)
         except Exception as e:
-            raise Exception("Error publishing message. Topic: "+str(topic)+" - "+str(e))
-
+            raise Exception("Error publishing message. Topic: " + str(topic) + " - " + str(e))
 
     def kafka_subscribe_to_topic(self, topic: str):
         """

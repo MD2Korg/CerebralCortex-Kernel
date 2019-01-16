@@ -43,8 +43,6 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage, AwsS3Storage):
         self.config = CC.config
         self.sql_data = CC.SqlData
 
-        self.time_zone = CC.timezone
-
         self.logging = CC.logging
         self.nosql_store = self.config['nosql_storage']
 

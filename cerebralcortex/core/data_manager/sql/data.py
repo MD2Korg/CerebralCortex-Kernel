@@ -41,8 +41,6 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
         """
         self.config = CC.config
 
-        self.time_zone = CC.timezone
-
         self.logging = CC.logging
         self.logtypes = LogTypes()
         self.sql_store = self.config["relational_storage"]

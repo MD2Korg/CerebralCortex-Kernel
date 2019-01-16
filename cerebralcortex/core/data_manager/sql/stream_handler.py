@@ -265,7 +265,7 @@ class StreamHandler():
         else:
             return rows[0]["user_id"]
 
-    def get_stream_metadata_hash(self, stream_name: str) -> dict:
+    def get_stream_metadata_hash(self, stream_name: str) -> list:
         """
         Get a stream ids of stream name linked to a user
         """
@@ -287,11 +287,13 @@ class StreamHandler():
         """
         Get strea name linked to a stream UUID
         """
+
         if not metadata_hash:
             raise ValueError("metadata_hash is a required field.")
+        metadata_hash = str(metadata_hash)
 
         qry = "select name from " + self.datastreamTable + " where metadata_hash = %(metadata_hash)s"
-        vals = {'metadata_hash': str(metadata_hash)}
+        vals = {'metadata_hash': metadata_hash}
 
         rows = self.execute(qry, vals)
 
