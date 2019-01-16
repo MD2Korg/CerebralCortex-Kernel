@@ -41,6 +41,7 @@ from cerebralcortex.core.file_manager.file_io import FileIO
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
+from cerebralcortex.core.metadata_manager.metadata import Metadata
 
 
 class CerebralCortex:
@@ -56,7 +57,7 @@ class CerebralCortex:
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
         """
-        if configuration_filepath is None or configuration_filepath=="":
+        if configuration_filepath is None or configuration_filepath == "":
             raise ValueError("config_file path cannot be None or blank.")
 
         self.config_filepath = configuration_filepath
@@ -85,7 +86,7 @@ class CerebralCortex:
     ###########################################################################
     #                     RAW DATA MANAGER METHODS                            #
     ###########################################################################
-    def save_stream(self, datastream: DataStream, ingestInfluxDB:bool=False):
+    def save_stream(self, datastream: DataStream, ingestInfluxDB: bool = False):
         """
         Saves datastream raw data in selected NoSQL storage and metadata in MySQL.
 
@@ -166,94 +167,98 @@ class CerebralCortex:
             list(str): list of all the metadata hashes
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
-            >>> CC.get_stream_name("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> CC.get_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
         """
         return self.SqlData.get_stream_metadata_hash(stream_name)
 
-    def is_user(self, user_id: uuid = None, user_name: uuid = None) -> bool:
+    def is_user(self, user_id: str = None, user_name: str = None) -> bool:
         """
+        Checks whether a user exists in the system. One of both parameters could be set to verify whether user exist.
 
-        :param user_id:
-        :return:
+        Args:
+            user_id (str): id (uuid) of a user
+            user_name (str): username of a user
+        Returns:
+            bool: True if a user exists in the system or False otherwise.
+        Raises:
+            ValueError: Both user_id and user_name cannot be None or empty.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.is_user(user_id="76cc444c-4fb8-776e-2872-9472b4e66b16")
+            >>> True
         """
         return self.SqlData.is_user(user_id, user_name)
 
     def get_user_id(self, user_name: str) -> str:
         """
+        Get the user id linked to user_name.
 
-        :param user_name:
-        :return:
+        Args:
+            user_name (str): username of a user
+        Returns:
+            str: user id associated to user_name
+        Raises:
+            ValueError: User name is a required field.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_user_id("nasir_ali")
+            >>> '76cc444c-4fb8-776e-2872-9472b4e66b16'
         """
         return self.SqlData.get_user_id(user_name)
 
-    def get_user_name(self, user_id: uuid) -> str:
+    def get_user_name(self, user_id: str) -> str:
         """
+        Get the user name linked to a user id.
 
-        :param user_id:
-        :return:
+        Args:
+            user_name (str): username of a user
+        Returns:
+            bool: user_id associated to username
+        Raises:
+            ValueError: User ID is a required field.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_user_name("76cc444c-4fb8-776e-2872-9472b4e66b16")
+            >>> 'nasir_ali'
         """
         return self.SqlData.get_user_name(user_id)
 
-    # def get_user_streams_metadata(self, user_id: str) -> uuid:
-    #     """
-    #
-    #     :param user_id:
-    #     :return: dict with the keys: stream_ids, identifier (DO NOT USE THIS KEY, USE stream_ids KEY), owner, name, data_descriptor, execution_context, annotations, type, start_time, end_time
-    #     """
-    #     warnings.warn("PLEASE USE stream_ids KEY IN DICT OBJECT TO GET ALL STREAM IDS OF A STREAM NAME. Identifier key will be removed in CerebralCortex version 2.2.4.", DeprecationWarning)
-    #     return self.SqlData.get_user_streams_metadata(user_id)
-
-    # def get_user_streams(self, user_id: uuid) -> dict:
-    #     """
-    #
-    #     :param user_id:
-    #     :return: dict with the keys: stream_ids, name, data_descriptor, execution_context, annotations, type, start_time, end_time
-    #     """
-    #     warnings.warn("PLEASE USE stream_ids KEY IN DICT OBJECT TO GET ALL STREAM IDS OF A STREAM NAME. Identifier key will be removed in CerebralCortex version 2.2.4.", DeprecationWarning)
-    #     return self.SqlData.get_user_streams(user_id)
-
-    def get_all_users(self, study_name: str) -> dict:
+    def get_all_users(self, study_name: str) -> list[dict]:
         """
-
-        :param study_name:
-        :return:
+        Get a list of all users part of a study.
+        Args:
+            study_name (str): name of a study
+        Raises:
+            ValueError: Study name is a requied field.
+        Returns:
+            list(dict): Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_all_users("mperf")
+            >>> [{"76cc444c-4fb8-776e-2872-9472b4e66b16": "nasir_ali"}] # [{user_id, user_name}]
         """
         return self.SqlData.get_all_users(study_name)
 
-    # def get_stream_duration(self, stream_id: uuid) -> dict:
-    #     """
-    #
-    #     :param stream_id:
-    #     :return:
-    #     """
-    #     return self.SqlData.get_stream_duration(stream_id)
-
-    # def get_stream_metadata_by_user(self, user_id: uuid, stream_name: str = None, start_time: datetime = None,
-    #                                  end_time: datetime = None) -> List:
-    #     """
-    #     Returns all the stream ids and name that belongs to an owner-id
-    #     :param user_id:
-    #     :return:
-    #     """
-    #     return self.SqlData.get_stream_metadata_by_user(user_id, stream_name, start_time, end_time)
-
-    def get_stream_metadata(self, stream_name: str) -> List:
+    def get_stream_metadata(self, stream_name: str, version:str="all") -> list(Metadata):
         """
+        Get a list of metadata for all versions available for a stream.
+        Args:
+            stream_name (str): name of a stream
+            version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
 
-        :param stream_name:
-        :return:
+        Returns:
+            list(Metadata): Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
+        Raises:
+            ValueError: stream_name cannot be None or empty.
+        Todo:
+            this shall return a list of Metadata objects
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_all_users("mperf")
+            >>> [Metadata] # list of MetaData class objects
         """
-        return self.SqlData.get_stream_metadata_by_name(stream_name)
-
-    # def user_has_stream(self, user_id: uuid, stream_name: str) ->bool:
-    #     """
-    #     Returns true if a user has a stream available
-    #     :param user_id:
-    #     :param stream_name:
-    #     :return:
-    #     """
-    #     return self.SqlData.user_has_stream(user_id, stream_name)
+        return self.SqlData.get_stream_metadata_by_name(stream_name, version)
 
     ################### USER RELATED METHODS ##################################
 

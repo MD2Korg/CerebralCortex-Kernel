@@ -47,13 +47,16 @@ class StreamHandler():
     #     rows = self.execute(qry, vals)
     #     return rows
 
-    def get_stream_metadata_by_name(self, stream_name: str, version:str="all") -> dict:
+    def get_stream_metadata_by_name(self, stream_name: str, version:str="all") -> list(dict):
         """
         Get stream metadata
         :param stream_id:
         :return: row_id, user_id, name, metadata_hash, metadata
         :rtype dict
         """
+        if stream_name is None or stream_name=="":
+            raise ValueError("stream_name cannot be None or empty.")
+
         result = []
         if version=="all":
             qry = "SELECT * from " + self.datastreamTable +  ' where name=%(name)s'
@@ -135,7 +138,7 @@ class StreamHandler():
         else:
             []
 
-    def get_all_users(self, study_name: str) -> List[dict]:
+    def get_all_users(self, study_name: str) -> list[dict]:
 
         """
         Get all users id and user name for a particular study
@@ -208,7 +211,7 @@ class StreamHandler():
     #             result[row["name"]] = row
     #         return result
 
-    def get_user_name(self, user_id: uuid) -> str:
+    def get_user_name(self, user_id: str) -> str:
         """
         Get username of a user's UUID
         """
@@ -239,7 +242,7 @@ class StreamHandler():
             qry = "select username from " + self.userTable + " where username = %(username)s"
             vals = {'username': str(user_name)}
         else:
-            raise ValueError("Wrong parameters.")
+            raise ValueError("Both user_id and user_name cannot be None or empty.")
 
         rows = self.execute(qry, vals)
 
