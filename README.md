@@ -1,21 +1,54 @@
-# CerebralCortex
-
+# CerebralCortex Kernel
 Cerebral Cortex is the big data cloud companion of mCerebrum designed to support population-scale data analysis, visualization, model development, and intervention design for mobile sensor data.
 
-CerebralCortex core provides an interface to retrieve/store mobile sensor raw data and metadata.
+CerebralCortex-KafkaStreamPreprocessor (CC-KSP) is a apache-spark based pub/sub system for processing incoming mobile sensor data.
 
 You can find more information about MD2K software on our [software website](https://md2k.org/software) or the MD2K organization on our [MD2K website](https://md2k.org/).
+
+CerebralCortex Kernel is part of our [CerebralCortex cloud platform](https://github.com/MD2Korg/CerebralCortex). CerebralCortex Kernel is mainly responsible to store/retrieve mobile sensor data along with it's metadata. 
+
+### Note
+We have renamed following repositories.
+* CerebralCortex-Platform -> CerebralCortex
+* CerebralCortex - >  CerebralCortex-Kernel
 
 ## Installation
 
 Minimum requirements:
-* [Python3.5](https://www.python.org/downloads/release/python-350/)
+* [Python3.6](https://www.python.org/downloads/release/python-360/)
 
 To install:
 
 ```git clone https://github.com/MD2Korg/CerebralCortex.git```
 
 ```sudo python3 setup.py install```
+# FAQ
+**1 - Do I need whole CerebralCortex cloud platform to use CerebralCortex-Kernal?**
+
+No! If you want to use CerebralCortex-Kernel independently then you would need: 
+* Backend storage (FileSystem/HDFS and MySQL) with some data. Here is [some sample data](TODO) to play with.
+* Setup the [configurations](https://github.com/MD2Korg/CerebralCortex-Kernel/tree/master/conf)
+* Use the [examples](TODO) to start exploring data
+
+**2 - I do not want to use FileSystem/HDFS as NoSQL storage. How can I change NoSQL storage backend?**
+
+CerebralCortex-Kernel follows component based structure. This makes it easier to add/remove features. 
+* Add a new class in [Data manager-Raw](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/core/data_manager/raw/). 
+* New class must have read/write methods. Here is a sample [skeleton class](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/core/data_manager/raw/storage_blueprint.py) with mandatory methods required in the new class.
+* Create an object of new class in [Data-Raw](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/core/data_manager/raw/data.py) with appropriate parameters.
+* Add appropriate configurations in [cerebralcortex.yml](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/conf/cerebralcortex.yml) in (NoSQL Storage)[https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/conf/cerebralcortex.yml#L8] section.
+
+**3 - How can I replace MySQL with another SQL storage system?** 
+
+* Add a new class in [Data manager-SQL](https://github.com/MD2Korg/CerebralCortex-Kernel/tree/master/cerebralcortex/core/data_manager/sql). 
+* New class must implement all of the methods available in (stream_handler.py)[https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/core/data_manager/sql/stream_handler.py] class.
+* Create an object of new class in [Data-SQL](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/core/data_manager/sql/data.py) with appropriate parameters.
+* Add appropriate configurations in [cerebralcortex.yml](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/conf/cerebralcortex.yml) in (Relational Storage)[https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/conf/cerebralcortex.yml#L31] section.
+
+**4 - Where are all the backend storage related classes/methods?**    
+
+In [Data manager-Raw](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/core/data_manager/). You can add/change any backend storage.
+
 
 ## Contributing
 Please read our [Contributing Guidelines](https://md2k.org/contributing/contributing-guidelines.html) for details on the process for submitting pull requests to us.
@@ -42,7 +75,7 @@ For the versions available, see [this repository's tags](https://github.com/MD2K
 
 ## Contributors
 
-Link to the [list of contributors](https://github.com/MD2Korg/CerebralCortex/graphs/contributors) who participated in this project.
+Link to the [list of contributors](https://github.com/MD2Korg/CerebralCortex-Kernel/graphs/contributors) who participated in this project.
 
 ## License
 
