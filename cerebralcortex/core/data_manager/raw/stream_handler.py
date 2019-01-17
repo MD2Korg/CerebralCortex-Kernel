@@ -53,6 +53,8 @@ class StreamHandler():
 
         Returns:
             DataStream: contains Data and/or metadata
+        Raises:
+            ValueError: if stream name is empty or None
         Note:
             Please specify a version if you know the exact version of a stream. Getting all the stream data and then filtering versions won't be efficient.
         Examples:
@@ -81,7 +83,7 @@ class StreamHandler():
 
         version = str(version)
 
-        stream_metadata = self.sql_data.get_stream_metadata_by_name(stream_name=stream_name, version=version)
+        stream_metadata = self.sql_data.get_stream_metadata(stream_name=stream_name, version=version)
         metadata_obj = Metadata.from_json(stream_metadata)
 
         if len(stream_metadata) > 0:

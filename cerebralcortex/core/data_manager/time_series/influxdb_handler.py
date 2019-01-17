@@ -39,12 +39,21 @@ class InfluxdbHandler():
     ###################################################################
 
     def save_data_to_influxdb(self, datastream: DataStream):
+        """
+        Save data stream to influxdb only for visualization purposes.
 
+        Args:
+            datastream (DataStream): a DataStream object
+        Returns:
+            bool: True if data is ingested successfully or False otherwise
+        Todo:
+            This needs to be updated with the new structure. Should metadata be stored or not?
+        Example:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> ds = DataStream(dataframe, MetaData)
+            >>> CC.save_data_to_influxdb(ds)
         """
-        Store a datastream to InfluxDB
-        TODO: This needs to be updated with the new structure
-        :param datastream:
-        """
+
         st = datetime.now()
         client = InfluxDBClient(host=self.influxdbIP, port=self.influxdbPort, username=self.influxdbUser,
                                 password=self.influxdbPassword, database=self.influxdbDatabase)

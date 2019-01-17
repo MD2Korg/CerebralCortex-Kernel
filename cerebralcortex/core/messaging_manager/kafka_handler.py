@@ -29,9 +29,16 @@ class KafkaHandler():
 
     def produce_message(self, topic: str, msg: str):
         """
-        Produce a message on Kafka topic
-        :param topic:
-        :param msg:
+        Publish a message on kafka message queue
+        Args:
+            topic (str): name of the kafka topic
+            msg (dict): message that needs to published on kafka
+        Returns:
+            bool: True if successful. In case of failure, it returns an Exception message.
+        Raises:
+            ValueError: topic and message parameters cannot be empty or None.
+            Exception: Error publishing message. Topic: topic_name - error-message
+
         """
 
         if not topic and not msg:
@@ -45,11 +52,13 @@ class KafkaHandler():
 
     def subscribe_to_topic(self, topic: str)-> dict:
         """
-        Subscribe to a topic on Kafka to consume messages
-        :param topic:
-        :param auto_offset_reset - smallest (start of the topic) OR largest (end of a topic)
-        :return: Kafka message
-        :rtype: dict
+        Subscribe to kafka topic as a consumer
+        Args:
+            topic (str): name of the kafka topic
+        Yields:
+             dict: kafka message
+        Raises:
+            ValueError: Topic parameter is missing.
         """
         if not topic:
             raise ValueError("Topic parameter is missing.")

@@ -38,9 +38,11 @@ class FileSystemStorage():
 
     def get_buckets(self) -> dict:
         """
-        returns all available buckets in storage system
-        :return: [{bucket-name: str, last_modified: str}], in case of an error [{"error": str}]
-        :rtype: List
+        returns all available buckets in an object storage
+
+        Returns:
+            dict: {bucket-name: str, [{"key":"value"}]}, in case of an error {"error": str}
+
         """
         try:
             temp = []
@@ -56,10 +58,12 @@ class FileSystemStorage():
 
     def get_bucket_objects(self, bucket_name: str) -> dict:
         """
-        returns a list of all objects stored in the specified bucket
-        :param bucket_name:
-        :return:{object-name:{stat1:str, stat2, str}},  in case of an error [{"error": str}]
-        :rtype: dict
+        returns a list of all objects stored in the specified Minio bucket
+
+        Args:
+            bucket_name (str): name of the bucket aka folder
+        Returns:
+            dict: {bucket-objects: [{"object_name":"", "metadata": {}}...],  in case of an error {"error": str}
         """
         objects_in_bucket = {}
         try:
@@ -91,10 +95,15 @@ class FileSystemStorage():
     def get_object_stats(self, bucket_name: str, object_name: str) -> dict:
         """
         Returns properties (e.g., object type, last modified etc.) of an object stored in a specified bucket
-        :param bucket_name:
-        :param object_name:
-        :return: {stat1:str, stat2, str},  in case of an error {"error": str}
-        :rtype: dict
+
+        Args:
+            bucket_name (str): name of a bucket aka folder
+            object_name (str): name of an object
+        Returns:
+            dict: information of an object (e.g., creation_date, object_size etc.). In case of an error {"error": str}
+        Raises:
+            ValueError: Missing bucket_name and object_name params.
+            Exception: {"error": "error-message"}
         """
         try:
             if not bucket_name or not object_name:
@@ -123,7 +132,15 @@ class FileSystemStorage():
         :param bucket_name:
         :param object_name:
         :return: object (HttpResponse), in case of an error {"error": str}
-        :rtype: dict
+
+        Args:
+            bucket_name (str): name of a bucket aka folder
+            object_name (str): name of an object that needs to be downloaded
+        Returns:
+            file-object: object that needs to be downloaded. If file does not exists then it returns an error {"error": "File does not exist."}
+        Raises:
+            ValueError: Missing bucket_name and object_name params.
+            Exception: {"error": "error-message"}
         """
         try:
             if not bucket_name or not object_name:
@@ -141,10 +158,13 @@ class FileSystemStorage():
 
     def is_bucket(self, bucket_name: str) -> bool:
         """
-
-        :param bucket_name:
-        :return: True/False
-        :rtype: bool
+        checks whether a bucket exist
+        Args:
+            bucket_name (str): name of the bucket aka folder
+        Returns:
+            bool: True if bucket exist or False otherwise. In case an error {"error": str}
+        Raises:
+            ValueError: bucket_name cannot be None or empty.
         """
         try:
             if not bucket_name:
@@ -180,10 +200,18 @@ class FileSystemStorage():
 
     def create_bucket(self, bucket_name: str) -> bool:
         """
-        creates a new bucket
-        :param bucket_name:
-        :return: True/False
-        :rtype: bool
+        creates a bucket aka folder in object storage system.
+
+        Args:
+            bucket_name (str): name of the bucket
+        Returns:
+            bool: True if bucket was successfully created. On failure, returns an error with dict {"error":"error-message"}
+        Raises:
+            ValueError: Bucket name cannot be empty/None.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.create_bucket("live_data_folder")
+            >>> True
         """
         if not bucket_name:
             raise ValueError("Bucket name cannot be empty/None.")
@@ -196,12 +224,16 @@ class FileSystemStorage():
 
     def upload_object(self, bucket_name: str, object_name: str, object_filepath: str) -> bool:
         """
-        Uploads an object to Minio storage
-        :param bucket_name:
-        :param object_name:
-        :param object_filepath: it shall contain full path of a file with file name (e.g., /home/nasir/obj.zip)
-        :return: True/False
-        :rtype: bool
+        Upload an object in a bucket aka folder of object storage system.
+
+        Args:
+            bucket_name (str): name of the bucket
+            object_name (str): name of the object to be uploaded
+            object_filepath (str): it shall contain full path of a file with file name (e.g., /home/nasir/obj.zip)
+        Returns:
+            bool: True if object  successfully uploaded. On failure, returns an error with dict {"error":"error-message"}
+        Raises:
+            ValueError: Bucket name cannot be empty/None.
         """
         if not bucket_name or not object_name or not object_filepath:
             raise ValueError("All parameters are required.")

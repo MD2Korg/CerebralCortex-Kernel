@@ -26,12 +26,15 @@ import traceback
 class CacheHandler:
     def set_cache_value(self, key: str, value: str) -> bool:
         """
-        Inserts a new key,value pair in the cache table. 
-        Existing value will be overwritten.
-        :param key: key of the cache entry
-        :param value: cache entry value
-        :return: status None if update fails
-        :rtype bool
+        Creates a new cache entry in the cache. Values are overwritten for existing keys.
+
+        Args:
+            key: key in the cache
+            value: value associated with the key
+        Returns:
+            bool: True on successful insert or False otherwise.
+        Raises:
+            ValueError: if key is None or empty
         """
         if not key or not len(key):
             raise ValueError("Key cannot be empty.")
@@ -48,10 +51,14 @@ class CacheHandler:
 
     def get_cache_value(self, key: str) -> str:
         """
-        Returns the cache value cached for the key
-        :param key: key in the cache
-        :return: value
-        :rtype str
+        Retrieves value from the cache for the given key.
+
+        Args:
+            key: key in the cache
+        Returns:
+            str: The value in the cache
+        Raises:
+            ValueError: if key is None or empty
         """
         if not key and not len(key):
             raise ValueError("Key cannot be empty.")

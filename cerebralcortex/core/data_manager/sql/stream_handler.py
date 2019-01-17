@@ -48,12 +48,21 @@ class StreamHandler():
     #     rows = self.execute(qry, vals)
     #     return rows
 
-    def get_stream_metadata_by_name(self, stream_name: str, version:str="all") -> list(Metadata):
+    def get_stream_metadata(self, stream_name: str, version:str= "all") -> list(Metadata):
         """
-        Get stream metadata
-        :param stream_id:
-        :return: row_id, user_id, name, metadata_hash, metadata
-        :rtype dict
+        Get a list of metadata for all versions available for a stream.
+        Args:
+            stream_name (str): name of a stream
+            version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
+
+        Returns:
+            list (Metadata): Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
+        Raises:
+            ValueError: stream_name cannot be None or empty.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_all_users("mperf")
+            >>> [Metadata] # list of MetaData class objects
         """
         if stream_name is None or stream_name=="":
             raise ValueError("stream_name cannot be None or empty.")
@@ -141,12 +150,18 @@ class StreamHandler():
             []
 
     def get_all_users(self, study_name: str) -> list[dict]:
-
         """
-        Get all users id and user name for a particular study
-        :param study_name:
-        :return: List of dicts (keys=id, username)
-        :rtype List
+        Get a list of all users part of a study.
+        Args:
+            study_name (str): name of a study
+        Raises:
+            ValueError: Study name is a requied field.
+        Returns:
+            list(dict): Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_all_users("mperf")
+            >>> [{"76cc444c-4fb8-776e-2872-9472b4e66b16": "nasir_ali"}] # [{user_id, user_name}]
         """
         if not study_name:
             raise ValueError("Study name is a requied field.")
@@ -215,7 +230,18 @@ class StreamHandler():
 
     def get_user_name(self, user_id: str) -> str:
         """
-        Get username of a user's UUID
+        Get the user name linked to a user id.
+
+        Args:
+            user_name (str): username of a user
+        Returns:
+            bool: user_id associated to username
+        Raises:
+            ValueError: User ID is a required field.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_user_name("76cc444c-4fb8-776e-2872-9472b4e66b16")
+            >>> 'nasir_ali'
         """
         if not user_id:
             raise ValueError("User ID is a required field.")
@@ -232,7 +258,19 @@ class StreamHandler():
 
     def is_user(self, user_id: uuid = None, user_name: uuid = None) -> bool:
         """
-        Check whether a username or user ID exists in MySQL
+        Checks whether a user exists in the system. One of both parameters could be set to verify whether user exist.
+
+        Args:
+            user_id (str): id (uuid) of a user
+            user_name (str): username of a user
+        Returns:
+            bool: True if a user exists in the system or False otherwise.
+        Raises:
+            ValueError: Both user_id and user_name cannot be None or empty.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.is_user(user_id="76cc444c-4fb8-776e-2872-9472b4e66b16")
+            >>> True
         """
         if user_id and user_name:
             qry = "select username from " + self.userTable + " where user_id = %s and username=%s"
@@ -255,7 +293,18 @@ class StreamHandler():
 
     def get_user_id(self, user_name: str) -> str:
         """
-        Get user's UUID
+        Get the user id linked to user_name.
+
+        Args:
+            user_name (str): username of a user
+        Returns:
+            str: user id associated to user_name
+        Raises:
+            ValueError: User name is a required field.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_user_id("nasir_ali")
+            >>> '76cc444c-4fb8-776e-2872-9472b4e66b16'
         """
         if not user_name:
             raise ValueError("User name is a required field.")
@@ -272,7 +321,15 @@ class StreamHandler():
 
     def get_stream_metadata_hash(self, stream_name: str) -> list:
         """
-        Get a stream ids of stream name linked to a user
+        Get all the metadata_hash associated with a stream name.
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            list(str): list of all the metadata hashes
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
         """
         if not stream_name:
             raise ValueError("stream_name are required field.")
@@ -290,8 +347,16 @@ class StreamHandler():
 
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """
-        Get strea name linked to a stream UUID
-        """
+       metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
+       Args:
+           metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.
+       Returns:
+           str: name of a stream
+       Examples:
+           >>> CC = CerebralCortex("/directory/path/of/configs/")
+           >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
+           >>> ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST
+       """
 
         if not metadata_hash:
             raise ValueError("metadata_hash is a required field.")
@@ -307,10 +372,18 @@ class StreamHandler():
         else:
             return rows[0]["name"]
 
-    def is_stream(self, stream_name: uuid) -> bool:
-
+    def is_stream(self, stream_name: str) -> bool:
         """
-        Checks whether a stream exist
+        Returns true if provided stream exists.
+
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            bool: True if stream_name exist False otherwise
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.is_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> True
         """
         qry = "SELECT * from " + self.datastreamTable + " where name = %(name)s"
         vals = {'name': str(stream_name)}

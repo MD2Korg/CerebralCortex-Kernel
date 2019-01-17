@@ -29,13 +29,19 @@ import json
 class KafkaOffsetsHandler:
 
     def store_or_update_Kafka_offset(self, topic: str, topic_partition: str, offset_start: str, offset_until: str)->bool:
-
         """
-        Store/update Kafka offsets. Offsets helps to track what messages have been process.
-        :param topic:
-        :param topic_partition:
-        :param offset_start:
-        :param offset_until:
+        Store or Update kafka topic offsets. Offsets are used to track what messages have been processed.
+        Args:
+            topic (str): name of the kafka topic
+            topic_partition (str): partition number
+            offset_start (str): starting of offset
+            offset_until (str): last processed offset
+        Raises:
+            ValueError: All params are required.
+            Exception: Cannot add/update kafka offsets because ERROR-MESSAGE
+        Returns:
+            bool: returns True if offsets are add/updated or throws an exception.
+
         """
         if not topic and not topic_partition and not offset_start and not offset_until:
             raise ValueError("All params are required.")
@@ -48,12 +54,19 @@ class KafkaOffsetsHandler:
             raise Exception("Cannot add/update kafka offsets because "+str(e))
 
     def get_kafka_offsets(self, topic: str) -> list(dict):
-
         """
-        Return Kafka offsets for each partition
-        :param topic:
-        :return: dict{partitionID: offset....}
-        :rtype dict
+        Get last stored kafka offsets
+        Args:
+            topic (str): kafka topic name
+
+        Returns:
+            list(dict): list of kafka offsets. This method will return empty list if topic does not exist and/or no offset is stored for the topic.
+        Raises:
+            ValueError: Topic name cannot be empty/None
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_kafka_offsets("live-data")
+            >>> [{"id","topic", "topic_partition", "offset_start", "offset_until", "offset_update_time"}]
         """
         if not topic:
             raise ValueError("Topic name cannot be empty/None")
