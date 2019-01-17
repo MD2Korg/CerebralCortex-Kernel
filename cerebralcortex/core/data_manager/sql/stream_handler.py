@@ -27,6 +27,7 @@ import json
 import traceback
 import uuid
 from typing import List
+from cerebralcortex.core.metadata_manager.metadata import Metadata
 
 
 class StreamHandler():
@@ -47,7 +48,7 @@ class StreamHandler():
     #     rows = self.execute(qry, vals)
     #     return rows
 
-    def get_stream_metadata_by_name(self, stream_name: str, version:str="all") -> list(dict):
+    def get_stream_metadata_by_name(self, stream_name: str, version:str="all") -> list(Metadata):
         """
         Get stream metadata
         :param stream_id:
@@ -69,6 +70,7 @@ class StreamHandler():
         if rows is not None and bool(rows):
             for row in rows:
                 result.append(row)
+            result = Metadata.from_json(result)
             return result
         else:
             return []

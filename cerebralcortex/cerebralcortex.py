@@ -37,7 +37,6 @@ from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 from cerebralcortex.core.data_manager.sql.data import SqlData
 from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
 from cerebralcortex.core.datatypes.datastream import DataStream
-from cerebralcortex.core.file_manager.file_io import FileIO
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
@@ -70,7 +69,6 @@ class CerebralCortex:
         self.RawData = RawData(self)
         self.MessagingQueue = None
         self.TimeSeriesData = None
-        self.FileIO = FileIO(self)
 
         warnings.simplefilter('always', DeprecationWarning)
 
@@ -124,6 +122,27 @@ class CerebralCortex:
         return self.RawData.get_stream(stream_name=stream_name, version=version, data_type=data_type)
 
     ###########################################################################
+    #                     TIME SERIES DATA MANAGER METHODS                    #
+    ###########################################################################
+
+    def save_data_to_influxdb(self, datastream: DataStream):
+        """
+        Save data stream to influxdb only for visualization purposes.
+
+        Args:
+            datastream (DataStream): a DataStream object
+        Returns:
+            bool: True if data is ingested successfully or False otherwise
+        Todo:
+            This needs to be updated with the new structure. Should metadata be stored or not?
+        Example:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> ds = DataStream(dataframe, MetaData)
+            >>> CC.save_data_to_influxdb(ds)
+        """
+        self.TimeSeriesData.save_data_to_influxdb(datastream)
+
+    ###########################################################################
     #               SQL DATA MANAGER METHODS                                  #
     ###########################################################################
 
@@ -158,7 +177,7 @@ class CerebralCortex:
         """
         return self.SqlData.get_stream_name(metadata_hash)
 
-    def get_metadata_hash(self, stream_name: str) -> list:
+    def get_stream_metadata_hash(self, stream_name: str) -> list:
         """
         Get all the metadata_hash associated with a stream name.
         Args:
@@ -171,6 +190,26 @@ class CerebralCortex:
             >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
         """
         return self.SqlData.get_stream_metadata_hash(stream_name)
+
+    def get_stream_metadata(self, stream_name: str, version:str="all") -> list(Metadata):
+        """
+        Get a list of metadata for all versions available for a stream.
+        Args:
+            stream_name (str): name of a stream
+            version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
+
+        Returns:
+            list(Metadata): Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
+        Raises:
+            ValueError: stream_name cannot be None or empty.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_all_users("mperf")
+            >>> [Metadata] # list of MetaData class objects
+        """
+        return self.SqlData.get_stream_metadata_by_name(stream_name, version)
+
+    ################### USER RELATED METHODS ##################################
 
     def is_user(self, user_id: str = None, user_name: str = None) -> bool:
         """
@@ -240,156 +279,210 @@ class CerebralCortex:
         """
         return self.SqlData.get_all_users(study_name)
 
-    def get_stream_metadata(self, stream_name: str, version:str="all") -> list(Metadata):
+    def get_user_metadata(self, user_id: str = None, username: str = None) -> list(dict):
         """
-        Get a list of metadata for all versions available for a stream.
-        Args:
-            stream_name (str): name of a stream
-            version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
+        Get user metadata by user_id or by username
 
+        Args:
+            user_id (str): id (uuid) of a user
+            user_name (str): username of a user
         Returns:
-            list(Metadata): Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
-        Raises:
-            ValueError: stream_name cannot be None or empty.
+            list(dict): List of dictionaries of user metadata
         Todo:
-            this shall return a list of Metadata objects
+            Return list of User class object
+        Raises:
+            ValueError: User ID/name cannot be empty.
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
-            >>> CC.get_all_users("mperf")
-            >>> [Metadata] # list of MetaData class objects
-        """
-        return self.SqlData.get_stream_metadata_by_name(stream_name, version)
-
-    ################### USER RELATED METHODS ##################################
-
-    def get_user_metadata(self, user_id: uuid = None, username: str = None) -> List:
-        """
-
-        :param user_id:
-        :param username:
-        :return:
+            >>> CC.get_user_metadata(username="nasir_ali")
+            >>> [{"study_name":"mperf"........}]
         """
         return self.SqlData.get_user_metadata(user_id, username)
 
     def connect(self, username: str, password: str) -> bool:
         """
-
+        Verify user credentials.
         :param username:
         :param password:
         :return:
+
+        Args:
+            username (str):  username of a user
+            password (str): Encrypted password of a user
+        Raises:
+            ValueError: User name and password cannot be empty/None.
+        Returns:
+            bool: returns True on successful login or False otherwise.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.connect("nasir_ali", "2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234")
+            >>> True
         """
         return self.SqlData.login_user(username, password)
 
-    def is_auth_token_valid(self, token_owner: str, auth_token: str, auth_token_expiry_time: datetime) -> bool:
+    def is_auth_token_valid(self, username: str, auth_token: str, auth_token_expiry_time: datetime) -> bool:
         """
 
-        :param token_owner:
-        :param auth_token:
-        :param auth_token_expiry_time:
-        :return:
+        Args:
+            username (str): username of a user
+            auth_token (str): token generated by API-Server
+            auth_token_expiry_time (datetime): current datetime object
+        Raises:
+            ValueError: Auth token and auth-token expiry time cannot be null/empty.
+        Returns:
+            bool: returns True if token is valid or False otherwise.
         """
-        return self.SqlData.is_auth_token_valid(token_owner, auth_token, auth_token_expiry_time)
+        return self.SqlData.is_auth_token_valid(username, auth_token, auth_token_expiry_time)
 
     def update_auth_token(self, username: str, auth_token: str, auth_token_issued_time: datetime,
-                          auth_token_expiry_time: datetime) -> str:
+                          auth_token_expiry_time: datetime) -> bool:
         """
+        Update an auth token in SQL database to keep user stay logged in. Auth token valid duration can be changed in configuration files.
 
-        :param username:
-        :param auth_token:
-        :param auth_token_issued_time:
-        :param auth_token_expiry_time:
-        :return uuid of the current user
+        Args:
+            username (str): username of a user
+            auth_token (str): issued new auth token
+            auth_token_issued_time (datetime): datetime when the old auth token was issue
+            auth_token_expiry_time (datetime): datetime when the token will get expired
+        Raises:
+            ValueError: Auth token and auth-token issue/expiry time cannot be None/empty.
+        Returns:
+            bool: Returns True if the new auth token is set or False otherwise.
+
         """
         return self.SqlData.update_auth_token(username, auth_token, auth_token_issued_time, auth_token_expiry_time)
 
-    def gen_random_pass(self, string_type: str, size: int = 8) -> str:
+    def gen_random_pass(self, string_type: str="varchar", size: int = 8) -> str:
         """
-        :param string_type:
-        :param size:
-        :return:
+        Generate a random password
+        Args:
+            string_type: Accepted parameters are "varchar" and "char". (Default="varchar")
+            size: password length (default=8)
+
+        Returns:
+            str: random password
+
         """
         return self.SqlData.gen_random_pass(string_type, size)
 
     def encrypt_user_password(self, user_password: str) -> str:
         """
-        :param user_password:
-        :return:
+        Encrypt password
+        Args:
+            user_password (str): unencrypted password
+        Raises:
+             ValueError: password cannot be None or empty.
+        Returns:
+            str: encrypted password
         """
         self.SqlData.encrypt_user_password(user_password)
 
     ################### KAFKA RELATED METHODS ##################################
 
-    def store_or_update_Kafka_offset(self, topic: str, topic_partition: str, offset_start: str, offset_until: str):
+    def store_or_update_Kafka_offset(self, topic: str, topic_partition: str, offset_start: str, offset_until: str)->bool:
         """
+        Store or Update kafka topic offsets. Offsets are used to track what messages have been processed.
+        Args:
+            topic (str): name of the kafka topic
+            topic_partition (str): partition number
+            offset_start (str): starting of offset
+            offset_until (str): last processed offset
+        Raises:
+            ValueError: All params are required.
+            Exception: Cannot add/update kafka offsets because ERROR-MESSAGE
+        Returns:
+            bool: returns True if offsets are add/updated or throws an exception.
 
-        :param topic:
-        :param topic_partition:
-        :param offset_start:
-        :param offset_until:
         """
         self.SqlData.store_or_update_Kafka_offset(topic, topic_partition, offset_start, offset_until)
 
     def get_kafka_offsets(self, topic: str) -> dict:
         """
+        Get last stored kafka offsets
+        Args:
+            topic (str): kafka topic name
 
-        :param topic:
-        :return:
+        Returns:
+            list(dict): list of kafka offsets. This method will return empty list if topic does not exist and/or no offset is stored for the topic.
+        Raises:
+            ValueError: Topic name cannot be empty/None
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_kafka_offsets("live-data")
+            >>> [{"id","topic", "topic_partition", "offset_start", "offset_until", "offset_update_time"}]
         """
         return self.SqlData.get_kafka_offsets(topic)
 
     ###########################################################################
-    ############### OBJECTS DATA MANAGER METHODS ##############################
+    #                      OBJECTS DATA MANAGER METHODS                       #
     ###########################################################################
 
     def create_bucket(self, bucket_name: str) -> bool:
         """
-        creates a bucket
-        :param bucket_name:
+        creates a bucket aka folder in object storage system.
+
+        Args:
+            bucket_name (str): name of the bucket
+        Returns:
+            bool: True if bucket was successfully created. On failure, returns an error with dict {"error":"error-message"}
+        Raises:
+            ValueError: Bucket name cannot be empty/None.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.create_bucket("live_data_folder")
+            >>> True
         """
         return self.ObjectData.create_bucket(bucket_name)
 
-    def upload_object(self, bucket_name: str, object_name: str, object_filepath: object) -> bool:
+    def upload_object(self, bucket_name: str, object_name: str, object_filepath:str) -> bool:
         """
-        Uploads an object to Minio storage
-        :param bucket_name:
-        :param object_name:
-        :param object_filepath: it shall contain full path of a file with file name (e.g., /home/nasir/obj.zip)
-        :return: True/False, in case of an error {"error": str}
+        Upload an object in a bucket aka folder of object storage system.
+
+        Args:
+            bucket_name (str): name of the bucket
+            object_name (str): name of the object to be uploaded
+            object_filepath (str): it shall contain full path of a file with file name (e.g., /home/nasir/obj.zip)
+        Returns:
+            bool: True if object  successfully uploaded. On failure, returns an error with dict {"error":"error-message"}
+        Raises:
+            ValueError: Bucket name cannot be empty/None.
         """
+
         return self.ObjectData.upload_object(bucket_name, object_name, object_filepath)
 
-    def upload_object_s3(self, bucket_name: str, object_name: str, object_: object, obj_size) -> bool:
+    def get_buckets(self) -> dict:
         """
-        Uploads an object to Minio storage
-        :param bucket_name:
-        :param object_name:
-        :param object_: object that needs to be stored
-        :param obj_size object size
-        :return: True/False, in case of an error {"error": str}
-        """
-        return self.ObjectData.upload_object_to_s3(bucket_name, object_name, object_, obj_size)
+        returns all available buckets in an object storage
 
-    def get_buckets(self) -> List:
-        """
-        returns all available buckets in Minio storage
-        :return: [{bucket-name: str, last_modified: str}], in case of an error [{"error": str}]
+        Returns:
+            dict: {bucket-name: str, [{"key":"value"}]}, in case of an error {"error": str}
+
         """
         return self.ObjectData.get_buckets()
 
-    def get_bucket_objects(self, bucket_name: str) -> List:
+    def get_bucket_objects(self, bucket_name: str) -> dict:
         """
         returns a list of all objects stored in the specified Minio bucket
-        :param bucket_name:
-        :return:{object-name:{stat1:str, stat2, str}},  in case of an error [{"error": str}]
+
+        Args:
+            bucket_name (str): name of the bucket aka folder
+        Returns:
+            dict: {bucket-objects: [{"object_name":"", "metadata": {}}...],  in case of an error {"error": str}
         """
         return self.ObjectData.get_bucket_objects(bucket_name)
 
     def get_object_stats(self, bucket_name: str, object_name: str) -> dict:
         """
         Returns properties (e.g., object type, last modified etc.) of an object stored in a specified bucket
-        :param bucket_name:
-        :param object_name:
-        :return: {stat1:str, stat2, str},  in case of an error {"error": str}
+
+        Args:
+            bucket_name (str): name of a bucket aka folder
+            object_name (str): name of an object
+        Returns:
+            dict: information of an object (e.g., creation_date, object_size etc.). In case of an error {"error": str}
+        Raises:
+            ValueError: Missing bucket_name and object_name params.
+            Exception: {"error": "error-message"}
         """
         return self.ObjectData.get_object_stats(bucket_name, object_name)
 
@@ -399,6 +492,15 @@ class CerebralCortex:
         :param bucket_name:
         :param object_name:
         :return: object (HttpResponse), in case of an error {"error": str}
+
+        Args:
+            bucket_name (str): name of a bucket aka folder
+            object_name (str): name of an object that needs to be downloaded
+        Returns:
+            file-object: object that needs to be downloaded. If file does not exists then it returns an error {"error": "File does not exist."}
+        Raises:
+            ValueError: Missing bucket_name and object_name params.
+            Exception: {"error": "error-message"}
         """
         return self.ObjectData.get_object(bucket_name, object_name)
 
@@ -407,67 +509,45 @@ class CerebralCortex:
 
         :param bucket_name:
         :return: True/False, in case of an error {"error": str}
+
+        Args:
+            bucket_name (str): name of the bucket aka folder
+        Returns:
+            bool: True if bucket exist or False otherwise. In case an error {"error": str}
+        Raises:
+            ValueError: bucket_name cannot be None or empty.
         """
         return self.ObjectData.is_bucket(bucket_name)
 
-    ###########################################################################
-    ############### TIME SERIES DATA MANAGER METHODS ##########################
-    ###########################################################################
-
-    def store_data_to_influxdb(self, datastream: DataStream):
-        """
-        :param datastream:
-        """
-        self.TimeSeriesData.store_data_to_influxdb(datastream)
 
     ###########################################################################
-    ############### IO MANAGER METHODS ########################################
+    #                      Kafka consumer producer                            #
     ###########################################################################
 
-    def read_file(self, filepath: str) -> str:
+    def kafka_produce_message(self, topic: str, msg: dict):
         """
+        Publish a message on kafka message queue
+        Args:
+            topic (str): name of the kafka topic
+            msg (dict): message that needs to published on kafka
+        Returns:
+            bool: True if successful. In case of failure, it returns an Exception message.
+        Raises:
+            ValueError: topic and message parameters cannot be empty or None.
+            Exception: Error publishing message. Topic: topic_name - error-message
 
-        :param filepath:
-        :return:
         """
-        return self.FileIO.read_file(filepath)
-
-    def file_processor(self, msg: dict, zip_filepath: str) -> DataStream:
-        """
-        :param msg:
-        :param zip_filepath:
-        :return:
-        """
-        return self.FileIO.file_processor(msg, zip_filepath)
-
-    def get_gzip_file_contents(self, filepath: str) -> str:
-        """
-        Read and return gzip compressed file contents
-        :param filepath:
-        :return:
-        """
-        self.FileIO.get_gzip_file_contents(filepath)
-
-    #################################################
-    #   Kafka consumer producer
-    #################################################
-
-    def kafka_produce_message(self, topic: str, msg: str):
-        """
-
-        :param topic:
-        :param msg:
-        """
-        try:
-            self.MessagingQueue.produce_message(topic, msg)
-        except Exception as e:
-            raise Exception("Error publishing message. Topic: " + str(topic) + " - " + str(e))
+        self.MessagingQueue.produce_message(topic, msg)
 
     def kafka_subscribe_to_topic(self, topic: str):
         """
-
-        :param topic:
-        :param auto_offset_reset:
+        Subscribe to kafka topic as a consumer
+        Args:
+            topic (str): name of the kafka topic
+        Yields:
+             dict: kafka message
+        Raises:
+            ValueError: Topic parameter is missing.
         """
         return self.MessagingQueue.subscribe_to_topic(topic)
 
@@ -475,20 +555,23 @@ class CerebralCortex:
 
     def set_cache_value(self, key: str, value: str) -> bool:
         """
-        Creates a new cache entry in the cache. Values are overwritten for
-        existing keys.
-        :param key: key in the cache
-        :param value: value associated with the key
-        :return True on successful insert
-        :rtype bool
+        Creates a new cache entry in the cache. Values are overwritten for existing keys.
+
+        Args:
+            key: key in the cache
+            value: value associated with the key
+        Returns:
+            bool: True on successful insert or False otherwise.
         """
         return self.SqlData.set_cache_value(key, value)
 
     def get_cache_value(self, key: str) -> str:
         """
         Retrieves value from the cache for the given key.
-        :param key: key in the cache
-        :return The value in the cache
-        :rtype str
+
+        Args:
+            key: key in the cache
+        Returns:
+            str: The value in the cache
         """
         return self.SqlData.get_cache_value(key)

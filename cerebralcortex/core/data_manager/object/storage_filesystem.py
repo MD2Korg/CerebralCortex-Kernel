@@ -97,6 +97,8 @@ class FileSystemStorage():
         :rtype: dict
         """
         try:
+            if not bucket_name or not object_name:
+                raise ValueError("Missing bucket_name and object_name params.")
             object_path = os.path.join(self.filesystem_path,bucket_name, object_name)
             if os.path.isfile(object_path):
                 metadata_file_path = os.path.splitext(object_path)[0]
@@ -124,6 +126,8 @@ class FileSystemStorage():
         :rtype: dict
         """
         try:
+            if not bucket_name or not object_name:
+                raise ValueError("Missing bucket_name and object_name params.")
             object_path = os.path.join(self.filesystem_path,bucket_name, object_name)
             if os.path.isfile(object_path):
                 with open(object_path, "rb") as obj:
@@ -143,6 +147,8 @@ class FileSystemStorage():
         :rtype: bool
         """
         try:
+            if not bucket_name:
+                raise ValueError("bucket_name cannot be None or empty.")
             object_path = os.path.join(self.filesystem_path,bucket_name)
             if os.path.isdir(object_path):
                 return True
@@ -180,7 +186,7 @@ class FileSystemStorage():
         :rtype: bool
         """
         if not bucket_name:
-            raise ValueError("Bucket name cannot be empty")
+            raise ValueError("Bucket name cannot be empty/None.")
         try:
             new_bucket_path = os.path.join(self.filesystem_path,bucket_name)
             os.mkdir(new_bucket_path)
@@ -188,7 +194,7 @@ class FileSystemStorage():
         except Exception as e:
             raise {"error": str(e)}
 
-    def upload_object(self, bucket_name: str, object_name: str, object_filepath: object) -> bool:
+    def upload_object(self, bucket_name: str, object_name: str, object_filepath: str) -> bool:
         """
         Uploads an object to Minio storage
         :param bucket_name:
@@ -197,10 +203,10 @@ class FileSystemStorage():
         :return: True/False
         :rtype: bool
         """
-        if not object_filepath:
-            raise ValueError("File name cannot be empty")
+        if not bucket_name or not object_name or not object_filepath:
+            raise ValueError("All parameters are required.")
         try:
-            object_path = os.path.join(self.filesystem_path,bucket_name)
+            object_path = os.path.join(self.filesystem_path,bucket_name, object_name)
             if os.path.isdir(object_path):
                 file_data = open(object_filepath, 'rb')
                 with open(object_path, "wb") as obj:

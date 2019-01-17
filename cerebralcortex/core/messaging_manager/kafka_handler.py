@@ -27,7 +27,7 @@ import json
 
 class KafkaHandler():
 
-    def produce_message(self, topic: str, msg: dict):
+    def produce_message(self, topic: str, msg: str):
         """
         Produce a message on Kafka topic
         :param topic:
@@ -35,10 +35,11 @@ class KafkaHandler():
         """
 
         if not topic and not msg:
-            raise ValueError("Topic and Message are required parameters.")
+            raise ValueError("topic and message parameters cannot be empty or None.")
         try:
             self.producer.send(topic, msg)
             self.producer.flush()
+            return True
         except Exception as e:
             raise Exception("Error publishing message. Topic: "+str(topic)+" - "+str(e))
 

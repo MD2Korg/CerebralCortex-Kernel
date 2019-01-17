@@ -38,7 +38,7 @@ class InfluxdbHandler():
     ################## STORE DATA METHODS #############################
     ###################################################################
 
-    def store_data_to_influxdb(self, datastream: DataStream):
+    def save_data_to_influxdb(self, datastream: DataStream):
 
         """
         Store a datastream to InfluxDB

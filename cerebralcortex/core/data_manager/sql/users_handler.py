@@ -38,7 +38,7 @@ class UserHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_user_metadata(self, user_id: uuid = None, username: str = None) -> list:
+    def get_user_metadata(self, user_id: uuid = None, username: str = None) -> list(dict):
         """
         Get user metadata based on user uuid or username
         :param user_id:
@@ -96,7 +96,7 @@ class UserHandler():
         :rtype bool
         """
         if not username or not password:
-            raise ValueError("User name and password cannot be empty/null.")
+            raise ValueError("User name and password cannot be empty/None.")
 
         qry = "select * from user where username=%s and password=%s"
         vals = username, password
@@ -107,10 +107,10 @@ class UserHandler():
         else:
             return True
 
-    def is_auth_token_valid(self, token_owner: str, auth_token: str, auth_token_expiry_time: datetime) -> bool:
+    def is_auth_token_valid(self, username: str, auth_token: str, auth_token_expiry_time: datetime) -> bool:
         """
         Validate whether a token is valid or expired based on the token expiry datetime stored in MySQL
-        :param token_owner:
+        :param username:
         :param auth_token:
         :param auth_token_expiry_time:
         :return: True if token is valid, False otherwise
@@ -120,7 +120,7 @@ class UserHandler():
             raise ValueError("Auth token and auth-token expiry time cannot be null/empty.")
 
         qry = "select * from user where token=%s and username=%s"
-        vals = auth_token, token_owner
+        vals = auth_token, username
 
         rows = self.execute(qry, vals)
 
@@ -141,7 +141,7 @@ class UserHandler():
     ###################################################################
 
     def update_auth_token(self, username: str, auth_token: str, auth_token_issued_time: datetime,
-                          auth_token_expiry_time: datetime) -> str:
+                          auth_token_expiry_time: datetime) -> bool:
         """
         Update authentication token with new expiry time and token
         :param username:
@@ -152,16 +152,17 @@ class UserHandler():
         :rtype str
         """
         if not auth_token and not auth_token_expiry_time and not auth_token_issued_time:
-            raise ValueError("Auth token and auth-token issue/expiry time cannot be null/empty.")
+            raise ValueError("Auth token and auth-token issue/expiry time cannot be None/empty.")
 
         qry = "UPDATE " + self.userTable + " set token=%s, token_issued=%s, token_expiry=%s where username=%s"
         vals = auth_token, auth_token_issued_time, auth_token_expiry_time, username
 
         user_uuid = self.get_user_uuid(username)
-
-        self.execute(qry, vals, commit=True)
-
-        return user_uuid
+        try:
+            self.execute(qry, vals, commit=True)
+            return True
+        except:
+            return False
 
     def gen_random_pass(self, string_type: str, size: int = 8) -> str:
         """
@@ -187,5 +188,7 @@ class UserHandler():
         :return: encrypted password
         :rtype str
         """
+        if user_password is None or user_password=="":
+            raise ValueError("password cannot be None or empty.")
         hash_pwd = hashlib.sha256(user_password.encode('utf-8'))
         return hash_pwd.hexdigest()
