@@ -43,7 +43,25 @@ class StreamHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
     def get_stream(self, stream_name:str, version:str, data_type=DataSet.COMPLETE) -> DataStream:
+        """
+        Retrieve a data-stream with it's metadata.
 
+        Args:
+            stream_name (str): name of a stream
+            version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
+            data_type (DataSet):  DataSet.COMPLETE returns both Data and Metadata. DataSet.ONLY_DATA returns only Data. DataSet.ONLY_METADATA returns only metadata of a stream. (Default=DataSet.COMPLETE)
+
+        Returns:
+            DataStream: contains Data and/or metadata
+        Note:
+            Please specify a version if you know the exact version of a stream. Getting all the stream data and then filtering versions won't be efficient.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> ds = CC.get_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> ds.data # an object of a dataframe
+            >>> ds.metadata # an object of MetaData class
+            >>> ds.get_metadata(version=1) # get the specific version metadata of a stream
+        """
         if stream_name is None or stream_name=="":
             raise ValueError("stream_name cannot be None or empty")
 
@@ -85,7 +103,17 @@ class StreamHandler():
     ################## STORE DATA METHODS #############################
     ###################################################################
     def save_stream(self, datastream, ingestInfluxDB=False):
+        """
+        Saves datastream raw data in selected NoSQL storage and metadata in MySQL.
 
+        Args:
+            datastream (DataStream): a DataStream object
+            ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> ds = DataStream(dataframe, MetaData)
+            >>> CC.save_stream(ds)
+        """
         metadata = datastream.metadata
         data = datastream.data
         if len(metadata)>0:

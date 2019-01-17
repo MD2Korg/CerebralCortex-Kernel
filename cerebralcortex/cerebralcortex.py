@@ -26,7 +26,6 @@
 import uuid
 import warnings
 from datetime import datetime
-from typing import List
 
 from pyspark.sql import SparkSession
 
