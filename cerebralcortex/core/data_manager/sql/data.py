@@ -25,7 +25,7 @@
 
 import mysql.connector
 import mysql.connector.pooling
-
+from typing import List
 from cerebralcortex.core.data_manager.sql.kafka_offsets_handler import KafkaOffsetsHandler
 from cerebralcortex.core.data_manager.sql.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.sql.users_handler import UserHandler
@@ -108,7 +108,7 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
         except Exception as exp:
             raise Exception(exp)
 
-    def execute(self, sql, args=None, commit=False)->list(dict):
+    def execute(self, sql, args=None, commit=False)->List[dict]:
         """
         Execute a sql, it could be with args and with out args. The usage is
         similar with execute() function in module pymysql.
@@ -122,7 +122,7 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
             args (tuple): args need by sql clause
             commit (bool): whether to commit
         Returns:
-            list(dict): returns a list of dicts if commit is set to False
+            list[dict]: returns a list of dicts if commit is set to False
         Raises:
             Exception: if MySQL query fails
         """

@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 here = path.abspath(path.dirname(__file__))
 
-install_reqs = parse_requirements("requirements.txt", session='hack')
+install_reqs = parse_requirements("./requirements.txt", session='hack')
 reqs = [str(ir.req) for ir in install_reqs]
 
 # Get the long description from the README file

@@ -27,6 +27,7 @@ import hashlib
 import random
 import string
 import uuid
+from typing import List
 from datetime import datetime
 
 from pytz import timezone
@@ -38,7 +39,7 @@ class UserHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_user_metadata(self, user_id: uuid = None, username: str = None) -> list(dict):
+    def get_user_metadata(self, user_id: uuid = None, username: str = None) -> List[dict]:
         """
         Get user metadata by user_id or by username
 
@@ -46,7 +47,7 @@ class UserHandler():
             user_id (str): id (uuid) of a user
             user_name (str): username of a user
         Returns:
-            list(dict): List of dictionaries of user metadata
+            list[dict]: List of dictionaries of user metadata
         Todo:
             Return list of User class object
         Raises:

@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-
+from typing import List
 
 class KafkaOffsetsHandler:
 
@@ -53,14 +53,14 @@ class KafkaOffsetsHandler:
         except Exception as e:
             raise Exception("Cannot add/update kafka offsets because "+str(e))
 
-    def get_kafka_offsets(self, topic: str) -> list(dict):
+    def get_kafka_offsets(self, topic: str) -> List[dict]:
         """
         Get last stored kafka offsets
         Args:
             topic (str): kafka topic name
 
         Returns:
-            list(dict): list of kafka offsets. This method will return empty list if topic does not exist and/or no offset is stored for the topic.
+            list[dict]: list of kafka offsets. This method will return empty list if topic does not exist and/or no offset is stored for the topic.
         Raises:
             ValueError: Topic name cannot be empty/None
         Examples:

@@ -26,6 +26,7 @@
 import json
 import traceback
 import uuid
+from typing import List
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
@@ -35,7 +36,7 @@ class StreamHandler:
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_stream_metadata(self, stream_name: str, version:str= "all") -> list(Metadata):
+    def get_stream_metadata(self, stream_name: str, version:str= "all") -> List[Metadata]:
         """
         Get a list of metadata for all versions available for a stream.
         Args:
@@ -104,7 +105,7 @@ class StreamHandler:
         else:
             []
 
-    def get_all_users(self, study_name: str) -> list[dict]:
+    def get_all_users(self, study_name: str) -> List[dict]:
         """
         Get a list of all users part of a study.
         Args:
@@ -112,7 +113,7 @@ class StreamHandler:
         Raises:
             ValueError: Study name is a requied field.
         Returns:
-            list(dict): Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
+            list[dict]: Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> CC.get_all_users("mperf")
@@ -225,13 +226,13 @@ class StreamHandler:
         else:
             return rows[0]["user_id"]
 
-    def get_stream_metadata_hash(self, stream_name: str) -> list:
+    def get_stream_metadata_hash(self, stream_name: str) -> List[str]:
         """
         Get all the metadata_hash associated with a stream name.
         Args:
             stream_name (str): name of a stream
         Returns:
-            list(str): list of all the metadata hashes
+            list[str]: list of all the metadata hashes
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> CC.get_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")

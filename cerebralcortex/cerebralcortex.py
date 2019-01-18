@@ -26,7 +26,7 @@
 import uuid
 import warnings
 from datetime import datetime
-
+from typing import List
 from pyspark.sql import SparkSession
 
 from cerebralcortex.core.config_manager.config import Configuration
@@ -201,7 +201,7 @@ class CerebralCortex:
         Args:
             stream_name (str): name of a stream
         Returns:
-            list(str): list of all the metadata hashes
+            list[str]: list of all the metadata hashes
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> CC.get_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
@@ -209,7 +209,7 @@ class CerebralCortex:
         """
         return self.SqlData.get_stream_metadata_hash(stream_name)
 
-    def get_stream_metadata(self, stream_name: str, version:str="all") -> list(Metadata):
+    def get_stream_metadata(self, stream_name: str, version:str="all") -> List[Metadata]:
         """
         Get a list of metadata for all versions available for a stream.
         Args:
@@ -217,7 +217,7 @@ class CerebralCortex:
             version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
 
         Returns:
-            list(Metadata): Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
+            list[Metadata]: Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
         Raises:
             ValueError: stream_name cannot be None or empty.
         Examples:
@@ -281,7 +281,7 @@ class CerebralCortex:
         """
         return self.SqlData.get_user_name(user_id)
 
-    def get_all_users(self, study_name: str) -> list[dict]:
+    def get_all_users(self, study_name: str) -> List[dict]:
         """
         Get a list of all users part of a study.
         Args:
@@ -289,7 +289,7 @@ class CerebralCortex:
         Raises:
             ValueError: Study name is a requied field.
         Returns:
-            list(dict): Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
+            list[dict]: Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> CC.get_all_users("mperf")
@@ -297,7 +297,7 @@ class CerebralCortex:
         """
         return self.SqlData.get_all_users(study_name)
 
-    def get_user_metadata(self, user_id: str = None, username: str = None) -> list(dict):
+    def get_user_metadata(self, user_id: str = None, username: str = None) -> List[dict]:
         """
         Get user metadata by user_id or by username
 
@@ -305,7 +305,7 @@ class CerebralCortex:
             user_id (str): id (uuid) of a user
             user_name (str): username of a user
         Returns:
-            list(dict): List of dictionaries of user metadata
+            list[dict]: List of dictionaries of user metadata
         Todo:
             Return list of User class object
         Raises:
@@ -421,7 +421,7 @@ class CerebralCortex:
             topic (str): kafka topic name
 
         Returns:
-            list(dict): list of kafka offsets. This method will return empty list if topic does not exist and/or no offset is stored for the topic.
+            list[dict]: list of kafka offsets. This method will return empty list if topic does not exist and/or no offset is stored for the topic.
         Raises:
             ValueError: Topic name cannot be empty/None
         Examples:

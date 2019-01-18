@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
-pydoc3 -w ../
+sphinx-apidoc -o rst/ ../
+make clean
+make html
