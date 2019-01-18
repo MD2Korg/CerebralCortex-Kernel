@@ -151,7 +151,7 @@ class Metadata():
         for dd in self.data_descriptor:
             data_descriptor += str(dd.name+dd.type)
         for mm in self.modulez:
-            modulez += str(mm.module_name)+str(mm.version)+str(mm.author)
+            modulez += str(mm.name) + str(mm.version) + str(mm.author)
         hash_string = str(name)+str(version)+str(data_descriptor)+str(modulez)
         hash_string = hash_string.strip().lower().replace(" ", "")
 

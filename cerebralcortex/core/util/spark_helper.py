@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -24,7 +24,16 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-def get_or_create_sc(type="sparkContext", name=None):
+def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal"):
+    """
+    get or create spark context
+    Args:
+        type (str): type (sparkContext, SparkSessionBuilder, sparkSession, sqlContext). (default="sparkContext")
+        name (str): spark app name (default="CerebralCortex-Kernal")
+
+    Returns:
+
+    """
     from pyspark.sql import SQLContext
     from pyspark.sql import SparkSession
 

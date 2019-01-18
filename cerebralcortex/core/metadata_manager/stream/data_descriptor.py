@@ -23,31 +23,67 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
 class DataDescriptor():
     def __init__(self):
+        """
+        Constructor
+        """
         self._name = None
         self._type = None
         self._attributes = {}
 
-    def set_attirubte(self, key, value):
-        key = str(key).strip()
-        value = str(value).strip()
+    def set_attribute(self, key, value):
+        """
+        Attributes field is option in metadata object. Arbitrary number or attributes could be attached to a DataDescriptor
+        Args:
+            key (str): key of an attribute
+            value (str): value of an attribute
+
+        Returns:
+            self:
+        Raises:
+            ValueError: if key/value are missing
+
+        """
         if key is None or key=="" or value is None or value=="":
             raise ValueError("Key and/or value cannot be None or empty.")
         self._attributes[key] = value
         return self
 
     def name(self, value):
-        if self._name is None:
-            self._name = value
+        """
+        Name of data descriptor
+        Args:
+            value (str): name
+
+        Returns:
+            self:
+        """
+        self._name = value
         return self
 
-    def type(self, value):
-        if self._type is None:
-            self._type = value
+    def type(self, value:str):
+        """
+        Type of a data descriptor
+        Args:
+            value (str): type
+        Returns:
+            self:
+        """
+        self._type = value
         return self
 
     def from_json(self, obj):
+        """
+        Cast DataDescriptor class object into json
+        Args:
+            obj (DataDescriptor): object of a data descriptor class
+
+        Returns:
+            self:
+
+        """
         self.__dict__ = obj
         return self
 

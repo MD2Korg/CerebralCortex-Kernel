@@ -26,33 +26,83 @@
 
 class ModuleMetadata:
     def __init__(self):
-        self._module_name = None
+        """
+        Constructor
+        """
+        self._name = None
         self._version = None
         self._authors = []
         self._attributes = {}
 
-    def module_name(self, value):
-        if self._module_name is None:
-            self._module_name = value
+    def name(self, value):
+        """
+        name of the module
+        Args:
+            value (str): name
+
+        Returns:
+            self:
+        """
+        if self._name is None:
+            self._name = value
         return self
 
     def version(self, value):
+        """
+        version of the module
+        Args:
+            value (str): version
+
+        Returns:
+            self:
+
+        """
         if self._version is None:
             self._version = value
         return self
 
     def set_author(self, key, value):
+        """
+        set author key/value pair. For example, key=name, value=md2k
+        Args:
+            key (str): author metadata key
+            value (str): author metadata value
+
+        Returns:
+            self:
+        """
+        if key is None or key=="" or value is None or value=="":
+            raise ValueError("Key and/or value cannot be None or empty.")
         self._authors.append({key,value})
         return self
 
-    def set_attirubte(self, key, value):
-        key = str(key).strip()
-        value = str(value).strip()
+    def set_attribute(self, key:str, value:str):
+        """
+        Attributes field is option in metadata object. Arbitrary number or attributes could be attached to a DataDescriptor
+        Args:
+            key (str): key of an attribute
+            value (str): value of an attribute
+
+        Returns:
+            self:
+        Raises:
+            ValueError: if key/value are missing
+
+        """
         if key is None or key=="" or value is None or value=="":
             raise ValueError("Key and/or value cannot be None or empty.")
         self._attributes[key] = value
         return self
 
     def from_json(self, obj):
+        """
+        Cast ModuleMetadata class object into json
+        Args:
+            obj (ModuleMetadata): object of a ModuleMetadata class
+
+        Returns:
+            self:
+
+        """
         self.__dict__ = obj
         return self

@@ -53,7 +53,6 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage):
 
         self.metadata = Metadata()
 
-
         # pseudo factory pattern
         if self.nosql_store == "hdfs":
             self.nosql = HDFSStorage(self)

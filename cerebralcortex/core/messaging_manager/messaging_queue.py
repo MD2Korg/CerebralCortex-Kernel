@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -30,11 +30,12 @@ from kafka import KafkaConsumer
 
 
 class MessagingQueue(KafkaHandler):
-    def __init__(self, CC: object, auto_offset_reset: str="latest"):
+    def __init__(self, CC: object, auto_offset_reset: str="largest"):
         """
         Messaging queue module support pub/sub system in CerebralCortex
-        :param CC:
-        :param auto_offset_reset: smallest (start of the topic) OR largest (end of a topic)
+        Args:
+            CC (CerebralCortex): cerebralcortex class object
+            auto_offset_reset (str): smallest (start of the topic) OR largest (end of a topic) (default="largest")
         """
         self.config = CC.config
         if self.config["messaging_service"]!="none" and "kafka" in self.config and self.config['messaging_service']=="kafka":
