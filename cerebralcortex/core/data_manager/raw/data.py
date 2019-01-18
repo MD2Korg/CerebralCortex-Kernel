@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -27,18 +27,21 @@ import os
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
-from cerebralcortex.core.data_manager.object.data import ObjectData
 
 from cerebralcortex.core.data_manager.raw.storage_hdfs import HDFSStorage
 from cerebralcortex.core.data_manager.raw.storage_filesystem import FileSystemStorage
-from cerebralcortex.core.data_manager.raw.storage_aws_s3 import AwsS3Storage
-from cerebralcortex.core.metadata_manager.metadata import Metadata, DataDescriptor, ModuleMetadata
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
-class RawData(StreamHandler, HDFSStorage, FileSystemStorage, AwsS3Storage):
+
+class RawData(StreamHandler, HDFSStorage, FileSystemStorage):
     def __init__(self, CC):
         """
+        Constructor
 
-        :param CC: CerebralCortex object reference
+        Args:
+            CC (CerebralCortex): CerebralCortex object reference
+        Raises:
+            ValueError: if correct storage engine is not selected
         """
         self.config = CC.config
         self.sql_data = CC.SqlData
@@ -51,7 +54,7 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage, AwsS3Storage):
         self.metadata = Metadata()
 
 
-        # pseudo factory
+        # pseudo factory pattern
         if self.nosql_store == "hdfs":
             self.nosql = HDFSStorage(self)
             self.hdfs_ip = self.config['hdfs']['host']
@@ -63,11 +66,6 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage, AwsS3Storage):
             self.filesystem_path = self.config["filesystem"]["filesystem_path"]
             if not os.access(self.filesystem_path, os.W_OK):
                 raise Exception(self.filesystem_path+" path is not writable. Please check your cerebralcortex.yml configurations.")
-        elif self.nosql_store=="aws_s3":
-            self.nosql = AwsS3Storage(self)
-            self.minio_input_bucket = self.config['minio']['input_bucket_name']
-            self.minio_output_bucket = self.config['minio']['output_bucket_name']
-            self.minio_dir_prefix = self.config['minio']['dir_prefix']
         else:
             raise ValueError(self.nosql_store + " is not supported.")
 
@@ -75,17 +73,3 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage, AwsS3Storage):
             self.timeSeriesData = TimeSeriesData(CC)
 
         self.logtypes = LogTypes()
-
-        if "minio" in self.config:
-            self.ObjectData = ObjectData(CC)
-
-
-
-
-
-        
-        #self.data_play_type = self.config["data_replay"]["replay_type"]
-        
-
-        
-

@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -21,7 +21,9 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 import traceback
+
 
 class CacheHandler:
     def set_cache_value(self, key: str, value: str) -> bool:

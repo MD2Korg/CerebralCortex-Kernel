@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -26,27 +26,14 @@
 import json
 import traceback
 import uuid
-from typing import List
-from cerebralcortex.core.metadata_manager.metadata import Metadata
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
-class StreamHandler():
+class StreamHandler:
 
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
-
-    # def get_stream_metadata_by_hash(self, metadata_hash: uuid) -> dict:
-    #     """
-    #     Get stream metadata
-    #     :param metadata_hash:
-    #     :return: row_id, user_id, name, metadata_hash, metadata
-    #     :rtype dict
-    #     """
-    #     qry = "SELECT * from " + self.datastreamTable + " where metadata_hash=%(metadata_hash)s"
-    #     vals = {"metadata_hash": str(metadata_hash)}
-    #     rows = self.execute(qry, vals)
-    #     return rows
 
     def get_stream_metadata(self, stream_name: str, version:str= "all") -> list(Metadata):
         """
@@ -84,52 +71,20 @@ class StreamHandler():
         else:
             return []
 
-    # def get_stream_metadata_by_user(self, user_id: uuid, stream_name: str = None) -> dict:
-    #     """
-    #     Returns stream ids and metadata of a stream name belong to a user
-    #     :param user_id:
-    #     :return: row_id, user_id, name, metadata_hash, metadata
-    #     :rtype: dict
-    #     """
-    #     vals = []
-    #     if not user_id:
-    #         raise ValueError("User ID cannot be empty/None.")
-    #
-    #     qry = "SELECT * from " + self.datastreamTable
-    #     where_clause = " where user_id=%s "
-    #     vals.append(user_id)
-    #     if stream_name:
-    #         where_clause += " and name=%s "
-    #         vals.append(stream_name)
-    #
-    #     qry = qry + where_clause
-    #     vals = tuple(vals)
-    #     rows = self.execute(qry, vals)
-    #     return rows
-
-    # def user_has_stream(self, user_id: uuid, stream_name: str) -> bool:
-    #     """
-    #     Returns true if a user has a stream available
-    #     :param user_id:
-    #     :param stream_name:
-    #     :return: True if owner has a stream, False otherwise
-    #     """
-    #     if not stream_name or not user_id:
-    #         raise ValueError("Strea name and User ID are required fields.")
-    #
-    #     qry = "select stream_id from " + self.datastreamTable + " where user_id=%s and name = %s"
-    #     vals = str(user_id), str(stream_name)
-    #
-    #     rows = self.execute(qry, vals)
-    #
-    #     if len(rows) > 0:
-    #         return True
-    #     else:
-    #         return False
-
-    def get_stream_versions(self, stream_name: str) -> bool:
+    def get_stream_versions(self, stream_name: str) -> list:
         """
-        Returns a list of all available version of a stream
+        Returns a list of versions available for a stream
+
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            list: list of int
+        Raises:
+            ValueError: if stream_name is empty or None
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_stream_versions("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> [1, 2, 4]
         """
         if not stream_name:
             raise ValueError("Stream_name is a required field.")
@@ -178,55 +133,6 @@ class StreamHandler():
             for row in rows:
                 results.append(row)
             return results
-
-    # def get_user_streams(self, user_id: uuid) -> dict:
-    #
-    #     """
-    #     Returns all user streams with name and metadata attached to it. Do not use "id" field as it doesn't
-    #     represents all the stream-ids linked to a stream name. Use stream_ids field in dict to get all stream-ids of a stream name.
-    #     :param user_id:
-    #     :return: id, user_id, name, data_descriptor,execution_context,annotations, type, start_time, end_time, tmp, stream_ids (this contains all the stream ids of a stream name)
-    #     :rtype: dict
-    #     """
-    #     if not user_id:
-    #         raise ValueError("User ID is a required field.")
-    #
-    #     result = {}
-    #     qry = 'SELECT * FROM ' + self.datastreamTable + ' where user_id=%(user_id)s'
-    #     vals = {'user_id': str(user_id)}
-    #
-    #     rows = self.execute(qry, vals)
-    #
-    #     if len(rows) == 0:
-    #         return result
-    #     else:
-    #         for row in rows:
-    #             stream_ids = self.get_stream_metadata_hash(str(user_id), row["name"])
-    #             row["stream_ids"] = [d['id'] for d in stream_ids]
-    #             result[row["name"]] = row
-    #         return result
-
-    # def get_user_streams_metadata(self, user_id: str) -> dict:
-    #     """
-    #     Get all streams metadata of a user
-    #     """
-    #     if not user_id:
-    #         raise ValueError("User ID is a required field.")
-    #
-    #     result = {}
-    #     qry = "select name, metadata from " + self.datastreamTable + " where user_id = %(user_id)s"
-    #     vals = {'user_id': str(user_id)}
-    #
-    #     rows = self.execute(qry, vals)
-    #
-    #     if len(rows) == 0:
-    #         return result
-    #     else:
-    #         for row in rows:
-    #             stream_ids = self.get_stream_metadata_hash(str(user_id), row["name"])
-    #             row["stream_ids"] = [d['id'] for d in stream_ids]
-    #             result[row["name"]] = row
-    #         return result
 
     def get_user_name(self, user_id: str) -> str:
         """
@@ -400,14 +306,19 @@ class StreamHandler():
 
     def save_stream_metadata(self, metadata_obj):
         """
-        Update a record if stream already exists, insert a new record otherwise.
+        Update a record if stream already exists or insert a new record otherwise.
+
+        Args:
+            metadata_obj (Metadata): stream metadata
+        Raises:
+             Exception: if fail to insert/update record in MySQL. Exceptions are logged in a log file
         """
         isQueryReady = 0
 
         metadata_hash = metadata_obj.get_hash()
         stream_name = metadata_obj.name
 
-        is_metadata_changed = self.is_metadata_changed(stream_name, metadata_hash)
+        is_metadata_changed = self._is_metadata_changed(stream_name, metadata_hash)
         status = is_metadata_changed.get("status")
         version = is_metadata_changed.get("version")
 
@@ -427,7 +338,19 @@ class StreamHandler():
                     error_message="Query: " + str(qry) + " - cannot be processed. " + str(traceback.format_exc()),
                     error_type=self.logtypes.CRITICAL)
 
-    def is_metadata_changed(self, stream_name, metadata_hash) -> str:
+    def _is_metadata_changed(self, stream_name, metadata_hash) -> dict:
+        """
+        Checks whether metadata_hash already exist in the system .
+        Args:
+            stream_name (str): name of a stream
+            metadata_hash (str): hashed form of stream metadata
+        Raises:
+             Exception: if MySQL query fails
+
+        Returns:
+            dict: {"version": "version_number", "status":"new" OR "exist"}
+
+        """
         version = 1
         qry = "select version from " + self.datastreamTable + " where metadata_hash = %(metadata_hash)s"
         vals = {"metadata_hash":metadata_hash}
@@ -442,106 +365,3 @@ class StreamHandler():
                 return {"version": version, "status":"new"}
             else:
                 return {"version": 1, "status":"new"}
-
-
-
-    ###########################################################################################################################
-    ##                                          DATA REPLAY HELPER METHOD
-    ###########################################################################################################################
-
-    def mark_processed_day(self, user_id: uuid, stream_id: uuid, day: str):
-        """
-        Mark row as processed if the data has been processed/ingested. This is used for data replay.
-        :param user_id:
-        :param stream_id:
-        :param day:
-        """
-        qry = "UPDATE " + self.dataReplayTable + " set processed=1 where owner_id=%s and stream_id=%s and day=%s"
-        vals = str(user_id), str(stream_id), str(day)
-        self.execute(qry, vals, commit=True)
-
-    def is_day_processed(self, user_id: uuid, stream_id: uuid, day: str) -> bool:
-        """
-        Checks whether data is processed for a given user-id and stream-id
-        :param user_id:
-        :param stream_id:
-        :param day:
-        :return: True if day is processed, False otherwise
-        :rtype: bool
-        """
-        if day is not None:
-            qry = "SELECT processed from " + self.dataReplayTable + " where owner_id=%s and stream_id=%s and day=%s"
-            vals = str(user_id), str(stream_id), str(day)
-            rows = self.execute(qry, vals)
-            if rows[0]["processed"] == 1:
-                return True
-            else:
-                return False
-        return False
-
-
-    def get_all_data_days(self):
-        """
-        Returns a list of days where data is available
-        :return: List of days (yyyymmdd)
-        :rtype: list of strings
-        """
-        qry = "SELECT day from " + self.dataReplayTable + " where processed=0 group by day"
-        rows = self.execute(qry)
-        days = []
-        if len(rows) > 0:
-            for row in rows:
-                days.append(row["day"])
-        return days
-
-    def get_replay_batch(self, day, record_limit: int = 5000, nosql_blacklist:dict={"regzex":"nonez", "txt_match":"nonez"}) -> List:
-        """
-        This method helps in data replay. Yield a batch of data rows that needs to be processed and ingested in CerebralCortex
-        :param record_limit:
-        :return: List of dicts (keys=owner_id, stream_id, stream_name, day, files_list, metadata)
-        :rtype: dict
-        """
-
-        regex_cols = ""  # regex match on columns
-        like_cols = ""  # like operator on columns
-        for breg in nosql_blacklist["regzex"]:
-            regex_cols += '%s NOT REGEXP "%s" and ' % ("stream_name", nosql_blacklist["regzex"][breg])
-
-        for btm in nosql_blacklist["txt_match"]:
-            like_cols += '%s not like "%s" and ' % ("stream_name", nosql_blacklist["txt_match"][btm])
-
-        # if regex_cols!="" or like_cols!="":
-        #     where_clause = " where "
-
-        if regex_cols != "" and like_cols != "":
-            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + regex_cols + " " + like_cols + "  processed=0 and day='"+day+"' order by dir_size"
-        elif regex_cols != "" and like_cols == "":
-            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + regex_cols +"  processed=0 and day='"+day+"' order by dir_size"
-        elif regex_cols == "" and like_cols != "":
-            qry = "SELECT owner_id, stream_id, stream_name, day, files_list, metadata from " + self.dataReplayTable + " where " + like_cols + "  processed=0 and day='"+day+"' order by dir_size"
-        else:
-            qry = ""
-
-        if qry != "":
-            rows = self.execute(qry)
-            msgs = []
-            if len(rows) > 0:
-                for row in rows:
-                    if len(msgs) > int(record_limit):
-                        yield msgs
-                        msgs = []
-                    #if row["owner_id"] in good_participants:
-                    msgs.append(
-                        {"owner_id": row["owner_id"], "stream_id": row["stream_id"], "stream_name": row["stream_name"],
-                         "metadata": json.loads(row["metadata"]), "day": row["day"],
-                         "filename": json.loads(row["files_list"])})
-                yield msgs
-            else:
-                yield []
-        else:
-            yield []
-
-    def add_to_data_replay_table(self, table_name, owner_id, stream_id, stream_name, day, files_list, dir_size, metadata):
-        qry = "INSERT IGNORE INTO "+table_name+" (owner_id, stream_id, stream_name, day, files_list, dir_size, metadata) VALUES(%s, %s, %s, %s, %s, %s, %s)"
-        vals = str(owner_id), str(stream_id), str(stream_name), str(day), json.dumps(files_list), dir_size, json.dumps(metadata)
-        self.execute(qry, vals, commit=True)

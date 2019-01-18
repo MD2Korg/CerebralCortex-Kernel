@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -28,20 +28,23 @@ import os
 from typing import List
 import traceback
 
-from minio.error import ResponseError
 
-#TODO: For now, Minio is disabled as CC config doesn't provide an option to use mutliple object-storage
-class MinioHandler():
-
+class MinioHandler:
+    """
+    Todo:
+        For now, Minio is disabled as CC config doesn't provide an option to use mutliple object-storage
+    """
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
 
     def get_buckets(self) -> List:
         """
-        returns all available buckets in Minio storage
-        :return: [{bucket-name: str, last_modified: str}], in case of an error [{"error": str}]
-        :rtype: List
+        returns all available buckets in an object storage
+
+        Returns:
+            dict: {bucket-name: str, [{"key":"value"}]}, in case of an error {"error": str}
+
         """
         bucket_list = []
         try:
@@ -58,9 +61,11 @@ class MinioHandler():
     def get_bucket_objects(self, bucket_name: str) -> dict:
         """
         returns a list of all objects stored in the specified Minio bucket
-        :param bucket_name:
-        :return:{object-name:{stat1:str, stat2, str}},  in case of an error [{"error": str}]
-        :rtype: dict
+
+        Args:
+            bucket_name (str): name of the bucket aka folder
+        Returns:
+            dict: {bucket-objects: [{"object_name":"", "metadata": {}}...],  in case of an error {"error": str}
         """
         objects_in_bucket = {}
         try:
@@ -83,10 +88,15 @@ class MinioHandler():
     def get_object_stats(self, bucket_name: str, object_name: str) -> dict:
         """
         Returns properties (e.g., object type, last modified etc.) of an object stored in a specified bucket
-        :param bucket_name:
-        :param object_name:
-        :return: {stat1:str, stat2, str},  in case of an error {"error": str}
-        :rtype: dict
+
+        Args:
+            bucket_name (str): name of a bucket aka folder
+            object_name (str): name of an object
+        Returns:
+            dict: information of an object (e.g., creation_date, object_size etc.). In case of an error {"error": str}
+        Raises:
+            ValueError: Missing bucket_name and object_name params.
+            Exception: {"error": "error-message"}
         """
         try:
             if self.is_bucket(bucket_name):
@@ -106,7 +116,15 @@ class MinioHandler():
         :param bucket_name:
         :param object_name:
         :return: object (HttpResponse), in case of an error {"error": str}
-        :rtype: dict
+
+        Args:
+            bucket_name (str): name of a bucket aka folder
+            object_name (str): name of an object that needs to be downloaded
+        Returns:
+            file-object: object that needs to be downloaded. If file does not exists then it returns an error {"error": "File does not exist."}
+        Raises:
+            ValueError: Missing bucket_name and object_name params.
+            Exception: {"error": "error-message"}
         """
         try:
             if self.is_bucket(bucket_name):
@@ -119,10 +137,13 @@ class MinioHandler():
 
     def is_bucket(self, bucket_name: str) -> bool:
         """
-
-        :param bucket_name:
-        :return: True/False
-        :rtype: bool
+        checks whether a bucket exist
+        Args:
+            bucket_name (str): name of the bucket aka folder
+        Returns:
+            bool: True if bucket exist or False otherwise. In case an error {"error": str}
+        Raises:
+            ValueError: bucket_name cannot be None or empty.
         """
         try:
             return self.minioClient.bucket_exists(bucket_name)
@@ -131,11 +152,14 @@ class MinioHandler():
 
     def is_object(self, bucket_name: str, object_name: str) -> dict:
         """
-        Return True if object exists in a bucket, false otherwise
-        :param bucket_name:
-        :param object_name:
-        :return: {stat1:str, stat2, str},  in case of an error {"error": str}
-        :rtype: dict
+        checks whether an object exist in a bucket
+        Args:
+            bucket_name (str): name of the bucket aka folder
+            object_name (str): name of the object
+        Returns:
+            bool: True if object exist or False otherwise. In case an error {"error": str}
+        Raises:
+            Excecption: if bucket_name and object_name are empty or None
         """        
         try:
             if self.is_bucket(bucket_name):
@@ -152,10 +176,18 @@ class MinioHandler():
 
     def create_bucket(self, bucket_name: str) -> bool:
         """
-        creates a new bucket
-        :param bucket_name:
-        :return: True/False
-        :rtype: bool
+        creates a bucket aka folder in object storage system.
+
+        Args:
+            bucket_name (str): name of the bucket
+        Returns:
+            bool: True if bucket was successfully created. On failure, returns an error with dict {"error":"error-message"}
+        Raises:
+            ValueError: Bucket name cannot be empty/None.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.create_bucket("live_data_folder")
+            >>> True
         """
         if not bucket_name:
             raise ValueError("Bucket name cannot be empty")
@@ -167,12 +199,17 @@ class MinioHandler():
 
     def upload_object(self, bucket_name: str, object_name: str, object_filepath: object) -> bool:
         """
-        Uploads an object to Minio storage
-        :param bucket_name:
-        :param object_name:
-        :param object_filepath: it shall contain full path of a file with file name (e.g., /home/nasir/obj.zip)
-        :return: True/False
-        :rtype: bool
+        Upload an object in a bucket aka folder of object storage system.
+
+        Args:
+            bucket_name (str): name of the bucket
+            object_name (str): name of the object to be uploaded
+            object_filepath (str): it shall contain full path of a file with file name (e.g., /home/nasir/obj.zip)
+        Returns:
+            bool: True if object  successfully uploaded. On failure, returns an error with dict {"error":"error-message"}
+        Raises:
+            ValueError: Bucket name cannot be empty/None.
+            Exception: if upload fails
         """
         if not object_filepath:
             raise ValueError("File name cannot be empty")
@@ -187,12 +224,17 @@ class MinioHandler():
 
     def upload_object_to_s3(self, bucket_name: str, object_name: str, file_data: object, obj_length:int) -> bool:
         """
-        Uploads an object to AWS-S3 storage
-        :param bucket_name: 
-        :param object_name: 
-        :param file_data: 
-        :param obj_length: 
-        :return: 
+        Upload an object in a bucket aka folder of object storage system.
+
+        Args:
+            bucket_name (str): name of the bucket
+            object_name (str): name of the object to be uploaded
+            file_data (object): object of a file
+            obj_length (int): size of an object
+        Returns:
+            bool: True if object  successfully uploaded. On failure, throws an exception
+        Raises:
+            Exception: if upload fails
         """
         try:
             self.minioClient.put_object(bucket_name, object_name, file_data,
@@ -200,4 +242,3 @@ class MinioHandler():
             return True
         except Exception as e:
             raise e
-            return False

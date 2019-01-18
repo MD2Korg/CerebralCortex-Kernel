@@ -39,7 +39,7 @@ from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
-from cerebralcortex.core.metadata_manager.metadata import Metadata
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 class CerebralCortex:
@@ -163,6 +163,23 @@ class CerebralCortex:
             >>> True
         """
         return self.SqlData.is_stream(stream_name)
+
+    def get_stream_versions(self, stream_name: str) -> list:
+        """
+        Returns a list of versions available for a stream
+
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            list: list of int
+        Raises:
+            ValueError: if stream_name is empty or None
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_stream_versions("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> [1, 2, 4]
+        """
+        return self.SqlData.get_stream_versions(stream_name)
 
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """
@@ -516,6 +533,19 @@ class CerebralCortex:
             ValueError: bucket_name cannot be None or empty.
         """
         return self.ObjectData.is_bucket(bucket_name)
+
+    def is_object(self, bucket_name: str, object_name: str) -> bool:
+        """
+        checks whether an object exist in a bucket
+        Args:
+            bucket_name (str): name of the bucket aka folder
+            object_name (str): name of the object
+        Returns:
+            bool: True if object exist or False otherwise. In case an error {"error": str}
+        Raises:
+            Excecption: if bucket_name and object_name are empty or None
+        """
+        return self.ObjectData.is_object(bucket_name, object_name)
 
 
     ###########################################################################

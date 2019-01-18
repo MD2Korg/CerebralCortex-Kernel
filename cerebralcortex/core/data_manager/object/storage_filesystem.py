@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -25,7 +25,6 @@
 
 import json
 import os
-from typing import List
 import traceback
 import glob
 
@@ -49,7 +48,7 @@ class FileSystemStorage():
             bucket_list = {}
             with os.scandir(self.filesystem_path) as dir_entries:
                 for bucket in dir_entries:
-                    info = self.get_file_info(bucket)
+                    info = self._get_file_info(bucket)
                     temp.append(info)
                 bucket_list["buckets-list"] = temp
             return bucket_list
@@ -81,7 +80,7 @@ class FileSystemStorage():
                             if infile[-3:]!="json":
                                 object_file = infile
                                 break
-                        object_stats = self.get_file_info(object, only_file_name=True)
+                        object_stats = self._get_file_info(object, only_file_name=True)
                         metadata.update(object_stats)
                         temp.append({"object_name":object_file, "metadata": json.dumps(metadata)})
 
@@ -116,7 +115,7 @@ class FileSystemStorage():
                 with open(str(metadata_file_path).replace()) as metadata_file:
                     metadata = metadata_file.read()
                     metadata = json.loads(metadata)
-                object_stats = self.get_file_info(object_path, only_file_name=True)
+                object_stats = self._get_file_info(object_path, only_file_name=True)
                 metadata.update(object_stats)
 
                 return metadata
@@ -179,12 +178,15 @@ class FileSystemStorage():
 
     def is_object(self, bucket_name: str, object_name: str) -> dict:
         """
-        Return True if object exists in a bucket, false otherwise
-        :param bucket_name:
-        :param object_name:
-        :return: {stat1:str, stat2, str},  in case of an error {"error": str}
-        :rtype: dict
-        """        
+        checks whether an object exist in a bucket
+        Args:
+            bucket_name (str): name of the bucket aka folder
+            object_name (str): name of the object
+        Returns:
+            bool: True if object exist or False otherwise. In case an error {"error": str}
+        Raises:
+            Excecption: if bucket_name and object_name are empty or None
+        """
         try:
             object_path = os.path.join(self.filesystem_path,bucket_name, object_name)
             if os.path.isfile(object_path):
@@ -248,7 +250,17 @@ class FileSystemStorage():
         except Exception as e:
             raise {"error": str(e)}
 
-    def get_file_info(self, dir_entry, only_file_name=False):
+    def _get_file_info(self, dir_entry, only_file_name:bool=False)->dict:
+        """
+        Returns statistics of a file
+        Args:
+            dir_entry (DirEntry): object entry in a directory-scanner
+            only_file_name (bool): if only file is passed
+
+        Returns:
+            dict: stats of a file
+
+        """
         if only_file_name:
             info = os.stat(dir_entry.path)
         else:

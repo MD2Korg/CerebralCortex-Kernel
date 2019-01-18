@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -30,8 +30,9 @@ from cerebralcortex.core.data_manager.object.storage_filesystem import FileSyste
 class ObjectData(FileSystemStorage):
     def __init__(self, CC):
         """
-
-        :param CC: CerebralCortex object reference
+        Constructor
+        Args:
+            CC (CerebralCortex): CerebralCortex object reference
         """
         self.CC = CC
         self.config = CC.config

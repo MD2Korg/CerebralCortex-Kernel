@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -28,11 +28,15 @@ import uuid
 from datetime import datetime
 from typing import List
 
-from cerebralcortex.core.datatypes.datapoint import DataPoint
+from cerebralcortex.core.datatypes.datastream import DataStream
 
 
 class BlueprintStorage():
-
+    """
+    This is a sample reference class. If you want to add another storage layer then the class must have following methods in it.
+    read_file()
+    write_file()
+    """
     def __init__(self, obj):
         self.obj = obj
 
@@ -40,18 +44,16 @@ class BlueprintStorage():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def read_file(self, owner_id: uuid, stream_id: uuid, day: str, start_time: datetime = None,
-                  end_time: datetime = None, localtime: bool = True) -> List[DataPoint]:
+    def read_file(self, stream_name:str, version:str="all")->object:
         """
-        Read data from a NoSQL storage
-        :param owner_id:
-        :param stream_id:
-        :param day: format (YYYYMMDD)
-        :param start_time:
-        :param end_time:
-        :param localtime:
-        :return: returns unique (based on start time) list of DataPoints
-        :rtype: DataPoint
+        Get stream data from storage system. Data would be return as pyspark DataFrame object
+        Args:
+            stream_name (str): name of a stream
+            version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
+        Returns:
+            object: pyspark DataFrame object
+        Raises:
+            Exception: if stream name does not exist.
         """
         # TODO: implement your own storage layer to read data
         pass
@@ -60,14 +62,17 @@ class BlueprintStorage():
     ################## STORE DATA METHODS #############################
     ###################################################################
 
-    def write_file(self, participant_id: uuid, stream_id: uuid, data: List[DataPoint]) -> bool:
+    def write_file(self, stream_name:str, data:DataStream) -> bool:
         """
-        Stores data to NoSQL storage.
-        :param participant_id:
-        :param stream_id:
-        :param data:
-        :return True if data is successfully stored
-        :rtype bool
+        Write pyspark DataFrame to a data storage system
+        Args:
+            stream_name (str): name of the stream
+            data (object): pyspark DataFrame object
+
+        Returns:
+            bool: True if data is stored successfully or throws an Exception.
+        Raises:
+            Exception: if DataFrame write operation fails
         """
 
         # TODO: implement your own storage layer to write data

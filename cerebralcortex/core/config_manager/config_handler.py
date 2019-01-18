@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -25,11 +25,16 @@
 
 import yaml
 
-class ConfigHandler():
+
+class ConfigHandler:
+
     def load_file(self, filepath: str):
         """
-        Helper function to load a yaml file
-        :param config_dir_path: path to a yml configuration file for Cerebral Cortex
+        Helper method to load a yaml file
+        :param config_dir_path:
+
+        Args:
+            filepath (str): path to a yml configuration file
         """
 
         with open(filepath, 'r') as ymlfile:

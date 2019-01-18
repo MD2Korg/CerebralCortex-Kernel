@@ -23,8 +23,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cerebralcortex.core.metadata_manager.data_descriptor import DataDescriptor
-from cerebralcortex.core.metadata_manager.module_info import ModuleMetadata
+from cerebralcortex.core.metadata_manager.stream.data_descriptor import DataDescriptor
+from cerebralcortex.core.metadata_manager.stream.module_info import ModuleMetadata
 import json
 import uuid
 

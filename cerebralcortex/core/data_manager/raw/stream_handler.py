@@ -28,7 +28,7 @@ import traceback
 from enum import Enum
 
 from cerebralcortex.core.datatypes.datastream import DataStream
-from cerebralcortex.core.metadata_manager.metadata import Metadata
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 class DataSet(Enum):

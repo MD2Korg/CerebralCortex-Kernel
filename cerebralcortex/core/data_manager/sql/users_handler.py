@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -77,25 +77,6 @@ class UserHandler():
             return result
         else:
             return []
-
-    def get_user_uuid(self, username: str) -> str:
-
-        """
-        Find user UUID of a user name
-        :param username:
-        :return: string format of a user UUID
-        :rtype: str
-        """
-
-        qry = "SELECT identifier from " + self.userTable + " where username = %(username)s"
-        vals = {'username': str(username)}
-        rows = self.execute(qry, vals)
-
-        if rows:
-            user_uuid = rows[0]["identifier"]
-            return user_uuid
-        else:
-            return ""
 
     def login_user(self, username: str, password: str) -> bool:
         """

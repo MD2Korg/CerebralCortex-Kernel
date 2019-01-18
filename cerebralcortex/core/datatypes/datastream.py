@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -23,29 +23,37 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import datetime
-from typing import List
-from uuid import UUID
-
-from cerebralcortex.core.datatypes.datapoint import DataPoint
-from cerebralcortex.core.metadata_manager.metadata import Metadata
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 class DataStream:
     def __init__(self,
                  data: object = None,
-                 metadata: Metadata = None,
-                 sql_obj: object = None
+                 metadata: Metadata = None
                  ):
         """
-        DataStream object contains the list of DataPoint objects and metadata linked to it.
+        DataStream object contains pyspark dataframe and metadata linked to it.
+
+        Args:
+            data (DataFrame): pyspark dataframe
+            metadata (Metadata): metadata of data
 
         """
         self._data = data
         self._metadata = metadata
-        self._sql_obj = sql_obj
 
-    def get_metadata(self, version=None):
+    def get_metadata(self, version:int=None)->Metadata:
+        """
+
+        Args:
+            version (int): version of a stream
+
+        Returns:
+            Metadata: single version of a stream
+        Raises:
+            Exception: if specified version is not available for the stream
+
+        """
         for md in self._metadata:
             if md.version == version:
                 return md
@@ -53,17 +61,39 @@ class DataStream:
                 raise Exception("Version '"+str(version)+"' is not available for this stream.")
         return None
 
-    def update(self):
-        pass
-
     @property
     def metadata(self):
+        """
+
+        Returns:
+            Metadata:
+
+        """
         return self._metadata
 
     @metadata.setter
     def metadata(self, metadata):
+        """
+
+        Args:
+            metadata (Metadata):
+        """
         self._metadata = metadata
 
     @property
     def data(self):
+        """
+
+        Returns (DataFrame):
+
+        """
         return self._data
+
+    @data.setter
+    def data(self, value):
+        """
+
+        Args:
+            value (DataFrame):
+        """
+        self._data = value
