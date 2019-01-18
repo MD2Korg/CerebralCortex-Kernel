@@ -22,6 +22,8 @@ To install:
 ```git clone https://github.com/MD2Korg/CerebralCortex.git```
 
 ```sudo python3 setup.py install```
+### Documentation
+[CerebralCortex-Kernel Documentation](http://docs.md2k.org/CerebralCortex-Kernel/)
 # FAQ
 **1 - Do I need whole CerebralCortex cloud platform to use CerebralCortex-Kernal?**
 
