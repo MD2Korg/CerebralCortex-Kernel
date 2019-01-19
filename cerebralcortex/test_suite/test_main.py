@@ -1,4 +1,4 @@
-# Copyright (c) 2019, MD2K Center of Excellence
+# Copyright (c) 2017, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -23,5 +23,29 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#class DataStreamTest():
+import json
+import unittest
+import yaml
+import warnings
 
+from cerebralcortex.cerebralcortex import CerebralCortex
+
+
+class TestCerebralCortex(unittest.TestCase):
+
+    def setUp(self):
+        warnings.simplefilter("ignore")
+        test_config_filepath = "./resources/cc_test_configuration.yml"#args["test_config_filepath"]
+        config_filepath ="./../../conf/"
+
+        with open(test_config_filepath) as test_conf:
+            test_conf = yaml.load(test_conf)
+
+        with open(test_conf["sample_data"]["data_folder"] + test_conf["sample_data"]["json_file"], "r") as md:
+            self.metadata = json.loads(md.read())
+
+        self.CC = CerebralCortex(config_filepath, auto_offset_reset="smallest")
+        self.cc_conf = self.CC.config
+
+    def tearDown(self):
+        pass

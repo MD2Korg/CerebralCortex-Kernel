@@ -229,6 +229,35 @@ class CerebralCortex:
 
     ################### USER RELATED METHODS ##################################
 
+    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict)->bool:
+        """
+        Create a user in SQL storage if it doesn't exist
+        Args:
+            username (str): Only alphanumeric usernames are allowed with the max length of 25 chars.
+            user_password (str): no size limit on password
+            user_role (str): role of a user
+            user_metadata (dict): metadata of a user
+        Returns:
+            bool: True if user is successfully registered or throws any error in case of failure
+        Raises:
+            ValueError: if selected username is not available
+            Exception: if sql query fails
+        """
+        return self.SqlData.create_user( username, user_password, user_role, user_metadata)
+
+    def delete_user(self, username:str)->bool:
+        """
+        Delete a user record in SQL table
+        Args:
+            username: username of a user that needs to be deleted
+        Returns:
+            bool: if user is successfully removed
+        Raises:
+            ValueError: if username param is empty or None
+            Exception: if sql query fails
+        """
+        return self.SqlData.delete_user(username)
+
     def is_user(self, user_id: str = None, user_name: str = None) -> bool:
         """
         Checks whether a user exists in the system. One of both parameters could be set to verify whether user exist.

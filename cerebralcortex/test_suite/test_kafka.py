@@ -23,5 +23,20 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#class DataStreamTest():
 
+class TestKafkaMessaging():
+
+    test_topic_name = "test_topic"
+    test_message = "{'msg1':'some test message'}"
+
+    def test_01_produce_message(self):
+        try:
+            self.CC.kafka_produce_message(self.test_topic_name, self.test_message)
+        except Exception as e:
+            print(e)
+            raise
+
+    def test_02_consume_message(self):
+        for msg in self.CC.kafka_subscribe_to_topic(self.test_topic_name):
+            self.assertEqual(msg, self.test_message)
+            break

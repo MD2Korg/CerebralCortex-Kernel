@@ -27,6 +27,8 @@ import hashlib
 import random
 import string
 import uuid
+import json
+import re
 from typing import List
 from datetime import datetime
 
@@ -38,6 +40,56 @@ class UserHandler():
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
+
+    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict)->bool:
+        """
+        Create a user in SQL storage if it doesn't exist
+        Args:
+            username (str): Only alphanumeric usernames are allowed with the max length of 25 chars.
+            user_password (str): no size limit on password
+            user_role (str): role of a user
+            user_metadata (dict): metadata of a user
+        Returns:
+            bool: True if user is successfully registered or throws any error in case of failure
+        Raises:
+            ValueError: if selected username is not available
+            Exception: if sql query fails
+        """
+        self.username_checks(username)
+        if self.is_user(user_name=username):
+            raise ValueError("username is already registered. Please select another user name")
+
+        user_uuid = str(username)+str(user_role)+str(user_metadata)
+        user_uuid = str(uuid.uuid3(uuid.NAMESPACE_DNS, user_uuid))
+        encrypted_password = self.encrypt_user_password(user_password)
+        qry = "INSERT INTO " + self.userTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s, %s)"
+        vals = str(user_uuid), str(username), str(encrypted_password), str(user_role), json.dumps(user_metadata)
+
+        try:
+            self.execute(qry, vals, commit=True)
+            return True
+        except Exception as e:
+            raise Exception(e)
+
+    def delete_user(self, username:str):
+        """
+        Delete a user record in SQL table
+        Args:
+            username: username of a user that needs to be deleted
+        Returns:
+            bool: if user is successfully removed
+        Raises:
+            ValueError: if username param is empty or None
+            Exception: if sql query fails
+        """
+        if not username:
+            raise ValueError("username cannot be empty/None.")
+        qry = "delete from "+self.userTable+ " where username=%s"
+        vals = {"username": str(username)}
+        try:
+            self.execute(qry, vals, commit=True)
+        except Exception as e:
+            raise Exception(e)
 
     def get_user_metadata(self, user_id: uuid = None, username: str = None) -> List[dict]:
         """
@@ -143,9 +195,126 @@ class UserHandler():
             else:
                 return True
 
-    ###################################################################
-    ################## STORE DATA METHODS #############################
-    ###################################################################
+    def get_all_users(self, study_name: str) -> List[dict]:
+        """
+        Get a list of all users part of a study.
+        Args:
+            study_name (str): name of a study
+        Raises:
+            ValueError: Study name is a requied field.
+        Returns:
+            list[dict]: Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_all_users("mperf")
+            >>> [{"76cc444c-4fb8-776e-2872-9472b4e66b16": "nasir_ali"}] # [{user_id, user_name}]
+        """
+        if not study_name:
+            raise ValueError("Study name is a requied field.")
+
+        results = []
+        qry = 'SELECT user_id, username FROM ' + self.userTable + ' where user_metadata->"$.study_name"=%(study_name)s'
+        vals = {'study_name': str(study_name)}
+
+        rows = self.execute(qry, vals)
+
+        if len(rows) == 0:
+            return []
+        else:
+            for row in rows:
+                results.append(row)
+            return results
+
+    def get_user_name(self, user_id: str) -> str:
+        """
+        Get the user name linked to a user id.
+
+        Args:
+            user_name (str): username of a user
+        Returns:
+            bool: user_id associated to username
+        Raises:
+            ValueError: User ID is a required field.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_user_name("76cc444c-4fb8-776e-2872-9472b4e66b16")
+            >>> 'nasir_ali'
+        """
+        if not user_id:
+            raise ValueError("User ID is a required field.")
+
+        qry = "select username from " + self.userTable + " where user_id = %(user_id)s"
+        vals = {'user_id': str(user_id)}
+
+        rows = self.execute(qry, vals)
+
+        if len(rows) == 0:
+            return ""
+        else:
+            return rows[0]["username"]
+
+    def is_user(self, user_id: uuid = None, user_name: uuid = None) -> bool:
+        """
+        Checks whether a user exists in the system. One of both parameters could be set to verify whether user exist.
+
+        Args:
+            user_id (str): id (uuid) of a user
+            user_name (str): username of a user
+        Returns:
+            bool: True if a user exists in the system or False otherwise.
+        Raises:
+            ValueError: Both user_id and user_name cannot be None or empty.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.is_user(user_id="76cc444c-4fb8-776e-2872-9472b4e66b16")
+            >>> True
+        """
+        if user_id and user_name:
+            qry = "select username from " + self.userTable + " where user_id = %s and username=%s"
+            vals = str(user_id), user_name
+        elif user_id and not user_name:
+            qry = "select username from " + self.userTable + " where user_id = %(user_id)s"
+            vals = {'user_id': str(user_id)}
+        elif not user_id and user_name:
+            qry = "select username from " + self.userTable + " where username = %(username)s"
+            vals = {'username': str(user_name)}
+        else:
+            raise ValueError("Both user_id and user_name cannot be None or empty.")
+
+        rows = self.execute(qry, vals)
+
+        if len(rows) > 0:
+            return True
+        else:
+            return False
+
+    def get_user_id(self, user_name: str) -> str:
+        """
+        Get the user id linked to user_name.
+
+        Args:
+            user_name (str): username of a user
+        Returns:
+            str: user id associated to user_name
+        Raises:
+            ValueError: User name is a required field.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_user_id("nasir_ali")
+            >>> '76cc444c-4fb8-776e-2872-9472b4e66b16'
+        """
+        if not user_name:
+            raise ValueError("User name is a required field.")
+
+        qry = "select user_id from " + self.userTable + " where username = %(username)s"
+        vals = {'username': str(user_name)}
+
+        rows = self.execute(qry, vals)
+
+        if len(rows) == 0:
+            return ""
+        else:
+            return rows[0]["user_id"]
 
     def update_auth_token(self, username: str, auth_token: str, auth_token_issued_time: datetime,
                           auth_token_expiry_time: datetime) -> bool:
@@ -210,3 +379,20 @@ class UserHandler():
             raise ValueError("password cannot be None or empty.")
         hash_pwd = hashlib.sha256(user_password.encode('utf-8'))
         return hash_pwd.hexdigest()
+
+    def username_checks(self, username:str):
+        """
+        No space, special characters, dash etc. are allowed in username.
+        Only alphanumeric usernames are allowed with the max length of 25 chars.
+        Args:
+            username (str):
+        Returns:
+             bool: True if provided username comply the standard or throw an exception
+        Raises:
+            Exception: if username doesn't follow standards
+        """
+        regexp = re.compile(r'W')
+        if regexp.search(username) or len(username)>25:
+            raise Exception("Only alphanumeric usernames are allowed with the max length of 25 chars.")
+        else:
+            return True
