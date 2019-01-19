@@ -81,7 +81,7 @@ class HDFSStorage:
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
-
+    
     def _get_storage_path(self, stream_name:str)->str:
         """
         Build path of storage location

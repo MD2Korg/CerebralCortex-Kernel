@@ -124,21 +124,22 @@ class Metadata():
         module_list = []
         metadata_list = []
         for tmp in json_list:
-            metadata = json.loads(tmp.get("metadata"))
-            data_descriptors = metadata["data_descriptor"]
-            module_info = metadata["module"]
-            for dd in data_descriptors:
-                data_descriptor_list.append(DataDescriptor().from_json(dd))
+            if isinstance(tmp, dict):
+                metadata = json.loads(tmp.get("metadata"))
+                data_descriptors = metadata["data_descriptor"]
+                module_info = metadata["module"]
+                for dd in data_descriptors:
+                    data_descriptor_list.append(DataDescriptor().from_json(dd))
 
-            for mm in module_info:
-                module_list.append(ModuleMetadata().from_json(mm))
+                for mm in module_info:
+                    module_list.append(ModuleMetadata().from_json(mm))
 
-            cls.data_descriptor = data_descriptor_list
-            cls.modulez = module_list
-            cls.name = tmp["name"]
-            cls.version = int(tmp["version"])
-            cls.metadata_hash = tmp["metadata_hash"]
-            metadata_list.append(cls)
+                cls.data_descriptor = data_descriptor_list
+                cls.modulez = module_list
+                cls.name = tmp["name"]
+                cls.version = int(tmp["version"])
+                cls.metadata_hash = tmp["metadata_hash"]
+                metadata_list.append(cls)
 
         return metadata_list
 
