@@ -73,7 +73,9 @@ class ModuleMetadata:
         """
         if key is None or key=="" or value is None or value=="":
             raise ValueError("Key and/or value cannot be None or empty.")
-        self._authors.append({key,value})
+        tmp = {}
+        tmp[key] = value
+        self._authors.append(tmp)
         return self
 
     def set_attribute(self, key:str, value:str):

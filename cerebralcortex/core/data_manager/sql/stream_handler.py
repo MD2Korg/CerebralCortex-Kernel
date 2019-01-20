@@ -184,7 +184,7 @@ class StreamHandler:
     ################## STORE DATA METHODS #############################
     ###################################################################
 
-    def save_stream_metadata(self, metadata_obj):
+    def save_stream_metadata(self, metadata_obj)->bool:
         """
         Update a record if stream already exists or insert a new record otherwise.
 
@@ -203,7 +203,9 @@ class StreamHandler:
         version = is_metadata_changed.get("version")
 
         metadata_str = metadata_obj.to_json()
-
+        if (status=="exist"):
+            return True
+        
         if (status == "new"):
             qry = "INSERT INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
             vals = str(stream_name), str(version), str(metadata_hash), json.dumps(metadata_str)
@@ -213,10 +215,9 @@ class StreamHandler:
         if isQueryReady == 1:
             try:
                 self.execute(qry, vals, commit=True)
-            except:
-                self.logging.log(
-                    error_message="Query: " + str(qry) + " - cannot be processed. " + str(traceback.format_exc()),
-                    error_type=self.logtypes.CRITICAL)
+                return True
+            except Exception as e:
+                raise Exception(e)
 
     def _is_metadata_changed(self, stream_name, metadata_hash) -> dict:
         """

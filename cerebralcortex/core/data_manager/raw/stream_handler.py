@@ -132,8 +132,10 @@ class StreamHandler():
 
                     if status:
                         # save metadata in SQL store
-                        self.sql_data.save_stream_metadata(metadata)
-                        return status
+                        if self.sql_data.save_stream_metadata(metadata):
+                            return True
+                        else:
+                            return False
                     else:
                         print(
                             "Something went wrong in saving data points.")

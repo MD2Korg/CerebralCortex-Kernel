@@ -80,7 +80,6 @@ class Metadata():
         return self
 
     def add_dataDescriptor(self, dd: DataDescriptor):
-
         self._dataDescriptor.append(dd)
         return self
 
@@ -90,28 +89,42 @@ class Metadata():
 
     def is_valid(self):
         for dd_obj in self.data_descriptor:
-            if (dd_obj._name is None or dd_obj._name=="") or (dd_obj._type is None or dd_obj._type==""):
+            if (dd_obj._name is None or dd_obj._name=="") and (dd_obj._type is None or dd_obj._type==""):
                 raise Exception("Name and/or type fields are missing in data descriptor.")
         for mm_obj in self.modulez:
-            if (mm_obj.name is None or mm_obj.name=="") or (mm_obj._version is None or mm_obj._version==""):
+            if (mm_obj._name is None or mm_obj._name=="") and (mm_obj._version is None or mm_obj._version==""):
                 raise Exception("Module name and/or version fields are missing in module info.")
             if len(mm_obj._authors)==0:
                 raise Exception("Author information is missing.")
         return True
 
-    @classmethod
-    def to_json(cls):
+    #@classmethod
+    def to_json(self):
         data_descriptor = []
         module_metadata = []
         metadata_json = {}
-        for dd_obj in cls.data_descriptor:
+        for dd_obj in self.data_descriptor:
             data_descriptor.append(dd_obj.__dict__)
-        for mm_obj in cls.modulez:
+        for mm_obj in self.modulez:
             module_metadata.append(mm_obj.__dict__)
-        metadata_json["name"] = cls.name
+        metadata_json["name"] = self.name
         metadata_json["data_descriptor"] = data_descriptor
         metadata_json["module"] = module_metadata
         return metadata_json
+
+    def get_hash(self):
+        name = self.name
+        version = self.version
+        data_descriptor = ""
+        modulez = ""
+        for dd in self.data_descriptor:
+            data_descriptor += str(dd._name+dd._type)
+        for mm in self.modulez:
+            modulez += str(mm._name) + str(mm._version) + str(mm._authors)
+        hash_string = str(name)+str(version)+str(data_descriptor)+str(modulez)
+        hash_string = hash_string.strip().lower().replace(" ", "")
+
+        return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
 
     @classmethod
     def from_json(cls, json_list):
@@ -142,20 +155,3 @@ class Metadata():
                 metadata_list.append(cls)
 
         return metadata_list
-
-    @classmethod
-    def get_hash(cls):
-        name = cls.name
-        version = cls.version
-        data_descriptor = ""
-        modulez = ""
-        for dd in cls.data_descriptor:
-            data_descriptor += str(dd.name+dd.type)
-        for mm in cls.modulez:
-            modulez += str(mm.name) + str(mm.version) + str(mm.author)
-        hash_string = str(name)+str(version)+str(data_descriptor)+str(modulez)
-        hash_string = hash_string.strip().lower().replace(" ", "")
-
-        return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
-
-

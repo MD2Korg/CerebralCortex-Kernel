@@ -24,7 +24,7 @@ def gen_phone_battery_metadata():
     stream_metadata = Metadata()
     stream_metadata.set_name("BATTERY--org.md2k.phonesensor--PHONE").set_version(1)\
         .add_dataDescriptor(DataDescriptor().name("level").type("float").set_attribute("description", "current battery charge"))\
-        .add_module(ModuleMetadata().name("battery").version("1.2.4").set_author("test_user", "test_user@test_email.com"))
+        .add_module(ModuleMetadata().name("battery").version("1.2.4").set_attribute("attribute_key", "attribute_value").set_author("test_user", "test_user@test_email.com"))
     stream_metadata.is_valid()
     return stream_metadata
 

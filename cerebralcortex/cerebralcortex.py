@@ -99,7 +99,7 @@ class CerebralCortex:
             >>> ds = DataStream(dataframe, MetaData)
             >>> CC.save_stream(ds)
         """
-        self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB)
+        return self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB)
 
     def get_stream(self, stream_name: str, version: str = "all", data_type=DataSet.COMPLETE) -> DataStream:
         """
