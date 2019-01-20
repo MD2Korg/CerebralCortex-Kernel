@@ -24,19 +24,21 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-class TestKafkaMessaging():
+class TestKafkaMessaging:
 
     test_topic_name = "test_topic"
     test_message = "{'msg1':'some test message'}"
 
     def test_01_produce_message(self):
-        try:
-            self.CC.kafka_produce_message(self.test_topic_name, self.test_message)
-        except Exception as e:
-            print(e)
-            raise
+        if self.CC.config["messaging_service"]!="none" and "kafka" in self.CC.config and self.CC.config['messaging_service']=="kafka":
+            try:
+                self.CC.kafka_produce_message(self.test_topic_name, self.test_message)
+            except Exception as e:
+                print(e)
+                raise
 
     def test_02_consume_message(self):
-        for msg in self.CC.kafka_subscribe_to_topic(self.test_topic_name):
-            self.assertEqual(msg, self.test_message)
-            break
+        if self.CC.config["messaging_service"]!="none" and "kafka" in self.CC.config and self.CC.config['messaging_service']=="kafka":
+            for msg in self.CC.kafka_subscribe_to_topic(self.test_topic_name):
+                self.assertEqual(msg, self.test_message)
+                break

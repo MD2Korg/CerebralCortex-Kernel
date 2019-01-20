@@ -23,5 +23,26 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#class DataStreamTest():
+from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_data, gen_phone_battery_metadata
+from cerebralcortex.core.datatypes.datastream import DataStream
+
+
+class DataStreamTest:
+
+    def test_01_save_stream(self):
+        data = gen_phone_battery_data()
+        metadata = gen_phone_battery_metadata()
+        ds = DataStream(data, metadata)
+
+        result = self.CC.save_stream(ds)
+
+        self.assertEqual(result, True)
+
+    # def test_02_get_stream(self):
+    #     ds = self.CC.get_stream(self.stream_name)
+    #     data = ds.data
+    #     datapoint = ds.data.take(1)
+    #     self.assertEqual(ds.data.count(), 1000)
+    #
+    #     metadata = ds.metadata
 

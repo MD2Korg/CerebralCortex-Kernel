@@ -67,17 +67,17 @@ class Metadata():
     def data_descriptor(self):
         return self._dataDescriptor
 
-    @data_descriptor.setter
-    def data_descriptor(self, value):
-        self._dataDescriptor = value
-
     @property
     def modulez(self):
         return self._module
 
-    @modulez.setter
-    def modulez(self, value):
-        self._module = value
+    def set_name(self, value):
+        self._name = value
+        return self
+
+    def set_version(self, value):
+        self._version = value
+        return self
 
     def add_dataDescriptor(self, dd: DataDescriptor):
 
@@ -93,7 +93,7 @@ class Metadata():
             if (dd_obj._name is None or dd_obj._name=="") or (dd_obj._type is None or dd_obj._type==""):
                 raise Exception("Name and/or type fields are missing in data descriptor.")
         for mm_obj in self.modulez:
-            if (mm_obj._module_name is None or mm_obj._module_name=="") or (mm_obj._version is None or mm_obj._version==""):
+            if (mm_obj.name is None or mm_obj.name=="") or (mm_obj._version is None or mm_obj._version==""):
                 raise Exception("Module name and/or version fields are missing in module info.")
             if len(mm_obj._authors)==0:
                 raise Exception("Author information is missing.")
@@ -144,14 +144,14 @@ class Metadata():
         return metadata_list
 
     @classmethod
-    def get_hash(self):
-        name = self.name
-        version = self.version
+    def get_hash(cls):
+        name = cls.name
+        version = cls.version
         data_descriptor = ""
         modulez = ""
-        for dd in self.data_descriptor:
+        for dd in cls.data_descriptor:
             data_descriptor += str(dd.name+dd.type)
-        for mm in self.modulez:
+        for mm in cls.modulez:
             modulez += str(mm.name) + str(mm.version) + str(mm.author)
         hash_string = str(name)+str(version)+str(data_descriptor)+str(modulez)
         hash_string = hash_string.strip().lower().replace(" ", "")

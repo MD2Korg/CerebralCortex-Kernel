@@ -104,13 +104,17 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    def save_stream(self, datastream, ingestInfluxDB=False):
+    def save_stream(self, datastream, ingestInfluxDB=False)->bool:
         """
         Saves datastream raw data in selected NoSQL storage and metadata in MySQL.
 
         Args:
             datastream (DataStream): a DataStream object
             ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana
+        Returns:
+            bool: True if stream is successfully stored or throws an exception
+        Raises:
+            Exception: log or throws exception if stream is not stored
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> ds = DataStream(dataframe, MetaData)
@@ -118,8 +122,8 @@ class StreamHandler():
         """
         metadata = datastream.metadata
         data = datastream.data
-        if len(metadata)>0:
-            stream_name = metadata[0].name # only supports one data-stream storage at a time
+        if metadata:
+            stream_name = metadata.name # only supports one data-stream storage at a time
             try:
 
                 # get start and end time of a stream
@@ -128,8 +132,8 @@ class StreamHandler():
 
                     if status:
                         # save metadata in SQL store
-                        for md in metadata:
-                            self.sql_data.save_stream_metadata(md)
+                        self.sql_data.save_stream_metadata(metadata)
+                        return status
                     else:
                         print(
                             "Something went wrong in saving data points.")

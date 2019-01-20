@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from cerebralcortex.core.util.spark_helper import get_or_create_sc
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
+
+
 def gen_phone_battery_data():
     column_name = ["timestamp", "offset", "battery_level", "ver", "user"]
     sample_data = []
@@ -20,9 +22,9 @@ def gen_phone_battery_data():
 
 def gen_phone_battery_metadata():
     stream_metadata = Metadata()
-    stream_metadata\
-        .add_dataDescriptor(DataDescriptor().name("level").type("float").set_attirubte("description", "current battery charge"))\
-        .add_module(ModuleMetadata().module_name("battery").version("1.2.4").set_author("test_user", "test_user@test_email.com"))
+    stream_metadata.set_name("BATTERY--org.md2k.phonesensor--PHONE").set_version(1)\
+        .add_dataDescriptor(DataDescriptor().name("level").type("float").set_attribute("description", "current battery charge"))\
+        .add_module(ModuleMetadata().name("battery").version("1.2.4").set_author("test_user", "test_user@test_email.com"))
     stream_metadata.is_valid()
     return stream_metadata
 

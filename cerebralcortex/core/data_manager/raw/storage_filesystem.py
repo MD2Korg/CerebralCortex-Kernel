@@ -91,7 +91,7 @@ class FileSystemStorage:
             str: storage location path
 
         """
-        storage_url = self.obj.hdfs_spark_url + self.obj.raw_files_dir
+        storage_url = self.obj.filesystem_path
 
         if stream_name is None or stream_name=="":
             return storage_url

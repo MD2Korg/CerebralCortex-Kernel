@@ -29,23 +29,25 @@ import yaml
 import warnings
 
 from cerebralcortex.cerebralcortex import CerebralCortex
+from cerebralcortex.test_suite.test_stream import DataStreamTest
 
-
-class TestCerebralCortex(unittest.TestCase):
+class TestCerebralCortex(unittest.TestCase, DataStreamTest):
 
     def setUp(self):
         warnings.simplefilter("ignore")
-        test_config_filepath = "./resources/cc_test_configuration.yml"#args["test_config_filepath"]
-        config_filepath ="./../../conf/"
-
-        with open(test_config_filepath) as test_conf:
-            test_conf = yaml.load(test_conf)
-
-        with open(test_conf["sample_data"]["data_folder"] + test_conf["sample_data"]["json_file"], "r") as md:
-            self.metadata = json.loads(md.read())
+        config_filepath = "./../../conf/"
 
         self.CC = CerebralCortex(config_filepath, auto_offset_reset="smallest")
         self.cc_conf = self.CC.config
+
+        # DO NOT CHANGE THESE VALUES! OTHERWISE TESTS WILL FAIL. These values are hardcoded in util/data_helper file
+        self.stream_name = "BATTERY--org.md2k.phonesensor--PHONE"
+        self.stream_version = "1"
+        self.metadata_hash = ""
+        self.username = "test_user"
+        self.user_id = "00000000-afb8-476e-9872-6472b4e66b68"
+        self.user_password = "test_password"
+        self.study_name = "test_study"
 
     def tearDown(self):
         pass
