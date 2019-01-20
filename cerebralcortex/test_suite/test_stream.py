@@ -25,6 +25,7 @@
 
 from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_data, gen_phone_battery_metadata
 from cerebralcortex.core.datatypes.datastream import DataStream
+from datetime import datetime
 
 
 class DataStreamTest:
@@ -38,11 +39,29 @@ class DataStreamTest:
 
         self.assertEqual(result, True)
 
-    # def test_02_get_stream(self):
-    #     ds = self.CC.get_stream(self.stream_name)
-    #     data = ds.data
-    #     datapoint = ds.data.take(1)
-    #     self.assertEqual(ds.data.count(), 1000)
-    #
-    #     metadata = ds.metadata
+    def test_02_get_stream(self):
+        ds = self.CC.get_stream(self.stream_name)
+        data = ds.data
+        metadata = ds.metadata[0]
 
+        datapoint = data.take(1)
+
+        self.assertEqual(datapoint[0][0], datetime(2019,1,9,11,49,28))
+        self.assertEqual(datapoint[0][1], '21600000')
+        self.assertEqual(datapoint[0][2], 92)
+        self.assertEqual(datapoint[0][3], 1)
+        self.assertEqual(datapoint[0][4], self.user_id)
+        self.assertEqual(data.count(), 999)
+
+        self.assertEqual(len(metadata.data_descriptor), 1)
+        self.assertEqual(len(metadata.modulez), 1)
+
+        self.assertEqual(metadata.metadata_hash, self.metadata_hash)
+        self.assertEqual(metadata.name, self.stream_name)
+        self.assertEqual(metadata.version, int(self.stream_version))
+        self.assertEqual(metadata.data_descriptor[0]._name, 'level')
+        self.assertEqual(metadata.data_descriptor[0]._type, 'float')
+        self.assertEqual(metadata.data_descriptor[0]._attributes.get("description"), 'current battery charge')
+        self.assertEqual(metadata.modulez[0]._name, 'battery')
+        self.assertEqual(metadata.modulez[0]._version, '1.2.4')
+        self.assertEqual(metadata.modulez[0]._authors[0].get("test_user"), 'test_user@test_email.com')

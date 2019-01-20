@@ -43,7 +43,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest):
         # DO NOT CHANGE THESE VALUES! OTHERWISE TESTS WILL FAIL. These values are hardcoded in util/data_helper file
         self.stream_name = "BATTERY--org.md2k.phonesensor--PHONE"
         self.stream_version = "1"
-        self.metadata_hash = ""
+        self.metadata_hash = "45afcf70-ac08-3c08-807a-043315e33858"
         self.username = "test_user"
         self.user_id = "00000000-afb8-476e-9872-6472b4e66b68"
         self.user_password = "test_password"

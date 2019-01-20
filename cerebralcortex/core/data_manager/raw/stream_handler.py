@@ -84,17 +84,16 @@ class StreamHandler():
         version = str(version)
 
         stream_metadata = self.sql_data.get_stream_metadata(stream_name=stream_name, version=version)
-        metadata_obj = Metadata.from_json(stream_metadata)
 
         if len(stream_metadata) > 0:
             if data_type == DataSet.COMPLETE:
                 df = self.nosql.read_file(stream_name=stream_name, version=version)
-                stream = DataStream(data=df,metadata=metadata_obj)
+                stream = DataStream(data=df,metadata=stream_metadata)
             elif data_type == DataSet.ONLY_DATA:
                 df = self.nosql.read_file(stream_name=stream_name, version=version)
                 stream = DataStream(data=df)
             elif data_type == DataSet.ONLY_METADATA:
-                stream = DataStream(metadata=metadata_obj)
+                stream = DataStream(metadata=stream_metadata)
             else:
                 raise ValueError("Invalid type parameter: data_type "+str(data_type))
             return stream
