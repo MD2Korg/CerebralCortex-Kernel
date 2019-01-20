@@ -426,7 +426,7 @@ class CerebralCortex:
         Returns:
             str: encrypted password
         """
-        self.SqlData.encrypt_user_password(user_password)
+        return self.SqlData.encrypt_user_password(user_password)
 
     ################### KAFKA RELATED METHODS ##################################
 

@@ -30,35 +30,34 @@ from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 
 class SqlStorageTest:
 
-    def is_stream(self):
+    def test_01_is_stream(self):
         result = self.CC.is_stream(self.stream_name)
         self.assertEqual(result, True)
 
-    def get_stream_versions(self):
+    def test_02_get_stream_versions(self):
         versions = self.CC.get_stream_versions(self.stream_name)
         for version in versions:
             self.assertEqual(int(self.stream_version), version)
 
-    def get_stream_name(self, metadata_hash: uuid):
+    def test_03_get_stream_name(self):
         ds = self.CC.get_stream(self.stream_name, data_type=DataSet.ONLY_METADATA)
-        metadata_hash = ds.metadata.get_hash()
-        self.metadata_hash = metadata_hash
+        metadata_hash = ds.metadata[0].metadata_hash
         stream_name = self.CC.get_stream_name(metadata_hash)
         self.assertEqual(self.stream_name, stream_name)
 
-    def get_stream_metadata_hash(self, stream_name: str):
-        metadata_hash = self.CC.get_stream_metadata_hash(self.stream_name)
+    def test_04_get_stream_metadata_hash(self):
+        metadata_hash = self.CC.get_stream_metadata_hash(self.stream_name)[0]
         self.assertEqual(self.metadata_hash, metadata_hash)
 
-    def get_user_id(self, user_name: str):
+    def test_05_get_user_id(self):
         user_id = self.CC.get_user_id(self.username)
         self.assertEqual(self.user_id, user_id)
 
-    def get_user_name(self, user_id: str):
+    def test_06_get_user_name(self):
         username = self.CC.get_user_name(self.user_id)
         self.assertEqual(self.username, username)
 
-    def get_all_users(self, study_name: str):
+    def test_07_get_all_users(self):
         all_users = self.CC.get_all_users(self.study_name)
         self.assertEqual(len(all_users), 1)
         username = all_users[0].get("username")
@@ -67,23 +66,12 @@ class SqlStorageTest:
         self.assertEqual(self.username, username)
         self.assertEqual(self.user_id, user_id)
 
-    def get_user_metadata(self, user_id: str = None, username: str = None):
+    def test_08_get_user_metadata(self):
         self.CC.get_user_metadata(self.user_id)
         self.CC.get_user_metadata(self.username)
         self.CC.get_user_metadata(self.user_id, self.username)
 
-    def connect(self, username: str, password: str):
-        result = self.CC.connect(self.username, self.user_password)
-        self.assertEqual(result, True)
 
-    def is_auth_token_valid(self, username: str, auth_token: str, auth_token_expiry_time: datetime):
-        current_datetime = datetime.now()
-        self.CC.is_auth_token_valid(self.username, self.aut_token, current_datetime)
-
-    def update_auth_token(self, username: str, auth_token: str, auth_token_issued_time: datetime,
-                          auth_token_expiry_time: datetime):
-        self.CC.update_auth_token()
-
-    def encrypt_user_password(self, user_password: str):
+    def test_09_encrypt_user_password(self):
         result = self.CC.encrypt_user_password(self.user_password)
-        self.assertEqual(result, True)
+        self.assertEqual(result, "10a6e6cc8311a3e2bcc09bf6c199adecd5dd59408c343e926b129c4914f3cb01")

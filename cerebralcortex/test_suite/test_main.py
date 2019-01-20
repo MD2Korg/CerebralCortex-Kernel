@@ -30,8 +30,10 @@ import warnings
 
 from cerebralcortex.cerebralcortex import CerebralCortex
 from cerebralcortex.test_suite.test_stream import DataStreamTest
+from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
 
-class TestCerebralCortex(unittest.TestCase, DataStreamTest):
+
+class TestCerebralCortex(unittest.TestCase, SqlStorageTest):
 
     def setUp(self):
         warnings.simplefilter("ignore")
@@ -45,9 +47,17 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest):
         self.stream_version = "1"
         self.metadata_hash = "45afcf70-ac08-3c08-807a-043315e33858"
         self.username = "test_user"
-        self.user_id = "00000000-afb8-476e-9872-6472b4e66b68"
+        self.user_id = "dfce1e65-2882-395b-a641-93f31748591b"
         self.user_password = "test_password"
+        self.user_role = "test_role"
+        self.auth_token = "xxx"
         self.study_name = "test_study"
+        self.user_metadata = {"study_name":self.study_name}
 
-    def tearDown(self):
+    def test_00(self):
+        # setup database entries
+        self.CC.create_user(self.username, self.user_password, self.user_role, self.user_metadata)
+
+    def test_9999_last(self):
+        self.CC.delete_user(self.username)
         pass

@@ -128,6 +128,7 @@ class StreamHandler:
         if len(rows) > 0:
             for row in rows:
                 metadata_hashes.append(row["metadata_hash"])
+            return metadata_hashes
         else:
             return []
 
@@ -205,7 +206,7 @@ class StreamHandler:
         metadata_str = metadata_obj.to_json()
         if (status=="exist"):
             return True
-        
+
         if (status == "new"):
             qry = "INSERT INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
             vals = str(stream_name), str(version), str(metadata_hash), json.dumps(metadata_str)

@@ -28,10 +28,12 @@ def gen_phone_battery_metadata():
     stream_metadata.is_valid()
     return stream_metadata
 
-def create_all(CC):
+def create_all(obj):
     # create temp user in SQL storage
     # create temp folders for test-data
-    pass
+
+    obj.CC.create_user(obj.username, obj.user_password, obj.user_role, obj.user_metadata)
+    print("dddd")
 
 def drop_all(CC):
     # delete temp user in SQL storage

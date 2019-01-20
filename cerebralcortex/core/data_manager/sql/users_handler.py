@@ -62,7 +62,7 @@ class UserHandler():
         user_uuid = str(username)+str(user_role)+str(user_metadata)
         user_uuid = str(uuid.uuid3(uuid.NAMESPACE_DNS, user_uuid))
         encrypted_password = self.encrypt_user_password(user_password)
-        qry = "INSERT INTO " + self.userTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s, %s)"
+        qry = "INSERT INTO " + self.userTable + " (user_id, username, password, user_role, user_metadata) VALUES(%s, %s, %s, %s, %s)"
         vals = str(user_uuid), str(username), str(encrypted_password), str(user_role), json.dumps(user_metadata)
 
         try:
@@ -84,7 +84,7 @@ class UserHandler():
         """
         if not username:
             raise ValueError("username cannot be empty/None.")
-        qry = "delete from "+self.userTable+ " where username=%s"
+        qry = "delete from "+self.userTable+ " where username=%(username)s"
         vals = {"username": str(username)}
         try:
             self.execute(qry, vals, commit=True)
@@ -114,13 +114,13 @@ class UserHandler():
             raise ValueError("User ID/name cannot be empty.")
 
         if user_id and not username:
-            qry = "select user_metadata from user where identifier=%(identifier)s"
-            vals = {"identifier": str(user_id)}
+            qry = "select user_metadata from user where user_id=%(user_id)s"
+            vals = {"user_id": str(user_id)}
         elif not user_id and username:
             qry = "select user_metadata from user where username=%(username)s"
             vals = {"username": str(username)}
         else:
-            qry = "select user_metadata from user where identifier=%s and username=%s"
+            qry = "select user_metadata from user where user_id=%s and username=%s"
             vals = str(user_id), str(username)
 
         rows = self.execute(qry, vals)
