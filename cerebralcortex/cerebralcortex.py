@@ -66,6 +66,7 @@ class CerebralCortex:
         self.logtypes = LogTypes()
         self.SqlData = SqlData(self)
         self.RawData = RawData(self)
+        self.ObjectData = ObjectData(self)
         self.MessagingQueue = None
         self.TimeSeriesData = None
 
@@ -77,8 +78,6 @@ class CerebralCortex:
         if self.config["messaging_service"] != "none":
             self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
 
-        if "minio" in self.config:
-            self.ObjectData = ObjectData(self)
 
     ###########################################################################
     #                     RAW DATA MANAGER METHODS                            #

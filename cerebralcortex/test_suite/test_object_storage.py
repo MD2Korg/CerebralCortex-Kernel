@@ -23,18 +23,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import unittest
 
-class TestMinio():
 
-    bucket_name = "testbucket"
-    obj_name = "test_obj.json"
+class TestObjectStorage():
 
     def test_01_bucket(self):
-        try:
-            self.CC.create_bucket(self.bucket_name)
-        except Exception as err:
-            self.assertEqual(err.message, "Your previous request to create the named bucket succeeded and you already own it.")
+        msg = self.CC.create_bucket(self.bucket_name)
+        if msg==True:
+            self.assertEqual(msg, True)
+        else:
+            self.assertEqual(str(msg["error"]).startswith("[Errno 17] File exists"), True)
 
         result = self.CC.is_bucket(self.bucket_name)
         self.assertEqual(result, True)
@@ -42,28 +42,29 @@ class TestMinio():
         result = self.CC.get_buckets()['buckets-list']
         found = False
         for res in result:
-            if res['bucket-name']==self.bucket_name:
+            if res['name']==self.bucket_name:
                 found = True
         if not found:
             self.fail("Faied get_buckets, cannot find bucket.")
+        else:
+            self.assertEqual(found, True)
 
 
     def test_03_bucket_objects(self):
-        self.CC.upload_object(self.bucket_name, self.obj_name, self.gz_file.replace(".gz", ".json"))
-        obj_stats = self.CC.get_object_stats(self.bucket_name, self.obj_name)
-        self.assertEqual(obj_stats["bucket_name"], self.bucket_name)
-        self.assertEqual(obj_stats["object_name"], self.obj_name)
+        self.CC.upload_object(self.bucket_name, "some_obj.zip", self.obj_file_path)
+        self.CC.upload_object(self.bucket_name, "some_obj.json", self.obj_metadata_file_path)
+        obj_stats = self.CC.get_object_stats(self.bucket_name, "some_obj.zip")
+        self.assertEqual(obj_stats["type"], "file")
+        self.assertEqual(obj_stats["name"], "some_obj.zip")
 
         try:
-            self.CC.get_object(self.bucket_name, self.obj_name)
+            obj = self.CC.get_object(self.bucket_name, "some_obj.zip")
+            self.assertEqual(type(obj), bytes)
         except Exception as e:
             self.fail(e.message)
 
         obj_list = self.CC.get_bucket_objects(self.bucket_name)['bucket-objects']
-        found = False
-        for obj in obj_list:
-            if obj['object_name']==self.obj_name:
-                found = True
-        if not found:
-            self.fail("Faied get_bucket_objects, cannot find object.")
+        self.assertEqual(len(obj_list), 1)
+        self.assertEqual(os.path.split(obj_list[0]["object_name"])[1], "some_obj.zip")
+        self.assertNotEqual(len(obj_list[0]["metadata"]), 0)
 

@@ -25,15 +25,16 @@
 
 import json
 import unittest
-import yaml
+import shutil
 import warnings
 
 from cerebralcortex.cerebralcortex import CerebralCortex
 from cerebralcortex.test_suite.test_stream import DataStreamTest
 from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
+from cerebralcortex.test_suite.test_object_storage import TestObjectStorage
+import os
 
-
-class TestCerebralCortex(unittest.TestCase, SqlStorageTest):
+class TestCerebralCortex(unittest.TestCase, TestObjectStorage):
 
     def setUp(self):
         warnings.simplefilter("ignore")
@@ -54,10 +55,17 @@ class TestCerebralCortex(unittest.TestCase, SqlStorageTest):
         self.study_name = "test_study"
         self.user_metadata = {"study_name":self.study_name}
 
+        # object test params
+        self.bucket_name = "test_bucket"
+        self.obj_file_path = os.getcwd()+"/test_data/objects/some_obj.zip"
+        self.obj_metadata_file_path = os.getcwd()+"/test_data/objects/some_obj.json"
+
     def test_00(self):
         # setup database entries
         self.CC.create_user(self.username, self.user_password, self.user_role, self.user_metadata)
 
     def test_9999_last(self):
+
         self.CC.delete_user(self.username)
-        pass
+        shutil.rmtree(os.path.join(self.cc_conf["object_storage"]["filesystem_path"],self.bucket_name))
+

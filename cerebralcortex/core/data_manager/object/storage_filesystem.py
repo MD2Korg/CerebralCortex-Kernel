@@ -68,19 +68,20 @@ class FileSystemStorage():
         try:
             temp = []
             bucket_list = {}
-            with os.scandir(self.filesystem_path) as dir_entries:
+            bucket_path = os.path.join(self.filesystem_path,bucket_name)
+            with os.scandir(bucket_path) as dir_entries:
                 for bucket in dir_entries:
-                    if os.path.isfile(bucket.path) and bucket.name[-3:]=="json":
+                    if os.path.isfile(bucket.path) and bucket.name[-4:]=="json":
                         with open(bucket.path) as metadata_file:
                             metadata = metadata_file.read()
                             metadata = json.loads(metadata)
 
                         base_file_name = os.path.splitext(bucket.path)[0]
                         for infile in glob.glob( base_file_name+'.*' ):
-                            if infile[-3:]!="json":
+                            if infile[-4:]!="json":
                                 object_file = infile
                                 break
-                        object_stats = self._get_file_info(object, only_file_name=True)
+                        object_stats = self._get_file_info(object_file, only_file_name=True)
                         metadata.update(object_stats)
                         temp.append({"object_name":object_file, "metadata": json.dumps(metadata)})
 
@@ -89,7 +90,7 @@ class FileSystemStorage():
 
         except Exception as e:
             objects_in_bucket["error"] = str(e)+" \n - Trace: "+str(traceback.format_exc())
-            return objects_in_bucket
+            return {"error":objects_in_bucket}
 
     def get_object_stats(self, bucket_name: str, object_name: str) -> dict:
         """
@@ -112,7 +113,7 @@ class FileSystemStorage():
                 metadata_file_path = os.path.splitext(object_path)[0]
                 metadata_file_path = metadata_file_path+".json"
 
-                with open(str(metadata_file_path).replace()) as metadata_file:
+                with open(str(metadata_file_path)) as metadata_file:
                     metadata = metadata_file.read()
                     metadata = json.loads(metadata)
                 object_stats = self._get_file_info(object_path, only_file_name=True)
@@ -174,7 +175,7 @@ class FileSystemStorage():
             else:
                 return False
         except Exception as e:
-            raise {"error": str(e)}
+            return {"error": str(e)}
 
     def is_object(self, bucket_name: str, object_name: str) -> dict:
         """
@@ -194,7 +195,7 @@ class FileSystemStorage():
             else:
                 return False
         except Exception as e:
-            raise {"error": str(e)}
+            return {"error": str(e)}
 
     ###################################################################
     ################## STORE DATA METHODS #############################
@@ -222,7 +223,7 @@ class FileSystemStorage():
             os.mkdir(new_bucket_path)
             return True
         except Exception as e:
-            raise {"error": str(e)}
+            return {"error": str(e)}
 
     def upload_object(self, bucket_name: str, object_name: str, object_filepath: str) -> bool:
         """
@@ -241,14 +242,13 @@ class FileSystemStorage():
             raise ValueError("All parameters are required.")
         try:
             object_path = os.path.join(self.filesystem_path,bucket_name, object_name)
-            if os.path.isdir(object_path):
-                file_data = open(object_filepath, 'rb')
-                with open(object_path, "wb") as obj:
-                    obj.write(file_data)
+            file_data = open(object_filepath, 'rb').read()
+            with open(object_path, "wb+") as obj:
+                obj.write(file_data)
 
             return True
         except Exception as e:
-            raise {"error": str(e)}
+            return {"error": str(e)}
 
     def _get_file_info(self, dir_entry, only_file_name:bool=False)->dict:
         """
@@ -262,12 +262,15 @@ class FileSystemStorage():
 
         """
         if only_file_name:
-            info = os.stat(dir_entry.path)
+            info = os.stat(dir_entry)
+            isdir = os.path.isdir(dir_entry)
+            file_name = os.path.split(dir_entry)[1]
         else:
             info = dir_entry.stat()
-        isdir = os.path.isdir(dir_entry.path)
+            isdir = os.path.isdir(dir_entry.path)
+            file_name = dir_entry.name
         if isdir:
             entry_type = "directory"
         else:
             entry_type = "file"
-        return {"file_name":dir_entry.name,"creation_time":info.st_ctime, "modified_file": info.st_mtime, "access_time": info.st_atime, "file_size":info.st_size, "type":entry_type}
+        return {"name":file_name,"creation_time":info.st_ctime, "modified_file": info.st_mtime, "access_time": info.st_atime, "file_size":info.st_size, "type":entry_type}
