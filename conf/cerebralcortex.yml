@@ -6,20 +6,20 @@ cc:
   throw_exception: False #if this is set to True then application will get exceptions
 
 #########################################################################
-###################### NoSQL Storage ####################################
+#                        NoSQL Storage                                  #
 #########################################################################
 nosql_storage: filesystem
 
 filesystem:
   filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/hdfs/cerebralcortex/test/" # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
 
-hdfs:
-  host: localhost
-  port: 9001
-  raw_files_dir: "cerebralcortex/cerebralcortex/"
+#hdfs:
+#  host: localhost
+#  port: 9001
+#  raw_files_dir: "cerebralcortex/cerebralcortex/"
 
 #########################################################################
-###################### OBJECT Storage ###################################
+#                        OBJECT Storage                                 #
 #########################################################################
 
 object_storage:
@@ -36,7 +36,7 @@ object_storage:
 #  secure: False #ssl
 
 #########################################################################
-###################### Relational Storage ###############################
+#                          Relational Storage                           #
 #########################################################################
 relational_storage: mysql
 
@@ -58,29 +58,20 @@ mysql:
 #########################################################################
 ###################### Visualization Data Storage #######################
 #########################################################################
-visualization_storage: influxdb
+visualization_storage: none
 
-influxdb:
-  host: 127.0.0.1
-  port: 8086
-  database: cerebralcortex_raw
-  db_user: ""
-  db_pass: ""
+#influxdb:
+#  host: 127.0.0.1
+#  port: 8086
+#  database: cerebralcortex_raw
+#  db_user: ""
+#  db_pass: ""
 
 #########################################################################
 ########################### Messaging Service ###########################
 #########################################################################
-messaging_service: kafka
+messaging_service: none
 
-kafka:
-  host: 127.0.0.1
-  port: 9092
-
-#########################################################################
-###################### Data Provenance Storage###########################
-#########################################################################
-data_provenance: none
-
-zack:
-  host: 127.0.0.1
-  port: 8080
+#kafka:
+#  host: 127.0.0.1
+#  port: 9092
