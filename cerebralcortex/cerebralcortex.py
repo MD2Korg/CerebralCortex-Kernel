@@ -93,6 +93,8 @@ class CerebralCortex:
             bool: True if stream is successfully stored or throws an exception
         Raises:
             Exception: log or throws exception if stream is not stored
+        Todo:
+            Add functionality to store data in influxdb.
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> ds = DataStream(dataframe, MetaData)

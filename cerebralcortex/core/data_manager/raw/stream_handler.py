@@ -26,6 +26,7 @@
 
 import traceback
 from enum import Enum
+from pyspark.sql.functions import lit
 
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
@@ -112,6 +113,8 @@ class StreamHandler():
             ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana
         Returns:
             bool: True if stream is successfully stored or throws an exception
+        Todo:
+            Add functionality to store data in influxdb.
         Raises:
             Exception: log or throws exception if stream is not stored
         Examples:
@@ -124,20 +127,25 @@ class StreamHandler():
         if metadata:
             stream_name = metadata.name # only supports one data-stream storage at a time
             try:
-
-                # get start and end time of a stream
                 if datastream:
-                    status = self.nosql.write_file(stream_name, data)
+                    column_names = data.schema.names
+                    # if 'user' not in column_names:
+                    #     raise Exception("user column is missing in data schema")
+                    if 'ver' not in column_names:
+                        data = data.drop('ver')
 
-                    if status:
-                        # save metadata in SQL store
-                        if self.sql_data.save_stream_metadata(metadata):
-                            return True
-                        else:
-                            return False
+
+                    result = self.sql_data.save_stream_metadata(metadata)
+                    if result["status"]==True:
+                        version = result["version"]
+                        data = data.drop('ver')
+                        data = data.withColumn('ver', lit(version))
+
+                        status = self.nosql.write_file(stream_name, data)
+                        return status
                     else:
-                        print(
-                            "Something went wrong in saving data points.")
+                        print("Something went wrong in saving data points.")
+                        return False
             except Exception as e:
                 self.logging.log(
                     error_message="STREAM ID:  - Cannot save stream. " + str(traceback.format_exc()),

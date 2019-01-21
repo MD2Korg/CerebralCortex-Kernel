@@ -185,12 +185,14 @@ class StreamHandler:
     ################## STORE DATA METHODS #############################
     ###################################################################
 
-    def save_stream_metadata(self, metadata_obj)->bool:
+    def save_stream_metadata(self, metadata_obj)->dict:
         """
         Update a record if stream already exists or insert a new record otherwise.
 
         Args:
             metadata_obj (Metadata): stream metadata
+        Returns:
+            dict: {"status": True/False,"verion":version}
         Raises:
              Exception: if fail to insert/update record in MySQL. Exceptions are logged in a log file
         """
@@ -203,9 +205,11 @@ class StreamHandler:
         status = is_metadata_changed.get("status")
         version = is_metadata_changed.get("version")
 
+        metadata_obj.set_version(version)
+
         metadata_str = metadata_obj.to_json()
         if (status=="exist"):
-            return True
+            return {"status": True,"version":version}
 
         if (status == "new"):
             qry = "INSERT INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
@@ -216,7 +220,7 @@ class StreamHandler:
         if isQueryReady == 1:
             try:
                 self.execute(qry, vals, commit=True)
-                return True
+                return {"status": True,"version":version}
             except Exception as e:
                 raise Exception(e)
 

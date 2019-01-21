@@ -5,6 +5,7 @@ This directory contains some of the following examples on how to get/save data s
 
 ## Dependencies
 * [Python3.6](https://www.python.org/downloads/release/python-360/)
+* [spark 2.4](https://spark.apache.org/downloads.html)
 * MySQL > 5.7
 
 ## Installation

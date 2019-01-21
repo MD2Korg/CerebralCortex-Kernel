@@ -29,7 +29,7 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataD
 from cerebralcortex.core.util.spark_helper import get_or_create_sc
 
 
-def gen_phone_battery_data()->object:
+def gen_phone_battery_data(user_id)->object:
     """
     Create pyspark dataframe with some sample phone battery data
     Returns:
@@ -48,19 +48,19 @@ def gen_phone_battery_data()->object:
             sample = sample - 1
             tmp = 1
         timestamp = timestamp + timedelta(0, 1)
-        sample_data.append((timestamp, "21600000", sample, 1, "00000000-afb8-476e-9872-6472b4e66b68"))
+        sample_data.append((timestamp, "21600000", sample, 1, user_id))
     df = sqlContext.createDataFrame(sample_data, column_name)
     return df
 
 
-def gen_phone_battery_metadata()->Metadata:
+def gen_phone_battery_metadata(stream_name)->Metadata:
     """
     Create Metadata object with some sample metadata of phone battery data
     Returns:
         Metadata: metadata of phone battery stream
     """
     stream_metadata = Metadata()
-    stream_metadata.set_name("BATTERY--org.md2k.phonesensor--PHONE").set_version(1) \
+    stream_metadata.set_name(stream_name).set_version(1) \
         .add_dataDescriptor(
         DataDescriptor().name("level").type("float").set_attribute("description", "current battery charge")) \
         .add_module(

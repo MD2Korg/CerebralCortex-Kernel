@@ -98,7 +98,6 @@ class Metadata():
                 raise Exception("Author information is missing.")
         return True
 
-    #@classmethod
     def to_json(self):
         data_descriptor = []
         module_metadata = []
@@ -121,7 +120,7 @@ class Metadata():
             data_descriptor += str(dd._name+dd._type)
         for mm in self.modulez:
             modulez += str(mm._name) + str(mm._version) + str(mm._authors)
-        hash_string = str(name)+str(version)+str(data_descriptor)+str(modulez)
+        hash_string = str(name)+str(data_descriptor)+str(modulez)
         hash_string = hash_string.strip().lower().replace(" ", "")
 
         return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
