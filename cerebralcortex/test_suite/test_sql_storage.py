@@ -23,8 +23,6 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from datetime import datetime
-import uuid
 from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 
 
@@ -70,7 +68,6 @@ class SqlStorageTest:
         self.CC.get_user_metadata(self.user_id)
         self.CC.get_user_metadata(self.username)
         self.CC.get_user_metadata(self.user_id, self.username)
-
 
     def test_09_encrypt_user_password(self):
         result = self.CC.encrypt_user_password(self.user_password)

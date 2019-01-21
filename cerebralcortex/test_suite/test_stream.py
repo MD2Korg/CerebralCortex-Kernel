@@ -23,14 +23,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_data, gen_phone_battery_metadata
-from cerebralcortex.core.datatypes.datastream import DataStream
 from datetime import datetime
+
+from cerebralcortex.core.datatypes.datastream import DataStream
+from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_data, gen_phone_battery_metadata
 
 
 class DataStreamTest:
 
     def test_01_save_stream(self):
+        """
+        Test functionality related to save a stream
+        """
         data = gen_phone_battery_data()
         metadata = gen_phone_battery_metadata()
         ds = DataStream(data, metadata)
@@ -40,13 +44,16 @@ class DataStreamTest:
         self.assertEqual(result, True)
 
     def test_02_get_stream(self):
+        """
+        Test functionality related to get a stream
+        """
         ds = self.CC.get_stream(self.stream_name)
         data = ds.data
         metadata = ds.metadata[0]
 
         datapoint = data.take(1)
 
-        self.assertEqual(datapoint[0][0], datetime(2019,1,9,11,49,28))
+        self.assertEqual(datapoint[0][0], datetime(2019, 1, 9, 11, 49, 28))
         self.assertEqual(datapoint[0][1], '21600000')
         self.assertEqual(datapoint[0][2], 92)
         self.assertEqual(datapoint[0][3], 1)

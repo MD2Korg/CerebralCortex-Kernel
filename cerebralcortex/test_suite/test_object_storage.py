@@ -24,14 +24,16 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import unittest
 
 
 class TestObjectStorage():
 
     def test_01_bucket(self):
+        """
+        Perform all bucket related tests
+        """
         msg = self.CC.create_bucket(self.bucket_name)
-        if msg==True:
+        if msg == True:
             self.assertEqual(msg, True)
         else:
             self.assertEqual(str(msg["error"]).startswith("[Errno 17] File exists"), True)
@@ -42,15 +44,17 @@ class TestObjectStorage():
         result = self.CC.get_buckets()['buckets-list']
         found = False
         for res in result:
-            if res['name']==self.bucket_name:
+            if res['name'] == self.bucket_name:
                 found = True
         if not found:
             self.fail("Faied get_buckets, cannot find bucket.")
         else:
             self.assertEqual(found, True)
 
-
     def test_03_bucket_objects(self):
+        """
+        Perform all object related tests
+        """
         self.CC.upload_object(self.bucket_name, "some_obj.zip", self.obj_file_path)
         self.CC.upload_object(self.bucket_name, "some_obj.json", self.obj_metadata_file_path)
         obj_stats = self.CC.get_object_stats(self.bucket_name, "some_obj.zip")
@@ -67,4 +71,3 @@ class TestObjectStorage():
         self.assertEqual(len(obj_list), 1)
         self.assertEqual(os.path.split(obj_list[0]["object_name"])[1], "some_obj.zip")
         self.assertNotEqual(len(obj_list[0]["metadata"]), 0)
-
