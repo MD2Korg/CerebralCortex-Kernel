@@ -67,9 +67,17 @@ class Metadata():
     def data_descriptor(self):
         return self._dataDescriptor
 
+    @data_descriptor.setter
+    def data_descriptor(self, value):
+        self._dataDescriptor= value
+
     @property
     def modulez(self):
         return self._module
+
+    @modulez.setter
+    def modulez(self, value):
+        self._module = value
 
     def set_name(self, value):
         self._name = value
@@ -125,17 +133,18 @@ class Metadata():
 
         return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
 
-    @classmethod
-    def from_json(cls, json_list):
+    def from_json(self, json_list):
         """
 
         :param json_list:
         :return:
         """
+
         data_descriptor_list = []
         module_list = []
         metadata_list = []
         for tmp in json_list:
+            md = Metadata()
             if isinstance(tmp, dict):
                 metadata = json.loads(tmp.get("metadata"))
                 data_descriptors = metadata["data_descriptor"]
@@ -146,11 +155,11 @@ class Metadata():
                 for mm in module_info:
                     module_list.append(ModuleMetadata().from_json(mm))
 
-                cls.data_descriptor = data_descriptor_list
-                cls.modulez = module_list
-                cls.name = tmp["name"]
-                cls.version = int(tmp["version"])
-                cls.metadata_hash = tmp["metadata_hash"]
-                metadata_list.append(cls)
+                md.data_descriptor = data_descriptor_list
+                md.modulez = module_list
+                md.name = tmp["name"]
+                md.version = int(tmp["version"])
+                md.metadata_hash = tmp["metadata_hash"]
+                metadata_list.append(md)
 
         return metadata_list

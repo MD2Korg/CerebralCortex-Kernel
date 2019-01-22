@@ -67,7 +67,7 @@ class StreamHandler:
         if rows is not None and bool(rows):
             for row in rows:
                 result.append(row)
-            result = Metadata.from_json(result)
+            result = Metadata().from_json(result)
             return result
         else:
             return []
