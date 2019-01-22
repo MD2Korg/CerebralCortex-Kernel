@@ -11,7 +11,8 @@ cc:
 nosql_storage: filesystem
 
 filesystem:
-  filesystem_path: "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/examples/sample_data/" # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
+  # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
+  filesystem_path: "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/examples/sample_data/"
 
 #hdfs:
 #  host: localhost
@@ -41,17 +42,19 @@ object_storage:
 relational_storage: mysql
 
 mysql:
-  host: 127.0.0.1
-  port: 3306
+  host: 127.0.0.1 # change if MySQL is installed remotely
+  port: 3306 # Change if MySQL is not using default port
+  db_user: root # Change
+  db_pass: pass # Change
+
+  # Note: do not change following parameters if you don't know what you are doing
   connection_pool_name: "CC_Pool"
   connection_pool_size: 1
   database: cerebralcortex
-  db_user: root
-  db_pass: pass
-  datastream_table: stream_new
+  datastream_table: stream
   kafka_offsets_table: kafka_offsets
   processing_module_table: processing_module
-  data_replay_table: data_replay_md2k2
+  data_replay_table: data_replay
   user_table: user
   study_table: study
 

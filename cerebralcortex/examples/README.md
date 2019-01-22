@@ -35,10 +35,16 @@ To run these examples you just need to update configuration in the following con
 
 `CerebralCortex-Kernel-3.0/conf/cerebralcortex.yml`
 
+* Update filesystem storage path (i.e., `filesystem: filesystem_path`)
+* Update MySQL settings in config file. 
+
 #### How to run the example code?
+* **Import MySQL Database:**
+    - `cd CerebralCortex-Kernel-3.0/cerebralcortex/examples/db`
+    - `mysql -u MySQL-USERNAME -pMySQL-PASSWORD < cerebralcortex.sql `
 
-`cd CerebralCortex-Kernel-3.0/cerebralcortex/examples`
-
-`sh run.sh`
+* **Run example**    
+    - `cd CerebralCortex-Kernel-3.0/cerebralcortex/examples`
+    - `sh run.sh`
 
 If everything works well then example code will produce following console logs:

@@ -1,8 +1,6 @@
 # CerebralCortex Kernel
 Cerebral Cortex is the big data cloud companion of mCerebrum designed to support population-scale data analysis, visualization, model development, and intervention design for mobile sensor data.
 
-CerebralCortex-KafkaStreamPreprocessor (CC-KSP) is a apache-spark based pub/sub system for processing incoming mobile sensor data.
-
 You can find more information about MD2K software on our [software website](https://md2k.org/software) or the MD2K organization on our [MD2K website](https://md2k.org/).
 
 CerebralCortex Kernel is part of our [CerebralCortex cloud platform](https://github.com/MD2Korg/CerebralCortex). CerebralCortex Kernel is mainly responsible to store/retrieve mobile sensor data along with it's metadata. 
@@ -13,15 +11,17 @@ We have renamed following repositories.
 * CerebralCortex - >  CerebralCortex-Kernel
 
 ## Installation
+CerebralCortex-Kernel is a part of CerebralCortex cloud platform. To test the complete cloud platform, please visit [CerebralCortex](https://github.com/MD2Korg/CerebralCortex).
 
-Minimum requirements:
-* [Python3.6](https://www.python.org/downloads/release/python-360/)
-
-To install:
+CerebralCortex-Kernel requires minimum [Python3.6](https://www.python.org/downloads/release/python-360/). To install CerebralCortex-Kernel as an API:
 
 ```git clone https://github.com/MD2Korg/CerebralCortex.git```
 
 ```sudo python3 setup.py install```
+
+# Code Example
+Example folder (`cerebralcortex-kernel/cerebralcortex/example`) contains basic examples on how to use CerebralCortex-Kernel api.
+ 
 # FAQ
 **1 - Do I need whole CerebralCortex cloud platform to use CerebralCortex-Kernal?**
 
@@ -89,4 +89,3 @@ This project is licensed under the BSD 2-Clause - see the [license](https://md2k
   * Grants: 1640813, 1722646
 * [Intelligence Advanced Research Projects Activity](https://www.iarpa.gov/)
   * Contract: 2017-17042800006
-
