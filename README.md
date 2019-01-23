@@ -5,8 +5,10 @@ You can find more information about MD2K software on our [software website](http
 
 CerebralCortex Kernel is part of our [CerebralCortex cloud platform](https://github.com/MD2Korg/CerebralCortex). CerebralCortex Kernel is mainly responsible to store/retrieve mobile sensor data along with it's metadata. 
 
-### Note
+**Note**:
+
 We have renamed following repositories.
+
 * CerebralCortex-Platform -> CerebralCortex
 * CerebralCortex - >  CerebralCortex-Kernel
 
@@ -19,10 +21,10 @@ CerebralCortex-Kernel requires minimum [Python3.6](https://www.python.org/downlo
 
 ```sudo python3 setup.py install```
 
-# Code Example
+## Code Example
 Example folder (`cerebralcortex-kernel/cerebralcortex/example`) contains basic examples on how to use CerebralCortex-Kernel api.
  
-# FAQ
+## FAQ
 **1 - Do I need whole CerebralCortex cloud platform to use CerebralCortex-Kernal?**
 
 No! If you want to use CerebralCortex-Kernel independently then you would need: 

@@ -48,6 +48,7 @@ def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal"):
     sparkSession = ss.getOrCreate()
 
     sc = sparkSession.sparkContext
+    sc.setLogLevel("FATAL")
 
     sqlContext = SQLContext(sc)
     if type=="SparkSessionBuilder":

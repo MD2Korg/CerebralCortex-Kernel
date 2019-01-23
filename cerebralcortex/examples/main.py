@@ -30,10 +30,17 @@ from cerebralcortex.examples.util.data_helper import gen_phone_battery_data, gen
 
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
 
-
 class Examples:
     def __init__(self, example_name):
-        # load/set example params/data
+        """
+        load/set example params/data. This example perform following operations:
+            - create sample phone battery data stream
+            - perform windowing operation on the stream
+            - store windowed data asa new stream
+        Args:
+            example_name:
+        """
+
         self.setup_example()
 
         if example_name=="window":
@@ -68,10 +75,7 @@ class Examples:
     def window_example(self):
         """
         This example will window phone battery stream into 1 minutes chunks and take the average of battery level
-        Todo:
-            Add user column in window method
-            Creating a new metadata object loads data from previous instance (BUG). from_json also overwrites object values
-            -
+
         """
 
         # get sample stream data
@@ -86,14 +90,14 @@ class Examples:
 
         # pyspark windowing operation
         # Note: do not include version column in the dataframe. Version is calculated and added by CerebralCortex-Kernel
-        windowed_data = data.groupBy(F.window("timestamp", "1 minute")).agg(F.avg("battery_level").alias('avg'))
-        windowed_data = windowed_data.select(windowed_data.window.start.alias("start"), windowed_data.window.end.alias("end"), "avg")
+        windowed_data = data.groupBy(['user',F.window("timestamp", "1 minute")]).agg(F.avg("battery_level").alias('battery_average'))
+        windowed_data = windowed_data.select(windowed_data.user, windowed_data.window.start.alias("start"), windowed_data.window.end.alias("end"), windowed_data.battery_average)
 
         # print 5 samples from windowed data
         samples = windowed_data.take(5)
         print("\n\n","*"*10, "STREAM DATA", "*"*10)
         for sample in samples:
-            print("Start-time", sample.start, "End-time", sample.end, "Average-battery-levels", sample.avg)
+            print("User-ID:",sample.user,"Start-time:", sample.start, "End-time:", sample.end, "Average-battery-levels:", sample.battery_average)
 
         # save newly create data as a new stream in cerebralcortex
         new_stream_name = "BATTERY--org.md2k.phonesensor--PHONE-windowed-data"
@@ -101,18 +105,24 @@ class Examples:
         # create metadata for the new stream
         stream_metadata = Metadata()
 
-
-        stream_metadata.set_name(new_stream_name) \
+        # Note: do not include version column in the dataframe. Version is calculated and added by CerebralCortex-Kernel
+        stream_metadata.set_name(new_stream_name).add_description("1 minute windowed data of phone battery with average battery levels of each window.") \
             .add_dataDescriptor(
-            DataDescriptor().name("level").type("float").set_attribute("description", "1 minute average battery levels")) \
+            DataDescriptor().name("start_time").type("datetime").set_attribute("description", "start time of a window")) \
+            .add_dataDescriptor(
+            DataDescriptor().name("end_time").type("datetime").set_attribute("description", "end time of a window")) \
+            .add_dataDescriptor(
+            DataDescriptor().name("battery_average").type("float").set_attribute("description", "average battery values of a window")) \
             .add_module(
-            ModuleMetadata().name("battery").version("0.0.1").set_attribute("attribute_key", "attribute_value").set_author(
+            ModuleMetadata().name("cerebralcortex.examples.main").version("0.0.1").set_attribute("description", "CerebralCortex-kernel example code to window phone battery data").set_author(
                 "test_user", "test_user@test_email.com"))
 
         # check whether metadata is valid and then store the datastream
+        print("\n\n","*"*10, "STORING NEW STREAM DATA", "*"*10)
         if stream_metadata.is_valid():
             new_ds = DataStream(windowed_data, stream_metadata)
-            self.CC.save_stream(new_ds)
+            if self.CC.save_stream(new_ds):
+                print(new_stream_name, "has been stored.\n\n")
 
 
 if __name__=="__main__":

@@ -36,6 +36,7 @@ class Metadata():
         """
         self._name = None
         self._version = None
+        self._description = "",
         self._metadata_hash = None
         self._dataDescriptor = []
         self._module = []
@@ -159,6 +160,19 @@ class Metadata():
         self._version = value
         return self
 
+    def add_description(self, stream_description:str):
+        """
+        Add stream description
+        Args:
+            stream_description (str): textual description of a stream
+
+        Returns:
+            self
+
+        """
+        self._description = stream_description
+        return self
+
     def add_dataDescriptor(self, dd: DataDescriptor):
         """
         Add data description of a stream
@@ -193,6 +207,10 @@ class Metadata():
             ValueError: if metadata fields are not set
 
         """
+        if not self.name:
+            raise ValueError("Stream name is not defined.")
+        if not self._description:
+            raise ValueError("Stream description is not defined.")
         for dd_obj in self.data_descriptor:
             if (dd_obj._name is None or dd_obj._name=="") and (dd_obj._type is None or dd_obj._type==""):
                 raise ValueError("Name and/or type fields are missing in data descriptor.")
@@ -217,6 +235,7 @@ class Metadata():
         for mm_obj in self.modulez:
             module_metadata.append(mm_obj.__dict__)
         metadata_json["name"] = self.name
+        metadata_json["description"] = self._description
         metadata_json["data_descriptor"] = data_descriptor
         metadata_json["module"] = module_metadata
         return metadata_json
@@ -268,6 +287,7 @@ class Metadata():
                 md.data_descriptor = data_descriptor_list
                 md.modulez = module_list
                 md.name = tmp["name"]
+                md._description = metadata.get("description", "")
                 md.version = int(tmp["version"])
                 md.metadata_hash = tmp["metadata_hash"]
                 metadata_list.append(md)
