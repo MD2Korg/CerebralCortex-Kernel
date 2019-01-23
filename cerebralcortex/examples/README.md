@@ -4,8 +4,11 @@ This directory contains some of the following examples on how to get/save data s
 * Window stream data into 1 minute chunks
 
 ## Dependencies
-* [Python3.6](https://www.python.org/downloads/release/python-360/)
-* spark 2.4 - `sudo pip3 install pyspark`
+* [Python3.6](https://www.python.org/downloads/release/python-360/) [Note: Python3.7 is not compatible with some of the requirements]
+* spark 2.4 - 
+    - Download [Spark 2.4](https://spark.apache.org/downloads.html)
+    - Export spark path in `CerebralCortex-Kernel-3.0/cerebralcortex/examples/run.sh` script (i.e., `SPARK_HOME`) 
+
 * MySQL > 5.7
 
 ## Installation
@@ -27,6 +30,20 @@ This directory contains some of the following examples on how to get/save data s
  `unzip 3.0.zip && rm 3.0.zip`
  
  `export PYTHONPATH="${PYTHONPATH}:PATH-OF-MAIN-DIR/CerebralCortex-Kernel-3.0` (This is defined in `run.sh`)
+
+### Installing requirements
+**Installing MySQL connector**
+
+`sudo pip3 install --egg mysql-connector-python-rf`
+
+**Installing other requirements**
+
+Requirements should already be installed with cerebralcortex-kernel installation. However, if you selected not to install it then use following commands to install requirements:
+
+`cd CerebralCortex-Kernel-3.0`
+
+`sudo pip3 install -r requirements.txt`
+
  
 ## Configure CerebralCortex-Kernal
 To run these examples you just need to update configuration in the following config file:
