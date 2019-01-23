@@ -19,6 +19,11 @@ CerebralCortex-Kernel requires minimum [Python3.6](https://www.python.org/downlo
 
 ```git clone https://github.com/MD2Korg/CerebralCortex-kernel.git```
 
+`cd cerebralcortex-kernel`
+
+`git checkout 3.0`
+
+
 ```sudo python3 setup.py install```
 
 ## Code Example

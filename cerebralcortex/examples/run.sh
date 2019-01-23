@@ -4,13 +4,11 @@
 ############################ Environment Configs ########################################
 #########################################################################################
 
-# Python3 path
+# Python3.6 path
 export PYSPARK_PYTHON=/usr/bin/python3
 
-# export CerebralCortex path if NOT INSTALLED
-# export PYTHONPATH="${PYTHONPATH}:PATH-OF-MAIN-DIR/CerebralCortex-Kernel-3.0"
-
-#export PYTHONPATH="${PYTHONPATH}:/home/ali/IdeaProjects/CerebralCortex-2.0"
+# export CerebralCortex path
+export PYTHONPATH="${PYTHONPATH}:PATH-OF-MAIN-DIR/CerebralCortex-Kernel-3.0"
 
 #Spark path, uncomment if spark home is not exported else where.
 export SPARK_HOME=PATH-OF-MAIN-DIR/spark-2.4.0-bin-hadoop2.7/

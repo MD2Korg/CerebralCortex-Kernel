@@ -4,7 +4,9 @@ This directory contains some of the following examples on how to get/save data s
 * Window stream data into 1 minute chunks
 
 ## Dependencies
-* [Python3.6](https://www.python.org/downloads/release/python-360/) [Note: Python3.7 is not compatible with some of the requirements]
+* [Python3.6](https://www.python.org/downloads/release/python-360/) 
+    - Note: Python3.7 is not compatible with some of the requirements
+    - Make sure pip version matches Python version 
 * spark 2.4 - 
     - Download [Spark 2.4](https://spark.apache.org/downloads.html)
     - Export spark path in `CerebralCortex-Kernel-3.0/cerebralcortex/examples/run.sh` script (i.e., `SPARK_HOME`) 
@@ -13,36 +15,24 @@ This directory contains some of the following examples on how to get/save data s
 
 ## Installation
 
-* Download CerebralCortex-Kernal on your computer from githug
-
-`wget https://github.com/MD2Korg/CerebralCortex-Kernel/archive/3.0.zip`
-
-`unzip 3.0.zip && rm 3.0.zip`
-
-`cd CerebralCortex-Kernel-3.0`
-
-```sudo python3 setup.py install```
-
-**Note:** If you don't want to install it then simply export the path of the CerebralCortex-Kernel directory:
+* `wget https://github.com/MD2Korg/CerebralCortex-Kernel/archive/3.0.zip`
  
- `wget https://github.com/MD2Korg/CerebralCortex-Kernel/archive/3.0.zip`
+* `unzip 3.0.zip && rm 3.0.zip`
  
- `unzip 3.0.zip && rm 3.0.zip`
- 
- `export PYTHONPATH="${PYTHONPATH}:PATH-OF-MAIN-DIR/CerebralCortex-Kernel-3.0` (This is defined in `run.sh`)
+* `export PYTHONPATH="${PYTHONPATH}:PATH-OF-MAIN-DIR/CerebralCortex-Kernel-3.0` (This is defined in `run.sh`)
 
 ### Installing requirements
 **Installing MySQL connector**
 
-`sudo pip3 install --egg mysql-connector-python-rf`
+* `sudo pip3 install --egg mysql-connector-python-rf`
 
 **Installing other requirements**
 
-Requirements should already be installed with cerebralcortex-kernel installation. However, if you selected not to install it then use following commands to install requirements:
+* `cd CerebralCortex-Kernel-3.0`
 
-`cd CerebralCortex-Kernel-3.0`
+* `sudo pip3 install -r requirements.txt`
 
-`sudo pip3 install -r requirements.txt`
+    - Note: please use appropriate pip (e.g., pip, pip3, pip3.6 etc.) installed on your machine 
 
  
 ## Configure CerebralCortex-Kernal
