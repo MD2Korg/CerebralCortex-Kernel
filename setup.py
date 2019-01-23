@@ -17,7 +17,7 @@ with open(path.join(here, 'README.md')) as f:
 setup(
     name="MD2K: Cerebral Cortex",
 
-    version='2.4.0',
+    version='3.0.0',
 
     description='Backend data analytics platform for MD2K software',
     long_description=long_description,
@@ -63,5 +63,5 @@ setup(
         ]
     },
 
-    data_files=[('/etc/rsyslog.d', ['cerebralcortex/core/resources/20-cerebralcortex.conf']), ('/etc/logrotate.d', ['cerebralcortex/core/resources/cerebralcortex']),]
+    #data_files=[('/etc/rsyslog.d', ['cerebralcortex/core/resources/20-cerebralcortex.conf']), ('/etc/logrotate.d', ['cerebralcortex/core/resources/cerebralcortex']),]
 )
