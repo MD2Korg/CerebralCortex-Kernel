@@ -1,4 +1,4 @@
-# CerebralCortex-kernal (Examples)
+# CerebralCortex-kernel (Examples)
 This directory contains some of the following examples on how to get/save data streams and perform basic operations:
 
 * Window stream data into 1 minute chunks
@@ -7,7 +7,7 @@ This directory contains some of the following examples on how to get/save data s
 * [Python3.6](https://www.python.org/downloads/release/python-360/) 
     - Note: Python3.7 is not compatible with some of the requirements
     - Make sure pip version matches Python version 
-* spark 2.4 - 
+* spark 2.4
     - Download [Spark 2.4](https://spark.apache.org/downloads.html)
     - Export spark path in `CerebralCortex-Kernel-3.0/cerebralcortex/examples/run.sh` script (i.e., `SPARK_HOME`) 
 

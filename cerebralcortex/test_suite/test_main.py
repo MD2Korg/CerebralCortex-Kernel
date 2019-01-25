@@ -70,6 +70,29 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         self.test_topic_name = "test_topic"
         self.test_message = "{'msg1':'some test message'}"
 
+    # def suite(self):
+    #     suite = unittest.TestSuite()
+    #     suite.addTest(DataStreamTest('test_01_save_stream'))
+    #     suite.addTest(DataStreamTest('test_02_get_stream'))
+    #
+    #     suite.addTest(SqlStorageTest('test_01_is_stream'))
+    #     suite.addTest(SqlStorageTest('test_ten'))
+    #     suite.addTest(SqlStorageTest('test_ten'))
+    #     suite.addTest(SqlStorageTest('test_ten'))
+    #     suite.addTest(SqlStorageTest('test_ten'))
+    #     suite.addTest(SqlStorageTest('test_ten'))
+    #     suite.addTest(SqlStorageTest('test_ten'))
+    #     suite.addTest(SqlStorageTest('test_ten'))
+    #     suite.addTest(SqlStorageTest('test_ten'))
+    #     suite.addTest(SqlStorageTest('test_ten'))
+    #     suite.addTest(SqlStorageTest('test_ten'))
+    #     suite.addTest(SqlStorageTest('test_ten'))
+    #     suite.addTest(SqlStorageTest('test_ten'))
+    #
+    #     suite.addTest(TestObjectStorage('test_eleven'))
+    #
+    #     return suite
+
     def test_00(self):
         """
         This test will create required entries in sql database.
@@ -84,3 +107,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         if self.cc_conf['nosql_storage']=="filesystem":
             shutil.rmtree(os.path.join(self.cc_conf["filesystem"]["filesystem_path"], self.bucket_name))
         shutil.rmtree(os.path.join(self.cc_conf["object_storage"]["object_storage_path"], self.bucket_name))
+
+# if __name__ == '__main__':
+#     runner = unittest.TextTestRunner(failfast=True)
+#     runner.run(TestCerebralCortex().suite())
