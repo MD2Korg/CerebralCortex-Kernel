@@ -40,8 +40,7 @@ To run these examples you just need to update configuration in the following con
 
 `CerebralCortex-Kernel-3.0/conf/cerebralcortex.yml`
 
-* Update filesystem storage path (i.e., `filesystem: filesystem_path`)
-* Update MySQL settings in config file. 
+* Update MySQL settings in `cerebralcortex.yml` file. Please look at the comments on what params shall be updated.
 
 ## How to run the example code?
 * **Import MySQL Database:**

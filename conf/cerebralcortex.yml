@@ -12,7 +12,7 @@ nosql_storage: filesystem
 
 filesystem:
   # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
-  filesystem_path: "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/examples/sample_data/"
+  filesystem_path: "./sample_data/"
 
 #hdfs:
 #  host: localhost
