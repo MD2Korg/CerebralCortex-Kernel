@@ -35,7 +35,7 @@ This directory contains some of the following examples on how to get/save data s
     - Note: please use appropriate pip (e.g., pip, pip3, pip3.6 etc.) installed on your machine 
 
  
-## Configure CerebralCortex-Kernal
+## Configure CerebralCortex-Kernel
 To run these examples you just need to update configuration in the following config file:
 
 `CerebralCortex-Kernel-3.0/conf/cerebralcortex.yml`
