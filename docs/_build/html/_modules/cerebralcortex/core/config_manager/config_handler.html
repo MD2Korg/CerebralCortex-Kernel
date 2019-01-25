@@ -1,0 +1,272 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>cerebralcortex.core.config_manager.config_handler &mdash; CerebralCortex 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> CerebralCortex
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../cc_example.html">Usage Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.html">cerebralcortex package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.config_manager.html">cerebralcortex.core.config_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.data_manager.object.html">cerebralcortex.core.data_manager.object package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.data_manager.raw.html">cerebralcortex.core.data_manager.raw package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.data_manager.html">cerebralcortex.core.data_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.data_manager.sql.html">cerebralcortex.core.data_manager.sql package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.data_manager.time_series.html">cerebralcortex.core.data_manager.time_series package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.datatypes.html">cerebralcortex.core.datatypes package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.log_manager.html">cerebralcortex.core.log_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.messaging_manager.html">cerebralcortex.core.messaging_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.metadata_manager.html">cerebralcortex.core.metadata_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.metadata_manager.stream.html">cerebralcortex.core.metadata_manager.stream package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.metadata_manager.user.html">cerebralcortex.core.metadata_manager.user package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.html">cerebralcortex.core package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.test_suite.html">cerebralcortex.core.test_suite package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.util.html">cerebralcortex.core.util package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.examples.html">cerebralcortex.examples package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.examples.util.html">cerebralcortex.examples.util package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.test_suite.html">cerebralcortex.test_suite package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.test_suite.util.html">cerebralcortex.test_suite.util package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">CerebralCortex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cerebralcortex.core.config_manager.config_handler</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cerebralcortex.core.config_manager.config_handler</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2019, MD2K Center of Excellence</span>
+<span class="c1"># - Nasir Ali &lt;nasir.ali08@gmail.com&gt;</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1">#</span>
+<span class="c1"># * Redistributions of source code must retain the above copyright notice, this</span>
+<span class="c1"># list of conditions and the following disclaimer.</span>
+<span class="c1">#</span>
+<span class="c1"># * Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1"># this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1"># and/or other materials provided with the distribution.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+
+<span class="kn">import</span> <span class="nn">yaml</span>
+
+
+<div class="viewcode-block" id="ConfigHandler"><a class="viewcode-back" href="../../../../rst/cerebralcortex.core.config_manager.html#cerebralcortex.core.config_manager.config_handler.ConfigHandler">[docs]</a><span class="k">class</span> <span class="nc">ConfigHandler</span><span class="p">:</span>
+
+<div class="viewcode-block" id="ConfigHandler.load_file"><a class="viewcode-back" href="../../../../rst/cerebralcortex.core.config_manager.html#cerebralcortex.core.config_manager.config_handler.ConfigHandler.load_file">[docs]</a>    <span class="k">def</span> <span class="nf">load_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper method to load a yaml file</span>
+<span class="sd">        :param config_dir_path:</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filepath (str): path to a yml configuration file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ymlfile</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">ymlfile</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;hdfs&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;hdfs&quot;</span><span class="p">][</span><span class="s2">&quot;raw_files_dir&quot;</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;hdfs&quot;</span><span class="p">][</span><span class="s2">&quot;raw_files_dir&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;hdfs&quot;</span><span class="p">][</span><span class="s2">&quot;raw_files_dir&quot;</span><span class="p">]</span><span class="o">+=</span><span class="s2">&quot;/&quot;</span>
+
+        <span class="k">if</span> <span class="s2">&quot;filesystem&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;filesystem&quot;</span><span class="p">][</span><span class="s2">&quot;filesystem_path&quot;</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;filesystem&quot;</span><span class="p">][</span><span class="s2">&quot;filesystem_path&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;filesystem&quot;</span><span class="p">][</span><span class="s2">&quot;filesystem_path&quot;</span><span class="p">]</span><span class="o">+=</span><span class="s2">&quot;/&quot;</span>
+
+        <span class="k">if</span> <span class="s2">&quot;object_storage&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;object_storage&quot;</span><span class="p">][</span><span class="s2">&quot;filesystem_path&quot;</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;object_storage&quot;</span><span class="p">][</span><span class="s2">&quot;filesystem_path&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;object_storage&quot;</span><span class="p">][</span><span class="s2">&quot;filesystem_path&quot;</span><span class="p">]</span><span class="o">+=</span><span class="s2">&quot;/&quot;</span>
+
+        <span class="k">if</span> <span class="s2">&quot;data_ingestion&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;data_ingestion&quot;</span><span class="p">][</span><span class="s2">&quot;data_dir_path&quot;</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;data_ingestion&quot;</span><span class="p">][</span><span class="s2">&quot;data_dir_path&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;data_ingestion&quot;</span><span class="p">][</span><span class="s2">&quot;data_dir_path&quot;</span><span class="p">]</span><span class="o">+=</span><span class="s2">&quot;/&quot;</span>
+
+        <span class="k">if</span> <span class="s2">&quot;data_dir&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;data_dir&quot;</span><span class="p">]</span><span class="o">!=</span><span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;data_dir&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span><span class="s2">&quot;/&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;data_dir&quot;</span><span class="p">]</span><span class="o">+=</span><span class="s2">&quot;/&quot;</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Nasir Ali
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -40,4 +40,4 @@ class ObjectData(FileSystemStorage):
         self.logging = CC.logging
         self.logtypes = LogTypes()
 
-        self.filesystem_path = self.config["object_storage"]["filesystem_path"]
+        self.filesystem_path = self.config["object_storage"]["object_storage_path"]

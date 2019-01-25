@@ -46,8 +46,8 @@ class ConfigHandler:
         if "filesystem" in self.config and self.config["filesystem"]["filesystem_path"]!="" and self.config["filesystem"]["filesystem_path"][-1] !="/":
             self.config["filesystem"]["filesystem_path"]+="/"
 
-        if "object_storage" in self.config and self.config["object_storage"]["filesystem_path"]!="" and self.config["object_storage"]["filesystem_path"][-1] !="/":
-            self.config["object_storage"]["filesystem_path"]+="/"
+        if "object_storage" in self.config and self.config["object_storage"]["object_storage_path"]!="" and self.config["object_storage"]["object_storage_path"][-1] !="/":
+            self.config["object_storage"]["object_storage_path"]+="/"
 
         if "data_ingestion" in self.config and self.config["data_ingestion"]["data_dir_path"]!="" and self.config["data_ingestion"]["data_dir_path"][-1] !="/":
             self.config["data_ingestion"]["data_dir_path"]+="/"

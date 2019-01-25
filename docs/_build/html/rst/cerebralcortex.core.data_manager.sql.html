@@ -1,0 +1,1040 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>cerebralcortex.core.data_manager.sql package &mdash; CerebralCortex 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="cerebralcortex.core.data_manager.time_series package" href="cerebralcortex.core.data_manager.time_series.html" />
+    <link rel="prev" title="cerebralcortex.core.data_manager.raw package" href="cerebralcortex.core.data_manager.raw.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> CerebralCortex
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../cc_example.html">Usage Example</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="cerebralcortex.html">cerebralcortex package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="cerebralcortex.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="cerebralcortex.core.html">cerebralcortex.core package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="cerebralcortex.core.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cerebralcortex.core.html#module-cerebralcortex.core">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cerebralcortex.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cerebralcortex.html#module-cerebralcortex.cerebralcortex">cerebralcortex.cerebralcortex module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cerebralcortex.html#module-cerebralcortex">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.config_manager.html">cerebralcortex.core.config_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.data_manager.object.html">cerebralcortex.core.data_manager.object package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.data_manager.raw.html">cerebralcortex.core.data_manager.raw package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="cerebralcortex.core.data_manager.html">cerebralcortex.core.data_manager package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="cerebralcortex.core.data_manager.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="cerebralcortex.core.data_manager.object.html">cerebralcortex.core.data_manager.object package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cerebralcortex.core.data_manager.raw.html">cerebralcortex.core.data_manager.raw package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">cerebralcortex.core.data_manager.sql package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cerebralcortex.core.data_manager.sql.cache_handler">cerebralcortex.core.data_manager.sql.cache_handler module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cerebralcortex.core.data_manager.sql.data">cerebralcortex.core.data_manager.sql.data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cerebralcortex.core.data_manager.sql.kafka_offsets_handler">cerebralcortex.core.data_manager.sql.kafka_offsets_handler module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cerebralcortex.core.data_manager.sql.stream_handler">cerebralcortex.core.data_manager.sql.stream_handler module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cerebralcortex.core.data_manager.sql.users_handler">cerebralcortex.core.data_manager.sql.users_handler module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-cerebralcortex.core.data_manager.sql">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="cerebralcortex.core.data_manager.time_series.html">cerebralcortex.core.data_manager.time_series package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cerebralcortex.core.data_manager.html#module-cerebralcortex.core.data_manager">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">cerebralcortex.core.data_manager.sql package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-cerebralcortex.core.data_manager.sql.cache_handler">cerebralcortex.core.data_manager.sql.cache_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-cerebralcortex.core.data_manager.sql.data">cerebralcortex.core.data_manager.sql.data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-cerebralcortex.core.data_manager.sql.kafka_offsets_handler">cerebralcortex.core.data_manager.sql.kafka_offsets_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-cerebralcortex.core.data_manager.sql.stream_handler">cerebralcortex.core.data_manager.sql.stream_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-cerebralcortex.core.data_manager.sql.users_handler">cerebralcortex.core.data_manager.sql.users_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-cerebralcortex.core.data_manager.sql">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.data_manager.time_series.html">cerebralcortex.core.data_manager.time_series package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.datatypes.html">cerebralcortex.core.datatypes package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.log_manager.html">cerebralcortex.core.log_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.messaging_manager.html">cerebralcortex.core.messaging_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.metadata_manager.html">cerebralcortex.core.metadata_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.metadata_manager.stream.html">cerebralcortex.core.metadata_manager.stream package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.metadata_manager.user.html">cerebralcortex.core.metadata_manager.user package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="cerebralcortex.core.html">cerebralcortex.core package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="cerebralcortex.core.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="cerebralcortex.core.config_manager.html">cerebralcortex.core.config_manager package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="cerebralcortex.core.data_manager.html">cerebralcortex.core.data_manager package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="cerebralcortex.core.data_manager.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cerebralcortex.core.data_manager.html#module-cerebralcortex.core.data_manager">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="cerebralcortex.core.datatypes.html">cerebralcortex.core.datatypes package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cerebralcortex.core.log_manager.html">cerebralcortex.core.log_manager package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cerebralcortex.core.messaging_manager.html">cerebralcortex.core.messaging_manager package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cerebralcortex.core.metadata_manager.html">cerebralcortex.core.metadata_manager package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cerebralcortex.core.test_suite.html">cerebralcortex.core.test_suite package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cerebralcortex.core.util.html">cerebralcortex.core.util package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cerebralcortex.core.html#module-cerebralcortex.core">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.test_suite.html">cerebralcortex.core.test_suite package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.util.html">cerebralcortex.core.util package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.examples.html">cerebralcortex.examples package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.examples.util.html">cerebralcortex.examples.util package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.test_suite.html">cerebralcortex.test_suite package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.test_suite.util.html">cerebralcortex.test_suite.util package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CerebralCortex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="cerebralcortex.html">cerebralcortex package</a> &raquo;</li>
+        
+          <li><a href="cerebralcortex.core.html">cerebralcortex.core package</a> &raquo;</li>
+        
+          <li><a href="cerebralcortex.core.data_manager.html">cerebralcortex.core.data_manager package</a> &raquo;</li>
+        
+      <li>cerebralcortex.core.data_manager.sql package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/rst/cerebralcortex.core.data_manager.sql.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="cerebralcortex-core-data-manager-sql-package">
+<h1>cerebralcortex.core.data_manager.sql package<a class="headerlink" href="#cerebralcortex-core-data-manager-sql-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-cerebralcortex.core.data_manager.sql.cache_handler">
+<span id="cerebralcortex-core-data-manager-sql-cache-handler-module"></span><h2>cerebralcortex.core.data_manager.sql.cache_handler module<a class="headerlink" href="#module-cerebralcortex.core.data_manager.sql.cache_handler" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler">
+<em class="property">class </em><code class="descclassname">cerebralcortex.core.data_manager.sql.cache_handler.</code><code class="descname">CacheHandler</code><a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/cache_handler.html#CacheHandler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler.get_cache_value">
+<code class="descname">get_cache_value</code><span class="sig-paren">(</span><em>key: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/cache_handler.html#CacheHandler.get_cache_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler.get_cache_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves value from the cache for the given key.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>key</strong> – key in the cache</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The value in the cache</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – if key is None or empty</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler.set_cache_value">
+<code class="descname">set_cache_value</code><span class="sig-paren">(</span><em>key: str</em>, <em>value: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/cache_handler.html#CacheHandler.set_cache_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler.set_cache_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new cache entry in the cache. Values are overwritten for existing keys.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>key</strong> – key in the cache</li>
+<li><strong>value</strong> – value associated with the key</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True on successful insert or False otherwise.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">bool</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – if key is None or empty</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cerebralcortex.core.data_manager.sql.data">
+<span id="cerebralcortex-core-data-manager-sql-data-module"></span><h2>cerebralcortex.core.data_manager.sql.data module<a class="headerlink" href="#module-cerebralcortex.core.data_manager.sql.data" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cerebralcortex.core.data_manager.sql.data.SqlData">
+<em class="property">class </em><code class="descclassname">cerebralcortex.core.data_manager.sql.data.</code><code class="descname">SqlData</code><span class="sig-paren">(</span><em>CC</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/data.html#SqlData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.data.SqlData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler" title="cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler</span></code></a>, <a class="reference internal" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler" title="cerebralcortex.core.data_manager.sql.users_handler.UserHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">cerebralcortex.core.data_manager.sql.users_handler.UserHandler</span></code></a>, <a class="reference internal" href="#cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler" title="cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler</span></code></a>, <a class="reference internal" href="#cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler" title="cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">cerebralcortex.core.data_manager.sql.cache_handler.CacheHandler</span></code></a></p>
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.data.SqlData.close">
+<code class="descname">close</code><span class="sig-paren">(</span><em>conn</em>, <em>cursor</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/data.html#SqlData.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.data.SqlData.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>close connection of mysql.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>conn</strong> (<em>object</em>) – MySQL connection object</li>
+<li><strong>cursor</strong> (<em>object</em>) – MySQL cursor object</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">Exception</span></code> – if connection is closed</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.data.SqlData.create_pool">
+<code class="descname">create_pool</code><span class="sig-paren">(</span><em>pool_name: str = 'CC_Pool'</em>, <em>pool_size: int = 1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/data.html#SqlData.create_pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.data.SqlData.create_pool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a connection pool, after created, the request of connecting
+MySQL could get a connection from this pool instead of request to
+create a connection.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pool_name</strong> (<em>str</em>) – the name of pool, (default=”CC_Pool”)</li>
+<li><strong>pool_size</strong> (<em>int</em>) – size of MySQL connections pool (default=1)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">MySQL connections pool</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.data.SqlData.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>sql</em>, <em>args=None</em>, <em>commit=False</em><span class="sig-paren">)</span> &#x2192; List[dict]<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/data.html#SqlData.execute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.data.SqlData.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute a sql, it could be with args and with out args. The usage is
+similar with execute() function in module pymysql.
+:param sql:
+:param args:
+:param commit:
+:return: if commit, return None, else, return result</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sql</strong> (<em>str</em>) – sql clause</li>
+<li><strong>args</strong> (<em>tuple</em>) – args need by sql clause</li>
+<li><strong>commit</strong> (<em>bool</em>) – whether to commit</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">returns a list of dicts if commit is set to False</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">list[dict]</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">Exception</span></code> – if MySQL query fails</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cerebralcortex.core.data_manager.sql.kafka_offsets_handler">
+<span id="cerebralcortex-core-data-manager-sql-kafka-offsets-handler-module"></span><h2>cerebralcortex.core.data_manager.sql.kafka_offsets_handler module<a class="headerlink" href="#module-cerebralcortex.core.data_manager.sql.kafka_offsets_handler" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler">
+<em class="property">class </em><code class="descclassname">cerebralcortex.core.data_manager.sql.kafka_offsets_handler.</code><code class="descname">KafkaOffsetsHandler</code><a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/kafka_offsets_handler.html#KafkaOffsetsHandler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler.get_kafka_offsets">
+<code class="descname">get_kafka_offsets</code><span class="sig-paren">(</span><em>topic: str</em><span class="sig-paren">)</span> &#x2192; List[dict]<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/kafka_offsets_handler.html#KafkaOffsetsHandler.get_kafka_offsets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler.get_kafka_offsets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get last stored kafka offsets
+:param topic: kafka topic name
+:type topic: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of kafka offsets. This method will return empty list if topic does not exist and/or no offset is stored for the topic.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list[dict]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – Topic name cannot be empty/None</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">get_kafka_offsets</span><span class="p">(</span><span class="s2">&quot;live-data&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[{</span><span class="s2">&quot;id&quot;</span><span class="p">,</span><span class="s2">&quot;topic&quot;</span><span class="p">,</span> <span class="s2">&quot;topic_partition&quot;</span><span class="p">,</span> <span class="s2">&quot;offset_start&quot;</span><span class="p">,</span> <span class="s2">&quot;offset_until&quot;</span><span class="p">,</span> <span class="s2">&quot;offset_update_time&quot;</span><span class="p">}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler.store_or_update_Kafka_offset">
+<code class="descname">store_or_update_Kafka_offset</code><span class="sig-paren">(</span><em>topic: str</em>, <em>topic_partition: str</em>, <em>offset_start: str</em>, <em>offset_until: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/kafka_offsets_handler.html#KafkaOffsetsHandler.store_or_update_Kafka_offset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.kafka_offsets_handler.KafkaOffsetsHandler.store_or_update_Kafka_offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store or Update kafka topic offsets. Offsets are used to track what messages have been processed.
+:param topic: name of the kafka topic
+:type topic: str
+:param topic_partition: partition number
+:type topic_partition: str
+:param offset_start: starting of offset
+:type offset_start: str
+:param offset_until: last processed offset
+:type offset_until: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – All params are required.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">Exception</span></code> – Cannot add/update kafka offsets because ERROR-MESSAGE</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">returns True if offsets are add/updated or throws an exception.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cerebralcortex.core.data_manager.sql.stream_handler">
+<span id="cerebralcortex-core-data-manager-sql-stream-handler-module"></span><h2>cerebralcortex.core.data_manager.sql.stream_handler module<a class="headerlink" href="#module-cerebralcortex.core.data_manager.sql.stream_handler" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler">
+<em class="property">class </em><code class="descclassname">cerebralcortex.core.data_manager.sql.stream_handler.</code><code class="descname">StreamHandler</code><a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/stream_handler.html#StreamHandler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler.get_stream_metadata">
+<code class="descname">get_stream_metadata</code><span class="sig-paren">(</span><em>stream_name: str</em>, <em>version: str = 'all'</em><span class="sig-paren">)</span> &#x2192; List[cerebralcortex.core.metadata_manager.stream.metadata.Metadata]<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/stream_handler.html#StreamHandler.get_stream_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler.get_stream_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of metadata for all versions available for a stream.
+:param stream_name: name of a stream
+:type stream_name: str
+:param version: version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default=”all”)
+:type version: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list (<a class="reference internal" href="cerebralcortex.core.metadata_manager.stream.html#cerebralcortex.core.metadata_manager.stream.metadata.Metadata" title="cerebralcortex.core.metadata_manager.stream.metadata.Metadata">Metadata</a>)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – stream_name cannot be None or empty.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">get_all_users</span><span class="p">(</span><span class="s2">&quot;mperf&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">Metadata</span><span class="p">]</span> <span class="c1"># list of MetaData class objects</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler.get_stream_metadata_hash">
+<code class="descname">get_stream_metadata_hash</code><span class="sig-paren">(</span><em>stream_name: str</em><span class="sig-paren">)</span> &#x2192; List[str]<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/stream_handler.html#StreamHandler.get_stream_metadata_hash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler.get_stream_metadata_hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all the metadata_hash associated with a stream name.
+:param stream_name: name of a stream
+:type stream_name: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of all the metadata hashes</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list[str]</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">get_metadata_hash</span><span class="p">(</span><span class="s2">&quot;ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="s2">&quot;00ab666c-afb8-476e-9872-6472b4e66b68&quot;</span><span class="p">,</span> <span class="s2">&quot;15cc444c-dfb8-676e-3872-8472b4e66b12&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler.get_stream_name">
+<code class="descname">get_stream_name</code><span class="sig-paren">(</span><em>metadata_hash: &lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt;</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/stream_handler.html#StreamHandler.get_stream_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler.get_stream_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
+:param metadata_hash: This could be an actual uuid object or a string form of uuid.
+:type metadata_hash: uuid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">name of a stream</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">get_stream_name</span><span class="p">(</span><span class="s2">&quot;00ab666c-afb8-476e-9872-6472b4e66b68&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ACCELEROMETER</span><span class="o">--</span><span class="n">org</span><span class="o">.</span><span class="n">md2k</span><span class="o">.</span><span class="n">motionsense</span><span class="o">--</span><span class="n">MOTION_SENSE_HRV</span><span class="o">--</span><span class="n">RIGHT_WRIST</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler.get_stream_versions">
+<code class="descname">get_stream_versions</code><span class="sig-paren">(</span><em>stream_name: str</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/stream_handler.html#StreamHandler.get_stream_versions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler.get_stream_versions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of versions available for a stream</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>stream_name</strong> (<em>str</em>) – name of a stream</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">list of int</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – if stream_name is empty or None</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">get_stream_versions</span><span class="p">(</span><span class="s2">&quot;ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler.is_stream">
+<code class="descname">is_stream</code><span class="sig-paren">(</span><em>stream_name: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/stream_handler.html#StreamHandler.is_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler.is_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if provided stream exists.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>stream_name</strong> (<em>str</em>) – name of a stream</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if stream_name exist False otherwise</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">is_stream</span><span class="p">(</span><span class="s2">&quot;ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kc">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler.save_stream_metadata">
+<code class="descname">save_stream_metadata</code><span class="sig-paren">(</span><em>metadata_obj</em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/stream_handler.html#StreamHandler.save_stream_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.stream_handler.StreamHandler.save_stream_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update a record if stream already exists or insert a new record otherwise.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>metadata_obj</strong> (<a class="reference internal" href="cerebralcortex.core.metadata_manager.stream.html#cerebralcortex.core.metadata_manager.stream.metadata.Metadata" title="cerebralcortex.core.metadata_manager.stream.metadata.Metadata"><em>Metadata</em></a>) – stream metadata</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">{“status”: True/False,”verion”:version}</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">Exception</span></code> – if fail to insert/update record in MySQL. Exceptions are logged in a log file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cerebralcortex.core.data_manager.sql.users_handler">
+<span id="cerebralcortex-core-data-manager-sql-users-handler-module"></span><h2>cerebralcortex.core.data_manager.sql.users_handler module<a class="headerlink" href="#module-cerebralcortex.core.data_manager.sql.users_handler" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler">
+<em class="property">class </em><code class="descclassname">cerebralcortex.core.data_manager.sql.users_handler.</code><code class="descname">UserHandler</code><a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.create_user">
+<code class="descname">create_user</code><span class="sig-paren">(</span><em>username: str</em>, <em>user_password: str</em>, <em>user_role: str</em>, <em>user_metadata: dict</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.create_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.create_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a user in SQL storage if it doesn’t exist
+:param username: Only alphanumeric usernames are allowed with the max length of 25 chars.
+:type username: str
+:param user_password: no size limit on password
+:type user_password: str
+:param user_role: role of a user
+:type user_role: str
+:param user_metadata: metadata of a user
+:type user_metadata: dict</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if user is successfully registered or throws any error in case of failure</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">bool</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – if selected username is not available</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">Exception</span></code> – if sql query fails</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.delete_user">
+<code class="descname">delete_user</code><span class="sig-paren">(</span><em>username: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.delete_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.delete_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a user record in SQL table
+:param username: username of a user that needs to be deleted</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">if user is successfully removed</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">bool</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – if username param is empty or None</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">Exception</span></code> – if sql query fails</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.encrypt_user_password">
+<code class="descname">encrypt_user_password</code><span class="sig-paren">(</span><em>user_password: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.encrypt_user_password"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.encrypt_user_password" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encrypt password
+:param user_password: unencrypted password
+:type user_password: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – password cannot be None or empty.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">encrypted password</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.gen_random_pass">
+<code class="descname">gen_random_pass</code><span class="sig-paren">(</span><em>string_type: str</em>, <em>size: int = 8</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.gen_random_pass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.gen_random_pass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a random password
+:param string_type: Accepted parameters are “varchar” and “char”. (Default=”varchar”)
+:param size: password length (default=8)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">random password</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_all_users">
+<code class="descname">get_all_users</code><span class="sig-paren">(</span><em>study_name: str</em><span class="sig-paren">)</span> &#x2192; List[dict]<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.get_all_users"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_all_users" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of all users part of a study.
+:param study_name: name of a study
+:type study_name: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – Study name is a requied field.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Returns empty list if there is no user associated to the study_name and/or study_name does not exist.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list[dict]</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">get_all_users</span><span class="p">(</span><span class="s2">&quot;mperf&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[{</span><span class="s2">&quot;76cc444c-4fb8-776e-2872-9472b4e66b16&quot;</span><span class="p">:</span> <span class="s2">&quot;nasir_ali&quot;</span><span class="p">}]</span> <span class="c1"># [{user_id, user_name}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_id">
+<code class="descname">get_user_id</code><span class="sig-paren">(</span><em>user_name: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.get_user_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the user id linked to user_name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user_name</strong> (<em>str</em>) – username of a user</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">user id associated to user_name</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – User name is a required field.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">get_user_id</span><span class="p">(</span><span class="s2">&quot;nasir_ali&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;76cc444c-4fb8-776e-2872-9472b4e66b16&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_metadata">
+<code class="descname">get_user_metadata</code><span class="sig-paren">(</span><em>user_id: &lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt; = None</em>, <em>username: str = None</em><span class="sig-paren">)</span> &#x2192; List[dict]<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.get_user_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get user metadata by user_id or by username</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>user_id</strong> (<em>str</em>) – id (uuid) of a user</li>
+<li><strong>user_name</strong> (<em>str</em>) – username of a user</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of dictionaries of user metadata</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list[dict]</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Return list of User class object</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – User ID/name cannot be empty.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">get_user_metadata</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;nasir_ali&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[{</span><span class="s2">&quot;study_name&quot;</span><span class="p">:</span><span class="s2">&quot;mperf&quot;</span><span class="o">........</span><span class="p">}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_name">
+<code class="descname">get_user_name</code><span class="sig-paren">(</span><em>user_id: str</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.get_user_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the user name linked to a user id.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>user_name</strong> (<em>str</em>) – username of a user</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">user_id associated to username</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – User ID is a required field.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">get_user_name</span><span class="p">(</span><span class="s2">&quot;76cc444c-4fb8-776e-2872-9472b4e66b16&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="s1">&#39;nasir_ali&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.is_auth_token_valid">
+<code class="descname">is_auth_token_valid</code><span class="sig-paren">(</span><em>username: str</em>, <em>auth_token: str</em>, <em>current_time: datetime.datetime</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.is_auth_token_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.is_auth_token_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate whether a token is valid or expired based on the token expiry datetime stored in SQL</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>username</strong> (<em>str</em>) – username of a user</li>
+<li><strong>auth_token</strong> (<em>str</em>) – token generated by API-Server</li>
+<li><strong>current_time</strong> (<em>datetime</em>) – current datetime object</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – Auth token and auth-token expiry time cannot be null/empty.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">returns True if token is valid or False otherwise.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.is_user">
+<code class="descname">is_user</code><span class="sig-paren">(</span><em>user_id: &lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt; = None</em>, <em>user_name: &lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt; = None</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.is_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.is_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks whether a user exists in the system. One of both parameters could be set to verify whether user exist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>user_id</strong> (<em>str</em>) – id (uuid) of a user</li>
+<li><strong>user_name</strong> (<em>str</em>) – username of a user</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if a user exists in the system or False otherwise.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">bool</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – Both user_id and user_name cannot be None or empty.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">is_user</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span><span class="s2">&quot;76cc444c-4fb8-776e-2872-9472b4e66b16&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kc">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.login_user">
+<code class="descname">login_user</code><span class="sig-paren">(</span><em>username: str</em>, <em>password: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.login_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.login_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authenticate a user based on username and password
+:param username:
+:param password:
+:return:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>username</strong> (<em>str</em>) – username of a user</li>
+<li><strong>password</strong> (<em>str</em>) – Encrypted password of a user</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – User name and password cannot be empty/None.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">returns True on successful login or False otherwise.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;nasir_ali&quot;</span><span class="p">,</span> <span class="s2">&quot;2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kc">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.update_auth_token">
+<code class="descname">update_auth_token</code><span class="sig-paren">(</span><em>username: str</em>, <em>auth_token: str</em>, <em>auth_token_issued_time: datetime.datetime</em>, <em>auth_token_expiry_time: datetime.datetime</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.update_auth_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.update_auth_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update an auth token in SQL database to keep user stay logged in. Auth token valid duration can be changed in configuration files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>username</strong> (<em>str</em>) – username of a user</li>
+<li><strong>auth_token</strong> (<em>str</em>) – issued new auth token</li>
+<li><strong>auth_token_issued_time</strong> (<em>datetime</em>) – datetime when the old auth token was issue</li>
+<li><strong>auth_token_expiry_time</strong> (<em>datetime</em>) – datetime when the token will get expired</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – Auth token and auth-token issue/expiry time cannot be None/empty.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Returns True if the new auth token is set or False otherwise.</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.username_checks">
+<code class="descname">username_checks</code><span class="sig-paren">(</span><em>username: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.username_checks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.username_checks" title="Permalink to this definition">¶</a></dt>
+<dd><p>No space, special characters, dash etc. are allowed in username.
+Only alphanumeric usernames are allowed with the max length of 25 chars.
+:param username:
+:type username: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if provided username comply the standard or throw an exception</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">Exception</span></code> – if username doesn’t follow standards</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-cerebralcortex.core.data_manager.sql">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-cerebralcortex.core.data_manager.sql" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="cerebralcortex.core.data_manager.time_series.html" class="btn btn-neutral float-right" title="cerebralcortex.core.data_manager.time_series package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="cerebralcortex.core.data_manager.raw.html" class="btn btn-neutral" title="cerebralcortex.core.data_manager.raw package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Nasir Ali
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

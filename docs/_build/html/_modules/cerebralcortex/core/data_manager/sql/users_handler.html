@@ -1,0 +1,614 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>cerebralcortex.core.data_manager.sql.users_handler &mdash; CerebralCortex 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+
+  
+  <script src="../../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../../../index.html" class="icon icon-home"> CerebralCortex
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../cc_example.html">Usage Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.html">cerebralcortex package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.config_manager.html">cerebralcortex.core.config_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.data_manager.object.html">cerebralcortex.core.data_manager.object package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.data_manager.raw.html">cerebralcortex.core.data_manager.raw package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.data_manager.html">cerebralcortex.core.data_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html">cerebralcortex.core.data_manager.sql package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.data_manager.time_series.html">cerebralcortex.core.data_manager.time_series package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.datatypes.html">cerebralcortex.core.datatypes package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.log_manager.html">cerebralcortex.core.log_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.messaging_manager.html">cerebralcortex.core.messaging_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.metadata_manager.html">cerebralcortex.core.metadata_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.metadata_manager.stream.html">cerebralcortex.core.metadata_manager.stream package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.metadata_manager.user.html">cerebralcortex.core.metadata_manager.user package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.html">cerebralcortex.core package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.test_suite.html">cerebralcortex.core.test_suite package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.util.html">cerebralcortex.core.util package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.examples.html">cerebralcortex.examples package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.examples.util.html">cerebralcortex.examples.util package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.test_suite.html">cerebralcortex.test_suite package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.test_suite.util.html">cerebralcortex.test_suite.util package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">CerebralCortex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cerebralcortex.core.data_manager.sql.users_handler</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cerebralcortex.core.data_manager.sql.users_handler</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2019, MD2K Center of Excellence</span>
+<span class="c1"># - Nasir Ali &lt;nasir.ali08@gmail.com&gt;</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1">#</span>
+<span class="c1"># * Redistributions of source code must retain the above copyright notice, this</span>
+<span class="c1"># list of conditions and the following disclaimer.</span>
+<span class="c1">#</span>
+<span class="c1"># * Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1"># this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1"># and/or other materials provided with the distribution.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span> <span class="nn">pytz</span> <span class="k">import</span> <span class="n">timezone</span>
+
+
+<div class="viewcode-block" id="UserHandler"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler">[docs]</a><span class="k">class</span> <span class="nc">UserHandler</span><span class="p">():</span>
+
+    <span class="c1">###################################################################</span>
+    <span class="c1">################## GET DATA METHODS ###############################</span>
+    <span class="c1">###################################################################</span>
+
+<div class="viewcode-block" id="UserHandler.create_user"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.create_user">[docs]</a>    <span class="k">def</span> <span class="nf">create_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">user_password</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">user_role</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">user_metadata</span><span class="p">:</span><span class="nb">dict</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a user in SQL storage if it doesn&#39;t exist</span>
+<span class="sd">        Args:</span>
+<span class="sd">            username (str): Only alphanumeric usernames are allowed with the max length of 25 chars.</span>
+<span class="sd">            user_password (str): no size limit on password</span>
+<span class="sd">            user_role (str): role of a user</span>
+<span class="sd">            user_metadata (dict): metadata of a user</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if user is successfully registered or throws any error in case of failure</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if selected username is not available</span>
+<span class="sd">            Exception: if sql query fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">username_checks</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_user</span><span class="p">(</span><span class="n">user_name</span><span class="o">=</span><span class="n">username</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;username is already registered. Please select another user name&quot;</span><span class="p">)</span>
+
+        <span class="n">user_uuid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">username</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">user_role</span><span class="p">)</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">user_metadata</span><span class="p">)</span>
+        <span class="n">user_uuid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid3</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">NAMESPACE_DNS</span><span class="p">,</span> <span class="n">user_uuid</span><span class="p">))</span>
+        <span class="n">encrypted_password</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encrypt_user_password</span><span class="p">(</span><span class="n">user_password</span><span class="p">)</span>
+        <span class="n">qry</span> <span class="o">=</span> <span class="s2">&quot;INSERT INTO &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">userTable</span> <span class="o">+</span> <span class="s2">&quot; (user_id, username, password, user_role, user_metadata) VALUES(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">user_uuid</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">username</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">encrypted_password</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">user_role</span><span class="p">),</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">user_metadata</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qry</span><span class="p">,</span> <span class="n">vals</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="UserHandler.delete_user"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.delete_user">[docs]</a>    <span class="k">def</span> <span class="nf">delete_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete a user record in SQL table</span>
+<span class="sd">        Args:</span>
+<span class="sd">            username: username of a user that needs to be deleted</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: if user is successfully removed</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if username param is empty or None</span>
+<span class="sd">            Exception: if sql query fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">username</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;username cannot be empty/None.&quot;</span><span class="p">)</span>
+        <span class="n">qry</span> <span class="o">=</span> <span class="s2">&quot;delete from &quot;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">userTable</span><span class="o">+</span> <span class="s2">&quot; where username=</span><span class="si">%(username)s</span><span class="s2">&quot;</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">username</span><span class="p">)}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qry</span><span class="p">,</span> <span class="n">vals</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="UserHandler.get_user_metadata"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_metadata">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="n">uuid</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get user metadata by user_id or by username</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            user_id (str): id (uuid) of a user</span>
+<span class="sd">            user_name (str): username of a user</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list[dict]: List of dictionaries of user metadata</span>
+<span class="sd">        Todo:</span>
+<span class="sd">            Return list of User class object</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: User ID/name cannot be empty.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_user_metadata(username=&quot;nasir_ali&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; [{&quot;study_name&quot;:&quot;mperf&quot;........}]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user_id</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">username</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;User ID/name cannot be empty.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">user_id</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">username</span><span class="p">:</span>
+            <span class="n">qry</span> <span class="o">=</span> <span class="s2">&quot;select user_metadata from user where user_id=</span><span class="si">%(user_id)s</span><span class="s2">&quot;</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;user_id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">user_id</span><span class="p">)}</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">user_id</span> <span class="ow">and</span> <span class="n">username</span><span class="p">:</span>
+            <span class="n">qry</span> <span class="o">=</span> <span class="s2">&quot;select user_metadata from user where username=</span><span class="si">%(username)s</span><span class="s2">&quot;</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">username</span><span class="p">)}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">qry</span> <span class="o">=</span> <span class="s2">&quot;select user_metadata from user where user_id=</span><span class="si">%s</span><span class="s2"> and username=</span><span class="si">%s</span><span class="s2">&quot;</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">user_id</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+
+        <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qry</span><span class="p">,</span> <span class="n">vals</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="UserHandler.login_user"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.login_user">[docs]</a>    <span class="k">def</span> <span class="nf">login_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Authenticate a user based on username and password</span>
+<span class="sd">        :param username:</span>
+<span class="sd">        :param password:</span>
+<span class="sd">        :return:</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            username (str):  username of a user</span>
+<span class="sd">            password (str): Encrypted password of a user</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: User name and password cannot be empty/None.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: returns True on successful login or False otherwise.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.connect(&quot;nasir_ali&quot;, &quot;2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">username</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">password</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;User name and password cannot be empty/None.&quot;</span><span class="p">)</span>
+
+        <span class="n">qry</span> <span class="o">=</span> <span class="s2">&quot;select * from user where username=</span><span class="si">%s</span><span class="s2"> and password=</span><span class="si">%s</span><span class="s2">&quot;</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span>
+
+        <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qry</span><span class="p">,</span> <span class="n">vals</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="UserHandler.is_auth_token_valid"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.is_auth_token_valid">[docs]</a>    <span class="k">def</span> <span class="nf">is_auth_token_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">auth_token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">current_time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate whether a token is valid or expired based on the token expiry datetime stored in SQL</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            username (str): username of a user</span>
+<span class="sd">            auth_token (str): token generated by API-Server</span>
+<span class="sd">            current_time (datetime): current datetime object</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Auth token and auth-token expiry time cannot be null/empty.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: returns True if token is valid or False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">auth_token</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">current_time</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Auth token and auth-token expiry time cannot be null/empty.&quot;</span><span class="p">)</span>
+
+        <span class="n">qry</span> <span class="o">=</span> <span class="s2">&quot;select * from user where token=</span><span class="si">%s</span><span class="s2"> and username=</span><span class="si">%s</span><span class="s2">&quot;</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">auth_token</span><span class="p">,</span> <span class="n">username</span>
+
+        <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qry</span><span class="p">,</span> <span class="n">vals</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">token_expiry_time</span> <span class="o">=</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;token_expiry&quot;</span><span class="p">]</span>
+            <span class="n">localtz</span> <span class="o">=</span> <span class="n">timezone</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_zone</span><span class="p">)</span>
+            <span class="n">token_expiry_time</span> <span class="o">=</span> <span class="n">localtz</span><span class="o">.</span><span class="n">localize</span><span class="p">(</span><span class="n">token_expiry_time</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">token_expiry_time</span> <span class="o">&lt;</span> <span class="n">current_time</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="UserHandler.get_all_users"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_all_users">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_users</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">study_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a list of all users part of a study.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            study_name (str): name of a study</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Study name is a requied field.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list[dict]: Returns empty list if there is no user associated to the study_name and/or study_name does not exist.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_all_users(&quot;mperf&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; [{&quot;76cc444c-4fb8-776e-2872-9472b4e66b16&quot;: &quot;nasir_ali&quot;}] # [{user_id, user_name}]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">study_name</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Study name is a requied field.&quot;</span><span class="p">)</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">qry</span> <span class="o">=</span> <span class="s1">&#39;SELECT user_id, username FROM &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">userTable</span> <span class="o">+</span> <span class="s1">&#39; where user_metadata-&gt;&quot;$.study_name&quot;=</span><span class="si">%(study_name)s</span><span class="s1">&#39;</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;study_name&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">study_name</span><span class="p">)}</span>
+
+        <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qry</span><span class="p">,</span> <span class="n">vals</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="UserHandler.get_user_name"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the user name linked to a user id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            user_name (str): username of a user</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: user_id associated to username</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: User ID is a required field.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_user_name(&quot;76cc444c-4fb8-776e-2872-9472b4e66b16&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; &#39;nasir_ali&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user_id</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;User ID is a required field.&quot;</span><span class="p">)</span>
+
+        <span class="n">qry</span> <span class="o">=</span> <span class="s2">&quot;select username from &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">userTable</span> <span class="o">+</span> <span class="s2">&quot; where user_id = </span><span class="si">%(user_id)s</span><span class="s2">&quot;</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;user_id&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">user_id</span><span class="p">)}</span>
+
+        <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qry</span><span class="p">,</span> <span class="n">vals</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;username&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="UserHandler.is_user"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.is_user">[docs]</a>    <span class="k">def</span> <span class="nf">is_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="n">uuid</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">user_name</span><span class="p">:</span> <span class="n">uuid</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks whether a user exists in the system. One of both parameters could be set to verify whether user exist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            user_id (str): id (uuid) of a user</span>
+<span class="sd">            user_name (str): username of a user</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if a user exists in the system or False otherwise.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Both user_id and user_name cannot be None or empty.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.is_user(user_id=&quot;76cc444c-4fb8-776e-2872-9472b4e66b16&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">user_id</span> <span class="ow">and</span> <span class="n">user_name</span><span class="p">:</span>
+            <span class="n">qry</span> <span class="o">=</span> <span class="s2">&quot;select username from &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">userTable</span> <span class="o">+</span> <span class="s2">&quot; where user_id = </span><span class="si">%s</span><span class="s2"> and username=</span><span class="si">%s</span><span class="s2">&quot;</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">user_id</span><span class="p">),</span> <span class="n">user_name</span>
+        <span class="k">elif</span> <span class="n">user_id</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">user_name</span><span class="p">:</span>
+            <span class="n">qry</span> <span class="o">=</span> <span class="s2">&quot;select username from &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">userTable</span> <span class="o">+</span> <span class="s2">&quot; where user_id = </span><span class="si">%(user_id)s</span><span class="s2">&quot;</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;user_id&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">user_id</span><span class="p">)}</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">user_id</span> <span class="ow">and</span> <span class="n">user_name</span><span class="p">:</span>
+            <span class="n">qry</span> <span class="o">=</span> <span class="s2">&quot;select username from &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">userTable</span> <span class="o">+</span> <span class="s2">&quot; where username = </span><span class="si">%(username)s</span><span class="s2">&quot;</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">user_name</span><span class="p">)}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Both user_id and user_name cannot be None or empty.&quot;</span><span class="p">)</span>
+
+        <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qry</span><span class="p">,</span> <span class="n">vals</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="UserHandler.get_user_id"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the user id linked to user_name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            user_name (str): username of a user</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: user id associated to user_name</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: User name is a required field.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_user_id(&quot;nasir_ali&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; &#39;76cc444c-4fb8-776e-2872-9472b4e66b16&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user_name</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;User name is a required field.&quot;</span><span class="p">)</span>
+
+        <span class="n">qry</span> <span class="o">=</span> <span class="s2">&quot;select user_id from &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">userTable</span> <span class="o">+</span> <span class="s2">&quot; where username = </span><span class="si">%(username)s</span><span class="s2">&quot;</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">user_name</span><span class="p">)}</span>
+
+        <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qry</span><span class="p">,</span> <span class="n">vals</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">rows</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="UserHandler.update_auth_token"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.update_auth_token">[docs]</a>    <span class="k">def</span> <span class="nf">update_auth_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">auth_token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">auth_token_issued_time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+                          <span class="n">auth_token_expiry_time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update an auth token in SQL database to keep user stay logged in. Auth token valid duration can be changed in configuration files.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            username (str): username of a user</span>
+<span class="sd">            auth_token (str): issued new auth token</span>
+<span class="sd">            auth_token_issued_time (datetime): datetime when the old auth token was issue</span>
+<span class="sd">            auth_token_expiry_time (datetime): datetime when the token will get expired</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Auth token and auth-token issue/expiry time cannot be None/empty.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Returns True if the new auth token is set or False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">auth_token</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">auth_token_expiry_time</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">auth_token_issued_time</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Auth token and auth-token issue/expiry time cannot be None/empty.&quot;</span><span class="p">)</span>
+
+        <span class="n">qry</span> <span class="o">=</span> <span class="s2">&quot;UPDATE &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">userTable</span> <span class="o">+</span> <span class="s2">&quot; set token=</span><span class="si">%s</span><span class="s2">, token_issued=</span><span class="si">%s</span><span class="s2">, token_expiry=</span><span class="si">%s</span><span class="s2"> where username=</span><span class="si">%s</span><span class="s2">&quot;</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">auth_token</span><span class="p">,</span> <span class="n">auth_token_issued_time</span><span class="p">,</span> <span class="n">auth_token_expiry_time</span><span class="p">,</span> <span class="n">username</span>
+
+        <span class="n">user_uuid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_user_uuid</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">qry</span><span class="p">,</span> <span class="n">vals</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="UserHandler.gen_random_pass"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.gen_random_pass">[docs]</a>    <span class="k">def</span> <span class="nf">gen_random_pass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a random password</span>
+<span class="sd">        Args:</span>
+<span class="sd">            string_type: Accepted parameters are &quot;varchar&quot; and &quot;char&quot;. (Default=&quot;varchar&quot;)</span>
+<span class="sd">            size: password length (default=8)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: random password</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">string_type</span> <span class="o">==</span> <span class="s2">&quot;varchar&quot;</span><span class="p">):</span>
+            <span class="n">chars</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">string_type</span> <span class="o">==</span> <span class="s2">&quot;char&quot;</span><span class="p">):</span>
+            <span class="n">chars</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">chars</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span>
+
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">chars</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="UserHandler.encrypt_user_password"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.encrypt_user_password">[docs]</a>    <span class="k">def</span> <span class="nf">encrypt_user_password</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_password</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Encrypt password</span>
+<span class="sd">        Args:</span>
+<span class="sd">            user_password (str): unencrypted password</span>
+<span class="sd">        Raises:</span>
+<span class="sd">             ValueError: password cannot be None or empty.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: encrypted password</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">user_password</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">user_password</span><span class="o">==</span><span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;password cannot be None or empty.&quot;</span><span class="p">)</span>
+        <span class="n">hash_pwd</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">user_password</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">hash_pwd</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="UserHandler.username_checks"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.data_manager.sql.html#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.username_checks">[docs]</a>    <span class="k">def</span> <span class="nf">username_checks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        No space, special characters, dash etc. are allowed in username.</span>
+<span class="sd">        Only alphanumeric usernames are allowed with the max length of 25 chars.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            username (str):</span>
+<span class="sd">        Returns:</span>
+<span class="sd">             bool: True if provided username comply the standard or throw an exception</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: if username doesn&#39;t follow standards</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">regexp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;W&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">regexp</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">username</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">username</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">25</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Only alphanumeric usernames are allowed with the max length of 25 chars.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Nasir Ali
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../../../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

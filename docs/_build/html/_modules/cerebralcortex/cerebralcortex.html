@@ -1,0 +1,869 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>cerebralcortex.cerebralcortex &mdash; CerebralCortex 3.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> CerebralCortex
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../cc_example.html">Usage Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.html">cerebralcortex package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.config_manager.html">cerebralcortex.core.config_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.data_manager.object.html">cerebralcortex.core.data_manager.object package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.data_manager.raw.html">cerebralcortex.core.data_manager.raw package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.data_manager.html">cerebralcortex.core.data_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.data_manager.sql.html">cerebralcortex.core.data_manager.sql package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.data_manager.time_series.html">cerebralcortex.core.data_manager.time_series package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.datatypes.html">cerebralcortex.core.datatypes package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.log_manager.html">cerebralcortex.core.log_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.messaging_manager.html">cerebralcortex.core.messaging_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.metadata_manager.html">cerebralcortex.core.metadata_manager package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.metadata_manager.stream.html">cerebralcortex.core.metadata_manager.stream package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.metadata_manager.user.html">cerebralcortex.core.metadata_manager.user package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.html">cerebralcortex.core package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.test_suite.html">cerebralcortex.core.test_suite package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.util.html">cerebralcortex.core.util package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.examples.html">cerebralcortex.examples package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.examples.util.html">cerebralcortex.examples.util package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.test_suite.html">cerebralcortex.test_suite package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.test_suite.util.html">cerebralcortex.test_suite.util package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">CerebralCortex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>cerebralcortex.cerebralcortex</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cerebralcortex.cerebralcortex</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2019, MD2K Center of Excellence</span>
+<span class="c1"># - Nasir Ali &lt;nasir.ali08@gmail.com&gt;</span>
+<span class="c1"># All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Redistribution and use in source and binary forms, with or without</span>
+<span class="c1"># modification, are permitted provided that the following conditions are met:</span>
+<span class="c1">#</span>
+<span class="c1"># * Redistributions of source code must retain the above copyright notice, this</span>
+<span class="c1"># list of conditions and the following disclaimer.</span>
+<span class="c1">#</span>
+<span class="c1"># * Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="c1"># this list of conditions and the following disclaimer in the documentation</span>
+<span class="c1"># and/or other materials provided with the distribution.</span>
+<span class="c1">#</span>
+<span class="c1"># THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot;</span>
+<span class="c1"># AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE</span>
+<span class="c1"># IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE</span>
+<span class="c1"># DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE</span>
+<span class="c1"># FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL</span>
+<span class="c1"># DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR</span>
+<span class="c1"># SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER</span>
+<span class="c1"># CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,</span>
+<span class="c1"># OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE</span>
+<span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="k">import</span> <span class="n">SparkSession</span>
+
+<span class="kn">from</span> <span class="nn">cerebralcortex.core.config_manager.config</span> <span class="k">import</span> <span class="n">Configuration</span>
+<span class="kn">from</span> <span class="nn">cerebralcortex.core.data_manager.object.data</span> <span class="k">import</span> <span class="n">ObjectData</span>
+<span class="kn">from</span> <span class="nn">cerebralcortex.core.data_manager.raw.data</span> <span class="k">import</span> <span class="n">RawData</span>
+<span class="kn">from</span> <span class="nn">cerebralcortex.core.data_manager.raw.stream_handler</span> <span class="k">import</span> <span class="n">DataSet</span>
+<span class="kn">from</span> <span class="nn">cerebralcortex.core.data_manager.sql.data</span> <span class="k">import</span> <span class="n">SqlData</span>
+<span class="kn">from</span> <span class="nn">cerebralcortex.core.data_manager.time_series.data</span> <span class="k">import</span> <span class="n">TimeSeriesData</span>
+<span class="kn">from</span> <span class="nn">cerebralcortex.core.datatypes.datastream</span> <span class="k">import</span> <span class="n">DataStream</span>
+<span class="kn">from</span> <span class="nn">cerebralcortex.core.log_manager.log_handler</span> <span class="k">import</span> <span class="n">LogTypes</span>
+<span class="kn">from</span> <span class="nn">cerebralcortex.core.log_manager.logging</span> <span class="k">import</span> <span class="n">CCLogging</span>
+<span class="kn">from</span> <span class="nn">cerebralcortex.core.messaging_manager.messaging_queue</span> <span class="k">import</span> <span class="n">MessagingQueue</span>
+<span class="kn">from</span> <span class="nn">cerebralcortex.core.metadata_manager.stream.metadata</span> <span class="k">import</span> <span class="n">Metadata</span>
+
+
+<div class="viewcode-block" id="CerebralCortex"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex">[docs]</a><span class="k">class</span> <span class="nc">CerebralCortex</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configuration_filepath</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">auto_offset_reset</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;largest&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        CerebralCortex constructor</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            configuration_filepath (str): Directory path of cerebralcortex configurations.</span>
+<span class="sd">            auto_offset_reset (str): Kafka offset. Acceptable parameters are smallest or largest (default=largest)</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If configuration_filepath is None or empty.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">configuration_filepath</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">configuration_filepath</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;config_file path cannot be None or blank.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_filepath</span> <span class="o">=</span> <span class="n">configuration_filepath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span><span class="n">configuration_filepath</span><span class="p">)</span><span class="o">.</span><span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparkSession</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">appName</span><span class="p">(</span><span class="s2">&quot;CerebralCortex&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;cc&quot;</span><span class="p">][</span><span class="s2">&quot;debug&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logging</span> <span class="o">=</span> <span class="n">CCLogging</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logtypes</span> <span class="o">=</span> <span class="n">LogTypes</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span> <span class="o">=</span> <span class="n">SqlData</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RawData</span> <span class="o">=</span> <span class="n">RawData</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span> <span class="o">=</span> <span class="n">ObjectData</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MessagingQueue</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TimeSeriesData</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;always&#39;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;visualization_storage&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">TimeSeriesData</span> <span class="o">=</span> <span class="n">TimeSeriesData</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;messaging_service&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">MessagingQueue</span> <span class="o">=</span> <span class="n">MessagingQueue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">auto_offset_reset</span><span class="p">)</span>
+
+
+    <span class="c1">###########################################################################</span>
+    <span class="c1">#                     RAW DATA MANAGER METHODS                            #</span>
+    <span class="c1">###########################################################################</span>
+<div class="viewcode-block" id="CerebralCortex.save_stream"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.save_stream">[docs]</a>    <span class="k">def</span> <span class="nf">save_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datastream</span><span class="p">:</span> <span class="n">DataStream</span><span class="p">,</span> <span class="n">ingestInfluxDB</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Saves datastream raw data in selected NoSQL storage and metadata in MySQL.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            datastream (DataStream): a DataStream object</span>
+<span class="sd">            ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if stream is successfully stored or throws an exception</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: log or throws exception if stream is not stored</span>
+<span class="sd">        Todo:</span>
+<span class="sd">            Add functionality to store data in influxdb.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; ds = DataStream(dataframe, MetaData)</span>
+<span class="sd">            &gt;&gt;&gt; CC.save_stream(ds)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">RawData</span><span class="o">.</span><span class="n">save_stream</span><span class="p">(</span><span class="n">datastream</span><span class="o">=</span><span class="n">datastream</span><span class="p">,</span> <span class="n">ingestInfluxDB</span><span class="o">=</span><span class="n">ingestInfluxDB</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_stream"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_stream">[docs]</a>    <span class="k">def</span> <span class="nf">get_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="n">DataSet</span><span class="o">.</span><span class="n">COMPLETE</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataStream</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieve a data-stream with it&#39;s metadata.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            stream_name (str): name of a stream</span>
+<span class="sd">            version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default=&quot;all&quot;)</span>
+<span class="sd">            data_type (DataSet):  DataSet.COMPLETE returns both Data and Metadata. DataSet.ONLY_DATA returns only Data. DataSet.ONLY_METADATA returns only metadata of a stream. (Default=DataSet.COMPLETE)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataStream: contains Data and/or metadata</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if stream name is empty or None</span>
+<span class="sd">        Note:</span>
+<span class="sd">            Please specify a version if you know the exact version of a stream. Getting all the stream data and then filtering versions won&#39;t be efficient.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; ds = CC.get_stream(&quot;ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; ds.data # an object of a dataframe</span>
+<span class="sd">            &gt;&gt;&gt; ds.metadata # an object of MetaData class</span>
+<span class="sd">            &gt;&gt;&gt; ds.get_metadata(version=1) # get the specific version metadata of a stream</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">RawData</span><span class="o">.</span><span class="n">get_stream</span><span class="p">(</span><span class="n">stream_name</span><span class="o">=</span><span class="n">stream_name</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="n">data_type</span><span class="p">)</span></div>
+
+    <span class="c1">###########################################################################</span>
+    <span class="c1">#                     TIME SERIES DATA MANAGER METHODS                    #</span>
+    <span class="c1">###########################################################################</span>
+
+<div class="viewcode-block" id="CerebralCortex.save_data_to_influxdb"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.save_data_to_influxdb">[docs]</a>    <span class="k">def</span> <span class="nf">save_data_to_influxdb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datastream</span><span class="p">:</span> <span class="n">DataStream</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save data stream to influxdb only for visualization purposes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            datastream (DataStream): a DataStream object</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if data is ingested successfully or False otherwise</span>
+<span class="sd">        Todo:</span>
+<span class="sd">            This needs to be updated with the new structure. Should metadata be stored or not?</span>
+<span class="sd">        Example:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; ds = DataStream(dataframe, MetaData)</span>
+<span class="sd">            &gt;&gt;&gt; CC.save_data_to_influxdb(ds)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TimeSeriesData</span><span class="o">.</span><span class="n">save_data_to_influxdb</span><span class="p">(</span><span class="n">datastream</span><span class="p">)</span></div>
+
+    <span class="c1">###########################################################################</span>
+    <span class="c1">#               SQL DATA MANAGER METHODS                                  #</span>
+    <span class="c1">###########################################################################</span>
+
+    <span class="c1">################### STREAM RELATED METHODS ################################</span>
+
+<div class="viewcode-block" id="CerebralCortex.is_stream"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.is_stream">[docs]</a>    <span class="k">def</span> <span class="nf">is_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns true if provided stream exists.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            stream_name (str): name of a stream</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if stream_name exist False otherwise</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.is_stream(&quot;ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">is_stream</span><span class="p">(</span><span class="n">stream_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_stream_versions"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_stream_versions">[docs]</a>    <span class="k">def</span> <span class="nf">get_stream_versions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a list of versions available for a stream</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            stream_name (str): name of a stream</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list: list of int</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if stream_name is empty or None</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_stream_versions(&quot;ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; [1, 2, 4]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_stream_versions</span><span class="p">(</span><span class="n">stream_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_stream_name"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_stream_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_stream_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metadata_hash</span><span class="p">:</span> <span class="n">uuid</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: name of a stream</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_stream_name(&quot;00ab666c-afb8-476e-9872-6472b4e66b68&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_stream_name</span><span class="p">(</span><span class="n">metadata_hash</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_stream_metadata_hash"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_stream_metadata_hash">[docs]</a>    <span class="k">def</span> <span class="nf">get_stream_metadata_hash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all the metadata_hash associated with a stream name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            stream_name (str): name of a stream</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list[str]: list of all the metadata hashes</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_metadata_hash(&quot;ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; [&quot;00ab666c-afb8-476e-9872-6472b4e66b68&quot;, &quot;15cc444c-dfb8-676e-3872-8472b4e66b12&quot;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_stream_metadata_hash</span><span class="p">(</span><span class="n">stream_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_stream_metadata"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_stream_metadata">[docs]</a>    <span class="k">def</span> <span class="nf">get_stream_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">version</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Metadata</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a list of metadata for all versions available for a stream.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            stream_name (str): name of a stream</span>
+<span class="sd">            version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default=&quot;all&quot;)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[Metadata]: Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: stream_name cannot be None or empty.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_all_users(&quot;mperf&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; [Metadata] # list of MetaData class objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_stream_metadata</span><span class="p">(</span><span class="n">stream_name</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span></div>
+
+    <span class="c1">################### USER RELATED METHODS ##################################</span>
+
+<div class="viewcode-block" id="CerebralCortex.create_user"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.create_user">[docs]</a>    <span class="k">def</span> <span class="nf">create_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">user_password</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">user_role</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">user_metadata</span><span class="p">:</span><span class="nb">dict</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a user in SQL storage if it doesn&#39;t exist</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            username (str): Only alphanumeric usernames are allowed with the max length of 25 chars.</span>
+<span class="sd">            user_password (str): no size limit on password</span>
+<span class="sd">            user_role (str): role of a user</span>
+<span class="sd">            user_metadata (dict): metadata of a user</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if user is successfully registered or throws any error in case of failure</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if selected username is not available</span>
+<span class="sd">            Exception: if sql query fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">create_user</span><span class="p">(</span> <span class="n">username</span><span class="p">,</span> <span class="n">user_password</span><span class="p">,</span> <span class="n">user_role</span><span class="p">,</span> <span class="n">user_metadata</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.delete_user"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.delete_user">[docs]</a>    <span class="k">def</span> <span class="nf">delete_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Delete a user record in SQL table</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            username: username of a user that needs to be deleted</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: if user is successfully removed</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if username param is empty or None</span>
+<span class="sd">            Exception: if sql query fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">delete_user</span><span class="p">(</span><span class="n">username</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.is_user"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.is_user">[docs]</a>    <span class="k">def</span> <span class="nf">is_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">user_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks whether a user exists in the system. One of both parameters could be set to verify whether user exist.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            user_id (str): id (uuid) of a user</span>
+<span class="sd">            user_name (str): username of a user</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if a user exists in the system or False otherwise.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Both user_id and user_name cannot be None or empty.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.is_user(user_id=&quot;76cc444c-4fb8-776e-2872-9472b4e66b16&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">is_user</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">user_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_user_id"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_user_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the user id linked to user_name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            user_name (str): username of a user</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: user id associated to user_name</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: User name is a required field.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_user_id(&quot;nasir_ali&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; &#39;76cc444c-4fb8-776e-2872-9472b4e66b16&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_user_id</span><span class="p">(</span><span class="n">user_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_user_name"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_user_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the user name linked to a user id.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            user_name (str): username of a user</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: user_id associated to username</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: User ID is a required field.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_user_name(&quot;76cc444c-4fb8-776e-2872-9472b4e66b16&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; &#39;nasir_ali&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_user_name</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_all_users"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_all_users">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_users</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">study_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a list of all users part of a study.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            study_name (str): name of a study</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Study name is a requied field.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list[dict]: Returns empty list if there is no user associated to the study_name and/or study_name does not exist.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_all_users(&quot;mperf&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; [{&quot;76cc444c-4fb8-776e-2872-9472b4e66b16&quot;: &quot;nasir_ali&quot;}] # [{user_id, user_name}]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_all_users</span><span class="p">(</span><span class="n">study_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_user_metadata"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_user_metadata">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get user metadata by user_id or by username</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            user_id (str): id (uuid) of a user</span>
+<span class="sd">            user_name (str): username of a user</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            list[dict]: List of dictionaries of user metadata</span>
+<span class="sd">        Todo:</span>
+<span class="sd">            Return list of User class object</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: User ID/name cannot be empty.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_user_metadata(username=&quot;nasir_ali&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; [{&quot;study_name&quot;:&quot;mperf&quot;........}]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_user_metadata</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.connect"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Authenticate a user based on username and password</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            username (str):  username of a user</span>
+<span class="sd">            password (str): Encrypted password of a user</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: User name and password cannot be empty/None.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: returns True on successful login or False otherwise.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.connect(&quot;nasir_ali&quot;, &quot;2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">login_user</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.is_auth_token_valid"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.is_auth_token_valid">[docs]</a>    <span class="k">def</span> <span class="nf">is_auth_token_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">auth_token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">current_datetime</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validate whether a token is valid or expired based on the token expiry datetime stored in SQL</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            username (str): username of a user</span>
+<span class="sd">            auth_token (str): token generated by API-Server</span>
+<span class="sd">            current_datetime (datetime): current datetime object</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Auth token and auth-token expiry time cannot be null/empty.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: returns True if token is valid or False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">is_auth_token_valid</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">auth_token</span><span class="p">,</span> <span class="n">current_datetime</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.update_auth_token"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.update_auth_token">[docs]</a>    <span class="k">def</span> <span class="nf">update_auth_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">auth_token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">auth_token_issued_time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
+                          <span class="n">auth_token_expiry_time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update an auth token in SQL database to keep user stay logged in. Auth token valid duration can be changed in configuration files.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            username (str): username of a user</span>
+<span class="sd">            auth_token (str): issued new auth token</span>
+<span class="sd">            auth_token_issued_time (datetime): datetime when the old auth token was issue</span>
+<span class="sd">            auth_token_expiry_time (datetime): datetime when the token will get expired</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Auth token and auth-token issue/expiry time cannot be None/empty.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Returns True if the new auth token is set or False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">update_auth_token</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">auth_token</span><span class="p">,</span> <span class="n">auth_token_issued_time</span><span class="p">,</span> <span class="n">auth_token_expiry_time</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.gen_random_pass"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.gen_random_pass">[docs]</a>    <span class="k">def</span> <span class="nf">gen_random_pass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string_type</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;varchar&quot;</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a random password</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            string_type: Accepted parameters are &quot;varchar&quot; and &quot;char&quot;. (Default=&quot;varchar&quot;)</span>
+<span class="sd">            size: password length (default=8)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: random password</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">gen_random_pass</span><span class="p">(</span><span class="n">string_type</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.encrypt_user_password"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.encrypt_user_password">[docs]</a>    <span class="k">def</span> <span class="nf">encrypt_user_password</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_password</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Encrypt password</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            user_password (str): unencrypted password</span>
+<span class="sd">        Raises:</span>
+<span class="sd">             ValueError: password cannot be None or empty.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: encrypted password</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">encrypt_user_password</span><span class="p">(</span><span class="n">user_password</span><span class="p">)</span></div>
+
+    <span class="c1">################### KAFKA RELATED METHODS ##################################</span>
+
+<div class="viewcode-block" id="CerebralCortex.store_or_update_Kafka_offset"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.store_or_update_Kafka_offset">[docs]</a>    <span class="k">def</span> <span class="nf">store_or_update_Kafka_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">topic_partition</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset_start</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">offset_until</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Store or Update kafka topic offsets. Offsets are used to track what messages have been processed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (str): name of the kafka topic</span>
+<span class="sd">            topic_partition (str): partition number</span>
+<span class="sd">            offset_start (str): starting of offset</span>
+<span class="sd">            offset_until (str): last processed offset</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: All params are required.</span>
+<span class="sd">            Exception: Cannot add/update kafka offsets because ERROR-MESSAGE</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: returns True if offsets are add/updated or throws an exception.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">store_or_update_Kafka_offset</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">topic_partition</span><span class="p">,</span> <span class="n">offset_start</span><span class="p">,</span> <span class="n">offset_until</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_kafka_offsets"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_kafka_offsets">[docs]</a>    <span class="k">def</span> <span class="nf">get_kafka_offsets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get last stored kafka offsets</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (str): kafka topic name</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[dict]: list of kafka offsets. This method will return empty list if topic does not exist and/or no offset is stored for the topic.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Topic name cannot be empty/None</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_kafka_offsets(&quot;live-data&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; [{&quot;id&quot;,&quot;topic&quot;, &quot;topic_partition&quot;, &quot;offset_start&quot;, &quot;offset_until&quot;, &quot;offset_update_time&quot;}]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_kafka_offsets</span><span class="p">(</span><span class="n">topic</span><span class="p">)</span></div>
+
+    <span class="c1">###########################################################################</span>
+    <span class="c1">#                      OBJECTS DATA MANAGER METHODS                       #</span>
+    <span class="c1">###########################################################################</span>
+
+<div class="viewcode-block" id="CerebralCortex.create_bucket"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.create_bucket">[docs]</a>    <span class="k">def</span> <span class="nf">create_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        creates a bucket aka folder in object storage system.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket_name (str): name of the bucket</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if bucket was successfully created. On failure, returns an error with dict {&quot;error&quot;:&quot;error-message&quot;}</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Bucket name cannot be empty/None.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.create_bucket(&quot;live_data_folder&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="o">.</span><span class="n">create_bucket</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.upload_object"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.upload_object">[docs]</a>    <span class="k">def</span> <span class="nf">upload_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">object_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">object_filepath</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Upload an object in a bucket aka folder of object storage system.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket_name (str): name of the bucket</span>
+<span class="sd">            object_name (str): name of the object to be uploaded</span>
+<span class="sd">            object_filepath (str): it shall contain full path of a file with file name (e.g., /home/nasir/obj.zip)</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if object  successfully uploaded. On failure, returns an error with dict {&quot;error&quot;:&quot;error-message&quot;}</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Bucket name cannot be empty/None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="o">.</span><span class="n">upload_object</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">object_filepath</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_buckets"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_buckets">[docs]</a>    <span class="k">def</span> <span class="nf">get_buckets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        returns all available buckets in an object storage</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: {bucket-name: str, [{&quot;key&quot;:&quot;value&quot;}]}, in case of an error {&quot;error&quot;: str}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="o">.</span><span class="n">get_buckets</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_bucket_objects"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_bucket_objects">[docs]</a>    <span class="k">def</span> <span class="nf">get_bucket_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        returns a list of all objects stored in the specified Minio bucket</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket_name (str): name of the bucket aka folder</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: {bucket-objects: [{&quot;object_name&quot;:&quot;&quot;, &quot;metadata&quot;: {}}...],  in case of an error {&quot;error&quot;: str}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="o">.</span><span class="n">get_bucket_objects</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_object_stats"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_object_stats">[docs]</a>    <span class="k">def</span> <span class="nf">get_object_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">object_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns properties (e.g., object type, last modified etc.) of an object stored in a specified bucket</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket_name (str): name of a bucket aka folder</span>
+<span class="sd">            object_name (str): name of an object</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: information of an object (e.g., creation_date, object_size etc.). In case of an error {&quot;error&quot;: str}</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Missing bucket_name and object_name params.</span>
+<span class="sd">            Exception: {&quot;error&quot;: &quot;error-message&quot;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="o">.</span><span class="n">get_object_stats</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_object"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_object">[docs]</a>    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">object_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns stored object (HttpResponse)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket_name (str): name of a bucket aka folder</span>
+<span class="sd">            object_name (str): name of an object that needs to be downloaded</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            file-object: object that needs to be downloaded. If file does not exists then it returns an error {&quot;error&quot;: &quot;File does not exist.&quot;}</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Missing bucket_name and object_name params.</span>
+<span class="sd">            Exception: {&quot;error&quot;: &quot;error-message&quot;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.is_bucket"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.is_bucket">[docs]</a>    <span class="k">def</span> <span class="nf">is_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        checks whether a bucket exist</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket_name (str): name of the bucket aka folder</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if bucket exist or False otherwise. In case an error {&quot;error&quot;: str}</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: bucket_name cannot be None or empty.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="o">.</span><span class="n">is_bucket</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.is_object"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.is_object">[docs]</a>    <span class="k">def</span> <span class="nf">is_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">object_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        checks whether an object exist in a bucket</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bucket_name (str): name of the bucket aka folder</span>
+<span class="sd">            object_name (str): name of the object</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if object exist or False otherwise. In case an error {&quot;error&quot;: str}</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            Excecption: if bucket_name and object_name are empty or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ObjectData</span><span class="o">.</span><span class="n">is_object</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">)</span></div>
+
+
+    <span class="c1">###########################################################################</span>
+    <span class="c1">#                      Kafka consumer producer                            #</span>
+    <span class="c1">###########################################################################</span>
+
+<div class="viewcode-block" id="CerebralCortex.kafka_produce_message"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.kafka_produce_message">[docs]</a>    <span class="k">def</span> <span class="nf">kafka_produce_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Publish a message on kafka message queue</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (str): name of the kafka topic</span>
+<span class="sd">            msg (dict): message that needs to published on kafka</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if successful. In case of failure, it returns an Exception message.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: topic and message parameters cannot be empty or None.</span>
+<span class="sd">            Exception: Error publishing message. Topic: topic_name - error-message</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MessagingQueue</span><span class="o">.</span><span class="n">produce_message</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.kafka_subscribe_to_topic"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.kafka_subscribe_to_topic">[docs]</a>    <span class="k">def</span> <span class="nf">kafka_subscribe_to_topic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Subscribe to kafka topic as a consumer</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (str): name of the kafka topic</span>
+<span class="sd">        Yields:</span>
+<span class="sd">             dict: kafka message</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Topic parameter is missing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">MessagingQueue</span><span class="o">.</span><span class="n">subscribe_to_topic</span><span class="p">(</span><span class="n">topic</span><span class="p">)</span></div>
+
+    <span class="c1">################### CACHE RELATED METHODS ##################################</span>
+
+<div class="viewcode-block" id="CerebralCortex.set_cache_value"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.set_cache_value">[docs]</a>    <span class="k">def</span> <span class="nf">set_cache_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a new cache entry in the cache. Values are overwritten for existing keys.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: key in the cache</span>
+<span class="sd">            value: value associated with the key</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True on successful insert or False otherwise.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if key is None or empty</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">set_cache_value</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_cache_value"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_cache_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_cache_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves value from the cache for the given key.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            key: key in the cache</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The value in the cache</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if key is None or empty</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_cache_value</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Nasir Ali
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
