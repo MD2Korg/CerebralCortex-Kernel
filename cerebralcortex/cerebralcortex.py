@@ -40,7 +40,9 @@ from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
+from cerebralcortex.modules.mprov.connection.mprov_connection import MProvConnection
 
+from mprov.metadata.stream_metadata import BasicSchema, BasicTuple
 
 class CerebralCortex:
 
@@ -79,6 +81,8 @@ class CerebralCortex:
         if self.config["messaging_service"] != "none":
             self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
 
+        if self.config["provenance"] != "none":
+            self.MProvConnection = MProvConnection(self)
 
     ###########################################################################
     #                     RAW DATA MANAGER METHODS                            #
@@ -651,3 +655,73 @@ class CerebralCortex:
             ValueError: if key is None or empty
         """
         return self.SqlData.get_cache_value(key)
+
+
+    ###########################################################################
+    #                      mProve Data Provenance                             #
+    ###########################################################################
+
+    def store_activity(self, activity: str, start: int, end: int, location: int):
+        """
+        Create an entity node for an activity (a stream operator computation)
+
+        :param activity: Name of the operation
+        :param start: Start time
+        :param end: End time
+        :param location: Index position etc
+        :return:
+        """
+        self.MProvConnection.store_activity(activity=activity, start=start, end=end, location=location)
+
+    def store_stream_tuple(self, stream_name: str, stream_index: int, input_tuple: BasicTuple):
+        """
+        Create an entity node for a stream tuple
+
+        :param stream_name: The name of the stream itself
+        :param stream_index: The index position (count) or timestamp (if unique)
+        :param input_tuple: The actual stream value
+        :return: token for the new node
+        """
+        self.MProvConnection.store_stream_tuple(stream_name=stream_name, stream_index=stream_index, input_tuple=input_tuple)
+
+    def store_annotation(self, stream_name: str, stream_index: int, annotation_name: str, annotation_value):
+        """
+        Create a node for an annotation to an entity / tuple
+
+        :param stream_name: The name of the stream itself
+        :param stream_index: The index position (count) or timestamp (if unique) of the
+                stream element we are annotating
+        :param annotation_name: The name of the annotation
+        :param annotation_value: The value of the annotation
+        :return:
+        """
+        self.MProvConnection.store_annotation(stream_name=stream_name, stream_index=stream_index, annotation_name=annotation_name, annotation_value=annotation_value)
+
+    def store_window_and_inputs(self, output_stream_name: str, output_stream_index: int, input_tokens_list: list ):
+        """
+        Store a mapping between an operator window, from
+        which a stream is to be derived, and the input
+        nodes
+
+        :param output_stream_name:
+        :param output_stream_index:
+        :param input_tokens_list:
+        :return:
+        """
+        self.MProvConnection.store_window_and_inputs(output_stream_name=output_stream_name, output_stream_index=output_stream_index, input_tokens_list=input_tokens_list)
+
+    def store_windowed_result(self, output_stream_name: str, output_stream_index: int, output_tuple: BasicTuple, input_tokens_list: list, activity: str, start: int, end: int ):
+        """
+        When we have a windowed computation, this creates a complex derivation subgraph
+        in one operation.
+
+        :param output_stream_name: The name of the stream our operator produces
+        :param output_stream_index: The position of the outgoing tuple in the stream
+        :param output_tuple: The tuple itself
+        :param input_tokens_list: IDs of the inputs to the computation
+        :param activity: The computation name
+        :param start: Start time
+        :param end: End time
+        :return:
+        """
+        self.MProvConnection.store_windowed_result(output_stream_name=output_stream_name, output_stream_index=output_stream_index, output_tuple=output_tuple, input_tokens_list=input_tokens_list, activity=activity, start=start, end=end)

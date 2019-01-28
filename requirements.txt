@@ -10,3 +10,4 @@ pympler==0.5
 hdfs3==0.3.0
 numpy==1.14.5
 pyspark==2.4.0
+pennprov==2.2.0.dev3

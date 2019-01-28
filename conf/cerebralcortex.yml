@@ -78,3 +78,16 @@ messaging_service: none
 #kafka:
 #  host: 127.0.0.1
 #  port: 9092
+
+#########################################################################
+#                          Data Provenance Storage                      #
+#########################################################################
+provenance: mprov
+
+mprove:
+  host: 127.0.0.1 # change if MySQL is installed remotely
+  port: 8088 # Change if MySQL is not using default port
+  username: 'sample' # Change
+  pass: 'default' # Change
+  namespace: 'http://mprov.md2k.org'
+  graph_name: 'mProv-graph'
