@@ -93,6 +93,13 @@ class Examples:
         windowed_data = data.groupBy(['user',F.window("timestamp", "1 minute")]).agg(F.avg("battery_level").alias('battery_average'))
         windowed_data = windowed_data.select(windowed_data.user, windowed_data.window.start.alias("start"), windowed_data.window.end.alias("end"), windowed_data.battery_average)
 
+        #TODO: I am performing operations on spark-dataframe. I do not know how to get all the required information to pass to mProv API.
+        # Error: HTTP response body: {"message":"Missing endpoint: Endpoint {http://mprov.md2k.org}0 or {http://mprov.md2k.org}-_BATTERY--org.md2k.phonesensor--PHONEwBATTERY--org.md2k.phonesensor--PHONE.1 does not exist."}
+        # discuss with Zack
+        output_stream_index = 0 # TODO: not sure what it is
+        input_tokens_list = [0,1,2] # TODO: not sure what it is
+        self.CC.store_window_and_inputs(output_stream_name=self.stream_name,output_stream_index=output_stream_index, input_tokens_list=input_tokens_list)
+
         # print 5 samples from windowed data
         samples = windowed_data.take(5)
         print("\n\n","*"*10, "STREAM DATA", "*"*10)

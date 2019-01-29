@@ -48,7 +48,7 @@ def gen_phone_battery_data()->object:
             sample = sample - 1
             tmp = 1
         timestamp = timestamp + timedelta(0, 1)
-        sample_data.append((timestamp, "21600000", sample, 1, "00000000-afb8-476e-9872-6472b4e66b68"))
+        sample_data.append((timestamp, "21600000", sample, 1, "dfce1e65-2882-395b-a641-93f31748591b"))
     df = sqlContext.createDataFrame(sample_data, column_name)
     return df
 

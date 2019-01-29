@@ -27,7 +27,7 @@ import os
 import shutil
 import unittest
 import warnings
-
+import pathlib
 from cerebralcortex.cerebralcortex import CerebralCortex
 from cerebralcortex.test_suite.test_stream import DataStreamTest
 from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
@@ -45,6 +45,9 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         warnings.simplefilter("ignore")
         config_filepath = "./../../conf/"
 
+        # create sample_data directory. Note: make sure this path is same as the filesystem path in cerebralcortex.yml
+        pathlib.Path("./sample_data/").mkdir(parents=True, exist_ok=True)
+
         self.CC = CerebralCortex(config_filepath, auto_offset_reset="smallest")
         self.cc_conf = self.CC.config
 
@@ -52,7 +55,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         # sql/nosql params
         self.stream_name = "BATTERY--org.md2k.phonesensor--PHONE"
         self.stream_version = "1"
-        self.metadata_hash = "45afcf70-ac08-3c08-807a-043315e33858"
+        self.metadata_hash = "fdebe677-cf78-3ee7-ba78-49f2d0ee71e9"
         self.username = "test_user"
         self.user_id = "dfce1e65-2882-395b-a641-93f31748591b"
         self.user_password = "test_password"
@@ -70,33 +73,11 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         self.test_topic_name = "test_topic"
         self.test_message = "{'msg1':'some test message'}"
 
-    # def suite(self):
-    #     suite = unittest.TestSuite()
-    #     suite.addTest(DataStreamTest('test_01_save_stream'))
-    #     suite.addTest(DataStreamTest('test_02_get_stream'))
-    #
-    #     suite.addTest(SqlStorageTest('test_01_is_stream'))
-    #     suite.addTest(SqlStorageTest('test_ten'))
-    #     suite.addTest(SqlStorageTest('test_ten'))
-    #     suite.addTest(SqlStorageTest('test_ten'))
-    #     suite.addTest(SqlStorageTest('test_ten'))
-    #     suite.addTest(SqlStorageTest('test_ten'))
-    #     suite.addTest(SqlStorageTest('test_ten'))
-    #     suite.addTest(SqlStorageTest('test_ten'))
-    #     suite.addTest(SqlStorageTest('test_ten'))
-    #     suite.addTest(SqlStorageTest('test_ten'))
-    #     suite.addTest(SqlStorageTest('test_ten'))
-    #     suite.addTest(SqlStorageTest('test_ten'))
-    #     suite.addTest(SqlStorageTest('test_ten'))
-    #
-    #     suite.addTest(TestObjectStorage('test_eleven'))
-    #
-    #     return suite
-
     def test_00(self):
         """
         This test will create required entries in sql database.
         """
+
         self.CC.create_user(self.username, self.user_password, self.user_role, self.user_metadata)
 
     def test_9999_last(self):
@@ -105,9 +86,4 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         """
         self.CC.delete_user(self.username)
         if self.cc_conf['nosql_storage']=="filesystem":
-            shutil.rmtree(os.path.join(self.cc_conf["filesystem"]["filesystem_path"], self.bucket_name))
-        shutil.rmtree(os.path.join(self.cc_conf["object_storage"]["object_storage_path"], self.bucket_name))
-
-# if __name__ == '__main__':
-#     runner = unittest.TextTestRunner(failfast=True)
-#     runner.run(TestCerebralCortex().suite())
+            shutil.rmtree(os.path.join(self.cc_conf["filesystem"]["filesystem_path"]))
