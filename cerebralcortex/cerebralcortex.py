@@ -362,9 +362,12 @@ class CerebralCortex:
         """
         return self.SqlData.get_user_metadata(user_id, username)
 
-    def connect(self, username: str, password: str) -> bool:
+    def connect(self, username: str, password: str) -> dict:
         """
-        Authenticate a user based on username and password
+        Authenticate a user based on username and password and return an auth token
+        :param username:
+        :param password:
+        :return:
 
         Args:
             username (str):  username of a user
@@ -372,7 +375,7 @@ class CerebralCortex:
         Raises:
             ValueError: User name and password cannot be empty/None.
         Returns:
-            bool: returns True on successful login or False otherwise.
+            dict: return eturn {"status":bool, "auth_token": str, "msg": str}
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> CC.connect("nasir_ali", "2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234")
@@ -400,6 +403,8 @@ class CerebralCortex:
         """
         Update an auth token in SQL database to keep user stay logged in. Auth token valid duration can be changed in configuration files.
 
+        Notes:
+            This method is used by API-server to store newly created auth-token
         Args:
             username (str): username of a user
             auth_token (str): issued new auth token

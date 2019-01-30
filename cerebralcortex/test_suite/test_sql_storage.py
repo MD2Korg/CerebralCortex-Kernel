@@ -71,4 +71,10 @@ class SqlStorageTest:
 
     def test_09_encrypt_user_password(self):
         result = self.CC.encrypt_user_password(self.user_password)
-        self.assertEqual(result, "10a6e6cc8311a3e2bcc09bf6c199adecd5dd59408c343e926b129c4914f3cb01")
+        self.assertEqual(result, self.user_password_encrypted)
+
+    def test_10_connect(self):
+        result = self.CC.connect(self.username, self.user_password_encrypted)
+        self.assertEqual(result.get("status"), True)
+        self.assertNotEqual(result.get("msg"), "")
+        self.assertNotEqual(result.get("otken"), "")

@@ -59,6 +59,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         self.username = "test_user"
         self.user_id = "dfce1e65-2882-395b-a641-93f31748591b"
         self.user_password = "test_password"
+        self.user_password_encrypted = "10a6e6cc8311a3e2bcc09bf6c199adecd5dd59408c343e926b129c4914f3cb01"
         self.user_role = "test_role"
         self.auth_token = "xxx"
         self.study_name = "test_study"

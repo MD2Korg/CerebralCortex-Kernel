@@ -27,10 +27,12 @@ import hashlib
 import random
 import string
 import uuid
+from datetime import timedelta
 import json
 import re
 from typing import List
 from datetime import datetime
+import jwt
 
 from pytz import timezone
 
@@ -131,9 +133,9 @@ class UserHandler():
         else:
             return []
 
-    def login_user(self, username: str, password: str) -> bool:
+    def login_user(self, username: str, password: str) -> dict:
         """
-        Authenticate a user based on username and password
+        Authenticate a user based on username and password and return an auth token
         :param username:
         :param password:
         :return:
@@ -144,7 +146,7 @@ class UserHandler():
         Raises:
             ValueError: User name and password cannot be empty/None.
         Returns:
-            bool: returns True on successful login or False otherwise.
+            dict: return {"status":bool, "auth_token": str, "msg": str}
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> CC.connect("nasir_ali", "2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234")
@@ -157,10 +159,19 @@ class UserHandler():
         vals = username, password
 
         rows = self.execute(qry, vals)
+
+        token_issue_time = datetime.now()
+        expires = timedelta(seconds=int(self.config["cc"]['auth_token_expire_time']))
+        token_expiry = token_issue_time + expires
+
+        token = jwt.encode({'some': 'payload'}, self.config["cc"]["auth_encryption_key"], algorithm='HS256')
+
         if len(rows) == 0:
-            return False
+            return {"status":False, "auth_token": "", "msg":" Incorrect username and/or password."}
+        elif not self.update_auth_token(username, token, token_issue_time, token_expiry):
+            return {"status":False, "auth_token": "", "msg": "cannot update auth token."}
         else:
-            return True
+            return {"status":True, "auth_token": token, "msg": "login successful."}
 
     def is_auth_token_valid(self, username: str, auth_token: str, current_time: datetime) -> bool:
         """
@@ -338,7 +349,6 @@ class UserHandler():
         qry = "UPDATE " + self.userTable + " set token=%s, token_issued=%s, token_expiry=%s where username=%s"
         vals = auth_token, auth_token_issued_time, auth_token_expiry_time, username
 
-        user_uuid = self.get_user_uuid(username)
         try:
             self.execute(qry, vals, commit=True)
             return True
