@@ -8,10 +8,12 @@ This directory contains some of the following examples on how to get/save data s
     - Note: Python3.7 is not compatible with some of the requirements
     - Make sure pip version matches Python version 
 * spark 2.4
-    - Download [Spark 2.4](https://spark.apache.org/downloads.html)
-    - Export spark path in `CerebralCortex-Kernel-3.0/cerebralcortex/examples/run.sh` script (i.e., `SPARK_HOME`) 
+    - Download and extract [Spark 2.4](https://spark.apache.org/downloads.html)
+    - Edit `SPARK_HOME` in `CerebralCortex-Kernel-3.0/cerebralcortex/examples/run.sh` to point to the location you extracted Spark to.
+	- ex: `export SPARK_HOME=~/spark-2.4.0-bin/hadoop2.7/` if Spark was extracted to your home directory.
 
 * MySQL > 5.7
+    - You might have to set up a MySQL user.
 
 ## Installation
 
@@ -19,7 +21,7 @@ This directory contains some of the following examples on how to get/save data s
  
 * `unzip 3.0.zip && rm 3.0.zip`
  
-* `export PYTHONPATH="${PYTHONPATH}:PATH-OF-MAIN-DIR/CerebralCortex-Kernel-3.0` (This is defined in `run.sh`)
+* `export PYTHONPATH="${PYTHONPATH}":PATH-OF-MAIN-DIR/CerebralCortex-Kernel-3.0` (This is defined in `run.sh`)
 
 ### Installing requirements
 **Installing MySQL connector**
