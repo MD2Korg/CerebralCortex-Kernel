@@ -249,22 +249,22 @@ class CerebralCortex:
 
     ################### USER RELATED METHODS ##################################
 
-    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict)->bool:
+    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict)->bool:
         """
         Create a user in SQL storage if it doesn't exist
-
         Args:
             username (str): Only alphanumeric usernames are allowed with the max length of 25 chars.
             user_password (str): no size limit on password
             user_role (str): role of a user
             user_metadata (dict): metadata of a user
+            user_settings (dict): user settings, mCerebrum configurations of a user
         Returns:
             bool: True if user is successfully registered or throws any error in case of failure
         Raises:
             ValueError: if selected username is not available
             Exception: if sql query fails
         """
-        return self.SqlData.create_user( username, user_password, user_role, user_metadata)
+        return self.SqlData.create_user( username, user_password, user_role, user_metadata, user_settings)
 
     def delete_user(self, username:str)->bool:
         """
@@ -349,13 +349,33 @@ class CerebralCortex:
         """
         return self.SqlData.get_all_users(study_name)
 
-    def get_user_metadata(self, user_id: str = None, username: str = None) -> List[dict]:
+    def get_user_metadata(self, user_id: str = None, username: str = None)  -> dict:
         """
         Get user metadata by user_id or by username
 
         Args:
             user_id (str): id (uuid) of a user
             user_name (str): username of a user
+        Returns:
+            dict: user metadata
+        Todo:
+            Return list of User class object
+        Raises:
+            ValueError: User ID/name cannot be empty.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_user_metadata(username="nasir_ali")
+            >>> {"study_name":"mperf"........}
+        """
+        return self.SqlData.get_user_metadata(user_id, username)
+
+    def get_user_settings(self, username: str=None, auth_token: str = None) -> dict:
+        """
+        Get user settings by auth-token or by username. These are user's mCerebrum settings
+
+        Args:
+            username (str): username of a user
+            auth_token (str): auth-token
         Returns:
             list[dict]: List of dictionaries of user metadata
         Todo:
@@ -364,10 +384,10 @@ class CerebralCortex:
             ValueError: User ID/name cannot be empty.
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
-            >>> CC.get_user_metadata(username="nasir_ali")
-            >>> [{"study_name":"mperf"........}]
+            >>> CC.get_user_settings(username="nasir_ali")
+            >>> [{"mcerebrum":"some-conf"........}]
         """
-        return self.SqlData.get_user_metadata(user_id, username)
+        return self.SqlData.get_user_settings(username, auth_token)
 
     def connect(self, username: str, password: str, encrypted_password:bool=False) -> dict:
         """

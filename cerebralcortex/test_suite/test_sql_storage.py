@@ -75,7 +75,7 @@ class SqlStorageTest:
         self.assertEqual(result, self.user_password_encrypted)
 
     def test_10_connect(self):
-        result = self.CC.connect(self.username, self.user_password_encrypted)
+        result = self.CC.connect(self.username, self.user_password_encrypted, True)
         self.assertEqual(result.get("status"), True)
         self.assertNotEqual(result.get("msg"), "")
         token = result.get("auth_token")

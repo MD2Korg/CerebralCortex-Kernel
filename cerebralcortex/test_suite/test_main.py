@@ -64,6 +64,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         self.auth_token = "xxx"
         self.study_name = "test_study"
         self.user_metadata = {"study_name": self.study_name}
+        self.user_settings = {"mcerebrum":"confs"}
 
         # object test params
         self.bucket_name = "test_bucket"
@@ -78,8 +79,9 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         """
         This test will create required entries in sql database.
         """
-
-        self.CC.create_user(self.username, self.user_password, self.user_role, self.user_metadata)
+        if not os.path.isdir(self.cc_conf["filesystem"]["filesystem_path"]):
+            os.mkdir(self.cc_conf["filesystem"]["filesystem_path"])
+        self.CC.create_user(self.username, self.user_password, self.user_role, self.user_metadata, self.user_settings)
 
     def test_9999_last(self):
         """
@@ -87,4 +89,4 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         """
         self.CC.delete_user(self.username)
         if self.cc_conf['nosql_storage']=="filesystem":
-            shutil.rmtree(os.path.join(self.cc_conf["filesystem"]["filesystem_path"]))
+            shutil.rmtree(self.cc_conf["filesystem"]["filesystem_path"])

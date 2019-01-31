@@ -43,7 +43,7 @@ class UserHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict)->bool:
+    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict)->bool:
         """
         Create a user in SQL storage if it doesn't exist
         Args:
@@ -51,6 +51,7 @@ class UserHandler():
             user_password (str): no size limit on password
             user_role (str): role of a user
             user_metadata (dict): metadata of a user
+            user_settings (dict): user settings, mCerebrum configurations of a user
         Returns:
             bool: True if user is successfully registered or throws any error in case of failure
         Raises:
@@ -64,8 +65,8 @@ class UserHandler():
         user_uuid = str(username)+str(user_role)+str(user_metadata)
         user_uuid = str(uuid.uuid3(uuid.NAMESPACE_DNS, user_uuid))
         encrypted_password = self.encrypt_user_password(user_password)
-        qry = "INSERT INTO " + self.userTable + " (user_id, username, password, user_role, user_metadata) VALUES(%s, %s, %s, %s, %s)"
-        vals = str(user_uuid), str(username), str(encrypted_password), str(user_role), json.dumps(user_metadata)
+        qry = "INSERT INTO " + self.userTable + " (user_id, username, password, user_role, user_metadata,user_settings) VALUES(%s, %s, %s, %s, %s, %s)"
+        vals = str(user_uuid), str(username), str(encrypted_password), str(user_role), json.dumps(user_metadata), json.dumps(user_settings)
 
         try:
             self.execute(qry, vals, commit=True)
@@ -93,7 +94,7 @@ class UserHandler():
         except Exception as e:
             raise Exception(e)
 
-    def get_user_metadata(self, user_id: uuid = None, username: str = None) -> List[dict]:
+    def get_user_metadata(self, user_id: uuid = None, username: str = None) -> dict:
         """
         Get user metadata by user_id or by username
 
@@ -101,7 +102,7 @@ class UserHandler():
             user_id (str): id (uuid) of a user
             user_name (str): username of a user
         Returns:
-            list[dict]: List of dictionaries of user metadata
+            dict: user metadata
         Todo:
             Return list of User class object
         Raises:
@@ -109,9 +110,9 @@ class UserHandler():
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> CC.get_user_metadata(username="nasir_ali")
-            >>> [{"study_name":"mperf"........}]
+            >>> {"study_name":"mperf"........}
         """
-        result = []
+
         if not user_id and not username:
             raise ValueError("User ID/name cannot be empty.")
 
@@ -127,11 +128,47 @@ class UserHandler():
 
         rows = self.execute(qry, vals)
         if len(rows) > 0:
-            for row in rows:
-                result.append(row)
-            return result
+            return rows[0]
         else:
-            return []
+            return {}
+
+    def get_user_settings(self, username: str=None, auth_token: str = None) -> dict:
+        """
+        Get user settings by auth-token or by username. These are user's mCerebrum settings
+
+        Args:
+            username (str): username of a user
+            auth_token (str): auth-token
+        Returns:
+            list[dict]: List of dictionaries of user metadata
+        Todo:
+            Return list of User class object
+        Raises:
+            ValueError: User ID/name cannot be empty.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.get_user_settings(username="nasir_ali")
+            >>> [{"mcerebrum":"some-conf"........}]
+        """
+
+        if not username and not auth_token:
+            raise ValueError("User ID or auth token cannot be empty.")
+
+        if username and not auth_token:
+            qry = "select user_metadata from user where user_id=%(username)s"
+            vals = {"username": str(username)}
+        elif not username and auth_token:
+            qry = "select user_metadata from user where username=%(auth_token)s"
+            vals = {"token": str(auth_token)}
+        else:
+            qry = "select user_metadata from user where username=%s and token=%s"
+            vals = str(username), str(auth_token)
+
+        rows = self.execute(qry, vals)
+        if len(rows) > 0:
+            return rows[0]
+        else:
+            return {}
 
     def login_user(self, username: str, password: str, encrypted_password:bool=False) -> dict:
         """

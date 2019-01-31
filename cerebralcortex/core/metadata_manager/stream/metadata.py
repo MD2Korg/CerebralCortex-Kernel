@@ -259,37 +259,71 @@ class Metadata():
 
         return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
 
-    def from_json(self, json_list: List[dict])->List:
+    def from_json(self, metadata_json: dict)->List:
         """
         Convert dict (json) objects into Metadata class objects
         Args:
-            json_list List[dict]: list of metadata dicts
+            json_list dict: metadata dict
 
         Returns:
-            List[Metadata]: list of metadata class objects
+            Metadata: metadata class object
 
         """
         data_descriptor_list = []
         module_list = []
-        metadata_list = []
-        for tmp in json_list:
-            md = Metadata()
-            if isinstance(tmp, dict):
-                metadata = json.loads(tmp.get("metadata"))
-                data_descriptors = metadata["data_descriptor"]
-                module_info = metadata["module"]
-                for dd in data_descriptors:
-                    data_descriptor_list.append(DataDescriptor().from_json(dd))
 
-                for mm in module_info:
-                    module_list.append(ModuleMetadata().from_json(mm))
+        if isinstance(metadata_json, str):
+            metadata_json = json.loads(metadata_json)
 
-                md.data_descriptor = data_descriptor_list
-                md.modulez = module_list
-                md.name = tmp["name"]
-                md._description = metadata.get("description", "")
-                md.version = int(tmp["version"])
-                md.metadata_hash = tmp["metadata_hash"]
-                metadata_list.append(md)
+        md = Metadata()
+        if isinstance(metadata_json, dict):
+            metadata = json.loads(metadata_json.get("metadata"))
+            data_descriptors = metadata["data_descriptor"]
+            module_info = metadata["module"]
+            for dd in data_descriptors:
+                data_descriptor_list.append(DataDescriptor().from_json(dd))
 
-        return metadata_list
+            for mm in module_info:
+                module_list.append(ModuleMetadata().from_json(mm))
+
+            md.data_descriptor = data_descriptor_list
+            md.modulez = module_list
+            md.name = metadata_json["name"]
+            md._description = metadata.get("description", "")
+            md.version = int(metadata_json["version"])
+            md.metadata_hash = metadata_json["metadata_hash"]
+        return md
+
+    def from_json_file(self, metadata: dict)->List:
+        """
+        Convert dict (json) objects into Metadata class objects
+        Args:
+            json_list dict: metadata dict
+
+        Returns:
+            Metadata: metadata class object
+
+        """
+        data_descriptor_list = []
+        module_list = []
+
+        if isinstance(metadata, str):
+            metadata = json.loads(metadata)
+
+        md = Metadata()
+        if isinstance(metadata, dict):
+            data_descriptors = metadata["data_descriptor"]
+            module_info = metadata["module"]
+            for dd in data_descriptors:
+                data_descriptor_list.append(DataDescriptor().from_json(dd))
+
+            for mm in module_info:
+                module_list.append(ModuleMetadata().from_json(mm))
+
+            md.data_descriptor = data_descriptor_list
+            md.modulez = module_list
+            md.name = metadata.get("name", "")
+            md._description = metadata.get("description", "")
+            md.version = int(metadata.get("version", 0))
+            md.metadata_hash = metadata.get("metadata_hash", "no-hash")
+        return md
