@@ -14,7 +14,7 @@ nosql_storage: filesystem
 
 filesystem:
   # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
-  filesystem_path: "./sample_data/"
+  filesystem_path: "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/examples/sample_data/"
 
 #hdfs:
 #  host: localhost
@@ -26,7 +26,7 @@ filesystem:
 #########################################################################
 
 object_storage:
-  object_storage_path: "./sample_data/"
+  object_storage_path: "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/examples/sample_data/"
 
 #minio: # AWS-S3 UPDATE
 #  host: s3.amazonaws.com # for amazon pass s3.amazonaws.com and for minio simpley pass url of minio server

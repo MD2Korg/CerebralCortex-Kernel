@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
+import jwt
 
 
 class SqlStorageTest:
@@ -77,4 +78,8 @@ class SqlStorageTest:
         result = self.CC.connect(self.username, self.user_password_encrypted)
         self.assertEqual(result.get("status"), True)
         self.assertNotEqual(result.get("msg"), "")
-        self.assertNotEqual(result.get("otken"), "")
+        token = result.get("auth_token")
+
+        decoded_token = jwt.decode(token, self.CC.config["cc"]["auth_encryption_key"], algorithm='HS256')
+        is_valid = self.CC.is_auth_token_valid(decoded_token.get("username",""), token)
+        self.assertEqual(is_valid, True)
