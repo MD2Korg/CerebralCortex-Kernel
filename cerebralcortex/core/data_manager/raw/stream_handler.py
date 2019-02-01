@@ -138,8 +138,8 @@ class StreamHandler():
                     result = self.sql_data.save_stream_metadata(metadata)
                     if result["status"]==True:
                         version = result["version"]
-                        data = data.drop('ver')
-                        data = data.withColumn('ver', lit(version))
+                        data = data.drop('version')
+                        data = data.withColumn('version', lit(version))
 
                         status = self.nosql.write_file(stream_name, data)
                         return status
