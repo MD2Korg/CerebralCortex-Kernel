@@ -66,7 +66,7 @@ class StreamHandler:
         rows = self.execute(qry, vals)
         if rows is not None and bool(rows):
             for row in rows:
-                result.append(Metadata().from_json(row))
+                result.append(Metadata().from_json_sql(row))
             return result
         else:
             return []

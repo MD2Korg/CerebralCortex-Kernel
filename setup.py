@@ -26,6 +26,7 @@ setup(
     author_email='dev@md2k.org',
 
     license='BSD2',
+    url = 'https://github.com/MD2Korg/CerebralCortex-Kernel/archive/3.0.0.zip',
 
     classifiers=[
 

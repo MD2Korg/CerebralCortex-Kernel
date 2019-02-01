@@ -88,5 +88,5 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         Delete all the sample test data folder/files and sql entries
         """
         self.CC.delete_user(self.username)
-        if self.cc_conf['nosql_storage']=="filesystem":
-            shutil.rmtree(self.cc_conf["filesystem"]["filesystem_path"])
+        # if self.cc_conf['nosql_storage']=="filesystem":
+        #     shutil.rmtree(self.cc_conf["filesystem"]["filesystem_path"])

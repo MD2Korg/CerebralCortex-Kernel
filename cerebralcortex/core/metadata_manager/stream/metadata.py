@@ -259,7 +259,7 @@ class Metadata():
 
         return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
 
-    def from_json(self, metadata_json: dict)->List:
+    def from_json_sql(self, metadata_json: dict)->List:
         """
         Convert dict (json) objects into Metadata class objects
         Args:
