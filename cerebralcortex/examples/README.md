@@ -24,11 +24,6 @@ This directory contains some of the following examples on how to get/save data s
 * `export PYTHONPATH="${PYTHONPATH}":PATH-OF-MAIN-DIR/CerebralCortex-Kernel-3.0` (This is defined in `run.sh`)
 
 ### Installing requirements
-**Installing MySQL connector**
-
-* `sudo pip3 install --egg mysql-connector-python-rf`
-
-**Installing other requirements**
 
 * `cd CerebralCortex-Kernel-3.0`
 
