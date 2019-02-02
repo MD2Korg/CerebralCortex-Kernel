@@ -58,9 +58,9 @@ class FileSystemStorage:
             return df
         else:
             hdfs_url = self._get_storage_path(stream_name)
-            hdfs_url = hdfs_url+"ver="+str(version)
+            hdfs_url = hdfs_url+"version="+str(version)
             df = self.obj.sparkSession.read.load(hdfs_url)
-            df = df.withColumn('ver', lit(int(version)))
+            df = df.withColumn('version', lit(int(version)))
             return df
 
     def write_file(self, stream_name:str, data:DataStream.data) -> bool:
@@ -77,7 +77,7 @@ class FileSystemStorage:
         """
         hdfs_url = self._get_storage_path(stream_name)
         try:
-            data.write.partitionBy(["ver","user"]).format('parquet').mode('overwrite').save(hdfs_url)
+            data.write.partitionBy(["version","user"]).format('parquet').mode('overwrite').save(hdfs_url)
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))

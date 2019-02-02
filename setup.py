@@ -15,7 +15,7 @@ with open(path.join(here, 'README.md')) as f:
     long_description = f.read()
 
 setup(
-    name="MD2K: Cerebral Cortex",
+    name="cerebralcortex-kernel",
 
     version='3.0.0',
 
@@ -30,7 +30,7 @@ setup(
 
     classifiers=[
 
-        'Development Status :: 1 - Beta',
+        'Development Status :: 5 - Production/Stable',
 
         'Intended Audience :: Healthcare Industry',
         'Intended Audience :: Science/Research',
