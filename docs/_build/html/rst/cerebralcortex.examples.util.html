@@ -81,7 +81,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../cc_example.html">Usage Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.html">cerebralcortex package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cerebralcortex.html">cerebralcortex</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.config_manager.html">cerebralcortex.core.config_manager package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.data_manager.object.html">cerebralcortex.core.data_manager.object package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cerebralcortex.core.data_manager.raw.html">cerebralcortex.core.data_manager.raw package</a></li>
@@ -101,21 +101,21 @@
 <li class="toctree-l2 current"><a class="reference internal" href="cerebralcortex.examples.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">cerebralcortex.examples.util package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-cerebralcortex.examples.util.data_helper">cerebralcortex.examples.util.data_helper module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-cerebralcortex.examples.util">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cerebralcortex-examples-util-data-helper-module">cerebralcortex.examples.util.data_helper module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="cerebralcortex.examples.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cerebralcortex.examples.html#module-cerebralcortex.examples.main">cerebralcortex.examples.main module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="cerebralcortex.examples.html#module-cerebralcortex.examples">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cerebralcortex.examples.html#cerebralcortex-examples-main-module">cerebralcortex.examples.main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cerebralcortex.examples.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">cerebralcortex.examples.util package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-cerebralcortex.examples.util.data_helper">cerebralcortex.examples.util.data_helper module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-cerebralcortex.examples.util">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cerebralcortex-examples-util-data-helper-module">cerebralcortex.examples.util.data_helper module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-contents">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="cerebralcortex.test_suite.html">cerebralcortex.test_suite package</a></li>
@@ -191,27 +191,11 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-cerebralcortex.examples.util.data_helper">
-<span id="cerebralcortex-examples-util-data-helper-module"></span><h2>cerebralcortex.examples.util.data_helper module<a class="headerlink" href="#module-cerebralcortex.examples.util.data_helper" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="cerebralcortex.examples.util.data_helper.gen_phone_battery_data">
-<code class="descclassname">cerebralcortex.examples.util.data_helper.</code><code class="descname">gen_phone_battery_data</code><span class="sig-paren">(</span><em>user_id</em><span class="sig-paren">)</span> &#x2192; object<a class="reference internal" href="../_modules/cerebralcortex/examples/util/data_helper.html#gen_phone_battery_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.examples.util.data_helper.gen_phone_battery_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create pyspark dataframe with some sample phone battery data
-:returns: pyspark dataframe object with columns: [“timestamp”, “offset”, “battery_level”, “ver”, “user”]
-:rtype: DataFrame</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="cerebralcortex.examples.util.data_helper.gen_phone_battery_metadata">
-<code class="descclassname">cerebralcortex.examples.util.data_helper.</code><code class="descname">gen_phone_battery_metadata</code><span class="sig-paren">(</span><em>stream_name</em><span class="sig-paren">)</span> &#x2192; cerebralcortex.core.metadata_manager.stream.metadata.Metadata<a class="reference internal" href="../_modules/cerebralcortex/examples/util/data_helper.html#gen_phone_battery_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.examples.util.data_helper.gen_phone_battery_metadata" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create Metadata object with some sample metadata of phone battery data
-:returns: metadata of phone battery stream
-:rtype: Metadata</p>
-</dd></dl>
-
+<div class="section" id="cerebralcortex-examples-util-data-helper-module">
+<h2>cerebralcortex.examples.util.data_helper module<a class="headerlink" href="#cerebralcortex-examples-util-data-helper-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-cerebralcortex.examples.util">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-cerebralcortex.examples.util" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 

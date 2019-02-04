@@ -79,7 +79,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../cc_example.html">Usage Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.html">cerebralcortex package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.html">cerebralcortex</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.config_manager.html">cerebralcortex.core.config_manager package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.data_manager.object.html">cerebralcortex.core.data_manager.object package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../rst/cerebralcortex.core.data_manager.raw.html">cerebralcortex.core.data_manager.raw package</a></li>
@@ -204,11 +204,13 @@
 <span class="kn">from</span> <span class="nn">cerebralcortex.core.log_manager.logging</span> <span class="k">import</span> <span class="n">CCLogging</span>
 <span class="kn">from</span> <span class="nn">cerebralcortex.core.messaging_manager.messaging_queue</span> <span class="k">import</span> <span class="n">MessagingQueue</span>
 <span class="kn">from</span> <span class="nn">cerebralcortex.core.metadata_manager.stream.metadata</span> <span class="k">import</span> <span class="n">Metadata</span>
+<span class="kn">from</span> <span class="nn">cerebralcortex.modules.mprov.connection.mprov_connection</span> <span class="k">import</span> <span class="n">MProvConnection</span>
 
+<span class="kn">from</span> <span class="nn">mprov.metadata.stream_metadata</span> <span class="k">import</span> <span class="n">BasicSchema</span><span class="p">,</span> <span class="n">BasicTuple</span>
 
 <div class="viewcode-block" id="CerebralCortex"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex">[docs]</a><span class="k">class</span> <span class="nc">CerebralCortex</span><span class="p">:</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configuration_filepath</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">auto_offset_reset</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;largest&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">configs_dir_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">auto_offset_reset</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;largest&quot;</span><span class="p">,</span> <span class="n">enable_spark</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        CerebralCortex constructor</span>
 
@@ -220,12 +222,17 @@
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">configuration_filepath</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">configuration_filepath</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">configs_dir_path</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">configs_dir_path</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;config_file path cannot be None or blank.&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">config_filepath</span> <span class="o">=</span> <span class="n">configuration_filepath</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span><span class="n">configuration_filepath</span><span class="p">)</span><span class="o">.</span><span class="n">config</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sparkSession</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">appName</span><span class="p">(</span><span class="s2">&quot;CerebralCortex&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">enable_spark</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sparkSession</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">appName</span><span class="p">(</span><span class="s2">&quot;CerebralCortex&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sparkSession</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_filepath</span> <span class="o">=</span> <span class="n">configs_dir_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span><span class="n">configs_dir_path</span><span class="p">)</span><span class="o">.</span><span class="n">config</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;cc&quot;</span><span class="p">][</span><span class="s2">&quot;debug&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logging</span> <span class="o">=</span> <span class="n">CCLogging</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logtypes</span> <span class="o">=</span> <span class="n">LogTypes</span><span class="p">()</span>
@@ -237,12 +244,16 @@
 
         <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;always&#39;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">)</span>
 
+
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;visualization_storage&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">TimeSeriesData</span> <span class="o">=</span> <span class="n">TimeSeriesData</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;messaging_service&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">MessagingQueue</span> <span class="o">=</span> <span class="n">MessagingQueue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">auto_offset_reset</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;provenance&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">MProvConnection</span> <span class="o">=</span> <span class="n">MProvConnection</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
     <span class="c1">###########################################################################</span>
     <span class="c1">#                     RAW DATA MANAGER METHODS                            #</span>
@@ -402,22 +413,22 @@
 
     <span class="c1">################### USER RELATED METHODS ##################################</span>
 
-<div class="viewcode-block" id="CerebralCortex.create_user"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.create_user">[docs]</a>    <span class="k">def</span> <span class="nf">create_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">user_password</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">user_role</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">user_metadata</span><span class="p">:</span><span class="nb">dict</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="CerebralCortex.create_user"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.create_user">[docs]</a>    <span class="k">def</span> <span class="nf">create_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">user_password</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">user_role</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">user_metadata</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span> <span class="n">user_settings</span><span class="p">:</span><span class="nb">dict</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a user in SQL storage if it doesn&#39;t exist</span>
-
 <span class="sd">        Args:</span>
 <span class="sd">            username (str): Only alphanumeric usernames are allowed with the max length of 25 chars.</span>
 <span class="sd">            user_password (str): no size limit on password</span>
 <span class="sd">            user_role (str): role of a user</span>
 <span class="sd">            user_metadata (dict): metadata of a user</span>
+<span class="sd">            user_settings (dict): user settings, mCerebrum configurations of a user</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: True if user is successfully registered or throws any error in case of failure</span>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: if selected username is not available</span>
 <span class="sd">            Exception: if sql query fails</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">create_user</span><span class="p">(</span> <span class="n">username</span><span class="p">,</span> <span class="n">user_password</span><span class="p">,</span> <span class="n">user_role</span><span class="p">,</span> <span class="n">user_metadata</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">create_user</span><span class="p">(</span> <span class="n">username</span><span class="p">,</span> <span class="n">user_password</span><span class="p">,</span> <span class="n">user_role</span><span class="p">,</span> <span class="n">user_metadata</span><span class="p">,</span> <span class="n">user_settings</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CerebralCortex.delete_user"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.delete_user">[docs]</a>    <span class="k">def</span> <span class="nf">delete_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -502,13 +513,33 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_all_users</span><span class="p">(</span><span class="n">study_name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CerebralCortex.get_user_metadata"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_user_metadata">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<div class="viewcode-block" id="CerebralCortex.get_user_metadata"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_user_metadata">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>  <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get user metadata by user_id or by username</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            user_id (str): id (uuid) of a user</span>
 <span class="sd">            user_name (str): username of a user</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: user metadata</span>
+<span class="sd">        Todo:</span>
+<span class="sd">            Return list of User class object</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: User ID/name cannot be empty.</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_user_metadata(username=&quot;nasir_ali&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; {&quot;study_name&quot;:&quot;mperf&quot;........}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_user_metadata</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.get_user_settings"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.get_user_settings">[docs]</a>    <span class="k">def</span> <span class="nf">get_user_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">auth_token</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get user settings by auth-token or by username. These are user&#39;s mCerebrum settings</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            username (str): username of a user</span>
+<span class="sd">            auth_token (str): auth-token</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            list[dict]: List of dictionaries of user metadata</span>
 <span class="sd">        Todo:</span>
@@ -517,49 +548,55 @@
 <span class="sd">            ValueError: User ID/name cannot be empty.</span>
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; CC.get_user_metadata(username=&quot;nasir_ali&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; [{&quot;study_name&quot;:&quot;mperf&quot;........}]</span>
+<span class="sd">            &gt;&gt;&gt; CC.get_user_settings(username=&quot;nasir_ali&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; [{&quot;mcerebrum&quot;:&quot;some-conf&quot;........}]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_user_metadata</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_user_settings</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">auth_token</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CerebralCortex.connect"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="CerebralCortex.connect"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">encrypted_password</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Authenticate a user based on username and password</span>
+<span class="sd">        Authenticate a user based on username and password and return an auth token</span>
+<span class="sd">        :param username:</span>
+<span class="sd">        :param password:</span>
+<span class="sd">        :return:</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            username (str):  username of a user</span>
-<span class="sd">            password (str): Encrypted password of a user</span>
+<span class="sd">            password (str): password of a user</span>
+<span class="sd">            encrypted_password (str): is password encrypted or not. mCerebrum sends encrypted passwords</span>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: User name and password cannot be empty/None.</span>
 <span class="sd">        Returns:</span>
-<span class="sd">            bool: returns True on successful login or False otherwise.</span>
+<span class="sd">            dict: return eturn {&quot;status&quot;:bool, &quot;auth_token&quot;: str, &quot;msg&quot;: str}</span>
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; CC = CerebralCortex(&quot;/directory/path/of/configs/&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; CC.connect(&quot;nasir_ali&quot;, &quot;2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; CC.connect(&quot;nasir_ali&quot;, &quot;2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234&quot;, True)</span>
 <span class="sd">            &gt;&gt;&gt; True</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">login_user</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">login_user</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">encrypted_password</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CerebralCortex.is_auth_token_valid"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.is_auth_token_valid">[docs]</a>    <span class="k">def</span> <span class="nf">is_auth_token_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">auth_token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">current_datetime</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<div class="viewcode-block" id="CerebralCortex.is_auth_token_valid"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.is_auth_token_valid">[docs]</a>    <span class="k">def</span> <span class="nf">is_auth_token_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">auth_token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">checktime</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Validate whether a token is valid or expired based on the token expiry datetime stored in SQL</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            username (str): username of a user</span>
 <span class="sd">            auth_token (str): token generated by API-Server</span>
-<span class="sd">            current_datetime (datetime): current datetime object</span>
+<span class="sd">            checktime (bool): setting this to False will only check if the token is available in system. Setting this to true will check if the token is expired based on the token expiry date.</span>
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: Auth token and auth-token expiry time cannot be null/empty.</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            bool: returns True if token is valid or False otherwise.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">is_auth_token_valid</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">auth_token</span><span class="p">,</span> <span class="n">current_datetime</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">is_auth_token_valid</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">auth_token</span><span class="p">,</span> <span class="n">checktime</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CerebralCortex.update_auth_token"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.update_auth_token">[docs]</a>    <span class="k">def</span> <span class="nf">update_auth_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">auth_token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">auth_token_issued_time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">,</span>
                           <span class="n">auth_token_expiry_time</span><span class="p">:</span> <span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update an auth token in SQL database to keep user stay logged in. Auth token valid duration can be changed in configuration files.</span>
 
+<span class="sd">        Notes:</span>
+<span class="sd">            This method is used by API-server to store newly created auth-token</span>
 <span class="sd">        Args:</span>
 <span class="sd">            username (str): username of a user</span>
 <span class="sd">            auth_token (str): issued new auth token</span>
@@ -814,7 +851,74 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: if key is None or empty</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_cache_value</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SqlData</span><span class="o">.</span><span class="n">get_cache_value</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div>
+
+
+    <span class="c1">###########################################################################</span>
+    <span class="c1">#                      mProve Data Provenance                             #</span>
+    <span class="c1">###########################################################################</span>
+
+<div class="viewcode-block" id="CerebralCortex.store_activity"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.store_activity">[docs]</a>    <span class="k">def</span> <span class="nf">store_activity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">activity</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create an entity node for an activity (a stream operator computation)</span>
+<span class="sd">        Args:</span>
+<span class="sd">            activity: Name of the operation</span>
+<span class="sd">            start: Start time</span>
+<span class="sd">            end: End time</span>
+<span class="sd">            location: Index position etc</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MProvConnection</span><span class="o">.</span><span class="n">store_activity</span><span class="p">(</span><span class="n">activity</span><span class="o">=</span><span class="n">activity</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">location</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.store_stream_tuple"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.store_stream_tuple">[docs]</a>    <span class="k">def</span> <span class="nf">store_stream_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">stream_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">input_tuple</span><span class="p">:</span> <span class="n">BasicTuple</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create an entity node for a stream tuple</span>
+<span class="sd">        Args:</span>
+<span class="sd">            stream_name: The name of the stream itself</span>
+<span class="sd">            stream_index: The index position (count) or timestamp (if unique)</span>
+<span class="sd">            input_tuple: The actual stream value</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            token for the new node</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MProvConnection</span><span class="o">.</span><span class="n">store_stream_tuple</span><span class="p">(</span><span class="n">stream_name</span><span class="o">=</span><span class="n">stream_name</span><span class="p">,</span> <span class="n">stream_index</span><span class="o">=</span><span class="n">stream_index</span><span class="p">,</span> <span class="n">input_tuple</span><span class="o">=</span><span class="n">input_tuple</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.store_annotation"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.store_annotation">[docs]</a>    <span class="k">def</span> <span class="nf">store_annotation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">stream_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">annotation_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">annotation_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a node for an annotation to an entity / tuple</span>
+<span class="sd">        Args:</span>
+<span class="sd">            stream_name: The name of the stream itself</span>
+<span class="sd">            stream_index: The index position (count) or timestamp (if unique) of the</span>
+<span class="sd">                    stream element we are annotating</span>
+<span class="sd">            annotation_name: The name of the annotation</span>
+<span class="sd">            annotation_value: The value of the annotation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MProvConnection</span><span class="o">.</span><span class="n">store_annotation</span><span class="p">(</span><span class="n">stream_name</span><span class="o">=</span><span class="n">stream_name</span><span class="p">,</span> <span class="n">stream_index</span><span class="o">=</span><span class="n">stream_index</span><span class="p">,</span> <span class="n">annotation_name</span><span class="o">=</span><span class="n">annotation_name</span><span class="p">,</span> <span class="n">annotation_value</span><span class="o">=</span><span class="n">annotation_value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.store_window_and_inputs"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.store_window_and_inputs">[docs]</a>    <span class="k">def</span> <span class="nf">store_window_and_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_stream_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_stream_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">input_tokens_list</span><span class="p">:</span> <span class="nb">list</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Store a mapping between an operator window, from</span>
+<span class="sd">        which a stream is to be derived, and the input</span>
+<span class="sd">        nodes</span>
+<span class="sd">        Args:</span>
+<span class="sd">            output_stream_name:</span>
+<span class="sd">            output_stream_index:</span>
+<span class="sd">            input_tokens_list:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MProvConnection</span><span class="o">.</span><span class="n">store_window_and_inputs</span><span class="p">(</span><span class="n">output_stream_name</span><span class="o">=</span><span class="n">output_stream_name</span><span class="p">,</span> <span class="n">output_stream_index</span><span class="o">=</span><span class="n">output_stream_index</span><span class="p">,</span> <span class="n">input_tokens_list</span><span class="o">=</span><span class="n">input_tokens_list</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CerebralCortex.store_windowed_result"><a class="viewcode-back" href="../../rst/cerebralcortex.html#cerebralcortex.cerebralcortex.CerebralCortex.store_windowed_result">[docs]</a>    <span class="k">def</span> <span class="nf">store_windowed_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_stream_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_stream_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">output_tuple</span><span class="p">:</span> <span class="n">BasicTuple</span><span class="p">,</span> <span class="n">input_tokens_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">activity</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">int</span> <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When we have a windowed computation, this creates a complex derivation subgraph</span>
+<span class="sd">        in one operation.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            output_stream_name: The name of the stream our operator produces</span>
+<span class="sd">            output_stream_index: The position of the outgoing tuple in the stream</span>
+<span class="sd">            output_tuple: The tuple itself</span>
+<span class="sd">            input_tokens_list: IDs of the inputs to the computation</span>
+<span class="sd">            activity: The computation name</span>
+<span class="sd">            start: Start time</span>
+<span class="sd">            end: End time</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MProvConnection</span><span class="o">.</span><span class="n">store_windowed_result</span><span class="p">(</span><span class="n">output_stream_name</span><span class="o">=</span><span class="n">output_stream_name</span><span class="p">,</span> <span class="n">output_stream_index</span><span class="o">=</span><span class="n">output_stream_index</span><span class="p">,</span> <span class="n">output_tuple</span><span class="o">=</span><span class="n">output_tuple</span><span class="p">,</span> <span class="n">input_tokens_list</span><span class="o">=</span><span class="n">input_tokens_list</span><span class="p">,</span> <span class="n">activity</span><span class="o">=</span><span class="n">activity</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">)</span></div></div>
 </pre></div>
 
            </div>

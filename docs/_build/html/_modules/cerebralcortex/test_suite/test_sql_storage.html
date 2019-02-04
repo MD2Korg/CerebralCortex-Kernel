@@ -79,7 +79,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../cc_example.html">Usage Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../rst/cerebralcortex.html">cerebralcortex package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../rst/cerebralcortex.html">cerebralcortex</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../rst/cerebralcortex.core.config_manager.html">cerebralcortex.core.config_manager package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../rst/cerebralcortex.core.data_manager.object.html">cerebralcortex.core.data_manager.object package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../rst/cerebralcortex.core.data_manager.raw.html">cerebralcortex.core.data_manager.raw package</a></li>
@@ -188,6 +188,7 @@
 <span class="c1"># OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span>
 
 <span class="kn">from</span> <span class="nn">cerebralcortex.core.data_manager.raw.stream_handler</span> <span class="k">import</span> <span class="n">DataSet</span>
+<span class="kn">import</span> <span class="nn">jwt</span>
 
 
 <div class="viewcode-block" id="SqlStorageTest"><a class="viewcode-back" href="../../../rst/cerebralcortex.test_suite.html#cerebralcortex.test_suite.test_sql_storage.SqlStorageTest">[docs]</a><span class="k">class</span> <span class="nc">SqlStorageTest</span><span class="p">:</span>
@@ -235,7 +236,17 @@
 
 <div class="viewcode-block" id="SqlStorageTest.test_09_encrypt_user_password"><a class="viewcode-back" href="../../../rst/cerebralcortex.test_suite.html#cerebralcortex.test_suite.test_sql_storage.SqlStorageTest.test_09_encrypt_user_password">[docs]</a>    <span class="k">def</span> <span class="nf">test_09_encrypt_user_password</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CC</span><span class="o">.</span><span class="n">encrypt_user_password</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_password</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;10a6e6cc8311a3e2bcc09bf6c199adecd5dd59408c343e926b129c4914f3cb01&quot;</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_password_encrypted</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SqlStorageTest.test_10_connect"><a class="viewcode-back" href="../../../rst/cerebralcortex.test_suite.html#cerebralcortex.test_suite.test_sql_storage.SqlStorageTest.test_10_connect">[docs]</a>    <span class="k">def</span> <span class="nf">test_10_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CC</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_password_encrypted</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;msg&quot;</span><span class="p">),</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;auth_token&quot;</span><span class="p">)</span>
+
+        <span class="n">decoded_token</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CC</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;cc&quot;</span><span class="p">][</span><span class="s2">&quot;auth_encryption_key&quot;</span><span class="p">],</span> <span class="n">algorithm</span><span class="o">=</span><span class="s1">&#39;HS256&#39;</span><span class="p">)</span>
+        <span class="n">is_valid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CC</span><span class="o">.</span><span class="n">is_auth_token_valid</span><span class="p">(</span><span class="n">decoded_token</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">,</span><span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">token</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">is_valid</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div></div>
 </pre></div>
 
            </div>

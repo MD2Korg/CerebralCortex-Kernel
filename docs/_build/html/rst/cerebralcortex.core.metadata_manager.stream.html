@@ -81,7 +81,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../cc_example.html">Usage Example</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="cerebralcortex.html">cerebralcortex package</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="cerebralcortex.html">cerebralcortex</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="cerebralcortex.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="cerebralcortex.core.html">cerebralcortex.core package</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="cerebralcortex.core.html#subpackages">Subpackages</a></li>
@@ -199,7 +199,7 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-          <li><a href="cerebralcortex.html">cerebralcortex package</a> &raquo;</li>
+          <li><a href="cerebralcortex.html">cerebralcortex</a> &raquo;</li>
         
           <li><a href="cerebralcortex.core.html">cerebralcortex.core package</a> &raquo;</li>
         
@@ -337,6 +337,22 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="cerebralcortex.core.metadata_manager.stream.metadata.Metadata.add_description">
+<code class="descname">add_description</code><span class="sig-paren">(</span><em>stream_description: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/core/metadata_manager/stream/metadata.html#Metadata.add_description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.metadata_manager.stream.metadata.Metadata.add_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add stream description
+:param stream_description: textual description of a stream
+:type stream_description: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="cerebralcortex.core.metadata_manager.stream.metadata.Metadata.add_module">
 <code class="descname">add_module</code><span class="sig-paren">(</span><em>mod: cerebralcortex.core.metadata_manager.stream.module_info.ModuleMetadata</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/core/metadata_manager/stream/metadata.html#Metadata.add_module"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.metadata_manager.stream.metadata.Metadata.add_module" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add module metadata
@@ -361,17 +377,34 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="cerebralcortex.core.metadata_manager.stream.metadata.Metadata.from_json">
-<code class="descname">from_json</code><span class="sig-paren">(</span><em>json_list: List[dict]</em><span class="sig-paren">)</span> &#x2192; List<a class="reference internal" href="../_modules/cerebralcortex/core/metadata_manager/stream/metadata.html#Metadata.from_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.metadata_manager.stream.metadata.Metadata.from_json" title="Permalink to this definition">¶</a></dt>
+<dt id="cerebralcortex.core.metadata_manager.stream.metadata.Metadata.from_json_file">
+<code class="descname">from_json_file</code><span class="sig-paren">(</span><em>metadata: dict</em><span class="sig-paren">)</span> &#x2192; List<a class="reference internal" href="../_modules/cerebralcortex/core/metadata_manager/stream/metadata.html#Metadata.from_json_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.metadata_manager.stream.metadata.Metadata.from_json_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert dict (json) objects into Metadata class objects
-:param json_list List[dict]: list of metadata dicts</p>
+:param json_list dict: metadata dict</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of metadata class objects</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">metadata class object</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">List[<a class="reference internal" href="#cerebralcortex.core.metadata_manager.stream.metadata.Metadata" title="cerebralcortex.core.metadata_manager.stream.metadata.Metadata">Metadata</a>]</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#cerebralcortex.core.metadata_manager.stream.metadata.Metadata" title="cerebralcortex.core.metadata_manager.stream.metadata.Metadata">Metadata</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.core.metadata_manager.stream.metadata.Metadata.from_json_sql">
+<code class="descname">from_json_sql</code><span class="sig-paren">(</span><em>metadata_json: dict</em><span class="sig-paren">)</span> &#x2192; List<a class="reference internal" href="../_modules/cerebralcortex/core/metadata_manager/stream/metadata.html#Metadata.from_json_sql"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.metadata_manager.stream.metadata.Metadata.from_json_sql" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert dict (json) objects into Metadata class objects
+:param json_list dict: metadata dict</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">metadata class object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#cerebralcortex.core.metadata_manager.stream.metadata.Metadata" title="cerebralcortex.core.metadata_manager.stream.metadata.Metadata">Metadata</a></td>
 </tr>
 </tbody>
 </table>

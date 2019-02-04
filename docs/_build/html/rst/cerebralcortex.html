@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>cerebralcortex package &mdash; CerebralCortex 3.0.0 documentation</title>
+  <title>cerebralcortex &mdash; CerebralCortex 3.0.0 documentation</title>
   
 
   
@@ -81,7 +81,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../cc_example.html">Usage Example</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">cerebralcortex package</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">cerebralcortex</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="cerebralcortex.core.html">cerebralcortex.core package</a></li>
 </ul>
@@ -155,7 +155,7 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>cerebralcortex package</li>
+      <li>cerebralcortex</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -174,8 +174,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="cerebralcortex-package">
-<h1>cerebralcortex package<a class="headerlink" href="#cerebralcortex-package" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="cerebralcortex">
+<h1>cerebralcortex<a class="headerlink" href="#cerebralcortex" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
@@ -302,36 +302,40 @@
 <span id="cerebralcortex-cerebralcortex-module"></span><h2>cerebralcortex.cerebralcortex module<a class="headerlink" href="#module-cerebralcortex.cerebralcortex" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="cerebralcortex.cerebralcortex.CerebralCortex">
-<em class="property">class </em><code class="descclassname">cerebralcortex.cerebralcortex.</code><code class="descname">CerebralCortex</code><span class="sig-paren">(</span><em>configuration_filepath: str = None</em>, <em>auto_offset_reset: str = 'largest'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">cerebralcortex.cerebralcortex.</code><code class="descname">CerebralCortex</code><span class="sig-paren">(</span><em>configs_dir_path: str = None</em>, <em>auto_offset_reset: str = 'largest'</em>, <em>enable_spark: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="method">
 <dt id="cerebralcortex.cerebralcortex.CerebralCortex.connect">
-<code class="descname">connect</code><span class="sig-paren">(</span><em>username: str</em>, <em>password: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.connect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Authenticate a user based on username and password</p>
+<code class="descname">connect</code><span class="sig-paren">(</span><em>username: str</em>, <em>password: str</em>, <em>encrypted_password: bool = False</em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authenticate a user based on username and password and return an auth token
+:param username:
+:param password:
+:return:</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>username</strong> (<em>str</em>) – username of a user</li>
-<li><strong>password</strong> (<em>str</em>) – Encrypted password of a user</li>
+<li><strong>password</strong> (<em>str</em>) – password of a user</li>
+<li><strong>encrypted_password</strong> (<em>str</em>) – is password encrypted or not. mCerebrum sends encrypted passwords</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – User name and password cannot be empty/None.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">returns True on successful login or False otherwise.</p>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">return eturn {“status”:bool, “auth_token”: str, “msg”: str}</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;nasir_ali&quot;</span><span class="p">,</span> <span class="s2">&quot;2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;nasir_ali&quot;</span><span class="p">,</span> <span class="s2">&quot;2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kc">True</span>
 </pre></div>
 </div>
@@ -365,27 +369,29 @@
 
 <dl class="method">
 <dt id="cerebralcortex.cerebralcortex.CerebralCortex.create_user">
-<code class="descname">create_user</code><span class="sig-paren">(</span><em>username: str</em>, <em>user_password: str</em>, <em>user_role: str</em>, <em>user_metadata: dict</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.create_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.create_user" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a user in SQL storage if it doesn’t exist</p>
+<code class="descname">create_user</code><span class="sig-paren">(</span><em>username: str</em>, <em>user_password: str</em>, <em>user_role: str</em>, <em>user_metadata: dict</em>, <em>user_settings: dict</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.create_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.create_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a user in SQL storage if it doesn’t exist
+:param username: Only alphanumeric usernames are allowed with the max length of 25 chars.
+:type username: str
+:param user_password: no size limit on password
+:type user_password: str
+:param user_role: role of a user
+:type user_role: str
+:param user_metadata: metadata of a user
+:type user_metadata: dict
+:param user_settings: user settings, mCerebrum configurations of a user
+:type user_settings: dict</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>username</strong> (<em>str</em>) – Only alphanumeric usernames are allowed with the max length of 25 chars.</li>
-<li><strong>user_password</strong> (<em>str</em>) – no size limit on password</li>
-<li><strong>user_role</strong> (<em>str</em>) – role of a user</li>
-<li><strong>user_metadata</strong> (<em>dict</em>) – metadata of a user</li>
-</ul>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if user is successfully registered or throws any error in case of failure</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">True if user is successfully registered or throws any error in case of failure</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">bool</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">bool</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – if selected username is not available</li>
 <li><code class="xref py py-exc docutils literal notranslate"><span class="pre">Exception</span></code> – if sql query fails</li>
 </ul>
@@ -807,7 +813,7 @@
 
 <dl class="method">
 <dt id="cerebralcortex.cerebralcortex.CerebralCortex.get_user_metadata">
-<code class="descname">get_user_metadata</code><span class="sig-paren">(</span><em>user_id: str = None</em>, <em>username: str = None</em><span class="sig-paren">)</span> &#x2192; List[dict]<a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.get_user_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.get_user_metadata" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_user_metadata</code><span class="sig-paren">(</span><em>user_id: str = None</em>, <em>username: str = None</em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.get_user_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.get_user_metadata" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get user metadata by user_id or by username</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -819,10 +825,10 @@
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of dictionaries of user metadata</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">user metadata</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list[dict]</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
 </td>
 </tr>
 </tbody>
@@ -842,7 +848,7 @@
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">get_user_metadata</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;nasir_ali&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">[{</span><span class="s2">&quot;study_name&quot;</span><span class="p">:</span><span class="s2">&quot;mperf&quot;</span><span class="o">........</span><span class="p">}]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">{</span><span class="s2">&quot;study_name&quot;</span><span class="p">:</span><span class="s2">&quot;mperf&quot;</span><span class="o">........</span><span class="p">}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -874,8 +880,50 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="cerebralcortex.cerebralcortex.CerebralCortex.get_user_settings">
+<code class="descname">get_user_settings</code><span class="sig-paren">(</span><em>username: str = None</em>, <em>auth_token: str = None</em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.get_user_settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.get_user_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get user settings by auth-token or by username. These are user’s mCerebrum settings</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>username</strong> (<em>str</em>) – username of a user</li>
+<li><strong>auth_token</strong> (<em>str</em>) – auth-token</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of dictionaries of user metadata</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list[dict]</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Return list of User class object</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – User ID/name cannot be empty.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">get_user_settings</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;nasir_ali&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[{</span><span class="s2">&quot;mcerebrum&quot;</span><span class="p">:</span><span class="s2">&quot;some-conf&quot;</span><span class="o">........</span><span class="p">}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="cerebralcortex.cerebralcortex.CerebralCortex.is_auth_token_valid">
-<code class="descname">is_auth_token_valid</code><span class="sig-paren">(</span><em>username: str</em>, <em>auth_token: str</em>, <em>current_datetime: datetime.datetime</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.is_auth_token_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.is_auth_token_valid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">is_auth_token_valid</code><span class="sig-paren">(</span><em>username: str</em>, <em>auth_token: str</em>, <em>checktime: bool = False</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.is_auth_token_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.is_auth_token_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Validate whether a token is valid or expired based on the token expiry datetime stored in SQL</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -884,7 +932,7 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>username</strong> (<em>str</em>) – username of a user</li>
 <li><strong>auth_token</strong> (<em>str</em>) – token generated by API-Server</li>
-<li><strong>current_datetime</strong> (<em>datetime</em>) – current datetime object</li>
+<li><strong>checktime</strong> (<em>bool</em>) – setting this to False will only check if the token is available in system. Setting this to true will check if the token is expired based on the token expiry date.</li>
 </ul>
 </td>
 </tr>
@@ -1069,7 +1117,7 @@
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-1">
+<div class="admonition-todo admonition" id="index-2">
 <p class="first admonition-title">Todo</p>
 <p class="last">This needs to be updated with the new structure. Should metadata be stored or not?</p>
 </div>
@@ -1106,7 +1154,7 @@
 </tr>
 </tbody>
 </table>
-<div class="admonition-todo admonition" id="index-2">
+<div class="admonition-todo admonition" id="index-3">
 <p class="first admonition-title">Todo</p>
 <p class="last">Add functionality to store data in influxdb.</p>
 </div>
@@ -1146,6 +1194,38 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="cerebralcortex.cerebralcortex.CerebralCortex.store_activity">
+<code class="descname">store_activity</code><span class="sig-paren">(</span><em>activity: str</em>, <em>start: int</em>, <em>end: int</em>, <em>location: int</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.store_activity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.store_activity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an entity node for an activity (a stream operator computation)
+:param activity: Name of the operation
+:param start: Start time
+:param end: End time
+:param location: Index position etc</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.cerebralcortex.CerebralCortex.store_annotation">
+<code class="descname">store_annotation</code><span class="sig-paren">(</span><em>stream_name: str</em>, <em>stream_index: int</em>, <em>annotation_name: str</em>, <em>annotation_value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.store_annotation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.store_annotation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a node for an annotation to an entity / tuple
+:param stream_name: The name of the stream itself
+:param stream_index: The index position (count) or timestamp (if unique) of the</p>
+<blockquote>
+<div>stream element we are annotating</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>annotation_name</strong> – The name of the annotation</li>
+<li><strong>annotation_value</strong> – The value of the annotation</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="cerebralcortex.cerebralcortex.CerebralCortex.store_or_update_Kafka_offset">
 <code class="descname">store_or_update_Kafka_offset</code><span class="sig-paren">(</span><em>topic: str</em>, <em>topic_partition: str</em>, <em>offset_start: str</em>, <em>offset_until: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.store_or_update_Kafka_offset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.store_or_update_Kafka_offset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store or Update kafka topic offsets. Offsets are used to track what messages have been processed.</p>
@@ -1178,9 +1258,53 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="cerebralcortex.cerebralcortex.CerebralCortex.store_stream_tuple">
+<code class="descname">store_stream_tuple</code><span class="sig-paren">(</span><em>stream_name: str</em>, <em>stream_index: int</em>, <em>input_tuple: mprov.metadata.stream_metadata.BasicTuple</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.store_stream_tuple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.store_stream_tuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an entity node for a stream tuple
+:param stream_name: The name of the stream itself
+:param stream_index: The index position (count) or timestamp (if unique)
+:param input_tuple: The actual stream value</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">token for the new node</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.cerebralcortex.CerebralCortex.store_window_and_inputs">
+<code class="descname">store_window_and_inputs</code><span class="sig-paren">(</span><em>output_stream_name: str</em>, <em>output_stream_index: int</em>, <em>input_tokens_list: list</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.store_window_and_inputs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.store_window_and_inputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store a mapping between an operator window, from
+which a stream is to be derived, and the input
+nodes
+:param output_stream_name:
+:param output_stream_index:
+:param input_tokens_list:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cerebralcortex.cerebralcortex.CerebralCortex.store_windowed_result">
+<code class="descname">store_windowed_result</code><span class="sig-paren">(</span><em>output_stream_name: str</em>, <em>output_stream_index: int</em>, <em>output_tuple: mprov.metadata.stream_metadata.BasicTuple</em>, <em>input_tokens_list: list</em>, <em>activity: str</em>, <em>start: int</em>, <em>end: int</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.store_windowed_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.store_windowed_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>When we have a windowed computation, this creates a complex derivation subgraph
+in one operation.
+:param output_stream_name: The name of the stream our operator produces
+:param output_stream_index: The position of the outgoing tuple in the stream
+:param output_tuple: The tuple itself
+:param input_tokens_list: IDs of the inputs to the computation
+:param activity: The computation name
+:param start: Start time
+:param end: End time</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="cerebralcortex.cerebralcortex.CerebralCortex.update_auth_token">
 <code class="descname">update_auth_token</code><span class="sig-paren">(</span><em>username: str</em>, <em>auth_token: str</em>, <em>auth_token_issued_time: datetime.datetime</em>, <em>auth_token_expiry_time: datetime.datetime</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/cerebralcortex.html#CerebralCortex.update_auth_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.cerebralcortex.CerebralCortex.update_auth_token" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update an auth token in SQL database to keep user stay logged in. Auth token valid duration can be changed in configuration files.</p>
+<p class="rubric">Notes</p>
+<p>This method is used by API-server to store newly created auth-token</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

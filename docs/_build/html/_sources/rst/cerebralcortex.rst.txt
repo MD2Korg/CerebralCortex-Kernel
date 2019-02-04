@@ -1,4 +1,4 @@
-cerebralcortex package
+cerebralcortex
 ======================
 
 Subpackages

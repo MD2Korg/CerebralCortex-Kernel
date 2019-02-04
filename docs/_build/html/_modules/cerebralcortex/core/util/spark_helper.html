@@ -79,7 +79,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../cc_example.html">Usage Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.html">cerebralcortex package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.html">cerebralcortex</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.config_manager.html">cerebralcortex.core.config_manager package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.data_manager.object.html">cerebralcortex.core.data_manager.object package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.data_manager.raw.html">cerebralcortex.core.data_manager.raw package</a></li>
@@ -212,6 +212,7 @@
     <span class="n">sparkSession</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
 
     <span class="n">sc</span> <span class="o">=</span> <span class="n">sparkSession</span><span class="o">.</span><span class="n">sparkContext</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">setLogLevel</span><span class="p">(</span><span class="s2">&quot;FATAL&quot;</span><span class="p">)</span>
 
     <span class="n">sqlContext</span> <span class="o">=</span> <span class="n">SQLContext</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">type</span><span class="o">==</span><span class="s2">&quot;SparkSessionBuilder&quot;</span><span class="p">:</span>

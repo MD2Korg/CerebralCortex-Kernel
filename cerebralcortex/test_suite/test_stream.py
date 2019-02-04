@@ -38,7 +38,7 @@ class DataStreamTest:
         data = gen_phone_battery_data()
         metadata = gen_phone_battery_metadata()
         ds = DataStream(data, metadata)
-
+        dd = ds.fixed_window()
         result = self.CC.save_stream(ds)
 
         self.assertEqual(result, True)

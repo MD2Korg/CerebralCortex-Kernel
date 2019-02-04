@@ -79,7 +79,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../cc_example.html">Usage Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.html">cerebralcortex package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.html">cerebralcortex</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.config_manager.html">cerebralcortex.core.config_manager package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.data_manager.object.html">cerebralcortex.core.data_manager.object package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.data_manager.raw.html">cerebralcortex.core.data_manager.raw package</a></li>
@@ -200,6 +200,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_version</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_description</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_metadata_hash</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dataDescriptor</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_module</span> <span class="o">=</span> <span class="p">[]</span>
@@ -323,6 +324,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_version</span> <span class="o">=</span> <span class="n">value</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
+<div class="viewcode-block" id="Metadata.add_description"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.metadata_manager.stream.html#cerebralcortex.core.metadata_manager.stream.metadata.Metadata.add_description">[docs]</a>    <span class="k">def</span> <span class="nf">add_description</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream_description</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add stream description</span>
+<span class="sd">        Args:</span>
+<span class="sd">            stream_description (str): textual description of a stream</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            self</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_description</span> <span class="o">=</span> <span class="n">stream_description</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
 <div class="viewcode-block" id="Metadata.add_dataDescriptor"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.metadata_manager.stream.html#cerebralcortex.core.metadata_manager.stream.metadata.Metadata.add_dataDescriptor">[docs]</a>    <span class="k">def</span> <span class="nf">add_dataDescriptor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dd</span><span class="p">:</span> <span class="n">DataDescriptor</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add data description of a stream</span>
@@ -357,6 +371,10 @@
 <span class="sd">            ValueError: if metadata fields are not set</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Stream name is not defined.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_description</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Stream description is not defined.&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">dd_obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_descriptor</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">dd_obj</span><span class="o">.</span><span class="n">_name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">dd_obj</span><span class="o">.</span><span class="n">_name</span><span class="o">==</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">dd_obj</span><span class="o">.</span><span class="n">_type</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">dd_obj</span><span class="o">.</span><span class="n">_type</span><span class="o">==</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Name and/or type fields are missing in data descriptor.&quot;</span><span class="p">)</span>
@@ -381,6 +399,7 @@
         <span class="k">for</span> <span class="n">mm_obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modulez</span><span class="p">:</span>
             <span class="n">module_metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mm_obj</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
         <span class="n">metadata_json</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">metadata_json</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_description</span>
         <span class="n">metadata_json</span><span class="p">[</span><span class="s2">&quot;data_descriptor&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_descriptor</span>
         <span class="n">metadata_json</span><span class="p">[</span><span class="s2">&quot;module&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">module_metadata</span>
         <span class="k">return</span> <span class="n">metadata_json</span></div>
@@ -404,39 +423,74 @@
 
         <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid3</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">NAMESPACE_DNS</span><span class="p">,</span> <span class="n">hash_string</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Metadata.from_json"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.metadata_manager.stream.html#cerebralcortex.core.metadata_manager.stream.metadata.Metadata.from_json">[docs]</a>    <span class="k">def</span> <span class="nf">from_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">:</span>
+<div class="viewcode-block" id="Metadata.from_json_sql"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.metadata_manager.stream.html#cerebralcortex.core.metadata_manager.stream.metadata.Metadata.from_json_sql">[docs]</a>    <span class="k">def</span> <span class="nf">from_json_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metadata_json</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert dict (json) objects into Metadata class objects</span>
 <span class="sd">        Args:</span>
-<span class="sd">            json_list List[dict]: list of metadata dicts</span>
+<span class="sd">            json_list dict: metadata dict</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            List[Metadata]: list of metadata class objects</span>
+<span class="sd">            Metadata: metadata class object</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data_descriptor_list</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">module_list</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">metadata_list</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">tmp</span> <span class="ow">in</span> <span class="n">json_list</span><span class="p">:</span>
-            <span class="n">md</span> <span class="o">=</span> <span class="n">Metadata</span><span class="p">()</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-                <span class="n">metadata</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">))</span>
-                <span class="n">data_descriptors</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;data_descriptor&quot;</span><span class="p">]</span>
-                <span class="n">module_info</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;module&quot;</span><span class="p">]</span>
-                <span class="k">for</span> <span class="n">dd</span> <span class="ow">in</span> <span class="n">data_descriptors</span><span class="p">:</span>
-                    <span class="n">data_descriptor_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataDescriptor</span><span class="p">()</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">dd</span><span class="p">))</span>
 
-                <span class="k">for</span> <span class="n">mm</span> <span class="ow">in</span> <span class="n">module_info</span><span class="p">:</span>
-                    <span class="n">module_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ModuleMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">mm</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata_json</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">metadata_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">metadata_json</span><span class="p">)</span>
 
-                <span class="n">md</span><span class="o">.</span><span class="n">data_descriptor</span> <span class="o">=</span> <span class="n">data_descriptor_list</span>
-                <span class="n">md</span><span class="o">.</span><span class="n">modulez</span> <span class="o">=</span> <span class="n">module_list</span>
-                <span class="n">md</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
-                <span class="n">md</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">])</span>
-                <span class="n">md</span><span class="o">.</span><span class="n">metadata_hash</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="s2">&quot;metadata_hash&quot;</span><span class="p">]</span>
-                <span class="n">metadata_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">md</span><span class="p">)</span>
+        <span class="n">md</span> <span class="o">=</span> <span class="n">Metadata</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata_json</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">metadata_json</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">))</span>
+            <span class="n">data_descriptors</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;data_descriptor&quot;</span><span class="p">]</span>
+            <span class="n">module_info</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;module&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">dd</span> <span class="ow">in</span> <span class="n">data_descriptors</span><span class="p">:</span>
+                <span class="n">data_descriptor_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataDescriptor</span><span class="p">()</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">dd</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">metadata_list</span></div></div>
+            <span class="k">for</span> <span class="n">mm</span> <span class="ow">in</span> <span class="n">module_info</span><span class="p">:</span>
+                <span class="n">module_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ModuleMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">mm</span><span class="p">))</span>
+
+            <span class="n">md</span><span class="o">.</span><span class="n">data_descriptor</span> <span class="o">=</span> <span class="n">data_descriptor_list</span>
+            <span class="n">md</span><span class="o">.</span><span class="n">modulez</span> <span class="o">=</span> <span class="n">module_list</span>
+            <span class="n">md</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">metadata_json</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+            <span class="n">md</span><span class="o">.</span><span class="n">_description</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">md</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">metadata_json</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">])</span>
+            <span class="n">md</span><span class="o">.</span><span class="n">metadata_hash</span> <span class="o">=</span> <span class="n">metadata_json</span><span class="p">[</span><span class="s2">&quot;metadata_hash&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">md</span></div>
+
+<div class="viewcode-block" id="Metadata.from_json_file"><a class="viewcode-back" href="../../../../../rst/cerebralcortex.core.metadata_manager.stream.html#cerebralcortex.core.metadata_manager.stream.metadata.Metadata.from_json_file">[docs]</a>    <span class="k">def</span> <span class="nf">from_json_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert dict (json) objects into Metadata class objects</span>
+<span class="sd">        Args:</span>
+<span class="sd">            json_list dict: metadata dict</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Metadata: metadata class object</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_descriptor_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">module_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+
+        <span class="n">md</span> <span class="o">=</span> <span class="n">Metadata</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">data_descriptors</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;data_descriptor&quot;</span><span class="p">]</span>
+            <span class="n">module_info</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;module&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">dd</span> <span class="ow">in</span> <span class="n">data_descriptors</span><span class="p">:</span>
+                <span class="n">data_descriptor_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataDescriptor</span><span class="p">()</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">dd</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">mm</span> <span class="ow">in</span> <span class="n">module_info</span><span class="p">:</span>
+                <span class="n">module_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ModuleMetadata</span><span class="p">()</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">mm</span><span class="p">))</span>
+
+            <span class="n">md</span><span class="o">.</span><span class="n">data_descriptor</span> <span class="o">=</span> <span class="n">data_descriptor_list</span>
+            <span class="n">md</span><span class="o">.</span><span class="n">modulez</span> <span class="o">=</span> <span class="n">module_list</span>
+            <span class="n">md</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">md</span><span class="o">.</span><span class="n">_description</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">md</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">md</span><span class="o">.</span><span class="n">metadata_hash</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata_hash&quot;</span><span class="p">,</span> <span class="s2">&quot;no-hash&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">md</span></div></div>
 </pre></div>
 
            </div>

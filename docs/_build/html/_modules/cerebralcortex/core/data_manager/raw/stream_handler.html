@@ -79,7 +79,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../cc_example.html">Usage Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.html">cerebralcortex package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.html">cerebralcortex</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.config_manager.html">cerebralcortex.core.config_manager package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.data_manager.object.html">cerebralcortex.core.data_manager.object package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../rst/cerebralcortex.core.data_manager.raw.html">cerebralcortex.core.data_manager.raw package</a></li>
@@ -302,8 +302,8 @@
                     <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sql_data</span><span class="o">.</span><span class="n">save_stream_metadata</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span><span class="o">==</span><span class="kc">True</span><span class="p">:</span>
                         <span class="n">version</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]</span>
-                        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;ver&#39;</span><span class="p">)</span>
-                        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s1">&#39;ver&#39;</span><span class="p">,</span> <span class="n">lit</span><span class="p">(</span><span class="n">version</span><span class="p">))</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;version&#39;</span><span class="p">)</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s1">&#39;version&#39;</span><span class="p">,</span> <span class="n">lit</span><span class="p">(</span><span class="n">version</span><span class="p">))</span>
 
                         <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nosql</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="n">stream_name</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
                         <span class="k">return</span> <span class="n">status</span>

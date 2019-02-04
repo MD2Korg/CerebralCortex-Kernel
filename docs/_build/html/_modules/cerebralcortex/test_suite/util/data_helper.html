@@ -79,7 +79,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../cc_example.html">Usage Example</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.html">cerebralcortex package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.html">cerebralcortex</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.config_manager.html">cerebralcortex.core.config_manager package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.data_manager.object.html">cerebralcortex.core.data_manager.object package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../rst/cerebralcortex.core.data_manager.raw.html">cerebralcortex.core.data_manager.raw package</a></li>
@@ -200,7 +200,7 @@
 <span class="sd">        DataFrame: pyspark dataframe object with columns: [&quot;timestamp&quot;, &quot;offset&quot;, &quot;battery_level&quot;, &quot;ver&quot;, &quot;user&quot;]</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">column_name</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">,</span> <span class="s2">&quot;battery_level&quot;</span><span class="p">,</span> <span class="s2">&quot;ver&quot;</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">]</span>
+    <span class="n">column_name</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;timestamp&quot;</span><span class="p">,</span> <span class="s2">&quot;offset&quot;</span><span class="p">,</span> <span class="s2">&quot;battery_level&quot;</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="s2">&quot;user&quot;</span><span class="p">]</span>
     <span class="n">sample_data</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">34</span><span class="p">,</span> <span class="mi">59</span><span class="p">)</span>
     <span class="n">tmp</span> <span class="o">=</span> <span class="mi">1</span>
@@ -212,7 +212,7 @@
             <span class="n">sample</span> <span class="o">=</span> <span class="n">sample</span> <span class="o">-</span> <span class="mi">1</span>
             <span class="n">tmp</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">timestamp</span> <span class="o">=</span> <span class="n">timestamp</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">sample_data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">timestamp</span><span class="p">,</span> <span class="s2">&quot;21600000&quot;</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;00000000-afb8-476e-9872-6472b4e66b68&quot;</span><span class="p">))</span>
+        <span class="n">sample_data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">timestamp</span><span class="p">,</span> <span class="s2">&quot;21600000&quot;</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;dfce1e65-2882-395b-a641-93f31748591b&quot;</span><span class="p">))</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">sqlContext</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">sample_data</span><span class="p">,</span> <span class="n">column_name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">df</span></div>
 

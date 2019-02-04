@@ -24,6 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
+from pyspark.sql import functions as F
+from pyspark.sql.functions import col
 
 
 class DataStream:
@@ -97,3 +99,180 @@ class DataStream:
             value (DataFrame):
         """
         self._data = value
+
+    #############################################################################
+    #                           Helper methods for dataframe                    #
+    #############################################################################
+
+    # !!!!                                  STAT METHODS                           !!!
+
+    def compute_average(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute average of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): average will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="avg", colmnName=colmnName)
+
+    def compute_sqrt(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute square root of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): square root will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="sqrt", colmnName=colmnName)
+
+    def compute_sum(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute sum of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): average will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="sum", colmnName=colmnName)
+
+    def compute_variancee(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute variance of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): variance will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="variance", colmnName=colmnName)
+
+    def compute_stddev(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute standard deviation of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): standard deviation will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="stddev", colmnName=colmnName)
+
+    def compute_min(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute min of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): min value will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="min", colmnName=colmnName)
+
+    def compute_max(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute max of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="max", colmnName=colmnName)
+
+
+    def _compute_stats(self, windowDuration:int=60, methodName:str=None, colmnName:str=None)->object:
+        """
+        Compute stats on pyspark dataframe
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            methodName (str): pyspark stat method name
+            colmnName (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+
+        windowDuration = str(windowDuration)+" seconds"
+        exprs = self._get_column_names(columnName=colmnName, methodName=methodName)
+        result = self._data.groupBy(['user',F.window("timestamp", windowDuration)]).agg(exprs)
+
+        self._data = result
+        self.metadata = Metadata()
+        return self
+
+
+    # !!!!                              WINDOWING METHODS                           !!!
+
+    def fixed_window(self, windowDuration:int=60, columnName:str=None):
+        """
+        Window data into fixed length chunks
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            columnName (str): all columns' data will be windowed if columnName is not provided
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+
+        """
+        windowDuration = str(windowDuration)+" seconds"
+        exprs = self._get_column_names(columnName=columnName, methodName="collect_list")
+        windowed_data = self._data.groupBy(['user', F.window("timestamp", windowDuration)]).agg(exprs)
+
+        self._data = windowed_data
+        self.metadata = Metadata()
+        return self
+
+    # !!!!                              FILTERING METHODS                           !!!
+
+    def filter(self):
+        pass
+
+    def schema(self):
+        """
+        Get data schema (e.g., column names and number of columns etc.)
+
+        Returns:
+            pyspark dataframe schema object
+        """
+        return self._data.schema
+
+    def _get_column_names(self, columnName, methodName):
+        """
+        Get data column names and build expression for pyspark aggregate method
+        Args:
+            columnName: name of a column that should be processed
+            methodName: name of the method that should be applied on the column
+        Todo:
+            update non-data column names
+        Returns:
+            dict: {columnName: methodName}
+        """
+        if columnName is not None:
+            exprs = {columnName:methodName}
+        else:
+            columns = self._data.columns
+            black_list_column = ["timestamp", "user", "version"]          #"localtime",
+            columns = list(set(columns)-set(black_list_column))
+
+            exprs = {x: methodName for x in columns}
+        return exprs

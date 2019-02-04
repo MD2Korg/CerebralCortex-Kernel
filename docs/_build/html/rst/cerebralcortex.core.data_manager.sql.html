@@ -81,7 +81,7 @@
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../cc_example.html">Usage Example</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="cerebralcortex.html">cerebralcortex package</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="cerebralcortex.html">cerebralcortex</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="cerebralcortex.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="cerebralcortex.core.html">cerebralcortex.core package</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="cerebralcortex.core.html#subpackages">Subpackages</a></li>
@@ -205,7 +205,7 @@
     
       <li><a href="../index.html">Docs</a> &raquo;</li>
         
-          <li><a href="cerebralcortex.html">cerebralcortex package</a> &raquo;</li>
+          <li><a href="cerebralcortex.html">cerebralcortex</a> &raquo;</li>
         
           <li><a href="cerebralcortex.core.html">cerebralcortex.core package</a> &raquo;</li>
         
@@ -610,7 +610,7 @@ similar with execute() function in module pymysql.
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="method">
 <dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.create_user">
-<code class="descname">create_user</code><span class="sig-paren">(</span><em>username: str</em>, <em>user_password: str</em>, <em>user_role: str</em>, <em>user_metadata: dict</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.create_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.create_user" title="Permalink to this definition">¶</a></dt>
+<code class="descname">create_user</code><span class="sig-paren">(</span><em>username: str</em>, <em>user_password: str</em>, <em>user_role: str</em>, <em>user_metadata: dict</em>, <em>user_settings: dict</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.create_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.create_user" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a user in SQL storage if it doesn’t exist
 :param username: Only alphanumeric usernames are allowed with the max length of 25 chars.
 :type username: str
@@ -619,7 +619,9 @@ similar with execute() function in module pymysql.
 :param user_role: role of a user
 :type user_role: str
 :param user_metadata: metadata of a user
-:type user_metadata: dict</p>
+:type user_metadata: dict
+:param user_settings: user settings, mCerebrum configurations of a user
+:type user_settings: dict</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -757,7 +759,7 @@ similar with execute() function in module pymysql.
 
 <dl class="method">
 <dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_metadata">
-<code class="descname">get_user_metadata</code><span class="sig-paren">(</span><em>user_id: &lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt; = None</em>, <em>username: str = None</em><span class="sig-paren">)</span> &#x2192; List[dict]<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.get_user_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_metadata" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_user_metadata</code><span class="sig-paren">(</span><em>user_id: &lt;module 'uuid' from '/usr/lib/python3.6/uuid.py'&gt; = None</em>, <em>username: str = None</em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.get_user_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_metadata" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get user metadata by user_id or by username</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -769,10 +771,10 @@ similar with execute() function in module pymysql.
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of dictionaries of user metadata</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">user metadata</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list[dict]</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
 </td>
 </tr>
 </tbody>
@@ -792,7 +794,7 @@ similar with execute() function in module pymysql.
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">get_user_metadata</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;nasir_ali&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="p">[{</span><span class="s2">&quot;study_name&quot;</span><span class="p">:</span><span class="s2">&quot;mperf&quot;</span><span class="o">........</span><span class="p">}]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">{</span><span class="s2">&quot;study_name&quot;</span><span class="p">:</span><span class="s2">&quot;mperf&quot;</span><span class="o">........</span><span class="p">}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -824,8 +826,50 @@ similar with execute() function in module pymysql.
 </dd></dl>
 
 <dl class="method">
+<dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_settings">
+<code class="descname">get_user_settings</code><span class="sig-paren">(</span><em>username: str = None</em>, <em>auth_token: str = None</em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.get_user_settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.get_user_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get user settings by auth-token or by username. These are user’s mCerebrum settings</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>username</strong> (<em>str</em>) – username of a user</li>
+<li><strong>auth_token</strong> (<em>str</em>) – auth-token</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of dictionaries of user metadata</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list[dict]</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Return list of User class object</p>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – User ID/name cannot be empty.</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">get_user_settings</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="s2">&quot;nasir_ali&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[{</span><span class="s2">&quot;mcerebrum&quot;</span><span class="p">:</span><span class="s2">&quot;some-conf&quot;</span><span class="o">........</span><span class="p">}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.is_auth_token_valid">
-<code class="descname">is_auth_token_valid</code><span class="sig-paren">(</span><em>username: str</em>, <em>auth_token: str</em>, <em>current_time: datetime.datetime</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.is_auth_token_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.is_auth_token_valid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">is_auth_token_valid</code><span class="sig-paren">(</span><em>username: str</em>, <em>auth_token: str</em>, <em>checktime: bool = False</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.is_auth_token_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.is_auth_token_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Validate whether a token is valid or expired based on the token expiry datetime stored in SQL</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -834,7 +878,7 @@ similar with execute() function in module pymysql.
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>username</strong> (<em>str</em>) – username of a user</li>
 <li><strong>auth_token</strong> (<em>str</em>) – token generated by API-Server</li>
-<li><strong>current_time</strong> (<em>datetime</em>) – current datetime object</li>
+<li><strong>checktime</strong> (<em>bool</em>) – setting this to False will only check if the token is available in system. Setting this to true will check if the token is expired based on the token expiry date.</li>
 </ul>
 </td>
 </tr>
@@ -886,8 +930,8 @@ similar with execute() function in module pymysql.
 
 <dl class="method">
 <dt id="cerebralcortex.core.data_manager.sql.users_handler.UserHandler.login_user">
-<code class="descname">login_user</code><span class="sig-paren">(</span><em>username: str</em>, <em>password: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.login_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.login_user" title="Permalink to this definition">¶</a></dt>
-<dd><p>Authenticate a user based on username and password
+<code class="descname">login_user</code><span class="sig-paren">(</span><em>username: str</em>, <em>password: str</em>, <em>encrypted_password: bool = False</em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/cerebralcortex/core/data_manager/sql/users_handler.html#UserHandler.login_user"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cerebralcortex.core.data_manager.sql.users_handler.UserHandler.login_user" title="Permalink to this definition">¶</a></dt>
+<dd><p>Authenticate a user based on username and password and return an auth token
 :param username:
 :param password:
 :return:</p>
@@ -897,24 +941,25 @@ similar with execute() function in module pymysql.
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>username</strong> (<em>str</em>) – username of a user</li>
-<li><strong>password</strong> (<em>str</em>) – Encrypted password of a user</li>
+<li><strong>password</strong> (<em>str</em>) – password of a user</li>
+<li><strong>encrypted_password</strong> (<em>str</em>) – is password encrypted or not. mCerebrum sends encrypted passwords</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – User name and password cannot be empty/None.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">returns True on successful login or False otherwise.</p>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">return eturn {“status”:bool, “auth_token”: str, “msg”: str}</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
 </td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Examples</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span> <span class="o">=</span> <span class="n">CerebralCortex</span><span class="p">(</span><span class="s2">&quot;/directory/path/of/configs/&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;nasir_ali&quot;</span><span class="p">,</span> <span class="s2">&quot;2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CC</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;nasir_ali&quot;</span><span class="p">,</span> <span class="s2">&quot;2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kc">True</span>
 </pre></div>
 </div>
