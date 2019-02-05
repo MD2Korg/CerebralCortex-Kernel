@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from pyspark.sql import functions as F
+from typing import List
 
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
@@ -249,8 +250,55 @@ class DataStream:
 
     # !!!!                              FILTERING METHODS                           !!!
 
-    def filter(self):
-        pass
+    def filter(self, columnName, operator, value):
+        """
+        filter data
+
+        Args:
+            columnName (str): name of the column
+            operator (str): basic operators (e.g., >, <, ==, !=)
+            value (Any): if the columnName is timestamp, please provide python datatime object
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        where_clause = columnName+operator+"'"+str(value)+"'"
+        result = self._data.where(where_clause)
+        self._data = result
+        self.metadata = Metadata()
+        return self
+
+    def filter_user(self, user_ids:List):
+        """
+        filter data to get only selective users' data
+
+        Args:
+            user_ids (List[str]): list of users' UUIDs
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        if not isinstance(user_ids, list):
+            user_ids = [user_ids]
+        result = self._data.where(self._data["user"].isin(user_ids))
+        self._data = result
+        self.metadata = Metadata()
+        return self
+
+    def filter_version(self, version:List):
+        """
+        filter data to get only selective users' data
+
+        Args:
+            version (List[str]): list of stream versions
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        if not isinstance(version, list):
+            version = [version]
+        result = self._data.where(self._data["version"].isin(version))
+        self._data = result
+        self.metadata = Metadata()
+        return self
 
     def schema(self):
         """
