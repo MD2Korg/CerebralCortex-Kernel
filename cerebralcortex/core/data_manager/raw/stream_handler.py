@@ -29,7 +29,6 @@ from enum import Enum
 from pyspark.sql.functions import lit
 
 from cerebralcortex.core.datatypes.datastream import DataStream
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 class DataSet(Enum):

@@ -28,6 +28,7 @@ class ModuleMetadata:
     def __init__(self):
         """
         Constructor
+
         """
         self._name = None
         self._version = None
@@ -37,6 +38,7 @@ class ModuleMetadata:
     def name(self, value):
         """
         name of the module
+
         Args:
             value (str): name
 
@@ -50,6 +52,7 @@ class ModuleMetadata:
     def version(self, value):
         """
         version of the module
+
         Args:
             value (str): version
 
@@ -64,6 +67,7 @@ class ModuleMetadata:
     def set_author(self, key, value):
         """
         set author key/value pair. For example, key=name, value=md2k
+
         Args:
             key (str): author metadata key
             value (str): author metadata value
@@ -81,6 +85,7 @@ class ModuleMetadata:
     def set_attribute(self, key:str, value:str):
         """
         Attributes field is option in metadata object. Arbitrary number or attributes could be attached to a DataDescriptor
+
         Args:
             key (str): key of an attribute
             value (str): value of an attribute
@@ -99,6 +104,7 @@ class ModuleMetadata:
     def from_json(self, obj):
         """
         Cast ModuleMetadata class object into json
+
         Args:
             obj (ModuleMetadata): object of a ModuleMetadata class
 

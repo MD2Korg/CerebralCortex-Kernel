@@ -33,6 +33,7 @@ class Metadata():
     def __init__(self):
         """
         Constructor
+
         """
         self._name = None
         self._version = None
@@ -45,6 +46,7 @@ class Metadata():
     def name(self)->str:
         """
         get stream name
+
         Returns:
             str: name
 
@@ -55,6 +57,7 @@ class Metadata():
     def name(self, value:str):
         """
         set stream name
+
         Args:
             value (str): name
         """
@@ -64,6 +67,7 @@ class Metadata():
     def version(self)->int:
         """
         get stream version
+
         Returns:
             int: version
 
@@ -74,6 +78,7 @@ class Metadata():
     def version(self, value:int):
         """
         set stream version
+
         Args:
             value (int): version
         """
@@ -83,6 +88,7 @@ class Metadata():
     def metadata_hash(self)->str:
         """
         get metadata hash
+
         Returns:
             str: metadata hash
 
@@ -93,6 +99,7 @@ class Metadata():
     def metadata_hash(self, value: str):
         """
         set metadata hash
+
         Args:
             value (str): metadata hash
         """
@@ -102,6 +109,7 @@ class Metadata():
     def data_descriptor(self)->DataDescriptor:
         """
         get stream data descriptor
+
         Returns:
             DataDescriptor: object of data descriptor
         """
@@ -111,6 +119,7 @@ class Metadata():
     def data_descriptor(self, value: DataDescriptor):
         """
         Set stream data descriptor
+
         Args:
             value (DataDescriptor): object of data descriptor
         """
@@ -120,6 +129,7 @@ class Metadata():
     def modulez(self)->str:
         """
         get stream module metadata
+
         Returns:
             ModuleMetadata: object of ModuleMetadata
         """
@@ -129,6 +139,7 @@ class Metadata():
     def modulez(self, value:ModuleMetadata):
         """
         set stream module metadata
+
         Args:
             value (ModuleMetadata):  object of ModuleMetadata
         """
@@ -137,6 +148,7 @@ class Metadata():
     def set_name(self, value:str):
         """
         set name of a stream
+
         Args:
             value (str): name of a stream
 
@@ -150,6 +162,7 @@ class Metadata():
     def set_version(self, value:int):
         """
         set version of a stream
+
         Args:
             value (int): version of a stream
 
@@ -163,6 +176,7 @@ class Metadata():
     def add_description(self, stream_description:str):
         """
         Add stream description
+
         Args:
             stream_description (str): textual description of a stream
 
@@ -176,6 +190,7 @@ class Metadata():
     def add_dataDescriptor(self, dd: DataDescriptor):
         """
         Add data description of a stream
+
         Args:
             dd (DataDescriptor): data descriptor
 
@@ -189,6 +204,7 @@ class Metadata():
     def add_module(self, mod: ModuleMetadata):
         """
         Add module metadata
+
         Args:
             mod (ModuleMetadata): module metadata
 
@@ -201,6 +217,7 @@ class Metadata():
     def is_valid(self)->bool:
         """
         check whether all required fields are set
+
         Returns:
             bool: True if fields are set or throws an exception in case of missing values
         Exception:
@@ -224,6 +241,7 @@ class Metadata():
     def to_json(self)->dict:
         """
         Convert MetaData object into a dict (json) object
+
         Returns:
             dict: dict form of MetaData object
         """
@@ -243,6 +261,7 @@ class Metadata():
     def get_hash(self)->str:
         """
         Get the unique hash of metadata. Hash is generated based on "stream-name + data_descriptor + module-metadata"
+
         Returns:
             str: hash id of metadata
         """
@@ -262,6 +281,7 @@ class Metadata():
     def from_json_sql(self, metadata_json: dict)->List:
         """
         Convert dict (json) objects into Metadata class objects
+
         Args:
             json_list dict: metadata dict
 
@@ -297,6 +317,7 @@ class Metadata():
     def from_json_file(self, metadata: dict)->List:
         """
         Convert dict (json) objects into Metadata class objects
+
         Args:
             json_list dict: metadata dict
 

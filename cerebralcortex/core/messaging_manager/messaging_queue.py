@@ -33,6 +33,7 @@ class MessagingQueue(KafkaHandler):
     def __init__(self, CC: object, auto_offset_reset: str="largest"):
         """
         Messaging queue module support pub/sub system in CerebralCortex
+
         Args:
             CC (CerebralCortex): cerebralcortex class object
             auto_offset_reset (str): smallest (start of the topic) OR largest (end of a topic) (default="largest")

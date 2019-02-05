@@ -39,6 +39,7 @@ class StreamHandler:
     def get_stream_metadata(self, stream_name: str, version:str= "all") -> List[Metadata]:
         """
         Get a list of metadata for all versions available for a stream.
+
         Args:
             stream_name (str): name of a stream
             version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
@@ -107,6 +108,7 @@ class StreamHandler:
     def get_stream_metadata_hash(self, stream_name: str) -> List[str]:
         """
         Get all the metadata_hash associated with a stream name.
+
         Args:
             stream_name (str): name of a stream
         Returns:
@@ -134,6 +136,7 @@ class StreamHandler:
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """
        metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
+
        Args:
            metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.
        Returns:
@@ -226,6 +229,7 @@ class StreamHandler:
     def _is_metadata_changed(self, stream_name, metadata_hash) -> dict:
         """
         Checks whether metadata_hash already exist in the system .
+
         Args:
             stream_name (str): name of a stream
             metadata_hash (str): hashed form of stream metadata

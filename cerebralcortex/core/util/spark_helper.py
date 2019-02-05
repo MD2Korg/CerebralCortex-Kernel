@@ -27,6 +27,7 @@
 def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal"):
     """
     get or create spark context
+
     Args:
         type (str): type (sparkContext, SparkSessionBuilder, sparkSession, sqlContext). (default="sparkContext")
         name (str): spark app name (default="CerebralCortex-Kernal")

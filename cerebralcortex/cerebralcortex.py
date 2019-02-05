@@ -252,6 +252,7 @@ class CerebralCortex:
     def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict)->bool:
         """
         Create a user in SQL storage if it doesn't exist
+
         Args:
             username (str): Only alphanumeric usernames are allowed with the max length of 25 chars.
             user_password (str): no size limit on password
@@ -392,9 +393,6 @@ class CerebralCortex:
     def connect(self, username: str, password: str, encrypted_password:bool=False) -> dict:
         """
         Authenticate a user based on username and password and return an auth token
-        :param username:
-        :param password:
-        :return:
 
         Args:
             username (str):  username of a user
@@ -697,6 +695,7 @@ class CerebralCortex:
     def store_activity(self, activity: str, start: int, end: int, location: int):
         """
         Create an entity node for an activity (a stream operator computation)
+
         Args:
             activity: Name of the operation
             start: Start time
@@ -708,6 +707,7 @@ class CerebralCortex:
     def store_stream_tuple(self, stream_name: str, stream_index: int, input_tuple: BasicTuple):
         """
         Create an entity node for a stream tuple
+
         Args:
             stream_name: The name of the stream itself
             stream_index: The index position (count) or timestamp (if unique)
@@ -734,6 +734,7 @@ class CerebralCortex:
         Store a mapping between an operator window, from
         which a stream is to be derived, and the input
         nodes
+
         Args:
             output_stream_name:
             output_stream_index:
@@ -745,6 +746,7 @@ class CerebralCortex:
         """
         When we have a windowed computation, this creates a complex derivation subgraph
         in one operation.
+
         Args:
             output_stream_name: The name of the stream our operator produces
             output_stream_index: The position of the outgoing tuple in the stream

@@ -34,6 +34,7 @@ class DataStreamTest:
     def test_01_save_stream(self):
         """
         Test functionality related to save a stream
+
         """
         data = gen_phone_battery_data()
         metadata = gen_phone_battery_metadata()
@@ -46,6 +47,7 @@ class DataStreamTest:
     def test_02_get_stream(self):
         """
         Test functionality related to get a stream
+
         """
         ds = self.CC.get_stream(self.stream_name)
         data = ds.data

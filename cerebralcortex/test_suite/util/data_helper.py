@@ -32,6 +32,7 @@ from cerebralcortex.core.util.spark_helper import get_or_create_sc
 def gen_phone_battery_data()->object:
     """
     Create pyspark dataframe with some sample phone battery data
+
     Returns:
         DataFrame: pyspark dataframe object with columns: ["timestamp", "offset", "battery_level", "ver", "user"]
 
@@ -57,6 +58,7 @@ def gen_phone_battery_data()->object:
 def gen_phone_battery_data2()->object:
     """
     Create pyspark dataframe with some sample phone battery data
+
     Returns:
         DataFrame: pyspark dataframe object with columns: ["timestamp", "offset", "battery_level", "ver", "user"]
 
@@ -81,6 +83,7 @@ def gen_phone_battery_data2()->object:
 def gen_phone_battery_metadata()->Metadata:
     """
     Create Metadata object with some sample metadata of phone battery data
+
     Returns:
         Metadata: metadata of phone battery stream
     """

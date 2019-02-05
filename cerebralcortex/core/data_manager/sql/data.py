@@ -112,10 +112,6 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
         """
         Execute a sql, it could be with args and with out args. The usage is
         similar with execute() function in module pymysql.
-        :param sql:
-        :param args:
-        :param commit:
-        :return: if commit, return None, else, return result
 
         Args:
             sql (str): sql clause

@@ -39,6 +39,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
     def setUp(self):
         """
         Setup test params to being testing with.
+
         Notes:
             DO NOT CHANGE PARAMS DEFINED UNDER TEST-PARAMS! OTHERWISE TESTS WILL FAIL. These values are hardcoded in util/data_helper file as well.
         """
@@ -78,6 +79,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
     def test_00(self):
         """
         This test will create required entries in sql database.
+
         """
         if not os.path.isdir(self.cc_conf["filesystem"]["filesystem_path"]):
             os.mkdir(self.cc_conf["filesystem"]["filesystem_path"])
@@ -86,6 +88,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
     def test_9999_last(self):
         """
         Delete all the sample test data folder/files and sql entries
+
         """
         self.CC.delete_user(self.username)
         # if self.cc_conf['nosql_storage']=="filesystem":

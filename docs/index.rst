@@ -91,23 +91,6 @@ section.
 
    cc_example
    rst/cerebralcortex.rst
-   rst/cerebralcortex.core.config_manager.rst
-   rst/cerebralcortex.core.data_manager.object.rst
-   rst/cerebralcortex.core.data_manager.raw.rst
-   rst/cerebralcortex.core.data_manager.rst
-   rst/cerebralcortex.core.data_manager.sql.rst
-   rst/cerebralcortex.core.data_manager.time_series.rst
-   rst/cerebralcortex.core.datatypes.rst
-   rst/cerebralcortex.core.log_manager.rst
-   rst/cerebralcortex.core.messaging_manager.rst
-   rst/cerebralcortex.core.metadata_manager.rst
-   rst/cerebralcortex.core.metadata_manager.stream.rst
-   rst/cerebralcortex.core.metadata_manager.user.rst
-   rst/cerebralcortex.core.rst
-   rst/cerebralcortex.core.util.rst
-   rst/cerebralcortex.test_suite.rst
-   rst/cerebralcortex.test_suite.util.rst
-
 
 
 Indices and tables

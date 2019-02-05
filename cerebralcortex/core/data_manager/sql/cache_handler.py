@@ -41,15 +41,14 @@ class CacheHandler:
         if not key or not len(key):
             raise ValueError("Key cannot be empty.")
 
-        qry = 'INSERT INTO cc_cache(cache_key,cache_value) VALUES(%s,%s) ON DUPLICATE KEY UPDATE cache_value = %s;' 
-        data = (key,value,value)
+        qry = 'INSERT INTO cc_cache(cache_key,cache_value) VALUES(%s,%s) ON DUPLICATE KEY UPDATE cache_value = %s;'
+        data = (key, value, value)
         try:
-            self.execute(qry,data, commit=True)
+            self.execute(qry, data, commit=True)
             return True
         except Exception as e:
             self.logging.log(str(traceback.format_exc()))
             return False
-
 
     def get_cache_value(self, key: str) -> str:
         """
@@ -77,5 +76,3 @@ class CacheHandler:
         except Exception as e:
             self.logging.log(traceback.format_exc())
             return None
-
-

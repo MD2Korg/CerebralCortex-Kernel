@@ -32,6 +32,7 @@ class CCLogging(LogHandler):
     def __init__(self, CC):
         """
         Helper class to log all the errors and warnings
+
         Args:
             CC (CerebralCortex): cerebralcortex class object
         """

@@ -46,6 +46,7 @@ class DataStream:
 
     def get_metadata(self, version:int=None)->Metadata:
         """
+        get stream metadata
 
         Args:
             version (int): version of a stream
@@ -66,6 +67,7 @@ class DataStream:
     @property
     def metadata(self):
         """
+        return stream metadata
 
         Returns:
             Metadata:
@@ -76,6 +78,7 @@ class DataStream:
     @metadata.setter
     def metadata(self, metadata):
         """
+        set stream metadata
 
         Args:
             metadata (Metadata):
@@ -85,6 +88,7 @@ class DataStream:
     @property
     def data(self):
         """
+        get stream data
 
         Returns (DataFrame):
 
@@ -94,6 +98,7 @@ class DataStream:
     @data.setter
     def data(self, value):
         """
+        set stream data
 
         Args:
             value (DataFrame):
@@ -259,6 +264,7 @@ class DataStream:
     def _get_column_names(self, columnName, methodName):
         """
         Get data column names and build expression for pyspark aggregate method
+
         Args:
             columnName: name of a column that should be processed
             methodName: name of the method that should be applied on the column

@@ -36,6 +36,7 @@ class DataDescriptor():
     def set_attribute(self, key, value):
         """
         Attributes field is option in metadata object. Arbitrary number or attributes could be attached to a DataDescriptor
+
         Args:
             key (str): key of an attribute
             value (str): value of an attribute
@@ -54,6 +55,7 @@ class DataDescriptor():
     def name(self, value):
         """
         Name of data descriptor
+
         Args:
             value (str): name
 
@@ -66,6 +68,7 @@ class DataDescriptor():
     def type(self, value:str):
         """
         Type of a data descriptor
+
         Args:
             value (str): type
         Returns:
@@ -77,6 +80,7 @@ class DataDescriptor():
     def from_json(self, obj):
         """
         Cast DataDescriptor class object into json
+
         Args:
             obj (DataDescriptor): object of a data descriptor class
 
