@@ -101,6 +101,7 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
+add_module_names = False
 
 # -- Options for HTMLHelp output ---------------------------------------------
 

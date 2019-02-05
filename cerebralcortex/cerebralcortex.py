@@ -720,10 +720,10 @@ class CerebralCortex:
     def store_annotation(self, stream_name: str, stream_index: int, annotation_name: str, annotation_value):
         """
         Create a node for an annotation to an entity / tuple
+
         Args:
             stream_name: The name of the stream itself
-            stream_index: The index position (count) or timestamp (if unique) of the
-                    stream element we are annotating
+            stream_index: The index position (count) or timestamp (if unique) of the stream element we are annotating
             annotation_name: The name of the annotation
             annotation_value: The value of the annotation
         """

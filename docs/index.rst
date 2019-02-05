@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 Welcome to CerebralCortex-Kernel's documentation!
-==========================================
+====================================================
 Cerebral Cortex is the big data cloud companion of mCerebrum designed to
 support population-scale data analysis, visualization, model
 development, and intervention design for mobile sensor data.
@@ -104,10 +104,7 @@ section.
    rst/cerebralcortex.core.metadata_manager.stream.rst
    rst/cerebralcortex.core.metadata_manager.user.rst
    rst/cerebralcortex.core.rst
-   rst/cerebralcortex.core.test_suite.rst
    rst/cerebralcortex.core.util.rst
-   rst/cerebralcortex.examples.rst
-   rst/cerebralcortex.examples.util.rst
    rst/cerebralcortex.test_suite.rst
    rst/cerebralcortex.test_suite.util.rst
 
