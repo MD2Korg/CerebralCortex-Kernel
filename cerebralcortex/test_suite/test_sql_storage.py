@@ -23,8 +23,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 import jwt
+
+from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 
 
 class SqlStorageTest:

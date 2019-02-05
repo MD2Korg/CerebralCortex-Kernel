@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from pyspark.sql.functions import lit
+
 from cerebralcortex.core.datatypes.datastream import DataStream
 
 

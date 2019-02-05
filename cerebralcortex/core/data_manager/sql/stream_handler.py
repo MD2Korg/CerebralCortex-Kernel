@@ -24,9 +24,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-import traceback
 import uuid
 from typing import List
+
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 

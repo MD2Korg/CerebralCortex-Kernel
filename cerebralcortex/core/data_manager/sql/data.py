@@ -23,14 +23,16 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from typing import List
+
 import mysql.connector
 import mysql.connector.pooling
-from typing import List
+
+from cerebralcortex.core.data_manager.sql.cache_handler import CacheHandler
 from cerebralcortex.core.data_manager.sql.kafka_offsets_handler import KafkaOffsetsHandler
 from cerebralcortex.core.data_manager.sql.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.sql.users_handler import UserHandler
 from cerebralcortex.core.log_manager.log_handler import LogTypes
-from cerebralcortex.core.data_manager.sql.cache_handler import CacheHandler
 
 
 class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):

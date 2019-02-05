@@ -24,14 +24,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import shutil
+import pathlib
 import unittest
 import warnings
-import pathlib
+
 from cerebralcortex.cerebralcortex import CerebralCortex
-from cerebralcortex.test_suite.test_stream import DataStreamTest
-from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
 from cerebralcortex.test_suite.test_object_storage import TestObjectStorage
+from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
+from cerebralcortex.test_suite.test_stream import DataStreamTest
 
 
 class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, TestObjectStorage):

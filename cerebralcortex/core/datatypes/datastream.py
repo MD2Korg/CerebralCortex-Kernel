@@ -23,9 +23,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from pyspark.sql import functions as F
-from pyspark.sql.functions import col
+
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 class DataStream:

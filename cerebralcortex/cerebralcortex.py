@@ -27,6 +27,8 @@ import uuid
 import warnings
 from datetime import datetime
 from typing import List
+
+from mprov.metadata.stream_metadata import BasicTuple
 from pyspark.sql import SparkSession
 
 from cerebralcortex.core.config_manager.config import Configuration
@@ -42,7 +44,6 @@ from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from cerebralcortex.modules.mprov.connection.mprov_connection import MProvConnection
 
-from mprov.metadata.stream_metadata import BasicSchema, BasicTuple
 
 class CerebralCortex:
 

@@ -1,9 +1,7 @@
 from __future__ import print_function
-from pprint import pprint
 
 import pennprov
-from pennprov.rest import ApiException
-from mprov.metadata.stream_metadata import BasicSchema, BasicTuple
+from mprov.metadata.stream_metadata import BasicTuple
 
 
 class MProvConnection:

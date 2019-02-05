@@ -25,8 +25,8 @@
 
 import json
 import os
-from typing import List
 import traceback
+from typing import List
 
 
 class MinioHandler:

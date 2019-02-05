@@ -23,11 +23,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cerebralcortex.core.metadata_manager.stream.data_descriptor import DataDescriptor
-from cerebralcortex.core.metadata_manager.stream.module_info import ModuleMetadata
-from typing import List
 import json
 import uuid
+from typing import List
+
+from cerebralcortex.core.metadata_manager.stream.data_descriptor import DataDescriptor
+from cerebralcortex.core.metadata_manager.stream.module_info import ModuleMetadata
+
 
 class Metadata():
     def __init__(self):
