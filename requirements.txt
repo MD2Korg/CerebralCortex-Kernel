@@ -8,7 +8,6 @@ influxdb==5.2.1
 pyarrow==0.11.1
 pympler==0.5
 hdfs3==0.3.0
-numpy==1.14.5
 pyspark==2.4.0
 pennprov==2.2.0.dev3
 PyJWT==1.7.1

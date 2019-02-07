@@ -17,17 +17,13 @@ CerebralCortex-Kernel is a part of CerebralCortex cloud platform. To test the co
 
 CerebralCortex-Kernel requires minimum [Python3.6](https://www.python.org/downloads/release/python-360/). To install CerebralCortex-Kernel as an API:
 
-```git clone https://github.com/MD2Korg/CerebralCortex-kernel.git```
+```pip3 install cerebralcortex-kernel```
 
-`cd cerebralcortex-kernel`
+- Note: please use appropriate pip (e.g., pip, pip3, pip3.6 etc.) installed on your machine 
 
-`git checkout 3.0`
-
-
-```sudo python3 setup.py install```
 
 ## Code Example
-Example folder (`cerebralcortex-kernel/cerebralcortex/example`) contains basic examples on how to use CerebralCortex-Kernel api.
+Please have a look at [example code](https://github.com/MD2Korg/CerebralCortex-Kernel-Examples), if you want to only see an example on how to call CerebralCortex-Kernel API.
  
 ## FAQ
 **1 - Do I need whole CerebralCortex cloud platform to use CerebralCortex-Kernal?**
