@@ -117,6 +117,21 @@ class DataStream:
     #                           Helper methods for dataframe                    #
     #############################################################################
 
+    # !!!!                                  HELPER METHODS                           !!!
+    def to_pandas(self):
+        """
+        This method converts pyspark dataframe into pandas dataframe.
+        Notes:
+            This method will collect all the data on master node to convert pyspark dataframe into pandas dataframe.
+            After converting to pandas dataframe datastream objects helper methods will not be accessible.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> ds = CC.get_stream("STREAM-NAME")
+            >>> pandas_ds = ds.to_pandas()
+            >>> pandas_ds.data.head()
+        """
+        self._data = self._data.toPandas()
+
     # !!!!                                  STAT METHODS                           !!!
 
     def compute_average(self, windowDuration:int=60, colmnName:str=None)->object:
@@ -235,7 +250,7 @@ class DataStream:
 
     # !!!!                              WINDOWING METHODS                           !!!
 
-    def fixed_window(self, windowDuration:int=60, groupByColumnName:List[str]=None):
+    def window(self, windowDuration:int=60, groupByColumnName:List[str]=[], slideDuration=None, startTime=None):
         """
         Window data into fixed length chunks. If no columnName is provided then the windowing will be performed on all the columns.
 
@@ -245,23 +260,20 @@ class DataStream:
 
         Returns:
             DataStream: this will return a new datastream object with blank metadata
+        Note:
+            This windowing method will use collect_list to return values for each window. collect_list is not optimized.
 
         """
         windowDuration = str(windowDuration)+" seconds"
 
         exprs = self._get_column_names(methodName="collect_list")
         if len(groupByColumnName)>0:
-            windowed_data = self._data.groupBy(['timestamp', F.window("timestamp", windowDuration)]).agg(exprs)
+            windowed_data = self._data.groupBy(['user','timestamp', F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)]).agg(exprs)
         else:
-            windowed_data = self._data.groupBy([F.window("timestamp", windowDuration)]).agg(exprs)
+            windowed_data = self._data.groupBy(['user',F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)]).agg(exprs)
 
         self._data = windowed_data
         self.metadata = Metadata()
-
-        # rolling window
-        # df_w = df.withColumn(
-        #     "read_date", window("read_date", "3 days", "1 day")["start"].cast("date")
-        # )
 
         return self
 
@@ -340,8 +352,8 @@ class DataStream:
         self.metadata = Metadata()
         return self
 
-    def show(self, **kwargs):
-        self._data.show(kwargs)
+    def show(self, *args, **kwargs):
+        self._data.show(*args, **kwargs)
 
     def schema(self):
         """
@@ -364,7 +376,11 @@ class DataStream:
             dict: {columnName: methodName}
         """
         columns = self._data.columns
-        black_list_column = ["timestamp", "owner", "version"]          #"localtime",
+
+        if "localtime" in columns:
+            black_list_column = ["timestamp", "localtime", "owner", "version"]
+        else:
+            black_list_column = ["timestamp", "owner", "version"]
         columns = list(set(columns)-set(black_list_column))
 
         exprs = {x: methodName for x in columns}

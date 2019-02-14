@@ -350,3 +350,6 @@ class Metadata():
             md.version = int(metadata.get("version", 1))
             md.metadata_hash = metadata.get("metadata_hash", "no-hash")
         return md
+
+    def __repr__(self):
+        return str(self.__dict__)
