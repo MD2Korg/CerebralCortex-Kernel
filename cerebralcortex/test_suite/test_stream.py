@@ -63,7 +63,7 @@ class DataStreamTest:
         self.assertEqual(data.count(), 999)
 
         self.assertEqual(len(metadata.data_descriptor), 1)
-        self.assertEqual(len(metadata.modulez), 1)
+        self.assertEqual(len(metadata.modules), 1)
 
         self.assertEqual(metadata.metadata_hash, self.metadata_hash)
         self.assertEqual(metadata.name, self.stream_name)
@@ -71,6 +71,6 @@ class DataStreamTest:
         self.assertEqual(metadata.data_descriptor[0]._name, 'level')
         self.assertEqual(metadata.data_descriptor[0]._type, 'float')
         self.assertEqual(metadata.data_descriptor[0]._attributes.get("description"), 'current battery charge')
-        self.assertEqual(metadata.modulez[0]._name, 'battery')
-        self.assertEqual(metadata.modulez[0]._version, '1.2.4')
-        self.assertEqual(metadata.modulez[0]._authors[0].get("test_user"), 'test_user@test_email.com')
+        self.assertEqual(metadata.modules[0]._name, 'battery')
+        self.assertEqual(metadata.modules[0]._version, '1.2.4')
+        self.assertEqual(metadata.modules[0]._authors[0].get("test_user"), 'test_user@test_email.com')

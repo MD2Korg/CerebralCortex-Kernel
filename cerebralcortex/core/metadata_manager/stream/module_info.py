@@ -30,12 +30,12 @@ class ModuleMetadata:
         Constructor
 
         """
-        self._name = None
-        self._version = None
-        self._authors = []
-        self._attributes = {}
+        self.name = None
+        self.version = None
+        self.authors = []
+        self.attributes = {}
 
-    def name(self, value):
+    def set_name(self, value):
         """
         name of the module
 
@@ -45,11 +45,11 @@ class ModuleMetadata:
         Returns:
             self:
         """
-        if self._name is None:
-            self._name = value
+        if self.name is None:
+            self.name = value
         return self
 
-    def version(self, value):
+    def set_version(self, value):
         """
         version of the module
 
@@ -60,8 +60,8 @@ class ModuleMetadata:
             self:
 
         """
-        if self._version is None:
-            self._version = value
+        if self.version is None:
+            self.version = value
         return self
 
     def set_author(self, key, value):
@@ -79,7 +79,7 @@ class ModuleMetadata:
             raise ValueError("Key and/or value cannot be None or empty.")
         tmp = {}
         tmp[key] = value
-        self._authors.append(tmp)
+        self.authors.append(tmp)
         return self
 
     def set_attribute(self, key:str, value:str):
@@ -98,7 +98,7 @@ class ModuleMetadata:
         """
         if key is None or key=="" or value is None or value=="":
             raise ValueError("Key and/or value cannot be None or empty.")
-        self._attributes[key] = value
+        self.attributes[key] = value
         return self
 
     def from_json(self, obj):
