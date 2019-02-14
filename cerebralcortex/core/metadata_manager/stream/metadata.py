@@ -41,6 +41,7 @@ class Metadata():
         self.version = None
         self.description = "",
         self.metadata_hash = None
+        self.input_streams = [],
         self.data_descriptor = []
         self.modules = []
 
@@ -203,6 +204,19 @@ class Metadata():
         self.data_descriptor.append(dd)
         return self
 
+    def add_input_streams(self, input_stream:str):
+        """
+        Add input streams that were used to derive a new stream
+
+        Args:
+            input_stream (str): name of input stream
+
+        Returns:
+            self
+        """
+        self.input_streams.append(input_stream)
+        return self
+
     def add_module(self, mod: ModuleMetadata):
         """
         Add module metadata
@@ -313,6 +327,7 @@ class Metadata():
             md.name = metadata_json["name"]
             md.description = metadata.get("description", "")
             md.version = int(metadata_json["version"])
+            md.input_streams = metadata.get("input_streams", [])
             md.metadata_hash = metadata_json["metadata_hash"]
         return md
 
@@ -348,6 +363,7 @@ class Metadata():
             md.name = metadata.get("name", "")
             md.description = metadata.get("description", "")
             md.version = int(metadata.get("version", 1))
+            md.input_streams = metadata.get("input_streams", [])
             md.metadata_hash = metadata.get("metadata_hash", "no-hash")
         return md
 
