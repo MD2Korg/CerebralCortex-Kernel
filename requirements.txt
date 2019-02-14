@@ -11,3 +11,4 @@ hdfs3==0.3.0
 pyspark==2.4.0
 pennprov==2.2.0.dev3
 PyJWT==1.7.1
+pandas==0.24.1
