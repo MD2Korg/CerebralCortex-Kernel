@@ -39,7 +39,7 @@ class DataStreamTest:
         data = gen_phone_battery_data()
         metadata = gen_phone_battery_metadata()
         ds = DataStream(data, metadata)
-        dd = ds.fixed_window()
+        dd = ds.filter_user("dfce1e65-2882-395b-a641-93f31748591b")
         result = self.CC.save_stream(ds)
 
         self.assertEqual(result, True)

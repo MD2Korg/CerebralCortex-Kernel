@@ -228,24 +228,34 @@ class DataStream:
 
     # !!!!                              WINDOWING METHODS                           !!!
 
-    def fixed_window(self, windowDuration:int=60, columnName:str=None):
+    def fixed_window(self, windowDuration:int=60, groupByColumnName:List[str]=None):
         """
-        Window data into fixed length chunks
+        Window data into fixed length chunks. If no columnName is provided then the windowing will be performed on all the columns.
 
         Args:
             windowDuration (int): duration of a window in seconds
-            columnName (str): all columns' data will be windowed if columnName is not provided
+            groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
 
         Returns:
             DataStream: this will return a new datastream object with blank metadata
 
         """
         windowDuration = str(windowDuration)+" seconds"
-        exprs = self._get_column_names(columnName=columnName, methodName="collect_list")
-        windowed_data = self._data.groupBy(['user', F.window("timestamp", windowDuration)]).agg(exprs)
+
+        exprs = self._get_column_names(methodName="collect_list")
+        if len(groupByColumnName)>0:
+            windowed_data = self._data.groupBy(['timestamp', F.window("timestamp", windowDuration)]).agg(exprs)
+        else:
+            windowed_data = self._data.groupBy([F.window("timestamp", windowDuration)]).agg(exprs)
 
         self._data = windowed_data
         self.metadata = Metadata()
+
+        # rolling window
+        # df_w = df.withColumn(
+        #     "read_date", window("read_date", "3 days", "1 day")["start"].cast("date")
+        # )
+
         return self
 
     # !!!!                              FILTERING METHODS                           !!!
@@ -300,6 +310,32 @@ class DataStream:
         self.metadata = Metadata()
         return self
 
+    def groupby(self, columnName):
+        """
+        Group data by column name
+        Args:
+            columnName (str): name of the column to group by with
+
+        Returns:
+
+        """
+        self._data = self._data.groupby(columnName)
+        self.metadata = Metadata()
+        return self
+
+    # def win(self, udfName):
+    #     self._data = self._data.groupBy(['owner', F.window("timestamp", "60 seconds")]).apply(udfName)
+    #     self.metadata = Metadata()
+    #     return self
+
+    def marker(self, udfName):
+        self._data = self._data.apply(udfName)
+        self.metadata = Metadata()
+        return self
+
+    def show(self, **kwargs):
+        self._data.show(kwargs)
+
     def schema(self):
         """
         Get data schema (e.g., column names and number of columns etc.)
@@ -309,24 +345,20 @@ class DataStream:
         """
         return self._data.schema
 
-    def _get_column_names(self, columnName, methodName):
+    def _get_column_names(self, methodName):
         """
         Get data column names and build expression for pyspark aggregate method
 
         Args:
-            columnName: name of a column that should be processed
             methodName: name of the method that should be applied on the column
         Todo:
             update non-data column names
         Returns:
             dict: {columnName: methodName}
         """
-        if columnName is not None:
-            exprs = {columnName:methodName}
-        else:
-            columns = self._data.columns
-            black_list_column = ["timestamp", "user", "version"]          #"localtime",
-            columns = list(set(columns)-set(black_list_column))
+        columns = self._data.columns
+        black_list_column = ["timestamp", "owner", "version"]          #"localtime",
+        columns = list(set(columns)-set(black_list_column))
 
-            exprs = {x: methodName for x in columns}
+        exprs = {x: methodName for x in columns}
         return exprs

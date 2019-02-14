@@ -347,6 +347,6 @@ class Metadata():
             md.modulez = module_list
             md.name = metadata.get("name", "")
             md._description = metadata.get("description", "")
-            md.version = int(metadata.get("version", 0))
+            md.version = int(metadata.get("version", 1))
             md.metadata_hash = metadata.get("metadata_hash", "no-hash")
         return md
