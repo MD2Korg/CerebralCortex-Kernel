@@ -175,7 +175,7 @@ class Metadata():
         self._version = value
         return self
 
-    def add_description(self, stream_description:str):
+    def set_description(self, stream_description:str):
         """
         Add stream description
 

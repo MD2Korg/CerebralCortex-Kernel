@@ -126,6 +126,8 @@ class StreamHandler():
         data = datastream.data
         if metadata:
             stream_name = metadata.name # only supports one data-stream storage at a time
+            if not stream_name:
+                raise ValueError("Stream name cannot be empty/None. Check metadata.")
             try:
                 if datastream:
                     column_names = data.schema.names

@@ -42,8 +42,15 @@ class DataStream:
             metadata (Metadata): metadata of data
 
         """
-        self._data = data
-        self._metadata = metadata
+        if isinstance(metadata, Metadata):
+            if metadata.is_valid():
+                self._data = data
+                self._metadata = metadata
+            else:
+                raise Exception("Metadata is not valid.")
+        else:
+            self._data = data
+            self._metadata = metadata
 
     def get_metadata(self, version:int=None)->Metadata:
         """
