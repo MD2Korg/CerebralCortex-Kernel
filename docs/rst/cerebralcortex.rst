@@ -25,7 +25,7 @@ cerebralcortex.cerebralcortex module
 Module contents
 ---------------
 
-.. automodule:: cerebralcortex
+.. automodule:: cerebralcortex.cerebralcortex
     :members:
     :undoc-members:
     :show-inheritance:
