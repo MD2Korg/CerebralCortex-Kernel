@@ -25,6 +25,7 @@
 
 from pyspark.sql import functions as F
 from typing import List
+import re
 
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
@@ -246,6 +247,7 @@ class DataStream:
         result = self._data.groupBy(['user',F.window("timestamp", windowDuration)]).agg(exprs)
 
         self._data = result
+        self._update_column_names()
         self.metadata = Metadata()
         return self
 
@@ -268,6 +270,7 @@ class DataStream:
         """
         windowDuration = str(windowDuration)+" seconds"
 
+
         exprs = self._get_column_names(methodName="collect_list")
         if len(groupByColumnName)>0:
             windowed_data = self._data.groupBy(['user','timestamp', F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)]).agg(exprs)
@@ -275,9 +278,22 @@ class DataStream:
             windowed_data = self._data.groupBy(['user',F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)]).agg(exprs)
 
         self._data = windowed_data
+
+        self._update_column_names()
+
         self.metadata = Metadata()
 
         return self
+
+    def _update_column_names(self):
+        columns = []
+        for column in self._data.columns:
+            if "(" in column:
+                m = re.search('\((.*?)\)', column)
+                columns.append(m.group(1))
+            else:
+                columns.append(column)
+        self._data = self._data.toDF(*columns)
 
     # !!!!                              FILTERING METHODS                           !!!
 
@@ -380,9 +396,9 @@ class DataStream:
         columns = self._data.columns
 
         if "localtime" in columns:
-            black_list_column = ["timestamp", "localtime", "owner", "version"]
+            black_list_column = ["timestamp", "localtime", "user", "version"]
         else:
-            black_list_column = ["timestamp", "owner", "version"]
+            black_list_column = ["timestamp", "user", "version"]
         columns = list(set(columns)-set(black_list_column))
 
         exprs = {x: methodName for x in columns}
