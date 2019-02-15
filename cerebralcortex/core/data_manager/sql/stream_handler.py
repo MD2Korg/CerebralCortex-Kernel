@@ -72,6 +72,53 @@ class StreamHandler:
         else:
             return []
 
+    def list_streams(self)->List[Metadata]:
+        """
+        Get all the available stream names with metadata
+
+        Returns:
+            List[Metadata]: list of available streams metadata
+
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.list_streams()
+        """
+        qry = "SELECT name from " + self.datastreamTable + " group by name, version"
+
+        rows = self.execute(qry)
+        results = []
+        if rows:
+            for row in rows:
+                results.extend(self.get_stream_metadata(stream_name=row["name"]))
+            return results
+        else:
+            return []
+
+    def search_stream(self, stream_name):
+        """
+        Find all the stream names similar to stream_name arg. For example, passing "location"
+        argument will return all stream names that contain the word location
+
+        Returns:
+            List[str]: list of stream names similar to stream_name arg
+
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.search_stream("battery")
+            >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
+        """
+
+        qry = "SELECT name from " + self.datastreamTable + " where name like %(name)s group by name, version"
+        vals = {"name": "%"+str(stream_name).lower()+"%"}
+        rows = self.execute(qry, vals)
+        results = []
+        if rows:
+            for row in rows:
+                results.append(row["name"])
+            return results
+        else:
+            return []
+
     def get_stream_versions(self, stream_name: str) -> list:
         """
         Returns a list of versions available for a stream
@@ -182,6 +229,7 @@ class StreamHandler:
             return True
         else:
             return False
+
 
     ###################################################################
     ################## STORE DATA METHODS #############################

@@ -248,6 +248,35 @@ class CerebralCortex:
         """
         return self.SqlData.get_stream_metadata(stream_name, version)
 
+    def list_streams(self)->List[Metadata]:
+        """
+        Get all the available stream names with metadata
+
+        Returns:
+            List[Metadata]: list of available streams metadata
+
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.list_streams()
+        """
+        return self.SqlData.list_streams()
+
+    def search_stream(self, stream_name):
+        """
+        Find all the stream names similar to stream_name arg. For example, passing "location"
+        argument will return all stream names that contain the word location
+
+        Returns:
+            List[str]: list of stream names similar to stream_name arg
+
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.search_stream("battery")
+            >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
+        """
+
+        return self.SqlData.search_stream(stream_name=stream_name)
+
     ################### USER RELATED METHODS ##################################
 
     def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict)->bool:

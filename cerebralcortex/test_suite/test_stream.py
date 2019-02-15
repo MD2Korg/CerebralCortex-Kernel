@@ -44,6 +44,18 @@ class DataStreamTest:
 
         self.assertEqual(result, True)
 
+    def test_001_stream(self):
+        all_streams = self.CC.list_streams()
+        searched_streams = self.CC.search_stream(stream_name="battery")
+
+        self.assertEqual(len(all_streams),2)
+        self.assertEqual(all_streams[0].name,self.stream_name)
+        self.assertEqual(all_streams[0].metadata_hash,self.metadata_hash)
+
+        self.assertEqual(len(searched_streams),2)
+        self.assertEqual(searched_streams[0],self.stream_name)
+
+
     def test_02_get_stream(self):
         """
         Test functionality related to get a stream
