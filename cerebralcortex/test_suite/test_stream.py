@@ -44,7 +44,7 @@ class DataStreamTest:
 
         self.assertEqual(result, True)
 
-    def test_001_stream(self):
+    def test_02_stream(self):
         all_streams = self.CC.list_streams()
         searched_streams = self.CC.search_stream(stream_name="battery")
 
@@ -55,8 +55,21 @@ class DataStreamTest:
         self.assertEqual(len(searched_streams),2)
         self.assertEqual(searched_streams[0],self.stream_name)
 
+    def test_04_test_datafram_operations(self):
+        ds = self.CC.get_stream(self.stream_name)
+        avg_ds = ds.compute_average()
+        data = avg_ds.collect()
+        self.assertEqual(len(data),17)
+        self.assertEqual(data[0][2],92.18333333333334)
 
-    def test_02_get_stream(self):
+        ds = self.CC.get_stream(self.stream_name)
+        window_ds = ds.window()
+        data = window_ds.collect()
+        self.assertEqual(len(data),17)
+        self.assertEqual(len(data[0][2]), 60)
+
+        print("done")
+    def test_03_get_stream(self):
         """
         Test functionality related to get a stream
 

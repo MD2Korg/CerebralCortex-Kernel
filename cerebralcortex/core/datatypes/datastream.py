@@ -135,6 +135,16 @@ class DataStream:
         """
         self._data = self._data.toPandas()
 
+    def collect(self):
+        """
+        Collect all the data to master node and return list of rows
+
+        Returns:
+            List: rows of all the dataframe
+        """
+        return self._data.collect()
+
+
     # !!!!                                  STAT METHODS                           !!!
 
     def compute_average(self, windowDuration:int=60, colmnName:str=None)->object:
@@ -148,7 +158,7 @@ class DataStream:
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, methodName="avg", colmnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, methodName="avg", columnName=colmnName)
 
     def compute_sqrt(self, windowDuration:int=60, colmnName:str=None)->object:
         """
@@ -161,7 +171,7 @@ class DataStream:
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, methodName="sqrt", colmnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, methodName="sqrt", columnName=colmnName)
 
     def compute_sum(self, windowDuration:int=60, colmnName:str=None)->object:
         """
@@ -174,7 +184,7 @@ class DataStream:
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, methodName="sum", colmnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, methodName="sum", columnName=colmnName)
 
     def compute_variancee(self, windowDuration:int=60, colmnName:str=None)->object:
         """
@@ -187,7 +197,7 @@ class DataStream:
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, methodName="variance", colmnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, methodName="variance", columnName=colmnName)
 
     def compute_stddev(self, windowDuration:int=60, colmnName:str=None)->object:
         """
@@ -200,7 +210,7 @@ class DataStream:
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, methodName="stddev", colmnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, methodName="stddev", columnName=colmnName)
 
     def compute_min(self, windowDuration:int=60, colmnName:str=None)->object:
         """
@@ -213,7 +223,7 @@ class DataStream:
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, methodName="min", colmnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, methodName="min", columnName=colmnName)
 
     def compute_max(self, windowDuration:int=60, colmnName:str=None)->object:
         """
@@ -226,24 +236,24 @@ class DataStream:
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, methodName="max", colmnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, methodName="max", columnName=colmnName)
 
 
-    def _compute_stats(self, windowDuration:int=60, methodName:str=None, colmnName:str=None)->object:
+    def _compute_stats(self, windowDuration:int=60, methodName:str=None, columnName:List[str]=[])->object:
         """
         Compute stats on pyspark dataframe
 
         Args:
             windowDuration (int): duration of a window in seconds
             methodName (str): pyspark stat method name
-            colmnName (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
+            columnName (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
 
         windowDuration = str(windowDuration)+" seconds"
-        exprs = self._get_column_names(columnName=colmnName, methodName=methodName)
+        exprs = self._get_column_names(columnName=columnName, methodName=methodName)
         result = self._data.groupBy(['user',F.window("timestamp", windowDuration)]).agg(exprs)
 
         self._data = result
@@ -254,14 +264,16 @@ class DataStream:
 
     # !!!!                              WINDOWING METHODS                           !!!
 
-    def window(self, windowDuration:int=60, groupByColumnName:List[str]=[], slideDuration=None, startTime=None):
+    def window(self, windowDuration:int=60, groupByColumnName:List[str]=[], columnName:List[str]=[], slideDuration:int=None, startTime=None):
         """
         Window data into fixed length chunks. If no columnName is provided then the windowing will be performed on all the columns.
 
         Args:
             windowDuration (int): duration of a window in seconds
             groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
-
+            columnName List[str]: column names on which windowing should be performed. Windowing will be performed on all columns if none is provided
+            slideDuration (int): slide duration of a window
+            startTime (datetime): start time of window. First time of data will be used as startTime if none is provided
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         Note:
@@ -271,7 +283,7 @@ class DataStream:
         windowDuration = str(windowDuration)+" seconds"
 
 
-        exprs = self._get_column_names(methodName="collect_list")
+        exprs = self._get_column_names(columnName=columnName, methodName="collect_list")
         if len(groupByColumnName)>0:
             windowed_data = self._data.groupBy(['user','timestamp', F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)]).agg(exprs)
         else:
@@ -382,12 +394,13 @@ class DataStream:
         """
         return self._data.schema
 
-    def _get_column_names(self, methodName):
+    def _get_column_names(self, columnName:List[str], methodName:str):
         """
         Get data column names and build expression for pyspark aggregate method
 
         Args:
-            methodName: name of the method that should be applied on the column
+            columnName(List[str]): get all column names expression if columnName is empty
+            methodName (str): name of the method that should be applied on the column
         Todo:
             update non-data column names
         Returns:
@@ -399,7 +412,14 @@ class DataStream:
             black_list_column = ["timestamp", "localtime", "user", "version"]
         else:
             black_list_column = ["timestamp", "user", "version"]
-        columns = list(set(columns)-set(black_list_column))
+
+        if columnName:
+            if isinstance(columns, str):
+                columns = [columnName]
+            elif isinstance(columns, list):
+                columns = columnName
+        else:
+            columns = list(set(columns)-set(black_list_column))
 
         exprs = {x: methodName for x in columns}
         return exprs
