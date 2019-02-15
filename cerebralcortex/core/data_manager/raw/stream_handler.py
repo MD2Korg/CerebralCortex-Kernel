@@ -128,6 +128,7 @@ class StreamHandler():
             stream_name = metadata.name # only supports one data-stream storage at a time
             if not stream_name:
                 raise ValueError("Stream name cannot be empty/None. Check metadata.")
+            metadata = self.__update_data_desciptor(data=data, metadata=metadata)
             try:
                 if datastream:
                     column_names = data.schema.names
@@ -154,3 +155,45 @@ class StreamHandler():
                     error_type=self.logtypes.CRITICAL)
         else:
             raise Exception("Metadata cannot be empty.")
+
+    def __update_data_desciptor(self, data, metadata):
+        """
+        Read pyspark dataframe clumns and add each column name and type to datadescriptor field
+
+        Args:
+            data (pyspark dataframe): pyspark dataframe
+            metadata (Metadata): stream metadata
+        Notes:
+            this is a private method and should only be used internally
+        Returns:
+            metadata (MetaData): updated metadata with name/type added in data descriptors
+        Raises:
+            Exception: if number of datadescriptors columns in metadata and number of pyspark dataframe columns have different length
+
+        """
+        tmp = []
+        for field in data.schema.fields:
+            if field.name not in ["timestamp", "localtime", "user", "version"]:
+                basic_dd = {}
+                basic_dd["name"] = field.name
+                basic_dd["type"]= str(field.dataType)
+                tmp.append(basic_dd)
+
+        new_dd = []
+        for dd in metadata.data_descriptor:
+            dd.name = ""
+            dd.type = ""
+            dd.attributes = dd.attributes
+            new_dd.append(dd)
+
+        if len(tmp)!=len(new_dd):
+            raise Exception("Data descriptor number of columns does not match with the actual number of dataframe columns.")
+
+        updated_data_descriptors = []
+        for (datadescipt,column_names) in zip(new_dd, tmp):
+            datadescipt.name = column_names["name"]
+            datadescipt.type = column_names["type"]
+            updated_data_descriptors.append(datadescipt)
+
+        metadata.data_descriptor = updated_data_descriptors
+        return metadata

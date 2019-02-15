@@ -42,6 +42,8 @@ class DataStream:
             metadata (Metadata): metadata of data
 
         """
+
+
         if isinstance(metadata, Metadata):
             if metadata.is_valid():
                 self._data = data

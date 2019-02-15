@@ -245,10 +245,10 @@ class Metadata():
         if not self.description:
             raise ValueError("Stream description is not defined.")
         for dd_obj in self.data_descriptor:
-            if (dd_obj.name is None or dd_obj.name=="") and (dd_obj.type is None or dd_obj.type==""):
-                raise ValueError("Name and/or type fields are missing in data descriptor.")
+            if (dd_obj.attributes is None or len(dd_obj.attributes)==0):
+                raise ValueError("Add brief description for each column in data desciptor. For example, DataDescriptor().set_attribute('description'', 'sleep time''))")
         for mm_obj in self.modules:
-            if (mm_obj.name is None or mm_obj.name=="") and (mm_obj.version is None or mm_obj.version==""):
+            if (mm_obj.name is None or mm_obj.name==""):
                 raise ValueError("Module name and/or version fields are missing in module info.")
             if len(mm_obj.authors)==0:
                 raise ValueError("Author information is missing.")
