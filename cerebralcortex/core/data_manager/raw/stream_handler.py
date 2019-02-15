@@ -187,7 +187,7 @@ class StreamHandler():
             new_dd.append(dd)
 
         if len(tmp)!=len(new_dd):
-            raise Exception("Data descriptor number of columns does not match with the actual number of dataframe columns.")
+            raise Exception("Data descriptor number of columns does not match with the actual number of dataframe columns. Add datadescription for each of dataframe column.")
 
         updated_data_descriptors = []
         for (datadescipt,column_names) in zip(new_dd, tmp):
