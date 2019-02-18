@@ -157,13 +157,13 @@ class UserHandler():
             raise ValueError("User ID or auth token cannot be empty.")
 
         if username and not auth_token:
-            qry = "select user_metadata from user where user_id=%(username)s"
+            qry = "select user_id, username, user_settings from user where username=%(username)s"
             vals = {"username": str(username)}
         elif not username and auth_token:
-            qry = "select user_metadata from user where username=%(auth_token)s"
+            qry = "select user_id, username, user_settings from user where token=%(token)s"
             vals = {"token": str(auth_token)}
         else:
-            qry = "select user_metadata from user where username=%s and token=%s"
+            qry = "select user_id, username, user_settings from user where username=%s and token=%s"
             vals = str(username), str(auth_token)
 
         rows = self.execute(qry, vals)

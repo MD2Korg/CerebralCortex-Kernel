@@ -208,6 +208,34 @@ class StreamHandler:
         else:
             return rows[0]["name"]
 
+    def get_stream_info_by_hash(self, metadata_hash: uuid) -> str:
+        """
+       metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
+
+       Args:
+           metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.
+       Returns:
+           dict: stream metadata and other info related to a stream
+       Examples:
+           >>> CC = CerebralCortex("/directory/path/of/configs/")
+           >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
+           >>> {"name": .....} # stream metadata and other information
+       """
+
+        if not metadata_hash:
+            raise ValueError("metadata_hash is a required field.")
+        metadata_hash = str(metadata_hash)
+
+        qry = "select * from " + self.datastreamTable + " where metadata_hash = %(metadata_hash)s"
+        vals = {'metadata_hash': metadata_hash}
+
+        rows = self.execute(qry, vals)
+
+        if len(rows) == 0:
+            return {}
+        else:
+            return rows[0]
+
     def is_stream(self, stream_name: str) -> bool:
         """
         Returns true if provided stream exists.
@@ -259,7 +287,7 @@ class StreamHandler:
 
         metadata_str = metadata_obj.to_json()
         if (status=="exist"):
-            return {"status": True,"version":version}
+            return {"status": True,"version":version, "record_type":"exist"}
 
         if (status == "new"):
             qry = "INSERT INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
@@ -270,7 +298,7 @@ class StreamHandler:
         if isQueryReady == 1:
             try:
                 self.execute(qry, vals, commit=True)
-                return {"status": True,"version":version}
+                return {"status": True,"version":version, "record_type":"new"}
             except Exception as e:
                 raise Exception(e)
 

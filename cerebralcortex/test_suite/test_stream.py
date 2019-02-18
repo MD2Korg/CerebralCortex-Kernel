@@ -48,7 +48,7 @@ class DataStreamTest:
         all_streams = self.CC.list_streams()
         searched_streams = self.CC.search_stream(stream_name="battery")
 
-        self.assertEqual(len(all_streams),2)
+        self.assertEqual(len(all_streams),1)
         self.assertEqual(all_streams[0].name,self.stream_name)
         self.assertEqual(all_streams[0].metadata_hash,self.metadata_hash)
 

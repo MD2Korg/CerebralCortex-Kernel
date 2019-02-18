@@ -248,6 +248,21 @@ class CerebralCortex:
         """
         return self.SqlData.get_stream_metadata(stream_name, version)
 
+    def get_stream_info_by_hash(self, metadata_hash: uuid) -> str:
+        """
+           metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
+
+           Args:
+               metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.
+           Returns:
+               dict: stream metadata and other info related to a stream
+           Examples:
+               >>> CC = CerebralCortex("/directory/path/of/configs/")
+               >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
+               >>> {"name": .....} # stream metadata and other information
+       """
+        return self.SqlData.get_stream_info_by_hash(metadata_hash=metadata_hash)
+
     def list_streams(self)->List[Metadata]:
         """
         Get all the available stream names with metadata

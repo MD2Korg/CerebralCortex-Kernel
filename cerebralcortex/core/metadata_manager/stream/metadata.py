@@ -271,7 +271,7 @@ class Metadata():
         metadata_json["name"] = self.name
         metadata_json["description"] = self.description
         metadata_json["data_descriptor"] = data_descriptor
-        metadata_json["module"] = module_metadata
+        metadata_json["modules"] = module_metadata
         return metadata_json
 
     def get_hash(self)->str:
@@ -315,7 +315,13 @@ class Metadata():
         if isinstance(metadata_json, dict):
             metadata = json.loads(metadata_json.get("metadata"))
             data_descriptors = metadata["data_descriptor"]
-            module_info = metadata["module"]
+            module_info = metadata["modules"]
+
+            if not isinstance(data_descriptor_list, list):
+                raise ValueError("data_descriptor field must be a list of data descriptors.")
+            if not isinstance(module_info, list):
+                raise ValueError("modules field must be a type of list.")
+
             for dd in data_descriptors:
                 data_descriptor_list.append(DataDescriptor().from_json(dd))
 
@@ -351,7 +357,13 @@ class Metadata():
         md = Metadata()
         if isinstance(metadata, dict):
             data_descriptors = metadata["data_descriptor"]
-            module_info = metadata["module"]
+            module_info = metadata["modules"]
+
+            if not isinstance(data_descriptor_list, list):
+                raise ValueError("data_descriptor field must be a list of data descriptors.")
+            if not isinstance(module_info, list):
+                raise ValueError("modules field must be a type of list.")
+
             for dd in data_descriptors:
                 data_descriptor_list.append(DataDescriptor().from_json(dd))
 
