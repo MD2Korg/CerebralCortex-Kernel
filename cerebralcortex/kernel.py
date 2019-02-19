@@ -45,7 +45,7 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from cerebralcortex.modules.mprov.connection.mprov_connection import MProvConnection
 
 
-class CerebralCortex:
+class Kernel:
 
     def __init__(self, configs_dir_path: str = None, auto_offset_reset: str = "largest", enable_spark:bool=True):
         """
@@ -57,7 +57,7 @@ class CerebralCortex:
         Raises:
             ValueError: If configuration_filepath is None or empty.
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
         """
         if configs_dir_path is None or configs_dir_path == "":
             raise ValueError("config_file path cannot be None or blank.")
@@ -109,7 +109,7 @@ class CerebralCortex:
         Todo:
             Add functionality to store data in influxdb.
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> ds = DataStream(dataframe, MetaData)
             >>> CC.save_stream(ds)
         """
@@ -131,7 +131,7 @@ class CerebralCortex:
         Note:
             Please specify a version if you know the exact version of a stream. Getting all the stream data and then filtering versions won't be efficient.
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> ds = CC.get_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> ds.data # an object of a dataframe
             >>> ds.metadata # an object of MetaData class
@@ -155,7 +155,7 @@ class CerebralCortex:
         Todo:
             This needs to be updated with the new structure. Should metadata be stored or not?
         Example:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> ds = DataStream(dataframe, MetaData)
             >>> CC.save_data_to_influxdb(ds)
         """
@@ -176,7 +176,7 @@ class CerebralCortex:
         Returns:
             bool: True if stream_name exist False otherwise
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.is_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> True
         """
@@ -193,7 +193,7 @@ class CerebralCortex:
         Raises:
             ValueError: if stream_name is empty or None
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.get_stream_versions("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> [1, 2, 4]
         """
@@ -208,7 +208,7 @@ class CerebralCortex:
         Returns:
             str: name of a stream
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
             >>> ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST
         """
@@ -223,7 +223,7 @@ class CerebralCortex:
         Returns:
             list[str]: list of all the metadata hashes
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.get_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
         """
@@ -242,7 +242,7 @@ class CerebralCortex:
         Raises:
             ValueError: stream_name cannot be None or empty.
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.get_all_users("mperf")
             >>> [Metadata] # list of MetaData class objects
         """
@@ -257,7 +257,7 @@ class CerebralCortex:
            Returns:
                dict: stream metadata and other info related to a stream
            Examples:
-               >>> CC = CerebralCortex("/directory/path/of/configs/")
+               >>> CC = Kernel("/directory/path/of/configs/")
                >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
                >>> {"name": .....} # stream metadata and other information
        """
@@ -271,7 +271,7 @@ class CerebralCortex:
             List[Metadata]: list of available streams metadata
 
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.list_streams()
         """
         return self.SqlData.list_streams()
@@ -285,7 +285,7 @@ class CerebralCortex:
             List[str]: list of stream names similar to stream_name arg
 
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.search_stream("battery")
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
@@ -338,7 +338,7 @@ class CerebralCortex:
         Raises:
             ValueError: Both user_id and user_name cannot be None or empty.
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.is_user(user_id="76cc444c-4fb8-776e-2872-9472b4e66b16")
             >>> True
         """
@@ -355,7 +355,7 @@ class CerebralCortex:
         Raises:
             ValueError: User name is a required field.
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.get_user_id("nasir_ali")
             >>> '76cc444c-4fb8-776e-2872-9472b4e66b16'
         """
@@ -372,7 +372,7 @@ class CerebralCortex:
         Raises:
             ValueError: User ID is a required field.
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.get_user_name("76cc444c-4fb8-776e-2872-9472b4e66b16")
             >>> 'nasir_ali'
         """
@@ -389,7 +389,7 @@ class CerebralCortex:
         Returns:
             list[dict]: Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.get_all_users("mperf")
             >>> [{"76cc444c-4fb8-776e-2872-9472b4e66b16": "nasir_ali"}] # [{user_id, user_name}]
         """
@@ -409,7 +409,7 @@ class CerebralCortex:
         Raises:
             ValueError: User ID/name cannot be empty.
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.get_user_metadata(username="nasir_ali")
             >>> {"study_name":"mperf"........}
         """
@@ -429,7 +429,7 @@ class CerebralCortex:
         Raises:
             ValueError: User ID/name cannot be empty.
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.get_user_settings(username="nasir_ali")
             >>> [{"mcerebrum":"some-conf"........}]
         """
@@ -448,7 +448,7 @@ class CerebralCortex:
         Returns:
             dict: return eturn {"status":bool, "auth_token": str, "msg": str}
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.connect("nasir_ali", "2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234", True)
             >>> True
         """
@@ -548,7 +548,7 @@ class CerebralCortex:
         Raises:
             ValueError: Topic name cannot be empty/None
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.get_kafka_offsets("live-data")
             >>> [{"id","topic", "topic_partition", "offset_start", "offset_until", "offset_update_time"}]
         """
@@ -569,7 +569,7 @@ class CerebralCortex:
         Raises:
             ValueError: Bucket name cannot be empty/None.
         Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.create_bucket("live_data_folder")
             >>> True
         """

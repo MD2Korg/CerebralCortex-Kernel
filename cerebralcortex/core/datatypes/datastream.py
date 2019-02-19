@@ -309,6 +309,36 @@ class DataStream:
 
     # !!!!                              FILTERING METHODS                           !!!
 
+    def drop_column(self, *args, **kwargs):
+        """
+        calls deafult dataframe drop
+
+        Args:
+            *args:
+            **kwargs:
+        """
+        self._data = self._data.drop(*args, **kwargs)
+
+    def limit(self, *args, **kwargs):
+        """
+        calls deafult dataframe limit
+
+        Args:
+            *args:
+            **kwargs:
+        """
+        self._data = self._data.limit(*args, **kwargs)
+
+    def where(self, *args, **kwargs):
+        """
+        calls deafult dataframe where
+
+        Args:
+            *args:
+            **kwargs:
+        """
+        self._data = self._data.where(*args, **kwargs)
+
     def filter(self, columnName, operator, value):
         """
         filter data

@@ -28,7 +28,7 @@ import pathlib
 import unittest
 import warnings
 
-from cerebralcortex.cerebralcortex import CerebralCortex
+from cerebralcortex import Kernel
 from cerebralcortex.test_suite.test_object_storage import TestObjectStorage
 from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
 from cerebralcortex.test_suite.test_stream import DataStreamTest
@@ -49,7 +49,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         # create sample_data directory. Note: make sure this path is same as the filesystem path in cerebralcortex.yml
         pathlib.Path("./sample_data/").mkdir(parents=True, exist_ok=True)
 
-        self.CC = CerebralCortex(config_filepath, auto_offset_reset="smallest")
+        self.CC = Kernel(config_filepath, auto_offset_reset="smallest")
         self.cc_conf = self.CC.config
 
         # TEST-PARAMS
