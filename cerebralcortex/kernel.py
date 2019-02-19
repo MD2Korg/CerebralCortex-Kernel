@@ -37,7 +37,7 @@ from cerebralcortex.core.data_manager.raw.data import RawData
 from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 from cerebralcortex.core.data_manager.sql.data import SqlData
 from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
-from cerebralcortex.core.datatypes.datastream import DataStream
+from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue

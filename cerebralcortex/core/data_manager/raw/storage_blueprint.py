@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from cerebralcortex.core.datatypes.datastream import DataStream
+from cerebralcortex.core.datatypes import DataStream
 
 
 class BlueprintStorage():

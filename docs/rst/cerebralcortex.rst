@@ -13,10 +13,10 @@ Subpackages
 Submodules
 ----------
 
-cerebralcortex.cerebralcortex module
-------------------------------------
+cerebralcortex.kernel module
+----------------------------
 
-.. automodule:: cerebralcortex.cerebralcortex
+.. automodule:: cerebralcortex.kernel
     :members:
     :undoc-members:
     :show-inheritance:
@@ -25,7 +25,7 @@ cerebralcortex.cerebralcortex module
 Module contents
 ---------------
 
-.. automodule:: cerebralcortex.cerebralcortex
+.. automodule:: cerebralcortex
     :members:
     :undoc-members:
     :show-inheritance:

@@ -25,7 +25,7 @@
 
 from pyspark.sql.functions import lit
 
-from cerebralcortex.core.datatypes.datastream import DataStream
+from cerebralcortex.core.datatypes import DataStream
 
 
 class HDFSStorage:

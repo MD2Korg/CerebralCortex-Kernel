@@ -29,7 +29,7 @@ from datetime import datetime
 
 from influxdb import InfluxDBClient
 
-from cerebralcortex.core.datatypes.datastream import DataStream
+from cerebralcortex.core.datatypes import DataStream
 
 
 class InfluxdbHandler():

@@ -25,7 +25,7 @@
 
 from datetime import datetime
 
-from cerebralcortex.core.datatypes.datastream import DataStream
+from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_data, gen_phone_battery_metadata
 
 
