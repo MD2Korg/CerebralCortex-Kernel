@@ -33,16 +33,9 @@ from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
-class DataImporter():
-    def __init__(self, CC):
-        """
-        Constructor
+class DataImporter:
+    def __init__(self, CC, data_dir_path, with_metadata=False, headers=True, file_type="csv"):
 
-        Args:
-            CC (CerebralCortex): CerebralCortex object reference
-        Raises:
-            ValueError: if correct storage engine is not selected
-        """
         self.config = CC.config
         self.sql_data = CC.SqlData
 
@@ -52,6 +45,11 @@ class DataImporter():
         self.sparkSession = CC.sparkSession
 
         self.metadata = Metadata()
+        
+        self.data_dir_path = data_dir_path
+        self.with_metadata = with_metadata
+        self.headers = headers
+        self.file_type = file_type
 
         # pseudo factory pattern
         if self.nosql_store == "hdfs":
