@@ -43,14 +43,20 @@ def df_cleaner(df, metadata):
     return df
 
 def CustomParser(line):
-
-    data = line.split(',',2)
+    data = []
+    ts, offset, sample = line[0].split(',',2)
     try:
-        sample = json.loads(data[2])
+        sample = json.loads(sample)
     except:
-        sample = data[2].split(",")
+        sample = sample.split(",")
+    data.append(ts)
+    data.append(offset)
+    if isinstance(sample, list):
+        data.extend(sample)
+    else:
+        data.append(sample)
     result = pd.Series(data)
-    return ",".join(data)
+    return result
 
 def scan_day_dir(data_dir):
     for user_dir in os.scandir(data_dir):
@@ -73,8 +79,8 @@ def scan_day_dir(data_dir):
                                     metadata = md.read()
                                     metadata = metadata.lower()
                                     metadata = json.loads(metadata)
-                                df = pd.read_csv("/home/ali/IdeaProjects/MD2K_DATA/data/test/tt.csv", converters={0:CustomParser}, header=None, sep='\t', quotechar='"')
-                                #df = df.apply(CustomParser, axis=1)
+                                df = pd.read_csv("/home/ali/IdeaProjects/MD2K_DATA/data/test/tt.csv", header=None, sep='\t', quotechar='"')
+                                df = df.apply(CustomParser, axis=1)
                                 print(df)
                                 df = pd.read_csv(data_file.path, compression='gzip', header=None, sep=',', quotechar='"')
                                 df = df_cleaner(df, metadata)
