@@ -2,6 +2,7 @@ import json
 import os
 import re
 import pandas as pd
+from datetime import datetime
 from cerebralcortex import Kernel
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from cerebralcortex.core.data_manager.sql.data import SqlData
@@ -12,10 +13,10 @@ data_files_path = "/home/ali/IdeaProjects/MD2K_DATA/data/test/"
 
 sql_data = SqlData(CC)
 
-def df_cleaner(df, metadata):
+def assign_column_names_types(df, metadata):
     data_desciptor = metadata.get("data_descriptor", [])
     metadata_columns = []
-    new_column_names ={0:"timestamp", 1:"offset"}
+    new_column_names ={0:"timestamp", 1:"localtime"}
     #df.rename(columns={0:"timestamp", 1:"offset"}, inplace=True)
 
     if isinstance(data_desciptor, dict):
@@ -44,23 +45,33 @@ def df_cleaner(df, metadata):
 
 def CustomParser(line):
     data = []
+    tmp = []
     ts, offset, sample = line[0].split(',',2)
     try:
-        sample = json.loads(sample)
+        ts = int(ts)
+        offset = int(offset)
     except:
-        sample = sample.split(",")
-    data.append(ts)
-    data.append(offset)
-    if isinstance(sample, list):
-        data.extend(sample)
+        raise Exception("cannot convert timestamp/offsets into int")
+    try:
+        vals = json.loads(sample)
+    except:
+        vals = sample.split(",")
+
+    timestamp = datetime.utcfromtimestamp(ts/1000)
+    localtime = datetime.utcfromtimestamp((ts+offset)/1000)
+    data.append(timestamp)
+    data.append(localtime)
+    if isinstance(vals, list):
+
+        data.extend(vals)
     else:
-        data.append(sample)
+        data.append(vals)
+
     result = pd.Series(data)
     return result
 
 def scan_day_dir(data_dir):
     for user_dir in os.scandir(data_dir):
-        #owner = stream_dir.path[-36:]
         if user_dir.is_dir():
             for stream_dir in os.scandir(user_dir):
                 if stream_dir.is_dir():
@@ -79,11 +90,10 @@ def scan_day_dir(data_dir):
                                     metadata = md.read()
                                     metadata = metadata.lower()
                                     metadata = json.loads(metadata)
-                                df = pd.read_csv("/home/ali/IdeaProjects/MD2K_DATA/data/test/tt.csv", header=None, sep='\t', quotechar='"')
+                                # used DONOTSEPARATECOLUMNS as sep so rows are not split using comma. Comma was causing issues for dict (EMA) columns
+                                df = pd.read_fwf(data_file.path, compression='gzip', header=None, quotechar='"')
                                 df = df.apply(CustomParser, axis=1)
-                                print(df)
-                                df = pd.read_csv(data_file.path, compression='gzip', header=None, sep=',', quotechar='"')
-                                df = df_cleaner(df, metadata)
+                                df = assign_column_names_types(df, metadata)
                                 metadata = convert_json_to_metadata_obj(metadata, df)
                                 print("done")
 
