@@ -1,5 +1,7 @@
 import json
 import os
+import re
+import pandas as pd
 from cerebralcortex import Kernel
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from cerebralcortex.core.data_manager.sql.data import SqlData
@@ -10,7 +12,45 @@ data_files_path = "/home/ali/IdeaProjects/MD2K_DATA/data/test/"
 
 sql_data = SqlData(CC)
 
+def df_cleaner(df, metadata):
+    data_desciptor = metadata.get("data_descriptor", [])
+    metadata_columns = []
+    new_column_names ={0:"timestamp", 1:"offset"}
+    #df.rename(columns={0:"timestamp", 1:"offset"}, inplace=True)
 
+    if isinstance(data_desciptor, dict):
+        data_desciptor = [data_desciptor]
+
+    for dd in data_desciptor:
+        name = re.sub('[^a-zA-Z0-9]+', '_', dd.get("name", "", )).strip("_")
+        metadata_columns.append({"name": name,"type": dd.get("data_type", "")})
+
+    if len(metadata_columns)>0:
+        col_no = 2 # first two column numbers are timestamp and offset
+        for mc in metadata_columns:
+            new_column_names[col_no] = mc["name"]
+            col_no +=1
+    else:
+        for column in df:
+            if column!=0 and column!=1:
+                new_column_names[column] = "value_"+str(column)
+#                df[column] = pd.to_numeric(df[column], errors='ignore')
+
+    df.rename(columns=new_column_names, inplace=True)
+    for column in df:
+        if column not in ['localtime','timestamp']:
+            df[column] = pd.to_numeric(df[column], errors='ignore')
+    return df
+
+def CustomParser(line):
+
+    data = line.split(',',2)
+    try:
+        sample = json.loads(data[2])
+    except:
+        sample = data[2].split(",")
+    result = pd.Series(data)
+    return ",".join(data)
 
 def scan_day_dir(data_dir):
     for user_dir in os.scandir(data_dir):
@@ -30,8 +70,16 @@ def scan_day_dir(data_dir):
                             if data_file.path.endswith(".gz"):
                                 metadata_file = data_file.path.replace(".gz", ".json")
                                 with open(metadata_file, "r") as md:
-                                    metadata = convert_json_to_metadata_obj(md.read())
-                                    print("done")
+                                    metadata = md.read()
+                                    metadata = metadata.lower()
+                                    metadata = json.loads(metadata)
+                                df = pd.read_csv("/home/ali/IdeaProjects/MD2K_DATA/data/test/tt.csv", converters={0:CustomParser}, header=None, sep='\t', quotechar='"')
+                                #df = df.apply(CustomParser, axis=1)
+                                print(df)
+                                df = pd.read_csv(data_file.path, compression='gzip', header=None, sep=',', quotechar='"')
+                                df = df_cleaner(df, metadata)
+                                metadata = convert_json_to_metadata_obj(metadata, df)
+                                print("done")
 
 
 def new_data_descript_frmt(data_descriptor, data):
@@ -102,9 +150,9 @@ def new_module_metadata(ec_algo_pm):
 
     return new_module
 
-def convert_json_to_metadata_obj(metadata):
+def convert_json_to_metadata_obj(metadata, df):
     new_metadata = {}
-    metadata = json.loads(metadata.lower())
+    #metadata = json.loads(metadata.lower())
     # new data descriptor
     new_dd_list = []
     new_module = []
