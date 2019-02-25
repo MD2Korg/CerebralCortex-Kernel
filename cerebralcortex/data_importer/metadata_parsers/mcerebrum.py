@@ -10,20 +10,10 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataD
 from cerebralcortex.core.data_manager.sql.data import SqlData
 
 
-def metadata_parser(file_path, parser):
-    metadata_file = file_path.replace(".gz", ".json")
-    if metadata_file.endswith(".json"):
-        with open(metadata_file, "r") as md:
-            metadata = md.read()
-            metadata = metadata.lower()
-            metadata = json.loads(metadata)
+def metadata_parser(parser, metadata, df):
+    return parser(metadata, df)
 
-def parse_mcerebrum_metadata(file_path, df):
-    metadata_file = file_path.replace(".gz", ".json")
-    with open(metadata_file, "r") as md:
-        metadata = md.read()
-        metadata = metadata.lower()
-        metadata = json.loads(metadata)
+def parse_mcerebrum_metadata(metadata, df):
     platform_metadata = get_platform_metadata(metadata)
     metadata = convert_json_to_metadata_obj(metadata, platform_metadata.name, df)
     return {"platform_metadata":platform_metadata, "stream_metadata":metadata}
