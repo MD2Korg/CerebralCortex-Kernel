@@ -2,16 +2,13 @@ import json
 import os
 import re
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 from datetime import datetime
 from cerebralcortex import Kernel
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
 from cerebralcortex.core.data_manager.sql.data import SqlData
 
-CC = Kernel("/home/ali/IdeaProjects/CerebralCortex-2.0/conf/", enable_spark=False)
-metadata_files_path = "/home/ali/IdeaProjects/MD2K_DATA/data/test/"
-data_files_path = "/home/ali/IdeaProjects/MD2K_DATA/data/test/"
-
-sql_data = SqlData(CC)
 
 def assign_column_names_types(df, metadata):
     data_desciptor = metadata.get("data_descriptor", [])
@@ -90,12 +87,24 @@ def scan_day_dir(data_dir):
                                     metadata = md.read()
                                     metadata = metadata.lower()
                                     metadata = json.loads(metadata)
+
                                 # used DONOTSEPARATECOLUMNS as sep so rows are not split using comma. Comma was causing issues for dict (EMA) columns
                                 df = pd.read_fwf(data_file.path, compression='gzip', header=None, quotechar='"')
                                 df = df.apply(CustomParser, axis=1)
                                 df = assign_column_names_types(df, metadata)
-                                metadata = convert_json_to_metadata_obj(metadata, df.columns.values, df.dtypes.values)
+                                platform_metadata = get_platform_metadata(metadata)
+                                metadata = convert_json_to_metadata_obj(metadata, platform_metadata.name, df.columns.values, df.dtypes.values)
+
+                                data_file_url = os.path.join("/home/ali/IdeaProjects/MD2K_DATA/", "stream="+str(metadata.name), "version=1", "user="+str(owner_id))
+                                table = pa.Table.from_pandas(df)
+
+                                pq.write_to_dataset(
+                                    table,
+                                    root_path=data_file_url,
+                                )
                                 print("done")
+
+
 
 
 def new_data_descript_frmt(data_descriptor, column_names, column_types):
@@ -120,8 +129,10 @@ def new_data_descript_frmt(data_descriptor, column_names, column_types):
     sd["attributes"] = attr
     return sd
 
-def get_platform_metadata(stream_name, execution_context):
+def get_platform_metadata(metadata):
 
+    stream_name = metadata.get("name", "name_not_available")
+    execution_context = metadata.get("execution_context")
     platform_metadata = execution_context["platform_metadata"] #dict
     application_metadata = execution_context["application_metadata"] #dict
 
@@ -184,7 +195,7 @@ def new_module_metadata(ec_algo_pm):
 
     return new_module
 
-def convert_json_to_metadata_obj(metadata,column_names, column_types):
+def convert_json_to_metadata_obj(metadata, annotation_name, column_names, column_types):
     new_metadata = {}
     new_dd_list = []
     annotations = []
@@ -197,9 +208,7 @@ def convert_json_to_metadata_obj(metadata,column_names, column_types):
 
     new_module.append(new_module_metadata(metadata["execution_context"]))
 
-    platform_metadata = get_platform_metadata(metadata.get("name", "name_not_available"), metadata["execution_context"])
-
-    annotations.append(platform_metadata.name)
+    annotations.append(annotation_name)
 
     input_streams = []
     if "input_streams" in metadata["execution_context"]["processing_module"]:
