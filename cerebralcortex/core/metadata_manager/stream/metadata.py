@@ -39,9 +39,10 @@ class Metadata():
         """
         self.name = None
         self.version = None
-        self.description = "",
+        self.description = ""
         self.metadata_hash = None
-        self.input_streams = [],
+        self.input_streams = []
+        self.annotations = []
         self.data_descriptor = []
         self.modules = []
 
@@ -204,7 +205,7 @@ class Metadata():
         self.data_descriptor.append(dd)
         return self
 
-    def add_input_streams(self, input_stream:str):
+    def add_input_stream(self, input_stream:str):
         """
         Add input streams that were used to derive a new stream
 
@@ -215,6 +216,19 @@ class Metadata():
             self
         """
         self.input_streams.append(input_stream)
+        return self
+
+    def add_annotation(self, annotation:str):
+        """
+        Add annotation stream name
+
+        Args:
+            annotation (str): name of annotation stream
+
+        Returns:
+            self
+        """
+        self.annotations.append(annotation)
         return self
 
     def add_module(self, mod: ModuleMetadata):
@@ -261,6 +275,7 @@ class Metadata():
         Returns:
             dict: dict form of MetaData object
         """
+
         data_descriptor = []
         module_metadata = []
         metadata_json = {}
@@ -270,6 +285,8 @@ class Metadata():
             module_metadata.append(mm_obj.__dict__)
         metadata_json["name"] = self.name
         metadata_json["description"] = self.description
+        metadata_json["annotations"] = self.annotations
+        metadata_json["input_streams"] = self.input_streams
         metadata_json["data_descriptor"] = data_descriptor
         metadata_json["modules"] = module_metadata
         return metadata_json
@@ -334,6 +351,7 @@ class Metadata():
             md.description = metadata.get("description", "")
             md.version = int(metadata_json["version"])
             md.input_streams = metadata.get("input_streams", [])
+            md.annotations = metadata.get("annotations", [])
             md.metadata_hash = metadata_json["metadata_hash"]
         return md
 
@@ -376,6 +394,7 @@ class Metadata():
             md.description = metadata.get("description", "")
             md.version = int(metadata.get("version", 1))
             md.input_streams = metadata.get("input_streams", [])
+            md.annotations = metadata.get("annotations", [])
             md.metadata_hash = metadata.get("metadata_hash", "no-hash")
         return md
 
