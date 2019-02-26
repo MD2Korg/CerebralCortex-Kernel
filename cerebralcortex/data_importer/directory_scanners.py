@@ -1,6 +1,6 @@
 import pathlib
-
-def dir_scanner(dir_path, skip_file_extensions=[], get_dirs=False):
+import re
+def dir_scanner(dir_path, skip_file_extensions=[], allowed_filename_pattern=None, get_dirs=False):
     dir_path = pathlib.Path(dir_path)
     if get_dirs:
         yield dir_path
@@ -9,5 +9,13 @@ def dir_scanner(dir_path, skip_file_extensions=[], get_dirs=False):
             yield from dir_scanner(sub, skip_file_extensions)
         else:
             if sub.suffix not in skip_file_extensions:
-                yield sub._str
+                if allowed_filename_pattern is not None:
+                    try:
+                        re.compile(allowed_filename_pattern)
+                        if re.search(allowed_filename_pattern, sub._str):
+                            yield sub._str
+                    except re.error:
+                        raise re.error
+                else:
+                    yield sub._str
 

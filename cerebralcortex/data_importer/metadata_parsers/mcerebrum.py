@@ -64,6 +64,7 @@ def get_platform_metadata(metadata):
     ).add_module(ModuleMetadata().set_name(application_metadata.get("name", "name_not_available")).set_version(application_metadata.get("version", 1)).set_attribute("description", application_metadata.get("description", "no description available.")).set_author(
         "Monowar Hossain", "smhssain@memphis.edu"))
 
+
 def new_module_metadata(ec_algo_pm):
     new_module = {}
     nm_attr = {}

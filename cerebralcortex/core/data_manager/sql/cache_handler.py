@@ -47,8 +47,7 @@ class CacheHandler:
             self.execute(qry, data, commit=True)
             return True
         except Exception as e:
-            self.logging.log(str(traceback.format_exc()))
-            return False
+            raise Exception(str(e))
 
     def get_cache_value(self, key: str) -> str:
         """
@@ -74,5 +73,4 @@ class CacheHandler:
             else:
                 return rows[0]["cache_value"]
         except Exception as e:
-            self.logging.log(traceback.format_exc())
-            return None
+            raise Exception(str(e))

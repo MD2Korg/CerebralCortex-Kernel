@@ -31,6 +31,7 @@ from typing import List
 from mprov.metadata.stream_metadata import BasicTuple
 from pyspark.sql import SparkSession
 
+from cerebralcortex.core.util.spark_helper import get_or_create_sc
 from cerebralcortex.core.config_manager.config import Configuration
 from cerebralcortex.core.data_manager.object.data import ObjectData
 from cerebralcortex.core.data_manager.raw.data import RawData
@@ -63,8 +64,10 @@ class Kernel:
             raise ValueError("config_file path cannot be None or blank.")
 
         if enable_spark:
-            self.sparkSession = SparkSession.builder.appName("CerebralCortex").getOrCreate()
+            self.sparkContext = get_or_create_sc()
+            self.sparkSession = get_or_create_sc(type="sparkSession")
         else:
+            self.sparkContext = None
             self.sparkSession = None
 
         self.config_filepath = configs_dir_path

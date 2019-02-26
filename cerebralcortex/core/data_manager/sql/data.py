@@ -45,9 +45,11 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
         Raises:
             Exception: if none MySQL SQL storage is set in cerebralcortex configurations
         """
-        self.config = CC.config
+        if isinstance(CC, dict):
+            self.config = CC
+        else:
+            self.config = CC.config
 
-        self.logging = CC.logging
         self.logtypes = LogTypes()
         self.sql_store = self.config["relational_storage"]
 

@@ -303,7 +303,7 @@ class Metadata():
         data_descriptor = ""
         modules = ""
         for dd in self.data_descriptor:
-            data_descriptor += str(dd.name+dd.type)
+            data_descriptor += str(dd.name)+str(dd.type)
         for mm in self.modules:
             modules += str(mm.name) + str(mm.version) + str(mm.authors)
         hash_string = str(name)+str(data_descriptor)+str(modules)
