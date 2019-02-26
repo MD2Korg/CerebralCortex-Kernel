@@ -1,2 +1,2 @@
-from cerebralcortex.algorithms.gps.gps_clustering import get_gps_clusters
-__all__ = ["get_gps_clusters"]
+from cerebralcortex.algorithms.gps.gps_clustering import gps_clusters
+__all__ = ["gps_clusters"]

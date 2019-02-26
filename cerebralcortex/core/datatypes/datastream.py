@@ -407,7 +407,7 @@ class DataStream:
     #     self.metadata = Metadata()
     #     return self
 
-    def marker(self, udfName):
+    def compute(self, udfName):
         self._data = self._data.apply(udfName)
         self.metadata = Metadata()
         return self

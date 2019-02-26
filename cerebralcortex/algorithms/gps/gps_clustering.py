@@ -62,7 +62,7 @@ schema = StructType([
 ])
 
 @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-def get_gps_clusters(data: object) -> object:
+def gps_clusters(data: object) -> object:
     """
     Computes the clusters
 
