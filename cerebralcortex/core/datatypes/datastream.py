@@ -130,10 +130,10 @@ class DataStream:
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> ds = CC.get_stream("STREAM-NAME")
-            >>> pandas_ds = ds.to_pandas()
-            >>> pandas_ds.data.head()
+            >>> pandas_df = ds.to_pandas()
+            >>> pandas_df.head()
         """
-        self._data = self._data.toPandas()
+        return self._data.toPandas()
 
     def collect(self):
         """
