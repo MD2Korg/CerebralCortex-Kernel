@@ -81,16 +81,16 @@ def import_file(cc_config:dict, user_id:str, file_path:str, compression:str=None
     if metadata is not None and metadata_parser is not None:
         raise ValueError("Either pass metadata or metadata_parser.")
 
+    sql_data = SqlData(cc_config)
+
     try:
         if compression is not None:
-            #st = datetime.now()
             df = pd.read_csv(file_path, compression=compression, delimiter = "\n", header=header, quotechar='"')
-            #print("TOTAL TIME TO READ: ", datetime.now()-st)
         else:
             df = pd.read_csv(file_path, delimiter = "\n", header=header, quotechar='"')
     except Exception as e:
-        # cannot read file: str(e)
-        print(str(e))
+        fault_description = "cannot read file:"+ str(e)
+        sql_data.add_ingestion_log(user_id=user_id, stream_name="no-name", file_path=file_path, fault_type="READ_DATA_FILE", fault_description=fault_description, success=0)
         return False
 
     try:
@@ -104,27 +104,30 @@ def import_file(cc_config:dict, user_id:str, file_path:str, compression:str=None
 
         #print("TOTAL TIME TO APPLY: ", datetime.now()-st)
     except Exception as e:
-        # cannot apply parser: str(e)
-        print(str(e))
+        fault_description = "cannot apply parser:"+ str(e)
+        sql_data.add_ingestion_log(user_id=user_id, stream_name="no-name", file_path=file_path, fault_type="PARSE_DATA_FILE", fault_description=fault_description, success=0)
         return False
+
+
+    df_total_columns = len(df.columns)-2
 
     if metadata is not None:
         if isinstance(metadata,str):
             metadata_dict = json.loads(metadata)
+            dd_total_columns = len(metadata_dict.get("data_descriptor",[]))
+            if dd_total_columns!=df_total_columns:
+                fault_description = "number data_descriptor columns ("+ str(dd_total_columns) + ") and dataframe columns ("+ str(df_total_columns) +") do not match"
+                sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name","no-name"), file_path=file_path, fault_type="DATA_METADATA_MISMATCH", fault_description=fault_description, success=0)
+                return False
             df = assign_column_names_types(df, metadata_dict)
         if isinstance(metadata, dict):
             try:
                 metadata = Metadata().from_json_file(metadata)
             except Exception as e:
-                raise Exception("Cannot convert metadata into MetaData object: "+str(e))
+                fault_description = "Cannot convert metadata into MetaData object: "+str(e)
+                sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name","no-name"), file_path=file_path, fault_type="PARSE_METADATA_FILE", fault_description=fault_description, success=0)
                 return False
 
-        try:
-            metadata["stream_metadata"].is_valid()
-        except Exception as e:
-            # metadata is not valid: str(e)
-            print(str(e))
-            return False
     else:
         try:
             metadata_file = file_path.replace(".gz", ".json")
@@ -134,27 +137,23 @@ def import_file(cc_config:dict, user_id:str, file_path:str, compression:str=None
                     metadata = metadata.lower()
                     metadata_dict = json.loads(metadata)
         except Exception as e:
-            # cannot read/parse metadata: str(e)
-            print(str(e))
-        dd_total_columns = len(metadata_dict.get("data_descriptor",[]))
-        df_total_columns = len(df.columns)-2
-        if dd_total_columns!=df_total_columns:
-            # number data_descriptor columns (str(dd_total_columns)) and dataframe columns (str(df_total_columns)) do not match
-            pass
+            fault_description = "read/parse metadata: "+ str(e)
+            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name","no-name"), file_path=file_path, fault_type="PARSE_METADATA_FILE", fault_description=fault_description, success=0)
+            return False
+
 
             #return False
         df = assign_column_names_types(df, metadata_dict)
         metadata = metadata_parser(metadata_dict)
 
-        try:
-            metadata["stream_metadata"].is_valid()
-        except Exception as e:
-            # metadata is not valid: str(e)
-            print(str(e))
-            return False
+    try:
+        metadata["stream_metadata"].is_valid()
+    except Exception as e:
+        fault_description = "metadata is not valid: "+ str(e)
+        sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name","no-name"), file_path=file_path, fault_type="METADATA_MISSING_FIELDS", fault_description=fault_description, success=0)
+        return False
 
     # write metadata
-    sql_data = SqlData(cc_config)
     if metadata_parser.__name__=='parse_mcerebrum_metadata':
         platform_data = metadata_dict.get("execution_context",{}).get("platform_metadata","")
         if platform_data:
@@ -166,14 +165,18 @@ def import_file(cc_config:dict, user_id:str, file_path:str, compression:str=None
             sql_data.save_stream_metadata(metadata["stream_metadata"])
             save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
         except Exception as e:
-            # cannot store data: str(e)
-            print("dd")
-
+            fault_description = "cannot store data: "+ str(e)
+            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name","no-name"), file_path=file_path, fault_type="STORING_DATA", fault_description=fault_description, success=0)
 
         print("Processed - ", metadata.get("stream_metadata").name)
     else:
-        sql_data.save_stream_metadata(metadata)
-        save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata.name)
+        try:
+            sql_data.save_stream_metadata(metadata)
+            save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata.name)
+        except Exception as e:
+            fault_description = "cannot store data: "+ str(e)
+            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name","no-name"), file_path=file_path, fault_type="STORING_DATA", fault_description=fault_description, success=0)
+
 
 
 def save_data(df:object, cc_config:dict, user_id:str, stream_name:str):

@@ -32,8 +32,8 @@ class DataIngestionHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def ingestion_log(self, user_id: str = "", stream_name: str = "", file_path: str = "", fault_type: str = "",
-                      fault_description: str = "", success: bool = None) -> bool:
+    def add_ingestion_log(self, user_id: str = "", stream_name: str = "", file_path: str = "", fault_type: str = "",
+                          fault_description: str = "", success: bool = None) -> bool:
         """
         Log errors and success of each record during data import process.
 
