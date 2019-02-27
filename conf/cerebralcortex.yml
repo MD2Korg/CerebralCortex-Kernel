@@ -50,15 +50,8 @@ mysql:
   db_pass: pass # Change
 
   # Note: do not change following parameters if you don't know what you are doing
-  connection_pool_name: "CC_Pool"
-  connection_pool_size: 1
   database: cerebralcortex
-  datastream_table: stream
-  kafka_offsets_table: kafka_offsets
-  processing_module_table: processing_module
-  data_replay_table: data_replay
-  user_table: user
-  study_table: study
+  connection_pool_size: 1
 
 #########################################################################
 ###################### Visualization Data Storage #######################

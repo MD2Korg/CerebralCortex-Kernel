@@ -33,9 +33,10 @@ from cerebralcortex.core.data_manager.sql.kafka_offsets_handler import KafkaOffs
 from cerebralcortex.core.data_manager.sql.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.sql.users_handler import UserHandler
 from cerebralcortex.core.log_manager.log_handler import LogTypes
+from cerebralcortex.core.data_manager.sql.data_ingestion_handler import DataIngestionHandler
 
 
-class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
+class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, DataIngestionHandler):
     def __init__(self, CC):
         """
         Constructor
@@ -61,11 +62,12 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
         self.database = self.config['mysql']['database']
         self.dbUser = self.config['mysql']['db_user']
         self.dbPassword = self.config['mysql']['db_pass']
-        self.datastreamTable = self.config['mysql']['datastream_table']
-        self.kafkaOffsetsTable = self.config['mysql']['kafka_offsets_table']
-        self.userTable = self.config['mysql']['user_table']
-        self.dataReplayTable = self.config['mysql']['data_replay_table']
-        self.poolName = self.config['mysql']['connection_pool_name']
+        self.datastreamTable = "stream"
+        self.kafkaOffsetsTable = "kafka_offsets"
+        self.ingestionLogsTable = "ingestion_logs"
+        self.userTable = "user"
+        self.dataReplayTable = "data_replay"
+        self.poolName = "CC_Pool"
         self.poolSize = self.config['mysql']['connection_pool_size']
         self.pool = self.create_pool(pool_name=self.poolName, pool_size=self.poolSize)
 
