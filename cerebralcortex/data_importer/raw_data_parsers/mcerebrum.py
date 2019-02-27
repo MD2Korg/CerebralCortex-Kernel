@@ -44,31 +44,6 @@ def assign_column_names_types(df: pd, metadata: dict = None) -> pd:
     return df
 
 
-# def mcerebrum_data_parser2(line):
-#     data = []
-#     ts, offset, sample = line[0].split(',',2)
-#     try:
-#         ts = int(ts)
-#         offset = int(offset)
-#     except:
-#         raise Exception("cannot convert timestamp/offsets into int")
-#     try:
-#         vals = json.loads(sample)
-#     except:
-#         vals = sample.split(",")
-#
-#     timestamp = datetime.utcfromtimestamp(ts/1000)
-#     localtime = datetime.utcfromtimestamp((ts+offset)/1000)
-#     data.append(timestamp)
-#     data.append(localtime)
-#     if isinstance(vals, list):
-#         data.extend(vals)
-#     else:
-#         data.append(vals)
-#
-#     result = pd.Series(data)
-#     return result
-
 def mcerebrum_data_parser(line: str) -> list:
     """
     parse each row of data file into list of values (timestamp, localtime, val1, val2....)
