@@ -258,6 +258,8 @@ class Metadata():
             raise ValueError("Stream name is not defined.")
         if not self.description:
             raise ValueError("Stream description is not defined.")
+        if len(self.data_descriptor)==0:
+            raise Exception("Data descriptor length cannot be 0.")
         for dd_obj in self.data_descriptor:
             if (dd_obj.attributes is None or len(dd_obj.attributes)==0):
                 raise ValueError("Add brief description for each column in data desciptor. For example, DataDescriptor().set_attribute('description'', 'sleep time''))")
@@ -306,7 +308,7 @@ class Metadata():
             data_descriptor += str(dd.name)+str(dd.type)
         for mm in self.modules:
             modules += str(mm.name) + str(mm.version) + str(mm.authors)
-        hash_string = str(name)+str(data_descriptor)+str(modules)
+        hash_string = str(name)+str(version)+str(data_descriptor)+str(modules)
         hash_string = hash_string.strip().lower().replace(" ", "")
 
         return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
