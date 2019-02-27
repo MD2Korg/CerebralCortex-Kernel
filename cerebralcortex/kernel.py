@@ -48,7 +48,7 @@ from cerebralcortex.modules.mprov.connection.mprov_connection import MProvConnec
 
 class Kernel:
 
-    def __init__(self, configs_dir_path: str = None, auto_offset_reset: str = "largest", enable_spark:bool=True):
+    def __init__(self, configs_dir_path: str = None, auto_offset_reset: str = "largest", enable_spark:bool=True, enable_spark_ui=False):
         """
         CerebralCortex constructor
 
@@ -64,10 +64,12 @@ class Kernel:
             raise ValueError("config_file path cannot be None or blank.")
 
         if enable_spark:
-            self.sparkContext = get_or_create_sc()
-            self.sparkSession = get_or_create_sc(type="sparkSession")
+            self.sparkContext = get_or_create_sc(enable_spark_ui=enable_spark_ui)
+            self.sqlContext = get_or_create_sc(type="sqlContext", enable_spark_ui=enable_spark_ui)
+            self.sparkSession = get_or_create_sc(type="sparkSession", enable_spark_ui=enable_spark_ui)
         else:
             self.sparkContext = None
+            self.sqlContext = None
             self.sparkSession = None
 
         self.config_filepath = configs_dir_path

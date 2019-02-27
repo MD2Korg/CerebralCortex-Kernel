@@ -1,6 +1,7 @@
 from cerebralcortex import Kernel
 import json
 import os
+from typing import Callable
 from datetime import datetime
 import pandas as pd
 import pyarrow as pa
@@ -10,7 +11,7 @@ import pyarrow.parquet as pq
 from cerebralcortex.core.metadata_manager.stream import Metadata
 from cerebralcortex.data_importer.util.directory_scanners import dir_scanner
 from cerebralcortex.data_importer.metadata_parsers.mcerebrum import parse_mcerebrum_metadata
-from cerebralcortex.data_importer.raw_data_parsers.mcerebrum import mcerebrum_data_parser,mcerebrum_data_parser2, assign_column_names_types
+from cerebralcortex.data_importer.raw_data_parsers.mcerebrum import mcerebrum_data_parser, assign_column_names_types
 from cerebralcortex.core.data_manager.sql.data import SqlData
 
 
@@ -18,7 +19,7 @@ metadata_files_path = "/home/ali/IdeaProjects/MD2K_DATA/data/test/"
 data_files_path = "/home/ali/IdeaProjects/MD2K_DATA/data/test/"
 
 
-def import_file(cc_config:dict, user_id:str, file_path:str, compression:str=None, header:int=None, metadata:Metadata=None, metadata_parser:function=None, data_parser:function=None):
+def import_file(cc_config:dict, user_id:str, file_path:str, compression:str=None, header:int=None, metadata:Metadata=None, metadata_parser:Callable=None, data_parser:Callable=None):
     """
     Import a single file and its metadata into cc-storage.
 
@@ -75,6 +76,7 @@ def import_file(cc_config:dict, user_id:str, file_path:str, compression:str=None
             result = data_parser(tmp)
             tmp_list.append(result)
         df = pd.DataFrame(tmp_list)
+
         #print("TOTAL TIME TO APPLY: ", datetime.now()-st)
     except Exception as e:
         # cannot apply parser: str(e)
@@ -172,7 +174,7 @@ def save_data(df:object, cc_config:dict, user_id:str, stream_name:str):
             pq.write_table(table, fw)
 
 def import_dir(cc_config:dict, input_data_dir:str, user_id:str=None, skip_file_extensions:list=[], allowed_filename_pattern:str=None,
-               batch_size:int=None, compression:str=None, header:int=None, metadata:Metadata=None, metadata_parser:function=None, data_parser:function=None,
+               batch_size:int=None, compression:str=None, header:int=None, metadata:Metadata=None, metadata_parser:Callable=None, data_parser:Callable=None,
                gen_report:bool=False):
     """
     Scan data directory, parse files and ingest data in cerebralcortex backend.
@@ -227,7 +229,7 @@ def import_dir(cc_config:dict, input_data_dir:str, user_id:str=None, skip_file_e
 import_dir(
         cc_config="/home/ali/IdeaProjects/CerebralCortex-2.0/conf/",
         input_data_dir="/home/ali/IdeaProjects/MD2K_DATA/data/test/",
-        batch_size=20,
+        #batch_size=20,
         compression='gzip',
         header=None,
         skip_file_extensions=[".json"],

@@ -1,24 +1,43 @@
-from cerebralcortex.data_importer.util.helper_methods import rename_column_name
 from cerebralcortex.core.metadata_manager.stream import Metadata, DataDescriptor, ModuleMetadata
+from cerebralcortex.data_importer.util.helper_methods import rename_column_name
 
-def parse_mcerebrum_metadata(metadata):
+
+def parse_mcerebrum_metadata(metadata: dict) -> dict:
+    """
+    Convert mcerebrum old metadata format to CC-kernel version 3.x metadata format
+
+    Args:
+        metadata (dict): mcerebrum old metadata format
+
+    Returns:
+        dict: {"platform_metadata":platform_metadata, "stream_metadata":metadata}
+    """
     annotation_name = None
     platform_metadata = get_platform_metadata(metadata)
     if platform_metadata:
         annotation_name = platform_metadata.name
     metadata = convert_json_to_metadata_obj(metadata, annotation_name)
-    return {"platform_metadata":platform_metadata, "stream_metadata":metadata}
+    return {"platform_metadata": platform_metadata, "stream_metadata": metadata}
 
 
-def new_data_descript_frmt(data_descriptor):
+def new_data_descript_frmt(data_descriptor: dict) -> dict:
+    """
+    convert old mcerebrum data descriptor format to CC-kernel 3.x format
+
+    Args:
+        data_descriptor (dict): old mcerebrum data descriptor format
+
+    Returns:
+        dict: {"name":"..", "type:"..", "attributes":{...}....}
+    """
     basic_dd = {}
     attr = {}
-    if len(data_descriptor)==0:
+    if len(data_descriptor) == 0:
         return {}
     for key, value in data_descriptor.items():
-        if key=="data_type":
+        if key == "data_type":
             basic_dd["type"] = value
-        elif key=="name":
+        elif key == "name":
             basic_dd[key] = rename_column_name(value)
         else:
             attr[key] = value
@@ -29,60 +48,80 @@ def new_data_descript_frmt(data_descriptor):
     if "data_type" in attr:
         attr.pop("data_type")
     new_data_descriptor = basic_dd
-    if len(new_data_descriptor)>0:
+    if len(new_data_descriptor) > 0:
         new_data_descriptor["attributes"] = attr
     return new_data_descriptor
 
-def get_platform_metadata(metadata):
 
+def get_platform_metadata(metadata: dict) -> Metadata:
+    """
+    Build platform metadata out of old mcerebrum metadata format.
+
+    Args:
+        metadata (dict): old mecerebrum metadata
+
+    Returns:
+        Metadata: Metadata class object
+    """
     stream_name = metadata.get("name", "name_not_available")
     execution_context = metadata.get("execution_context")
-    platform_metadata = execution_context.get("platform_metadata", {}) #dict
-    application_metadata = execution_context["application_metadata"] #dict
+    platform_metadata = execution_context.get("platform_metadata", {})  # dict
+    application_metadata = execution_context["application_metadata"]  # dict
     wrist = ""
-    if platform_metadata.get("name", "")!="":
+    if platform_metadata.get("name", "") != "":
         if "left" in stream_name:
             wrist = "_left_wrist"
         elif "right" in stream_name:
             wrist = "_right_wrist"
         elif "sleep" in stream_name:
             wrist = "_sleep_wrist"
-        stream_name = platform_metadata.get("name", "name_not_available")+wrist+"_platform_annotation"
+        stream_name = platform_metadata.get("name", "name_not_available") + wrist + "_platform_annotation"
         return Metadata().set_name(stream_name).set_version(1). \
             set_description(application_metadata.get("description", "no description available.")).add_dataDescriptor(
-            DataDescriptor().set_name("device_info").set_type("dict").set_attribute("description", "Platform information, e.g., {'name': 'motionsensehrv', 'device_id': 'c1:c0'}. device_id is optional.")
-        ).add_module(ModuleMetadata().set_name(application_metadata.get("name", "name_not_available")).set_version(application_metadata.get("version", 1)).set_attribute("description", application_metadata.get("description", "no description available.")).set_author(
+            DataDescriptor().set_name("device_info").set_type("dict").set_attribute("description",
+                                                                                    "Platform information, e.g., {'name': 'motionsensehrv', 'device_id': 'c1:c0'}. device_id is optional.")
+        ).add_module(ModuleMetadata().set_name(application_metadata.get("name", "name_not_available")).set_version(
+            application_metadata.get("version", 1)).set_attribute("description", application_metadata.get("description",
+                                                                                                          "no description available.")).set_author(
             "Monowar Hossain", "smhssain@memphis.edu"))
     else:
         return None
 
 
-def new_module_metadata(ec_algo_pm):
+def new_module_metadata(ec: dict) -> dict:
+    """
+    convert old mcerebrum data execution_context format to CC-kernel 3.x format
+
+    Args:
+        ec (dict): old mcerebrum execution_context block
+
+    Returns:
+        dict: {"name":".....}
+    """
+
     new_module = {}
     nm_attr = {}
-    ec = ec_algo_pm
-    application_metadata = ec["application_metadata"] #dict
-    algorithm = ec["processing_module"]["algorithm"] # list of dict
+    application_metadata = ec["application_metadata"]  # dict
+    algorithm = ec["processing_module"]["algorithm"]  # list of dict
     processing_module = ec["processing_module"]
 
-
     for key, value in application_metadata.items():
-        if key=="version_name":
+        if key == "version_name":
             new_module["version"] = value
-        elif key=="name":
+        elif key == "name":
             new_module[key] = value
         else:
             nm_attr[key] = value
 
     for key, value in processing_module.items():
-        if key!="algorithm" and key!="input_streams":
+        if key != "algorithm" and key != "input_streams":
             nm_attr[key] = value
 
     for tmp in algorithm:
         for key, value in tmp.items():
-            if key=="authors":
+            if key == "authors":
                 new_module["authors"] = value
-            elif  key=="reference":
+            elif key == "reference":
                 if tmp.get("reference", None) is not None:
                     for key, value in tmp.get("reference", {}).items():
                         nm_attr[key] = value
@@ -95,13 +134,25 @@ def new_module_metadata(ec_algo_pm):
 
     return new_module
 
-def convert_json_to_metadata_obj(metadata, annotation_name):
+
+def convert_json_to_metadata_obj(metadata: dict, annotation_name: str) -> Metadata:
+    """
+    Convert old mcerebrum metadata json files in to new CC-kernel 3.x compatible format
+
+    Args:
+        metadata (dict): mcerebrum old metadata format
+        annotation_name (str): name of annotation stream
+
+    Returns:
+        Metadata object
+
+    """
     new_metadata = {}
     new_dd_list = []
     annotations = []
     new_module = []
 
-    if isinstance(metadata["data_descriptor"],dict):
+    if isinstance(metadata["data_descriptor"], dict):
         new_dd = new_data_descript_frmt(metadata["data_descriptor"])
         if new_dd:
             new_dd_list.append(new_dd)
