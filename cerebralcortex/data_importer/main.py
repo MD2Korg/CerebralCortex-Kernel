@@ -28,6 +28,7 @@ import json
 import os
 from typing import Callable
 from datetime import datetime
+from texttable import Texttable
 import pandas as pd
 import pyarrow as pa
 import types
@@ -164,6 +165,7 @@ def import_file(cc_config:dict, user_id:str, file_path:str, compression:str=None
         try:
             sql_data.save_stream_metadata(metadata["stream_metadata"])
             save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
+            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name","no-name"), file_path=file_path, fault_type="SUCCESS", fault_description="", success=1)
         except Exception as e:
             fault_description = "cannot store data: "+ str(e)
             sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name","no-name"), file_path=file_path, fault_type="STORING_DATA", fault_description=fault_description, success=0)
@@ -173,6 +175,7 @@ def import_file(cc_config:dict, user_id:str, file_path:str, compression:str=None
         try:
             sql_data.save_stream_metadata(metadata)
             save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata.name)
+            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name","no-name"), file_path=file_path, fault_type="SUCCESS", fault_description="", success=1)
         except Exception as e:
             fault_description = "cannot store data: "+ str(e)
             sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name","no-name"), file_path=file_path, fault_type="STORING_DATA", fault_description=fault_description, success=0)
@@ -200,6 +203,19 @@ def save_data(df:object, cc_config:dict, user_id:str, stream_name:str):
         fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
         with fs.open(raw_files_dir, "wb") as fw:
             pq.write_table(table, fw)
+
+def print_stats_table(ingestion_stats):
+    rows = []
+    rows.append(["Type", "Total Files"])
+    print("\n\n"+"="*47)
+    print("*"*13, "IMPORTED DATA STATS", "*"*13)
+    print("="*47,"\n")
+    for ing_stat in ingestion_stats:
+        rows.append([ing_stat.get("fault_type", "No-Fault-Type"),ing_stat.get("total_faults", 0)])
+    table = Texttable()
+    table.set_cols_align(["l", "c"])
+    table.add_rows(rows)
+    print(table.draw())
 
 def import_dir(cc_config:dict, input_data_dir:str, user_id:str=None, skip_file_extensions:list=[], allowed_filename_pattern:str=None,
                batch_size:int=None, compression:str=None, header:int=None, metadata:Metadata=None, metadata_parser:Callable=None, data_parser:Callable=None,
@@ -238,21 +254,25 @@ def import_dir(cc_config:dict, input_data_dir:str, user_id:str=None, skip_file_e
 
     if input_data_dir[:1]!= "/":
         input_data_dir = input_data_dir + "/"
-
+    processed_files_list = CC.SqlData.get_processed_files_list()
     for file_path in all_files:
-        if data_parser.__name__=="mcerebrum_data_parser":
-            user_id = file_path.replace(input_data_dir, "")[:36]
-        if batch_size is None:
-            import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser)
-        else:
-            if len(batch_files)>batch_size or tmp_user_id!=user_id:
-                rdd = CC.sparkContext.parallelize(batch_files)
-                rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser))
-                batch_files = []
-                tmp_user_id = user_id
+        if not file_path in processed_files_list:
+            if data_parser.__name__=="mcerebrum_data_parser":
+                user_id = file_path.replace(input_data_dir, "")[:36]
+            if batch_size is None:
+                import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser)
             else:
-                batch_files.append(file_path)
-                tmp_user_id = user_id
+                if len(batch_files)>batch_size or tmp_user_id!=user_id:
+                    rdd = CC.sparkContext.parallelize(batch_files)
+                    rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser))
+                    batch_files = []
+                    tmp_user_id = user_id
+                else:
+                    batch_files.append(file_path)
+                    tmp_user_id = user_id
+    if gen_report:
+        print_stats_table(CC.SqlData.get_ingestion_stats())
+
 
 import_dir(
         cc_config="/home/ali/IdeaProjects/CerebralCortex-2.0/conf/",
@@ -263,5 +283,6 @@ import_dir(
         skip_file_extensions=[".json"],
         #allowed_filename_pattern="REGEX PATTERN",
         data_parser=mcerebrum_data_parser,
-        metadata_parser=parse_mcerebrum_metadata
+        metadata_parser=parse_mcerebrum_metadata,
+    gen_report=True
     )

@@ -33,7 +33,7 @@ class DataIngestionHandler():
     ###################################################################
 
     def add_ingestion_log(self, user_id: str = "", stream_name: str = "", file_path: str = "", fault_type: str = "",
-                          fault_description: str = "", success: bool = None) -> bool:
+                          fault_description: str = "", success: int = None) -> bool:
         """
         Log errors and success of each record during data import process.
 
@@ -43,7 +43,7 @@ class DataIngestionHandler():
             file_path (str): filename with its path
             fault_type (str): error type
             fault_description (str): error details
-            success (bool): True if data was successfully ingested, False otherwise
+            success (int): 1 if data was successfully ingested, 0 otherwise
 
         Returns:
             bool
@@ -97,7 +97,7 @@ class DataIngestionHandler():
             dict: {"fault_type": str, "total_faults": int, "success":int}
         """
         result = []
-        qry = "select fault_type, count(fault_type), success as total_faults from " + self.ingestionLogsTable + "group by fault_type"
+        qry = "select fault_type, count(fault_type) as total_faults, success from " + self.ingestionLogsTable + " group by fault_type"
 
         rows = self.execute(qry)
 
@@ -105,5 +105,5 @@ class DataIngestionHandler():
             return result
         else:
             for row in rows:
-                result.append({"fault_type": row["fault_type"], "total_faults": row["total_faults"], "success":row["success"]})
+                result.append({"fault_type": row["fault_type"], "total_faults": row["total_faults"]})
             return result
