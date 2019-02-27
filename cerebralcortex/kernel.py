@@ -29,6 +29,7 @@ from datetime import datetime
 from typing import List
 
 from mprov.metadata.stream_metadata import BasicTuple
+from pyspark.sql import SparkSession
 
 from cerebralcortex.core.util.spark_helper import get_or_create_sc
 from cerebralcortex.core.config_manager.config import Configuration

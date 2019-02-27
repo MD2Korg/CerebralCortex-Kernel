@@ -59,7 +59,7 @@ def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal", enable_s
     elif type=="sparkContext":
         return sc
     elif type=="sparkSession":
-        return ss
+        return sparkSession
     elif type=="sqlContext":
         return sqlContext
     else:
