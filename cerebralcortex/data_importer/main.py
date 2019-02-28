@@ -1,6 +1,7 @@
 from cerebralcortex import Kernel
 import json
 import os
+from datetime import datetime
 import pandas as pd
 import pyarrow as pa
 import types
@@ -9,7 +10,7 @@ import pyarrow.parquet as pq
 from cerebralcortex.core.metadata_manager.stream import Metadata
 from cerebralcortex.data_importer.util.directory_scanners import dir_scanner
 from cerebralcortex.data_importer.metadata_parsers.mcerebrum import parse_mcerebrum_metadata
-from cerebralcortex.data_importer.raw_data_parsers.mcerebrum import mcerebrum_data_parser, assign_column_names_types
+from cerebralcortex.data_importer.raw_data_parsers.mcerebrum import mcerebrum_data_parser,mcerebrum_data_parser2, assign_column_names_types
 from cerebralcortex.core.data_manager.sql.data import SqlData
 
 
@@ -17,7 +18,7 @@ metadata_files_path = "/home/ali/IdeaProjects/MD2K_DATA/data/test/"
 data_files_path = "/home/ali/IdeaProjects/MD2K_DATA/data/test/"
 
 
-def import_file(user_id, file_path, compression=None, header=None, metadata=None, metadata_parser=None, data_parser=None, cc_config=None):
+def import_file(cc_config, user_id, file_path, compression=None, header=None, metadata=None, metadata_parser=None, data_parser=None):
     move_forward = True
     if user_id is None:
         raise ValueError("user_id cannot be None.")
@@ -36,7 +37,9 @@ def import_file(user_id, file_path, compression=None, header=None, metadata=None
 
     try:
         if compression is not None:
+            #st = datetime.now()
             df = pd.read_csv(file_path, compression=compression, delimiter = "\n", header=header, quotechar='"')
+            #print("TOTAL TIME TO READ: ", datetime.now()-st)
         else:
             df = pd.read_csv(file_path, delimiter = "\n", header=header, quotechar='"')
     except Exception as e:
@@ -45,7 +48,14 @@ def import_file(user_id, file_path, compression=None, header=None, metadata=None
         return False
 
     try:
-        df = df.apply(data_parser, axis=1)
+        df_list = df.values.tolist()
+        tmp_list = []
+        #st = datetime.now()
+        for tmp in df_list:
+            result = data_parser(tmp)
+            tmp_list.append(result)
+        df = pd.DataFrame(tmp_list)
+        #print("TOTAL TIME TO APPLY: ", datetime.now()-st)
     except Exception as e:
         # cannot apply parser: str(e)
         print(str(e))
@@ -113,7 +123,7 @@ def import_file(user_id, file_path, compression=None, header=None, metadata=None
             print("dd")
 
 
-        print("done")
+        print("Processed - ", metadata.get("stream_metadata").name)
     else:
         sql_data.save_stream_metadata(metadata)
         save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata.name)
@@ -132,10 +142,32 @@ def save_data(df, cc_config, user_id, stream_name):
         with fs.open(raw_files_dir, "wb") as fw:
             pq.write_table(table, fw)
 
+def import_dir(cc_config, input_data_dir, user_id=None, skip_file_extensions=[], allowed_filename_pattern=None, batch_size=None, compression=None, header=None, metadata=None, metadata_parser=None, data_parser=None, gen_report=False):
+    """
+    Scan data directory, parse files and ingest data in cerebralcortex backend.
 
-def import_dir(cc_config, input_data_dir, user_id=None, skip_file_extensions=[], allowed_filename_pattern=None, batch_size=None, compression=None, header=None, json_parser=None, data_parser=None):
+    Args:
+        cc_config (str): cerebralcortex config directory
+        input_data_dir (str): data directory path
+        user_id (str): user id. Currently import_dir only supports parsing directory associated with a user
+        skip_file_extensions (list[str]): (optional) provide file extensions (e.g., .doc) that must be ignored
+        allowed_filename_pattern (list[str]): (optional) regex of files that must be processed.
+        batch_size (int): (optional) using this parameter will turn on spark parallelism. batch size is number of files each worker will process
+        compression (str): pass compression name if csv files are compressed
+        header (str): (optional) row number that must be used to name columns. None means file does not contain any header
+        metadata (Metadata): (optional) Same metadata will be used for all the data files if this parameter is passed. If metadata is passed then metadata_parser cannot be passed.
+        metadata_parser (python function): a parser that can parse json files and return a valid MetaData object. If metadata_parser is passed then metadata parameter cannot be passed.
+        data_parser (python function): a parser than can parse each line of data file. import_dir read data files as a list of lines of a file. data_parser will be applied on all the rows.
+        gen_report (bool): setting this to True will produce a console output with total failures occurred during ingestion process.
+    Notes:
+        Each csv file should contain a metadata file. Data file and metadata file should have same name. For example, data.csv and data.json.
+        Metadata files should be json files.
+    Todo:
+        Provie sample metadata file URL
+    """
     all_files = dir_scanner(input_data_dir, skip_file_extensions=skip_file_extensions, allowed_filename_pattern=allowed_filename_pattern)
     batch_files = []
+    tmp_user_id = None
     enable_spark = True
     if batch_size is None:
         enable_spark = False
@@ -147,23 +179,28 @@ def import_dir(cc_config, input_data_dir, user_id=None, skip_file_extensions=[],
         input_data_dir = input_data_dir + "/"
 
     for file_path in all_files:
-        if user_id is None and data_parser.__name__=="mcerebrum_data_parser":
+        if data_parser.__name__=="mcerebrum_data_parser":
             user_id = file_path.replace(input_data_dir, "")[:36]
         if batch_size is None:
-            import_file(user_id=user_id, file_path=file_path, compression=compression, header=header, metadata_parser=json_parser, data_parser=data_parser, cc_config=cc_config)
+            import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, header=header, metadata_parser=metadata_parser, data_parser=data_parser)
         else:
-            if len(batch_files)>batch_size:
-                tmp = CC.sparkContext.parallelize(batch_files)
-                tmp.foreach(lambda file_path: import_file(user_id=user_id, file_path=file_path, compression=compression, header=header, metadata_parser=json_parser, data_parser=data_parser, cc_config=cc_config))
+            if len(batch_files)>batch_size or tmp_user_id!=user_id:
+                rdd = CC.sparkContext.parallelize(batch_files)
+                rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, header=header, metadata_parser=metadata_parser, data_parser=data_parser))
+                batch_files = []
+                tmp_user_id = user_id
             else:
                 batch_files.append(file_path)
+                tmp_user_id = user_id
 
-import_dir( cc_config="/home/ali/IdeaProjects/CerebralCortex-2.0/conf/",
-            input_data_dir="/home/ali/IdeaProjects/MD2K_DATA/data/test/",
-           #batch_size=2,
-           compression='gzip',
-           header=None,
-           skip_file_extensions=[".json"],
-           #allowed_filename_pattern="REGEX PATTERN",
-           data_parser=mcerebrum_data_parser,
-           json_parser=parse_mcerebrum_metadata)
+import_dir(
+        cc_config="/home/ali/IdeaProjects/CerebralCortex-2.0/conf/",
+        input_data_dir="/home/ali/IdeaProjects/MD2K_DATA/data/test/",
+        batch_size=20,
+        compression='gzip',
+        header=None,
+        skip_file_extensions=[".json"],
+        #allowed_filename_pattern="REGEX PATTERN",
+        data_parser=mcerebrum_data_parser,
+        metadata_parser=parse_mcerebrum_metadata
+    )

@@ -1,5 +1,5 @@
 from cerebralcortex.data_importer.util.helper_methods import rename_column_name
-
+from cerebralcortex.core.metadata_manager.stream import Metadata, DataDescriptor, ModuleMetadata
 
 def parse_mcerebrum_metadata(metadata):
     annotation_name = None
@@ -121,7 +121,7 @@ def convert_json_to_metadata_obj(metadata, annotation_name):
             input_streams.append(input_stream["name"])
 
     new_metadata["name"] = metadata["name"]
-    new_metadata["description"] = metadata.get("description", "")
+    new_metadata["description"] = metadata.get("description", "no-description")
     new_metadata["annotations"] = annotations
     new_metadata["input_streams"] = input_streams
     new_metadata["data_descriptor"] = new_dd_list
