@@ -18,7 +18,27 @@ metadata_files_path = "/home/ali/IdeaProjects/MD2K_DATA/data/test/"
 data_files_path = "/home/ali/IdeaProjects/MD2K_DATA/data/test/"
 
 
-def import_file(cc_config, user_id, file_path, compression=None, header=None, metadata=None, metadata_parser=None, data_parser=None):
+def import_file(cc_config:dict, user_id:str, file_path:str, compression:str=None, header:int=None, metadata:Metadata=None, metadata_parser:function=None, data_parser:function=None):
+    """
+    Import a single file and its metadata into cc-storage.
+
+    Args:
+        cc_config (str): cerebralcortex config directory
+        user_id (str): user id. Currently import_dir only supports parsing directory associated with a user
+        file_path (str): file path.
+        compression (str): pass compression name if csv files are compressed
+        header (str): (optional) row number that must be used to name columns. None means file does not contain any header
+        metadata (Metadata): (optional) Same metadata will be used for all the data files if this parameter is passed. If metadata is passed then metadata_parser cannot be passed.
+        metadata_parser (python function): a parser that can parse json files and return a valid MetaData object. If metadata_parser is passed then metadata parameter cannot be passed.
+        data_parser (python function): a parser than can parse each line of data file. import_dir read data files as a list of lines of a file. data_parser will be applied on all the rows.
+
+        Notes:
+        Each csv file should contain a metadata file. Data file and metadata file should have same name. For example, data.csv and data.json.
+        Metadata files should be json files.
+
+    Returns:
+
+    """
     move_forward = True
     if user_id is None:
         raise ValueError("user_id cannot be None.")
@@ -129,7 +149,16 @@ def import_file(cc_config, user_id, file_path, compression=None, header=None, me
         save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata.name)
 
 
-def save_data(df, cc_config, user_id, stream_name):
+def save_data(df:object, cc_config:dict, user_id:str, stream_name:str):
+    """
+    save dataframe to cc storage system
+
+    Args:
+        df (pandas): dataframe
+        cc_config (str): cerebralcortex config directory
+        user_id (str): user id
+        stream_name (str): name of the stream
+    """
     table = pa.Table.from_pandas(df)
 
     if cc_config["nosql_storage"]=="filesystem":
@@ -142,7 +171,9 @@ def save_data(df, cc_config, user_id, stream_name):
         with fs.open(raw_files_dir, "wb") as fw:
             pq.write_table(table, fw)
 
-def import_dir(cc_config, input_data_dir, user_id=None, skip_file_extensions=[], allowed_filename_pattern=None, batch_size=None, compression=None, header=None, metadata=None, metadata_parser=None, data_parser=None, gen_report=False):
+def import_dir(cc_config:dict, input_data_dir:str, user_id:str=None, skip_file_extensions:list=[], allowed_filename_pattern:str=None,
+               batch_size:int=None, compression:str=None, header:int=None, metadata:Metadata=None, metadata_parser:function=None, data_parser:function=None,
+               gen_report:bool=False):
     """
     Scan data directory, parse files and ingest data in cerebralcortex backend.
 
@@ -163,7 +194,7 @@ def import_dir(cc_config, input_data_dir, user_id=None, skip_file_extensions=[],
         Each csv file should contain a metadata file. Data file and metadata file should have same name. For example, data.csv and data.json.
         Metadata files should be json files.
     Todo:
-        Provie sample metadata file URL
+        Provide sample metadata file URL
     """
     all_files = dir_scanner(input_data_dir, skip_file_extensions=skip_file_extensions, allowed_filename_pattern=allowed_filename_pattern)
     batch_files = []
@@ -182,11 +213,11 @@ def import_dir(cc_config, input_data_dir, user_id=None, skip_file_extensions=[],
         if data_parser.__name__=="mcerebrum_data_parser":
             user_id = file_path.replace(input_data_dir, "")[:36]
         if batch_size is None:
-            import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, header=header, metadata_parser=metadata_parser, data_parser=data_parser)
+            import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser)
         else:
             if len(batch_files)>batch_size or tmp_user_id!=user_id:
                 rdd = CC.sparkContext.parallelize(batch_files)
-                rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, header=header, metadata_parser=metadata_parser, data_parser=data_parser))
+                rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser))
                 batch_files = []
                 tmp_user_id = user_id
             else:
