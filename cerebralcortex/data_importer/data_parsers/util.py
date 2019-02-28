@@ -23,38 +23,46 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import pathlib
-import re
+import pandas as pd
+
+from cerebralcortex.data_importer.util.helper_methods import rename_column_name
 
 
-def dir_scanner(dir_path: str, data_file_extension: list = [], allowed_filename_pattern: str = None,
-                get_dirs: bool = False):
+def assign_column_names_types(df: pd, metadata: dict = None) -> pd:
     """
-    Generator method to iterate over directories and return file/dir
+    Change column names to the names defined in metadata->data_descriptor block
 
     Args:
-        dir_path (str): path of main directory that needs to be iterated over
-        data_file_extension (list): file extensions that must be excluded during directory scanning
-        allowed_filename_pattern (str): regex expression to get file names matched to the regex
-        get_dirs (bool): set it true to get directory name as well
+        df (pandas): pandas dataframe
+        metadata (dict): metadata of the data
 
-    Yields:
-        filename with its full path
+    Returns:
+        pandas dataframe
     """
-    dir_path = pathlib.Path(dir_path)
-    if get_dirs:
-        yield dir_path
-    for sub in dir_path.iterdir():
-        if sub.is_dir():
-            yield from dir_scanner(sub, data_file_extension)
-        else:
-            if len(data_file_extension) > 0 and sub.suffix in data_file_extension:
-                if allowed_filename_pattern is not None:
-                    try:
-                        re.compile(allowed_filename_pattern)
-                        if re.search(allowed_filename_pattern, sub._str):
-                            yield sub._str
-                    except re.error:
-                        raise re.error
-                else:
-                    yield sub._str
+    metadata_columns = []
+    new_column_names = {0: "timestamp", 1: "localtime"}
+
+    if metadata is not None:
+        data_desciptor = metadata.get("data_descriptor", [])
+        if isinstance(data_desciptor, dict):
+            data_desciptor = [data_desciptor]
+
+        for dd in data_desciptor:
+            name = rename_column_name(dd.get("name", "", ))
+            metadata_columns.append({"name": name, "type": dd.get("data_type", "")})
+
+    if len(metadata_columns) > 0:
+        col_no = 2  # first two column numbers are timestamp and offset
+        for mc in metadata_columns:
+            new_column_names[col_no] = mc["name"]
+            col_no += 1
+    else:
+        for column in df:
+            if column != 0 and column != 1:
+                new_column_names[column] = "value_" + str(column - 1)
+
+    df.rename(columns=new_column_names, inplace=True)
+    for column in df:
+        if column not in ['localtime', 'timestamp']:
+            df[column] = pd.to_numeric(df[column], errors='ignore')
+    return df

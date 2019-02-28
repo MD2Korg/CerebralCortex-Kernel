@@ -23,38 +23,37 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import pathlib
-import re
+import json
+from datetime import datetime
 
-
-def dir_scanner(dir_path: str, data_file_extension: list = [], allowed_filename_pattern: str = None,
-                get_dirs: bool = False):
+def csv_data_parser(line: str) -> list:
     """
-    Generator method to iterate over directories and return file/dir
+    parse each row of data file into list of values (timestamp, localtime, val1, val2....)
 
     Args:
-        dir_path (str): path of main directory that needs to be iterated over
-        data_file_extension (list): file extensions that must be excluded during directory scanning
-        allowed_filename_pattern (str): regex expression to get file names matched to the regex
-        get_dirs (bool): set it true to get directory name as well
+        line (str):
 
-    Yields:
-        filename with its full path
+    Returns:
+        list: (timestamp, localtime, val1, val2....)
     """
-    dir_path = pathlib.Path(dir_path)
-    if get_dirs:
-        yield dir_path
-    for sub in dir_path.iterdir():
-        if sub.is_dir():
-            yield from dir_scanner(sub, data_file_extension)
-        else:
-            if len(data_file_extension) > 0 and sub.suffix in data_file_extension:
-                if allowed_filename_pattern is not None:
-                    try:
-                        re.compile(allowed_filename_pattern)
-                        if re.search(allowed_filename_pattern, sub._str):
-                            yield sub._str
-                    except re.error:
-                        raise re.error
-                else:
-                    yield sub._str
+    data = []
+    ts, sample = line[0].split(',', 1)
+    try:
+        ts = int(ts)
+    except:
+        raise Exception("cannot convert timestamp/offsets into int")
+    try:
+        vals = json.loads(sample)
+    except:
+        vals = sample.split(",")
+
+    timestamp = datetime.utcfromtimestamp(ts / 1000)
+    localtime = datetime.utcfromtimestamp((ts) / 1000)
+    data.append(timestamp)
+    data.append(localtime)
+    if isinstance(vals, list):
+        data.extend(vals)
+    else:
+        data.append(vals)
+
+    return data
