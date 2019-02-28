@@ -231,9 +231,9 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
     table = pa.Table.from_pandas(df, preserve_index=False)
 
     if cc_config["nosql_storage"] == "filesystem":
-        # data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "stream="+str(stream_name), "version=1", "user="+str(user_id))
-        data_file_url = os.path.join("/home/ali/IdeaProjects/MD2K_DATA/tmp/", "stream=" + str(stream_name), "version=1",
-                                     "user=" + str(user_id))
+        data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "stream="+str(stream_name), "version=1", "user="+str(user_id))
+        # data_file_url = os.path.join("/home/ali/IdeaProjects/MD2K_DATA/tmp/", "stream=" + str(stream_name), "version=1",
+        #                              "user=" + str(user_id))
         pq.write_to_dataset(table, root_path=data_file_url)
     elif cc_config["nosql_storage"] == "hdfs":
         raw_files_dir = cc_config['hdfs']['raw_files_dir']
