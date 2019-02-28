@@ -296,7 +296,6 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
                             allowed_filename_pattern=allowed_filename_pattern)
     batch_files = []
     tmp_user_id = None
-    cntr = 0
     enable_spark = True
     if batch_size is None:
         enable_spark = False
@@ -307,8 +306,7 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
     if input_data_dir[:1] != "/":
         input_data_dir = input_data_dir + "/"
     processed_files_list = CC.SqlData.get_processed_files_list()
-    # total_files = sum(1 for _ in all_files)
-    tt = []
+
     for file_path in all_files:
 
         if not file_path in processed_files_list:
@@ -318,7 +316,6 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
                 import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression,
                             header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser)
             else:
-                tt.append(file_path)
                 if len(batch_files) > batch_size or tmp_user_id != user_id:
 
                     rdd = CC.sparkContext.parallelize(batch_files)
@@ -332,7 +329,6 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
                     batch_files.append(file_path)
                     tmp_user_id = user_id
     if len(batch_files) > 0:
-        print(len(tt), len(batch_files), "=" * 200)
         rdd = CC.sparkContext.parallelize(batch_files)
         rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path,
                                                   compression=compression, header=header, metadata=metadata,
