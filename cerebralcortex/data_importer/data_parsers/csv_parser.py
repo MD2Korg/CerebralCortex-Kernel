@@ -49,6 +49,7 @@ def csv_data_parser(line: str) -> list:
 
     timestamp = datetime.utcfromtimestamp(ts / 1000)
     localtime = datetime.utcfromtimestamp((ts) / 1000)
+
     data.append(timestamp)
     data.append(localtime)
     if isinstance(vals, list):

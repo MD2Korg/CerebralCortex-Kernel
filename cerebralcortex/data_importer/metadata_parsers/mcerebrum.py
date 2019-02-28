@@ -27,7 +27,7 @@ from cerebralcortex.core.metadata_manager.stream import Metadata, DataDescriptor
 from cerebralcortex.data_importer.util.helper_methods import rename_column_name
 
 
-def parse_mcerebrum_metadata(metadata: dict) -> dict:
+def mcerebrum_metadata_parser(metadata: dict) -> dict:
     """
     Convert mcerebrum old metadata format to CC-kernel version 3.x metadata format
 
