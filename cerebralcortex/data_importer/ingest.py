@@ -228,7 +228,7 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
         user_id (str): user id
         stream_name (str): name of the stream
     """
-    table = pa.Table.from_pandas(df)
+    table = pa.Table.from_pandas(df, preserve_index=False)
 
     if cc_config["nosql_storage"] == "filesystem":
         # data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "stream="+str(stream_name), "version=1", "user="+str(user_id))
