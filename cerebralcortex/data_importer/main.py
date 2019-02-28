@@ -169,8 +169,6 @@ def import_file(cc_config:dict, user_id:str, file_path:str, compression:str=None
         except Exception as e:
             fault_description = "cannot store data: "+ str(e)
             sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name","no-name"), file_path=file_path, fault_type="STORING_DATA", fault_description=fault_description, success=0)
-
-        print("Processed - ", metadata.get("stream_metadata").name)
     else:
         try:
             sql_data.save_stream_metadata(metadata)
@@ -217,7 +215,7 @@ def print_stats_table(ingestion_stats):
     table.add_rows(rows)
     print(table.draw())
 
-def import_dir(cc_config:dict, input_data_dir:str, user_id:str=None, skip_file_extensions:list=[], allowed_filename_pattern:str=None,
+def import_dir(cc_config:dict, input_data_dir:str, user_id:str=None, data_file_extension:list=[], allowed_filename_pattern:str=None,
                batch_size:int=None, compression:str=None, header:int=None, metadata:Metadata=None, metadata_parser:Callable=None, data_parser:Callable=None,
                gen_report:bool=False):
     """
@@ -227,7 +225,7 @@ def import_dir(cc_config:dict, input_data_dir:str, user_id:str=None, skip_file_e
         cc_config (str): cerebralcortex config directory
         input_data_dir (str): data directory path
         user_id (str): user id. Currently import_dir only supports parsing directory associated with a user
-        skip_file_extensions (list[str]): (optional) provide file extensions (e.g., .doc) that must be ignored
+        data_file_extension (list[str]): (optional) provide file extensions (e.g., .doc) that must be ignored
         allowed_filename_pattern (list[str]): (optional) regex of files that must be processed.
         batch_size (int): (optional) using this parameter will turn on spark parallelism. batch size is number of files each worker will process
         compression (str): pass compression name if csv files are compressed
@@ -242,9 +240,10 @@ def import_dir(cc_config:dict, input_data_dir:str, user_id:str=None, skip_file_e
     Todo:
         Provide sample metadata file URL
     """
-    all_files = dir_scanner(input_data_dir, skip_file_extensions=skip_file_extensions, allowed_filename_pattern=allowed_filename_pattern)
+    all_files = dir_scanner(input_data_dir, data_file_extension=data_file_extension, allowed_filename_pattern=allowed_filename_pattern)
     batch_files = []
     tmp_user_id = None
+    cntr = 0
     enable_spark = True
     if batch_size is None:
         enable_spark = False
@@ -255,21 +254,35 @@ def import_dir(cc_config:dict, input_data_dir:str, user_id:str=None, skip_file_e
     if input_data_dir[:1]!= "/":
         input_data_dir = input_data_dir + "/"
     processed_files_list = CC.SqlData.get_processed_files_list()
+    #total_files = sum(1 for _ in all_files)
+    tt = []
     for file_path in all_files:
+        cntr+=1
+
         if not file_path in processed_files_list:
             if data_parser.__name__=="mcerebrum_data_parser":
                 user_id = file_path.replace(input_data_dir, "")[:36]
             if batch_size is None:
                 import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser)
             else:
+                tt.append(file_path)
                 if len(batch_files)>batch_size or tmp_user_id!=user_id:
+
                     rdd = CC.sparkContext.parallelize(batch_files)
                     rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser))
-                    batch_files = []
+                    batch_files.clear()
+                    batch_files.append(file_path)
                     tmp_user_id = user_id
                 else:
                     batch_files.append(file_path)
                     tmp_user_id = user_id
+    if len(batch_files)>0:
+        print(len(tt),len(batch_files), "="*200)
+        rdd = CC.sparkContext.parallelize(batch_files)
+        rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser))
+        batch_files = []
+        tmp_user_id = user_id
+
     if gen_report:
         print_stats_table(CC.SqlData.get_ingestion_stats())
 
@@ -277,10 +290,10 @@ def import_dir(cc_config:dict, input_data_dir:str, user_id:str=None, skip_file_e
 import_dir(
         cc_config="/home/ali/IdeaProjects/CerebralCortex-2.0/conf/",
         input_data_dir="/home/ali/IdeaProjects/MD2K_DATA/data/test/",
-        #batch_size=20,
+        batch_size=20,
         compression='gzip',
         header=None,
-        skip_file_extensions=[".json"],
+        data_file_extension=[".gz"],
         #allowed_filename_pattern="REGEX PATTERN",
         data_parser=mcerebrum_data_parser,
         metadata_parser=parse_mcerebrum_metadata,

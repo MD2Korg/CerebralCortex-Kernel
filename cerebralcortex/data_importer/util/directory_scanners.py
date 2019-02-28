@@ -26,13 +26,13 @@
 import pathlib
 import re
 
-def dir_scanner(dir_path:str, skip_file_extensions:list=[], allowed_filename_pattern:str=None, get_dirs:bool=False):
+def dir_scanner(dir_path:str, data_file_extension:list=[], allowed_filename_pattern:str=None, get_dirs:bool=False):
     """
     Generator method to iterate over directories and return file/dir
 
     Args:
         dir_path (str): path of main directory that needs to be iterated over
-        skip_file_extensions (list): file extensions that must be excluded during directory scanning
+        data_file_extension (list): file extensions that must be excluded during directory scanning
         allowed_filename_pattern (str): regex expression to get file names matched to the regex
         get_dirs (bool): set it true to get directory name as well
 
@@ -44,9 +44,9 @@ def dir_scanner(dir_path:str, skip_file_extensions:list=[], allowed_filename_pat
         yield dir_path
     for sub in dir_path.iterdir():
         if sub.is_dir():
-            yield from dir_scanner(sub, skip_file_extensions)
+            yield from dir_scanner(sub, data_file_extension)
         else:
-            if sub.suffix not in skip_file_extensions:
+            if len(data_file_extension)>0 and sub.suffix in data_file_extension:
                 if allowed_filename_pattern is not None:
                     try:
                         re.compile(allowed_filename_pattern)
@@ -56,4 +56,5 @@ def dir_scanner(dir_path:str, skip_file_extensions:list=[], allowed_filename_pat
                         raise re.error
                 else:
                     yield sub._str
+
 
