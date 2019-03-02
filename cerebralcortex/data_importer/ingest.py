@@ -160,15 +160,15 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
                                        fault_description=fault_description, success=0)
             return False
 
-    df_total_columns = len(df.columns) - 2
-    dd_total_columns = len(metadata_dict.get("data_descriptor", []))
-    if dd_total_columns != df_total_columns:
-        fault_description = "number data_descriptor columns (" + str(
-            dd_total_columns) + ") and dataframe columns (" + str(df_total_columns) + ") do not match"
-        sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                   file_path=file_path, fault_type="DATA_METADATA_MISMATCH",
-                                   fault_description=fault_description, success=0)
-        return False
+    # df_total_columns = len(df.columns) - 2
+    # dd_total_columns = len(metadata_dict.get("data_descriptor", []))
+    # if dd_total_columns != df_total_columns:
+    #     fault_description = "number data_descriptor columns (" + str(
+    #         dd_total_columns) + ") and dataframe columns (" + str(df_total_columns) + ") do not match"
+    #     sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+    #                                file_path=file_path, fault_type="DATA_METADATA_MISMATCH",
+    #                                fault_description=fault_description, success=0)
+    #     return False
 
     df = assign_column_names_types(df, metadata_dict)
 
@@ -204,8 +204,9 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
             save_data(df=platform_df, cc_config=cc_config, user_id=user_id,
                       stream_name=metadata["platform_metadata"].name)
         try:
-            sql_data.save_stream_metadata(metadata["stream_metadata"])
+            df = df.dropna()
             save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
+            sql_data.save_stream_metadata(metadata["stream_metadata"])
             sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
                                        file_path=file_path, fault_type="SUCCESS", fault_description="", success=1)
         except Exception as e:
