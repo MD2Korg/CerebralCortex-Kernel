@@ -110,19 +110,18 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
                                    fault_type="CANNOT_PARSE_DATA_FILE", fault_description=fault_description, success=0)
         return False
 
-    df_total_columns = len(df.columns) - 2
 
     if metadata is not None:
         if isinstance(metadata, str):
             metadata_dict = json.loads(metadata)
-            dd_total_columns = len(metadata_dict.get("data_descriptor", []))
-            if dd_total_columns != df_total_columns:
-                fault_description = "number data_descriptor columns (" + str(
-                    dd_total_columns) + ") and dataframe columns (" + str(df_total_columns) + ") do not match"
-                sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                           file_path=file_path, fault_type="DATA_METADATA_MISMATCH",
-                                           fault_description=fault_description, success=0)
-                return False
+
+            # if dd_total_columns != df_total_columns:
+            #     fault_description = "number data_descriptor columns (" + str(
+            #         dd_total_columns) + ") and dataframe columns (" + str(df_total_columns) + ") do not match"
+            #     sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+            #                                file_path=file_path, fault_type="DATA_METADATA_MISMATCH",
+            #                                fault_description=fault_description, success=0)
+            #     return False
             df = assign_column_names_types(df, metadata_dict)
         if isinstance(metadata, dict):
             metadata_dict = metadata
@@ -160,6 +159,16 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
                                        file_path=file_path, fault_type="CANNOT_PARSE_METADATA_FILE",
                                        fault_description=fault_description, success=0)
             return False
+
+    df_total_columns = len(df.columns) - 2
+    dd_total_columns = len(metadata_dict.get("data_descriptor", []))
+    if dd_total_columns != df_total_columns:
+        fault_description = "number data_descriptor columns (" + str(
+            dd_total_columns) + ") and dataframe columns (" + str(df_total_columns) + ") do not match"
+        sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                   file_path=file_path, fault_type="DATA_METADATA_MISMATCH",
+                                   fault_description=fault_description, success=0)
+        return False
 
     df = assign_column_names_types(df, metadata_dict)
 

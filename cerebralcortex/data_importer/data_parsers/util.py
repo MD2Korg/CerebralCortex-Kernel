@@ -61,8 +61,10 @@ def assign_column_names_types(df: pd, metadata: dict = None) -> pd:
             if column != 0 and column != 1:
                 new_column_names[column] = "value_" + str(column - 1)
 
-    df.rename(columns=new_column_names, inplace=True)
+
     for column in df:
-        if column not in ['localtime', 'timestamp']:
+        if column not in [0, 1]:
             df[column] = pd.to_numeric(df[column], errors='ignore')
+
+    df.rename(columns=new_column_names, inplace=True)
     return df
