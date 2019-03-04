@@ -31,6 +31,7 @@ class TestObjectStorage():
     def test_01_bucket(self):
         """
         Perform all bucket related tests
+
         """
         msg = self.CC.create_bucket(self.bucket_name)
         if msg == True:
@@ -54,6 +55,7 @@ class TestObjectStorage():
     def test_03_bucket_objects(self):
         """
         Perform all object related tests
+
         """
         self.CC.upload_object(self.bucket_name, "some_obj.zip", self.obj_file_path)
         self.CC.upload_object(self.bucket_name, "some_obj.json", self.obj_metadata_file_path)

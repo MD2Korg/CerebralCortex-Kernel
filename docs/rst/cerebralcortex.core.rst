@@ -12,7 +12,6 @@ Subpackages
     cerebralcortex.core.log_manager
     cerebralcortex.core.messaging_manager
     cerebralcortex.core.metadata_manager
-    cerebralcortex.core.test_suite
     cerebralcortex.core.util
 
 Module contents

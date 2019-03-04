@@ -25,7 +25,8 @@
 
 
 from pyspark.sql.functions import lit
-from cerebralcortex.core.datatypes.datastream import DataStream
+
+from cerebralcortex.core.datatypes import DataStream
 
 
 class FileSystemStorage:
@@ -33,6 +34,7 @@ class FileSystemStorage:
     def __init__(self, obj):
         """
         Constructor
+
         Args:
             obj (object): Object of Data class
         """
@@ -66,6 +68,7 @@ class FileSystemStorage:
     def write_file(self, stream_name:str, data:DataStream.data) -> bool:
         """
         Write pyspark DataFrame to a file storage system
+
         Args:
             stream_name (str): name of the stream
             data (object): pyspark DataFrame object
@@ -85,6 +88,7 @@ class FileSystemStorage:
     def _get_storage_path(self, stream_name:str)->str:
         """
         Build path of storage location
+
         Args:
             stream_name (str): name of a stream
         Returns:

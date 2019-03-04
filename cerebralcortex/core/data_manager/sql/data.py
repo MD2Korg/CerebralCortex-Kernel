@@ -23,17 +23,20 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from typing import List
+
 import mysql.connector
 import mysql.connector.pooling
-from typing import List
+
+from cerebralcortex.core.data_manager.sql.cache_handler import CacheHandler
 from cerebralcortex.core.data_manager.sql.kafka_offsets_handler import KafkaOffsetsHandler
 from cerebralcortex.core.data_manager.sql.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.sql.users_handler import UserHandler
 from cerebralcortex.core.log_manager.log_handler import LogTypes
-from cerebralcortex.core.data_manager.sql.cache_handler import CacheHandler
+from cerebralcortex.core.data_manager.sql.data_ingestion_handler import DataIngestionHandler
 
 
-class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
+class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, DataIngestionHandler):
     def __init__(self, CC):
         """
         Constructor
@@ -43,9 +46,11 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
         Raises:
             Exception: if none MySQL SQL storage is set in cerebralcortex configurations
         """
-        self.config = CC.config
+        if isinstance(CC, dict):
+            self.config = CC
+        else:
+            self.config = CC.config
 
-        self.logging = CC.logging
         self.logtypes = LogTypes()
         self.sql_store = self.config["relational_storage"]
 
@@ -57,11 +62,12 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
         self.database = self.config['mysql']['database']
         self.dbUser = self.config['mysql']['db_user']
         self.dbPassword = self.config['mysql']['db_pass']
-        self.datastreamTable = self.config['mysql']['datastream_table']
-        self.kafkaOffsetsTable = self.config['mysql']['kafka_offsets_table']
-        self.userTable = self.config['mysql']['user_table']
-        self.dataReplayTable = self.config['mysql']['data_replay_table']
-        self.poolName = self.config['mysql']['connection_pool_name']
+        self.datastreamTable = "stream"
+        self.kafkaOffsetsTable = "kafka_offsets"
+        self.ingestionLogsTable = "ingestion_logs"
+        self.userTable = "user"
+        self.dataReplayTable = "data_replay"
+        self.poolName = "CC_Pool"
         self.poolSize = self.config['mysql']['connection_pool_size']
         self.pool = self.create_pool(pool_name=self.poolName, pool_size=self.poolSize)
 
@@ -112,10 +118,6 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
         """
         Execute a sql, it could be with args and with out args. The usage is
         similar with execute() function in module pymysql.
-        :param sql:
-        :param args:
-        :param commit:
-        :return: if commit, return None, else, return result
 
         Args:
             sql (str): sql clause

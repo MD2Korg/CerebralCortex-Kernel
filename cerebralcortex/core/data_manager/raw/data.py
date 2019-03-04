@@ -24,12 +24,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-from cerebralcortex.core.log_manager.log_handler import LogTypes
+
+from cerebralcortex.core.data_manager.raw.storage_filesystem import FileSystemStorage
+from cerebralcortex.core.data_manager.raw.storage_hdfs import HDFSStorage
 from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
-
-from cerebralcortex.core.data_manager.raw.storage_hdfs import HDFSStorage
-from cerebralcortex.core.data_manager.raw.storage_filesystem import FileSystemStorage
+from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 

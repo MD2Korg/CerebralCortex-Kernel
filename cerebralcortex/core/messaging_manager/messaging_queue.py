@@ -24,15 +24,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-from kafka import KafkaProducer
-from cerebralcortex.core.messaging_manager.kafka_handler import KafkaHandler
+
 from kafka import KafkaConsumer
+from kafka import KafkaProducer
+
+from cerebralcortex.core.messaging_manager.kafka_handler import KafkaHandler
 
 
 class MessagingQueue(KafkaHandler):
     def __init__(self, CC: object, auto_offset_reset: str="largest"):
         """
         Messaging queue module support pub/sub system in CerebralCortex
+
         Args:
             CC (CerebralCortex): cerebralcortex class object
             auto_offset_reset (str): smallest (start of the topic) OR largest (end of a topic) (default="largest")

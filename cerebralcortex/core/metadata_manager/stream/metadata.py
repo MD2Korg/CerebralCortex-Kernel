@@ -23,120 +23,136 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cerebralcortex.core.metadata_manager.stream.data_descriptor import DataDescriptor
-from cerebralcortex.core.metadata_manager.stream.module_info import ModuleMetadata
-from typing import List
 import json
 import uuid
+from typing import List
+
+from cerebralcortex.core.metadata_manager.stream.data_descriptor import DataDescriptor
+from cerebralcortex.core.metadata_manager.stream.module_info import ModuleMetadata
+
 
 class Metadata():
     def __init__(self):
         """
         Constructor
-        """
-        self._name = None
-        self._version = None
-        self._description = "",
-        self._metadata_hash = None
-        self._dataDescriptor = []
-        self._module = []
-
-    @property
-    def name(self)->str:
-        """
-        get stream name
-        Returns:
-            str: name
 
         """
-        return self._name
+        self.name = None
+        self.version = None
+        self.description = ""
+        self.metadata_hash = None
+        self.input_streams = []
+        self.annotations = []
+        self.data_descriptor = []
+        self.modules = []
 
-    @name.setter
-    def name(self, value:str):
-        """
-        set stream name
-        Args:
-            value (str): name
-        """
-        self._name = value
-
-    @property
-    def version(self)->int:
-        """
-        get stream version
-        Returns:
-            int: version
-
-        """
-        return self._version
-
-    @version.setter
-    def version(self, value:int):
-        """
-        set stream version
-        Args:
-            value (int): version
-        """
-        self._version = int(value)
-
-    @property
-    def metadata_hash(self)->str:
-        """
-        get metadata hash
-        Returns:
-            str: metadata hash
-
-        """
-        return self._metadata_hash
-
-    @metadata_hash.setter
-    def metadata_hash(self, value: str):
-        """
-        set metadata hash
-        Args:
-            value (str): metadata hash
-        """
-        self._metadata_hash = value
-
-    @property
-    def data_descriptor(self)->DataDescriptor:
-        """
-        get stream data descriptor
-        Returns:
-            DataDescriptor: object of data descriptor
-        """
-        return self._dataDescriptor
-
-    @data_descriptor.setter
-    def data_descriptor(self, value: DataDescriptor):
-        """
-        Set stream data descriptor
-        Args:
-            value (DataDescriptor): object of data descriptor
-        """
-        self._dataDescriptor= value
-
-    @property
-    def modulez(self)->str:
-        """
-        get stream module metadata
-        Returns:
-            ModuleMetadata: object of ModuleMetadata
-        """
-        return self._module
-
-    @modulez.setter
-    def modulez(self, value:ModuleMetadata):
-        """
-        set stream module metadata
-        Args:
-            value (ModuleMetadata):  object of ModuleMetadata
-        """
-        self._module = value
+    # @property
+    # def name(self)->str:
+    #     """
+    #     get stream name
+    #
+    #     Returns:
+    #         str: name
+    #
+    #     """
+    #     return self.name
+    #
+    # @name.setter
+    # def name(self, value:str):
+    #     """
+    #     set stream name
+    #
+    #     Args:
+    #         value (str): name
+    #     """
+    #     self.name = value
+    #
+    # @property
+    # def version(self)->int:
+    #     """
+    #     get stream version
+    #
+    #     Returns:
+    #         int: version
+    #
+    #     """
+    #     return self.version
+    #
+    # @version.setter
+    # def version(self, value:int):
+    #     """
+    #     set stream version
+    #
+    #     Args:
+    #         value (int): version
+    #     """
+    #     self.version = int(value)
+    #
+    # @property
+    # def metadata_hash(self)->str:
+    #     """
+    #     get metadata hash
+    #
+    #     Returns:
+    #         str: metadata hash
+    #
+    #     """
+    #     return self.metadata_hash
+    #
+    # @metadata_hash.setter
+    # def metadata_hash(self, value: str):
+    #     """
+    #     set metadata hash
+    #
+    #     Args:
+    #         value (str): metadata hash
+    #     """
+    #     self.metadata_hash = value
+    #
+    # @property
+    # def data_descriptor(self)->DataDescriptor:
+    #     """
+    #     get stream data descriptor
+    #
+    #     Returns:
+    #         DataDescriptor: object of data descriptor
+    #     """
+    #     return self.dataDescriptor
+    #
+    # @data_descriptor.setter
+    # def data_descriptor(self, value: DataDescriptor):
+    #     """
+    #     Set stream data descriptor
+    #
+    #     Args:
+    #         value (DataDescriptor): object of data descriptor
+    #     """
+    #     self.dataDescriptor= value
+    #
+    # @property
+    # def modules(self)->str:
+    #     """
+    #     get stream module metadata
+    #
+    #     Returns:
+    #         ModuleMetadata: object of ModuleMetadata
+    #     """
+    #     return self.modules
+    #
+    # @modules.setter
+    # def modules(self, value:ModuleMetadata):
+    #     """
+    #     set stream module metadata
+    #
+    #     Args:
+    #         value (ModuleMetadata):  object of ModuleMetadata
+    #     """
+    #     self.modules = value
 
     def set_name(self, value:str):
         """
         set name of a stream
+
         Args:
             value (str): name of a stream
 
@@ -144,12 +160,13 @@ class Metadata():
             self
 
         """
-        self._name = value
+        self.name = value
         return self
 
     def set_version(self, value:int):
         """
         set version of a stream
+
         Args:
             value (int): version of a stream
 
@@ -157,12 +174,13 @@ class Metadata():
             self
 
         """
-        self._version = value
+        self.version = value
         return self
 
-    def add_description(self, stream_description:str):
+    def set_description(self, stream_description:str):
         """
         Add stream description
+
         Args:
             stream_description (str): textual description of a stream
 
@@ -170,12 +188,13 @@ class Metadata():
             self
 
         """
-        self._description = stream_description
+        self.description = stream_description
         return self
 
     def add_dataDescriptor(self, dd: DataDescriptor):
         """
         Add data description of a stream
+
         Args:
             dd (DataDescriptor): data descriptor
 
@@ -183,24 +202,52 @@ class Metadata():
             self
 
         """
-        self._dataDescriptor.append(dd)
+        self.data_descriptor.append(dd)
+        return self
+
+    def add_input_stream(self, input_stream:str):
+        """
+        Add input streams that were used to derive a new stream
+
+        Args:
+            input_stream (str): name of input stream
+
+        Returns:
+            self
+        """
+        self.input_streams.append(input_stream)
+        return self
+
+    def add_annotation(self, annotation:str):
+        """
+        Add annotation stream name
+
+        Args:
+            annotation (str): name of annotation stream
+
+        Returns:
+            self
+        """
+        self.annotations.append(annotation)
         return self
 
     def add_module(self, mod: ModuleMetadata):
         """
         Add module metadata
+
         Args:
             mod (ModuleMetadata): module metadata
 
         Returns:
             self
         """
-        self._module.append(mod)
+        self.modules.append(mod)
         return self
 
     def is_valid(self)->bool:
         """
         check whether all required fields are set
+
         Returns:
             bool: True if fields are set or throws an exception in case of missing values
         Exception:
@@ -209,52 +256,59 @@ class Metadata():
         """
         if not self.name:
             raise ValueError("Stream name is not defined.")
-        if not self._description:
+        if not self.description:
             raise ValueError("Stream description is not defined.")
+        if len(self.data_descriptor)==0:
+            raise Exception("Data descriptor length cannot be 0.")
         for dd_obj in self.data_descriptor:
-            if (dd_obj._name is None or dd_obj._name=="") and (dd_obj._type is None or dd_obj._type==""):
-                raise ValueError("Name and/or type fields are missing in data descriptor.")
-        for mm_obj in self.modulez:
-            if (mm_obj._name is None or mm_obj._name=="") and (mm_obj._version is None or mm_obj._version==""):
+            if (dd_obj.attributes is None or len(dd_obj.attributes)==0):
+                raise ValueError("Add brief description for each column in data desciptor. For example, DataDescriptor().set_attribute('description'', 'sleep time''))")
+        for mm_obj in self.modules:
+            if (mm_obj.name is None or mm_obj.name==""):
                 raise ValueError("Module name and/or version fields are missing in module info.")
-            if len(mm_obj._authors)==0:
+            if len(mm_obj.authors)==0:
                 raise ValueError("Author information is missing.")
         return True
 
     def to_json(self)->dict:
         """
         Convert MetaData object into a dict (json) object
+
         Returns:
             dict: dict form of MetaData object
         """
+
         data_descriptor = []
         module_metadata = []
         metadata_json = {}
         for dd_obj in self.data_descriptor:
             data_descriptor.append(dd_obj.__dict__)
-        for mm_obj in self.modulez:
+        for mm_obj in self.modules:
             module_metadata.append(mm_obj.__dict__)
         metadata_json["name"] = self.name
-        metadata_json["description"] = self._description
+        metadata_json["description"] = self.description
+        metadata_json["annotations"] = self.annotations
+        metadata_json["input_streams"] = self.input_streams
         metadata_json["data_descriptor"] = data_descriptor
-        metadata_json["module"] = module_metadata
+        metadata_json["modules"] = module_metadata
         return metadata_json
 
     def get_hash(self)->str:
         """
         Get the unique hash of metadata. Hash is generated based on "stream-name + data_descriptor + module-metadata"
+
         Returns:
             str: hash id of metadata
         """
         name = self.name
         version = self.version
         data_descriptor = ""
-        modulez = ""
+        modules = ""
         for dd in self.data_descriptor:
-            data_descriptor += str(dd._name+dd._type)
-        for mm in self.modulez:
-            modulez += str(mm._name) + str(mm._version) + str(mm._authors)
-        hash_string = str(name)+str(data_descriptor)+str(modulez)
+            data_descriptor += str(dd.name)+str(dd.type)
+        for mm in self.modules:
+            modules += str(mm.name) + str(mm.version) + str(mm.authors)
+        hash_string = str(name)+str(version)+str(data_descriptor)+str(modules)
         hash_string = hash_string.strip().lower().replace(" ", "")
 
         return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
@@ -262,6 +316,7 @@ class Metadata():
     def from_json_sql(self, metadata_json: dict)->List:
         """
         Convert dict (json) objects into Metadata class objects
+
         Args:
             json_list dict: metadata dict
 
@@ -279,7 +334,13 @@ class Metadata():
         if isinstance(metadata_json, dict):
             metadata = json.loads(metadata_json.get("metadata"))
             data_descriptors = metadata["data_descriptor"]
-            module_info = metadata["module"]
+            module_info = metadata["modules"]
+
+            if not isinstance(data_descriptor_list, list):
+                raise ValueError("data_descriptor field must be a list of data descriptors.")
+            if not isinstance(module_info, list):
+                raise ValueError("modules field must be a type of list.")
+
             for dd in data_descriptors:
                 data_descriptor_list.append(DataDescriptor().from_json(dd))
 
@@ -287,16 +348,19 @@ class Metadata():
                 module_list.append(ModuleMetadata().from_json(mm))
 
             md.data_descriptor = data_descriptor_list
-            md.modulez = module_list
+            md.modules = module_list
             md.name = metadata_json["name"]
-            md._description = metadata.get("description", "")
+            md.description = metadata.get("description", "")
             md.version = int(metadata_json["version"])
+            md.input_streams = metadata.get("input_streams", [])
+            md.annotations = metadata.get("annotations", [])
             md.metadata_hash = metadata_json["metadata_hash"]
         return md
 
     def from_json_file(self, metadata: dict)->List:
         """
         Convert dict (json) objects into Metadata class objects
+
         Args:
             json_list dict: metadata dict
 
@@ -313,7 +377,13 @@ class Metadata():
         md = Metadata()
         if isinstance(metadata, dict):
             data_descriptors = metadata["data_descriptor"]
-            module_info = metadata["module"]
+            module_info = metadata["modules"]
+
+            if not isinstance(data_descriptor_list, list):
+                raise ValueError("data_descriptor field must be a list of data descriptors.")
+            if not isinstance(module_info, list):
+                raise ValueError("modules field must be a type of list.")
+
             for dd in data_descriptors:
                 data_descriptor_list.append(DataDescriptor().from_json(dd))
 
@@ -321,9 +391,14 @@ class Metadata():
                 module_list.append(ModuleMetadata().from_json(mm))
 
             md.data_descriptor = data_descriptor_list
-            md.modulez = module_list
+            md.modules = module_list
             md.name = metadata.get("name", "")
-            md._description = metadata.get("description", "")
-            md.version = int(metadata.get("version", 0))
+            md.description = metadata.get("description", "")
+            md.version = int(metadata.get("version", 1))
+            md.input_streams = metadata.get("input_streams", [])
+            md.annotations = metadata.get("annotations", [])
             md.metadata_hash = metadata.get("metadata_hash", "no-hash")
         return md
+
+    def __repr__(self):
+        return str(self.__dict__)

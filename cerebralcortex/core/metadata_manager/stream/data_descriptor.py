@@ -29,13 +29,14 @@ class DataDescriptor():
         """
         Constructor
         """
-        self._name = None
-        self._type = None
-        self._attributes = {}
+        self.name = None
+        self.type = None
+        self.attributes = {}
 
     def set_attribute(self, key, value):
         """
         Attributes field is option in metadata object. Arbitrary number or attributes could be attached to a DataDescriptor
+
         Args:
             key (str): key of an attribute
             value (str): value of an attribute
@@ -48,35 +49,38 @@ class DataDescriptor():
         """
         if key is None or key=="" or value is None or value=="":
             raise ValueError("Key and/or value cannot be None or empty.")
-        self._attributes[key] = value
+        self.attributes[key] = value
         return self
 
-    def name(self, value):
+    def set_name(self, value):
         """
         Name of data descriptor
+
         Args:
             value (str): name
 
         Returns:
             self:
         """
-        self._name = value
+        self.name = value
         return self
 
-    def type(self, value:str):
+    def set_type(self, value:str):
         """
         Type of a data descriptor
+
         Args:
             value (str): type
         Returns:
             self:
         """
-        self._type = value
+        self.type = value
         return self
 
     def from_json(self, obj):
         """
         Cast DataDescriptor class object into json
+
         Args:
             obj (DataDescriptor): object of a data descriptor class
 

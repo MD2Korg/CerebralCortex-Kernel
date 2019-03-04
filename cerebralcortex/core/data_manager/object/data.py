@@ -23,8 +23,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.data_manager.object.storage_filesystem import FileSystemStorage
+from cerebralcortex.core.log_manager.log_handler import LogTypes
 
 
 class ObjectData(FileSystemStorage):

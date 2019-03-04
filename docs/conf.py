@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'CerebralCortex'
-copyright = '2019, Nasir Ali'
+copyright = '2019, MD2K'
 author = 'Nasir Ali'
 
 # The short X.Y version
@@ -101,6 +101,7 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
+add_module_names = False
 
 # -- Options for HTMLHelp output ---------------------------------------------
 

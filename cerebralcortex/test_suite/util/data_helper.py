@@ -29,14 +29,41 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataD
 from cerebralcortex.core.util.spark_helper import get_or_create_sc
 
 
-def gen_phone_battery_data()->object:
+def gen_phone_battery_data2()->object:
     """
     Create pyspark dataframe with some sample phone battery data
+
     Returns:
         DataFrame: pyspark dataframe object with columns: ["timestamp", "offset", "battery_level", "ver", "user"]
 
     """
-    column_name = ["timestamp", "offset", "battery_level", "version", "user"]
+    column_name = ["timestamp", "battery_level","bat2", "version", "user"]
+    sample_data = []
+    timestamp = datetime(2019, 1, 9, 11, 34, 59)
+    tmp = 1
+    sample = 100
+    sample2 = 70
+    sqlContext = get_or_create_sc("sqlContext")
+    for row in range(1000, 1, -1):
+        tmp += 1
+        if tmp == 100:
+            sample = sample - 1
+            sample2 = sample2 - 2
+            tmp = 1
+        timestamp = timestamp + timedelta(0, 1)
+        sample_data.append((timestamp, sample, sample2, 1, "dfce1e65-2882-395b-a641-93f31748591b"))
+    df = sqlContext.createDataFrame(sample_data, column_name)
+    return df
+
+def gen_phone_battery_data()->object:
+    """
+    Create pyspark dataframe with some sample phone battery data
+
+    Returns:
+        DataFrame: pyspark dataframe object with columns: ["timestamp", "offset", "battery_level", "ver", "user"]
+
+    """
+    column_name = ["timestamp", "battery_level", "version", "user"]
     sample_data = []
     timestamp = datetime(2019, 1, 9, 11, 34, 59)
     tmp = 1
@@ -48,7 +75,7 @@ def gen_phone_battery_data()->object:
             sample = sample - 1
             tmp = 1
         timestamp = timestamp + timedelta(0, 1)
-        sample_data.append((timestamp, "21600000", sample, 1, "dfce1e65-2882-395b-a641-93f31748591b"))
+        sample_data.append((timestamp, sample, 1, "dfce1e65-2882-395b-a641-93f31748591b"))
     df = sqlContext.createDataFrame(sample_data, column_name)
     return df
 
@@ -56,15 +83,16 @@ def gen_phone_battery_data()->object:
 def gen_phone_battery_metadata()->Metadata:
     """
     Create Metadata object with some sample metadata of phone battery data
+
     Returns:
         Metadata: metadata of phone battery stream
     """
     stream_metadata = Metadata()
-    stream_metadata.set_name("BATTERY--org.md2k.phonesensor--PHONE").set_version(1) \
+    stream_metadata.set_description("this is a test-stream.").set_name("BATTERY--org.md2k.phonesensor--PHONE").set_version(1) \
         .add_dataDescriptor(
-        DataDescriptor().name("level").type("float").set_attribute("description", "current battery charge")) \
+        DataDescriptor().set_name("level").set_type("float").set_attribute("description", "current battery charge")) \
         .add_module(
-        ModuleMetadata().name("battery").version("1.2.4").set_attribute("attribute_key", "attribute_value").set_author(
+        ModuleMetadata().set_name("battery").set_version("1.2.4").set_attribute("attribute_key", "attribute_value").set_author(
             "test_user", "test_user@test_email.com"))
     stream_metadata.is_valid()
     return stream_metadata

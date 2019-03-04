@@ -29,6 +29,7 @@ class TestKafkaMessaging:
     def test_01_produce_message(self):
         """
         Produce a message on kafka topic
+
         """
         if self.CC.config["messaging_service"] != "none" and "kafka" in self.CC.config and self.CC.config['messaging_service'] == "kafka":
             try:
@@ -40,6 +41,7 @@ class TestKafkaMessaging:
     def test_02_consume_message(self):
         """
         Consume kafka messages in a topic
+
         """
         if self.CC.config["messaging_service"] != "none" and "kafka" in self.CC.config and self.CC.config['messaging_service'] == "kafka":
             for msg in self.CC.kafka_subscribe_to_topic(self.test_topic_name):

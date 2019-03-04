@@ -24,9 +24,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-import traceback
 import uuid
 from typing import List
+
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
@@ -39,6 +39,7 @@ class StreamHandler:
     def get_stream_metadata(self, stream_name: str, version:str= "all") -> List[Metadata]:
         """
         Get a list of metadata for all versions available for a stream.
+
         Args:
             stream_name (str): name of a stream
             version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
@@ -68,6 +69,53 @@ class StreamHandler:
             for row in rows:
                 result.append(Metadata().from_json_sql(row))
             return result
+        else:
+            return []
+
+    def list_streams(self)->List[Metadata]:
+        """
+        Get all the available stream names with metadata
+
+        Returns:
+            List[Metadata]: list of available streams metadata
+
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.list_streams()
+        """
+        qry = "SELECT name from " + self.datastreamTable + " group by name, version"
+
+        rows = self.execute(qry)
+        results = []
+        if rows:
+            for row in rows:
+                results.extend(self.get_stream_metadata(stream_name=row["name"]))
+            return results
+        else:
+            return []
+
+    def search_stream(self, stream_name):
+        """
+        Find all the stream names similar to stream_name arg. For example, passing "location"
+        argument will return all stream names that contain the word location
+
+        Returns:
+            List[str]: list of stream names similar to stream_name arg
+
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.search_stream("battery")
+            >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
+        """
+
+        qry = "SELECT name from " + self.datastreamTable + " where name like %(name)s group by name, version"
+        vals = {"name": "%"+str(stream_name).lower()+"%"}
+        rows = self.execute(qry, vals)
+        results = []
+        if rows:
+            for row in rows:
+                results.append(row["name"])
+            return results
         else:
             return []
 
@@ -107,6 +155,7 @@ class StreamHandler:
     def get_stream_metadata_hash(self, stream_name: str) -> List[str]:
         """
         Get all the metadata_hash associated with a stream name.
+
         Args:
             stream_name (str): name of a stream
         Returns:
@@ -134,6 +183,7 @@ class StreamHandler:
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """
        metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
+
        Args:
            metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.
        Returns:
@@ -158,6 +208,34 @@ class StreamHandler:
         else:
             return rows[0]["name"]
 
+    def get_stream_info_by_hash(self, metadata_hash: uuid) -> str:
+        """
+       metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
+
+       Args:
+           metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.
+       Returns:
+           dict: stream metadata and other info related to a stream
+       Examples:
+           >>> CC = CerebralCortex("/directory/path/of/configs/")
+           >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
+           >>> {"name": .....} # stream metadata and other information
+       """
+
+        if not metadata_hash:
+            raise ValueError("metadata_hash is a required field.")
+        metadata_hash = str(metadata_hash)
+
+        qry = "select * from " + self.datastreamTable + " where metadata_hash = %(metadata_hash)s"
+        vals = {'metadata_hash': metadata_hash}
+
+        rows = self.execute(qry, vals)
+
+        if len(rows) == 0:
+            return {}
+        else:
+            return rows[0]
+
     def is_stream(self, stream_name: str) -> bool:
         """
         Returns true if provided stream exists.
@@ -179,6 +257,7 @@ class StreamHandler:
             return True
         else:
             return False
+
 
     ###################################################################
     ################## STORE DATA METHODS #############################
@@ -208,7 +287,7 @@ class StreamHandler:
 
         metadata_str = metadata_obj.to_json()
         if (status=="exist"):
-            return {"status": True,"version":version}
+            return {"status": True,"version":version, "record_type":"exist"}
 
         if (status == "new"):
             qry = "INSERT INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
@@ -219,13 +298,14 @@ class StreamHandler:
         if isQueryReady == 1:
             try:
                 self.execute(qry, vals, commit=True)
-                return {"status": True,"version":version}
+                return {"status": True,"version":version, "record_type":"new"}
             except Exception as e:
                 raise Exception(e)
 
     def _is_metadata_changed(self, stream_name, metadata_hash) -> dict:
         """
         Checks whether metadata_hash already exist in the system .
+
         Args:
             stream_name (str): name of a stream
             metadata_hash (str): hashed form of stream metadata

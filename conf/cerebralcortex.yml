@@ -14,7 +14,7 @@ nosql_storage: filesystem
 
 filesystem:
   # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
-  filesystem_path: "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/examples/sample_data/"
+  filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/rice_data/processed/"
 
 #hdfs:
 #  host: localhost
@@ -26,7 +26,7 @@ filesystem:
 #########################################################################
 
 object_storage:
-  object_storage_path: "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/examples/sample_data/"
+  object_storage_path: "/home/ali/IdeaProjects/MD2K_DATA/tmp/"
 
 #minio: # AWS-S3 UPDATE
 #  host: s3.amazonaws.com # for amazon pass s3.amazonaws.com and for minio simpley pass url of minio server
@@ -50,15 +50,8 @@ mysql:
   db_pass: pass # Change
 
   # Note: do not change following parameters if you don't know what you are doing
-  connection_pool_name: "CC_Pool"
-  connection_pool_size: 1
   database: cerebralcortex
-  datastream_table: stream
-  kafka_offsets_table: kafka_offsets
-  processing_module_table: processing_module
-  data_replay_table: data_replay
-  user_table: user
-  study_table: study
+  connection_pool_size: 1
 
 #########################################################################
 ###################### Visualization Data Storage #######################

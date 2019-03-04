@@ -23,8 +23,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 import jwt
+
+from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 
 
 class SqlStorageTest:
@@ -83,3 +84,9 @@ class SqlStorageTest:
         decoded_token = jwt.decode(token, self.CC.config["cc"]["auth_encryption_key"], algorithm='HS256')
         is_valid = self.CC.is_auth_token_valid(decoded_token.get("username",""), token)
         self.assertEqual(is_valid, True)
+
+        user_settings =self.CC.SqlData.get_user_settings(auth_token=token)
+        self.assertEqual(user_settings.get("user_id", ""), self.user_id)
+        self.assertEqual(user_settings.get("username", ""), self.username)
+        self.assertEqual(user_settings.get("user_settings", ""), '{"mcerebrum": "confs"}')
+

@@ -31,6 +31,7 @@ class KafkaOffsetsHandler:
     def store_or_update_Kafka_offset(self, topic: str, topic_partition: str, offset_start: str, offset_until: str)->bool:
         """
         Store or Update kafka topic offsets. Offsets are used to track what messages have been processed.
+
         Args:
             topic (str): name of the kafka topic
             topic_partition (str): partition number
@@ -56,6 +57,7 @@ class KafkaOffsetsHandler:
     def get_kafka_offsets(self, topic: str) -> List[dict]:
         """
         Get last stored kafka offsets
+
         Args:
             topic (str): kafka topic name
 

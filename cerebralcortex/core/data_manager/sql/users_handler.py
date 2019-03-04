@@ -24,16 +24,16 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import hashlib
+import json
 import random
+import re
 import string
 import uuid
-from datetime import timedelta
-import json
-import re
-from typing import List
 from datetime import datetime
-import jwt
+from datetime import timedelta
+from typing import List
 
+import jwt
 from pytz import timezone
 
 
@@ -46,6 +46,7 @@ class UserHandler():
     def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict)->bool:
         """
         Create a user in SQL storage if it doesn't exist
+
         Args:
             username (str): Only alphanumeric usernames are allowed with the max length of 25 chars.
             user_password (str): no size limit on password
@@ -77,6 +78,7 @@ class UserHandler():
     def delete_user(self, username:str):
         """
         Delete a user record in SQL table
+
         Args:
             username: username of a user that needs to be deleted
         Returns:
@@ -155,13 +157,13 @@ class UserHandler():
             raise ValueError("User ID or auth token cannot be empty.")
 
         if username and not auth_token:
-            qry = "select user_metadata from user where user_id=%(username)s"
+            qry = "select user_id, username, user_settings from user where username=%(username)s"
             vals = {"username": str(username)}
         elif not username and auth_token:
-            qry = "select user_metadata from user where username=%(auth_token)s"
+            qry = "select user_id, username, user_settings from user where token=%(token)s"
             vals = {"token": str(auth_token)}
         else:
-            qry = "select user_metadata from user where username=%s and token=%s"
+            qry = "select user_id, username, user_settings from user where username=%s and token=%s"
             vals = str(username), str(auth_token)
 
         rows = self.execute(qry, vals)
@@ -173,9 +175,6 @@ class UserHandler():
     def login_user(self, username: str, password: str, encrypted_password:bool=False) -> dict:
         """
         Authenticate a user based on username and password and return an auth token
-        :param username:
-        :param password:
-        :return:
 
         Args:
             username (str):  username of a user
@@ -252,6 +251,7 @@ class UserHandler():
     def get_all_users(self, study_name: str) -> List[dict]:
         """
         Get a list of all users part of a study.
+
         Args:
             study_name (str): name of a study
         Raises:
@@ -401,6 +401,7 @@ class UserHandler():
     def gen_random_pass(self, string_type: str, size: int = 8) -> str:
         """
         Generate a random password
+
         Args:
             string_type: Accepted parameters are "varchar" and "char". (Default="varchar")
             size: password length (default=8)
@@ -421,6 +422,7 @@ class UserHandler():
     def encrypt_user_password(self, user_password: str) -> str:
         """
         Encrypt password
+
         Args:
             user_password (str): unencrypted password
         Raises:
@@ -437,6 +439,7 @@ class UserHandler():
         """
         No space, special characters, dash etc. are allowed in username.
         Only alphanumeric usernames are allowed with the max length of 25 chars.
+
         Args:
             username (str):
         Returns:

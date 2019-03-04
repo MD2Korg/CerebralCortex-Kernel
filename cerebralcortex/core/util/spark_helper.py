@@ -24,9 +24,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal"):
+def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal", enable_spark_ui=False):
     """
     get or create spark context
+
     Args:
         type (str): type (sparkContext, SparkSessionBuilder, sparkSession, sqlContext). (default="sparkContext")
         name (str): spark app name (default="CerebralCortex-Kernal")
@@ -44,11 +45,13 @@ def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal"):
     ss.config("spark.streaming.backpressure.enabled", True)
     ss.config("spark.streaming.backpressure.initialRate", 1)
     ss.config("spark.streaming.kafka.maxRatePerPartition", 2)
+    ss.config("spark.ui.enabled", enable_spark_ui)
 
     sparkSession = ss.getOrCreate()
 
     sc = sparkSession.sparkContext
-    sc.setLogLevel("FATAL")
+    sc.setLogLevel("ERROR")
+
 
     sqlContext = SQLContext(sc)
     if type=="SparkSessionBuilder":
@@ -56,7 +59,7 @@ def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal"):
     elif type=="sparkContext":
         return sc
     elif type=="sparkSession":
-        return ss
+        return sparkSession
     elif type=="sqlContext":
         return sqlContext
     else:

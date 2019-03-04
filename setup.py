@@ -17,7 +17,7 @@ with open(path.join(here, 'README.md')) as f:
 setup(
     name="cerebralcortex-kernel",
 
-    version='3.0.0',
+    version='3.0.0r13',
 
     description='Backend data analytics platform for MD2K software',
     long_description=long_description,
@@ -26,7 +26,7 @@ setup(
     author_email='dev@md2k.org',
 
     license='BSD2',
-    url = 'https://github.com/MD2Korg/CerebralCortex-Kernel/archive/3.0.0.zip',
+    url = 'https://github.com/MD2Korg/CerebralCortex/',
 
     classifiers=[
 

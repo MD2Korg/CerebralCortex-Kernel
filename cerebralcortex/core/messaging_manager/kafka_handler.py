@@ -31,6 +31,7 @@ class KafkaHandler():
     def produce_message(self, topic: str, msg: str):
         """
         Publish a message on kafka message queue
+
         Args:
             topic (str): name of the kafka topic
             msg (dict): message that needs to published on kafka
@@ -54,6 +55,7 @@ class KafkaHandler():
     def subscribe_to_topic(self, topic: str)-> dict:
         """
         Subscribe to kafka topic as a consumer
+
         Args:
             topic (str): name of the kafka topic
         Yields:

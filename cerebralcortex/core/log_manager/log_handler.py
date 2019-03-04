@@ -42,6 +42,7 @@ class LogHandler():
     def logsyslog(self, loglevel: str, message: str):
         """
         Initialize logging
+
         Args:
             loglevel (str): log level (e.g., warning, critical etc.)
             message (str): log message
