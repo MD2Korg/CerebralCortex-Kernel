@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -23,14 +23,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cerebralcortex.core.config_manager.config_handler import ConfigHandler
 import os.path
+
+from cerebralcortex.core.config_manager.config_handler import ConfigHandler
+
 
 class Configuration(ConfigHandler):
     def __init__(self, config_dir:str, config_file_name:str="cerebralcortex.yml"):
         """
-
-        :param config_dir: CerebralCortex configuration file path
+        Constructor
+        Args:
+            config_dir (str): Directory path of cerebralcortex configuration files.
+            config_file_name (str): configuration file name that should be loaded
         """
 
         if config_dir[-1]!="/":

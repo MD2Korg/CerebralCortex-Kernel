@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 here = path.abspath(path.dirname(__file__))
 
-install_reqs = parse_requirements("requirements.txt", session='hack')
+install_reqs = parse_requirements("./requirements.txt", session='hack')
 reqs = [str(ir.req) for ir in install_reqs]
 
 # Get the long description from the README file
@@ -15,9 +15,9 @@ with open(path.join(here, 'README.md')) as f:
     long_description = f.read()
 
 setup(
-    name="MD2K: Cerebral Cortex",
+    name="cerebralcortex-kernel",
 
-    version='2.4.0',
+    version='3.0.0r13',
 
     description='Backend data analytics platform for MD2K software',
     long_description=long_description,
@@ -26,10 +26,11 @@ setup(
     author_email='dev@md2k.org',
 
     license='BSD2',
+    url = 'https://github.com/MD2Korg/CerebralCortex/',
 
     classifiers=[
 
-        'Development Status :: 1 - Beta',
+        'Development Status :: 5 - Production/Stable',
 
         'Intended Audience :: Healthcare Industry',
         'Intended Audience :: Science/Research',
@@ -63,5 +64,5 @@ setup(
         ]
     },
 
-    data_files=[('/etc/rsyslog.d', ['cerebralcortex/core/resources/20-cerebralcortex.conf']), ('/etc/logrotate.d', ['cerebralcortex/core/resources/cerebralcortex']),]
+    #data_files=[('/etc/rsyslog.d', ['cerebralcortex/core/resources/20-cerebralcortex.conf']), ('/etc/logrotate.d', ['cerebralcortex/core/resources/cerebralcortex']),]
 )

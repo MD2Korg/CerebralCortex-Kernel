@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -42,8 +42,10 @@ class LogHandler():
     def logsyslog(self, loglevel: str, message: str):
         """
         Initialize logging
-        :param loglevel:
-        :param message:
+
+        Args:
+            loglevel (str): log level (e.g., warning, critical etc.)
+            message (str): log message
         """
         syslog.openlog(ident="CerebralCortex")
         syslog.syslog(loglevel, message)
@@ -52,8 +54,10 @@ class LogHandler():
     def log(self, error_message: str = "", error_type=LogTypes.EXCEPTION):
         """
         Log errors and warnings in log file and print on console of debug is set to True
-        :param error_message:
-        :param error_type:
+
+        Args:
+            error_message (str): error message
+            error_type (LogTypes): error type (e.g., warning, critical etc.)
         """
         execution_stats = inspect.stack()
         method_name = execution_stats[1][3]

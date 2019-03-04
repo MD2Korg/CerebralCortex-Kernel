@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -23,17 +23,16 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from cerebralcortex.core.data_manager.object.storage_filesystem import FileSystemStorage
 from cerebralcortex.core.log_manager.log_handler import LogTypes
-from minio import Minio
-
-from cerebralcortex.core.data_manager.object.minio_handler import MinioHandler
 
 
-class ObjectData(MinioHandler):
+class ObjectData(FileSystemStorage):
     def __init__(self, CC):
         """
-
-        :param CC: CerebralCortex object reference
+        Constructor
+        Args:
+            CC (CerebralCortex): CerebralCortex object reference
         """
         self.CC = CC
         self.config = CC.config
@@ -41,14 +40,4 @@ class ObjectData(MinioHandler):
         self.logging = CC.logging
         self.logtypes = LogTypes()
 
-        self.host = self.config["minio"]["host"]
-        self.port = self.config["minio"]["port"]
-        self.access_key = self.config["minio"]["access_key"]
-        self.secret_key = self.config["minio"]["secret_key"]
-        self.secure = self.config["minio"]["secure"]
-
-        if self.config["nosql_storage"]=="aws_s3":
-            db_url = str(self.host)
-        else:
-            db_url = str(self.host) + ":" + str(self.port)
-        self.minioClient = Minio(db_url, access_key=self.access_key, secret_key=self.secret_key, secure=self.secure)
+        self.filesystem_path = self.config["object_storage"]["object_storage_path"]

@@ -30,14 +30,16 @@ from cerebralcortex.core.log_manager.log_handler import LogTypes
 class TimeSeriesData(InfluxdbHandler):
     def __init__(self, CC):
         """
+        Constructor
 
-        :param CC: CerebralCortex object reference
+        Args:
+            CC (CerebralCortex): CerebralCortex object reference
+        Raises:
+            ValueError: visualization_storage param is set to none in cerebralcortex.yml. Please provide proper configuration for visualization storage.
         """
         self.configuration = CC.config
 
         self.sql_data = CC.SqlData
-
-        self.time_zone = CC.timezone
 
         self.logging = CC.logging
         self.logtypes = LogTypes()

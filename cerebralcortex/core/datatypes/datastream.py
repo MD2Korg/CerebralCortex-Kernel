@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -23,180 +23,433 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import datetime
+from pyspark.sql import functions as F
 from typing import List
-from uuid import UUID
+import re
 
-from cerebralcortex.core.datatypes.datapoint import DataPoint
-from cerebralcortex.core.metadata_manager.metadata import DataDescriptor, ExecutionContext
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 class DataStream:
     def __init__(self,
-                 identifier: UUID = None,
-                 owner: UUID = None,
-                 name: UUID = None,
-                 data_descriptor: List[DataDescriptor] = None,
-                 execution_context: ExecutionContext = None,
-                 annotations: List = None,
-                 stream_type: str = None,
-                 start_time: datetime = None,
-                 end_time: datetime = None,
-                 data: List[DataPoint] = None,
-                 stream_timezone=None
+                 data: object = None,
+                 metadata: Metadata = None
                  ):
         """
-        DataStream object contains the list of DataPoint objects and metadata linked to it.
-        :param identifier:
-        :param owner:
-        :param name:
-        :param data_descriptor:
-        :param execution_context:
-        :param annotations:
-        :param stream_type:
-        :param start_time:
-        :param end_time:
-        :param data:
-        :param stream_timezone:
+        DataStream object contains pyspark dataframe and metadata linked to it.
+
+        Args:
+            data (DataFrame): pyspark dataframe
+            metadata (Metadata): metadata of data
+
         """
-        self._identifier = identifier
-        self._owner = owner
-        self._name = name
-        self._data_descriptor = data_descriptor
-        self._datastream_type = stream_type
-        self._execution_context = execution_context
-        self._annotations = annotations
-        self._start_time = start_time
-        self._end_time = end_time
-        self._data = data
-        self._stream_timezone = stream_timezone
 
-    def find_annotation_references(self, identifier: int = None, name: str = None):
-        result = self._annotations
-        found = False
 
-        if identifier:
-            found = True
-            result = [a for a in result if a.stream_identifier == identifier]
+        if isinstance(metadata, Metadata):
+            if metadata.is_valid():
+                self._data = data
+                self._metadata = metadata
+            else:
+                raise Exception("Metadata is not valid.")
+        else:
+            self._data = data
+            self._metadata = metadata
 
-        if name:
-            found = True
-            result = [a for a in result if a.name == name]
+    def get_metadata(self, version:int=None)->Metadata:
+        """
+        get stream metadata
 
-        if not found:
-            return []
+        Args:
+            version (int): version of a stream
 
-        return result
+        Returns:
+            Metadata: single version of a stream
+        Raises:
+            Exception: if specified version is not available for the stream
 
-    @property
-    def identifier(self):
-        return self._identifier
-
-    @property
-    def owner(self):
-        return self._owner
+        """
+        for md in self._metadata:
+            if md.version == version:
+                return md
+            else:
+                raise Exception("Version '"+str(version)+"' is not available for this stream.")
+        return None
 
     @property
-    def name(self):
-        return self._name
+    def metadata(self):
+        """
+        return stream metadata
 
-    @name.setter
-    def name(self, value):
-        self._name = value
+        Returns:
+            Metadata:
 
-    @property
-    def star_time(self):
-        return self._start_time
+        """
+        return self._metadata
 
-    @star_time.setter
-    def start_time(self, val):
-        self._start_time = val
+    @metadata.setter
+    def metadata(self, metadata):
+        """
+        set stream metadata
 
-    @property
-    def end_time(self):
-        return self._end_time
-
-    @end_time.setter
-    def end_time(self, val):
-        self._end_time = val
-
-    @property
-    def annotations(self):
-        return self._annotations
-
-    @annotations.setter
-    def annotations(self, value):
-        self._annotations = value
-
-    @property
-    def data_descriptor(self):
-        return self._data_descriptor
-
-    @data_descriptor.setter
-    def data_descriptor(self, value):
-        self._data_descriptor = value
-
-    @property
-    def execution_context(self):
-        return self._execution_context
-
-    @execution_context.setter
-    def execution_context(self, value):
-        self._execution_context = value
-
-    @property
-    def datastream_type(self):
-        return self._datastream_type
+        Args:
+            metadata (Metadata):
+        """
+        self._metadata = metadata
 
     @property
     def data(self):
+        """
+        get stream data
+
+        Returns (DataFrame):
+
+        """
         return self._data
 
     @data.setter
     def data(self, value):
-        result = []
-        for dp in value:
-            result.append(DataPoint(start_time=dp.start_time, end_time=dp.end_time, offset=dp.offset, sample=dp.sample))
+        """
+        set stream data
+
+        Args:
+            value (DataFrame):
+        """
+        self._data = value
+
+    #############################################################################
+    #                           Helper methods for dataframe                    #
+    #############################################################################
+
+    # !!!!                                  HELPER METHODS                           !!!
+    def to_pandas(self):
+        """
+        This method converts pyspark dataframe into pandas dataframe.
+        Notes:
+            This method will collect all the data on master node to convert pyspark dataframe into pandas dataframe.
+            After converting to pandas dataframe datastream objects helper methods will not be accessible.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> ds = CC.get_stream("STREAM-NAME")
+            >>> pandas_df = ds.to_pandas()
+            >>> pandas_df.head()
+        """
+        return self._data.toPandas()
+
+    def collect(self):
+        """
+        Collect all the data to master node and return list of rows
+
+        Returns:
+            List: rows of all the dataframe
+        """
+        return self._data.collect()
+
+
+    # !!!!                                  STAT METHODS                           !!!
+
+    def compute_average(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute average of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): average will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="avg", columnName=colmnName)
+
+    def compute_sqrt(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute square root of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): square root will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="sqrt", columnName=colmnName)
+
+    def compute_sum(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute sum of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): average will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="sum", columnName=colmnName)
+
+    def compute_variancee(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute variance of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): variance will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="variance", columnName=colmnName)
+
+    def compute_stddev(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute standard deviation of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): standard deviation will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="stddev", columnName=colmnName)
+
+    def compute_min(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute min of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): min value will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="min", columnName=colmnName)
+
+    def compute_max(self, windowDuration:int=60, colmnName:str=None)->object:
+        """
+        Window data and compute max of a windowed data of a single or all columns
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            colmnName (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        return self._compute_stats(windowDuration=windowDuration, methodName="max", columnName=colmnName)
+
+
+    def _compute_stats(self, windowDuration:int=60, methodName:str=None, columnName:List[str]=[])->object:
+        """
+        Compute stats on pyspark dataframe
+
+        Args:
+            windowDuration (int): duration of a window in seconds
+            methodName (str): pyspark stat method name
+            columnName (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+
+        windowDuration = str(windowDuration)+" seconds"
+        exprs = self._get_column_names(columnName=columnName, methodName=methodName)
+        result = self._data.groupBy(['user',F.window("timestamp", windowDuration)]).agg(exprs)
+
         self._data = result
+        self._update_column_names()
+        self.metadata = Metadata()
+        return self
 
-    # TODO- cannot use it due to circular dependencies. Moving it to CC class
-    # def filter(self, annotation_stream_name: uuid, annotation: str, start_time: datetime, end_time: datetime) -> List[
-    #     DataPoint]:
-    #     """
-    #     This method maps datastream to derived annotation stream and returns a List of Datapoints
-    #     :param annotation_stream_name:
-    #     :param annotation:
-    #     :param start_time:
-    #     :param end_time:
-    #     :return:
-    #     """
-    # annotation_stream_id = Metadata.get_annotation_id(self.identifier, annotation_stream_name)
-    # return SqlData.get_annotation_stream(annotation_stream_id, self.identifier, annotation, start_time, end_time)
 
-    @classmethod
-    def from_datastream(cls, input_streams: List):
-        result = cls(owner=input_streams[0].owner)
+    # !!!!                              WINDOWING METHODS                           !!!
 
-        # TODO: Something with provenance tracking from datastream list
+    def window(self, windowDuration:int=60, groupByColumnName:List[str]=[], columnName:List[str]=[], slideDuration:int=None, startTime=None):
+        """
+        Window data into fixed length chunks. If no columnName is provided then the windowing will be performed on all the columns.
 
-        return result
+        Args:
+            windowDuration (int): duration of a window in seconds
+            groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
+            columnName List[str]: column names on which windowing should be performed. Windowing will be performed on all columns if none is provided
+            slideDuration (int): slide duration of a window
+            startTime (datetime): start time of window. First time of data will be used as startTime if none is provided
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        Note:
+            This windowing method will use collect_list to return values for each window. collect_list is not optimized.
 
-    def __str__(self):
-        return "Stream(" + ', '.join(map(str, [self._identifier,
-                                               self._owner,
-                                               self._name,
-                                               self._data_descriptor,
-                                               self._datastream_type,
-                                               self._execution_context,
-                                               self._annotations,
-                                               self._data]))
+        """
+        windowDuration = str(windowDuration)+" seconds"
 
-    def __repr__(self):
-        return "Stream(" + ', '.join(map(str, [self._identifier,
-                                               self._owner,
-                                               self._name,
-                                               self._data_descriptor,
-                                               self._datastream_type,
-                                               self._execution_context,
-                                               self._annotations,
-                                               self._data]))
+
+        exprs = self._get_column_names(columnName=columnName, methodName="collect_list")
+        if len(groupByColumnName)>0:
+            windowed_data = self._data.groupBy(['user','timestamp', F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)]).agg(exprs)
+        else:
+            windowed_data = self._data.groupBy(['user',F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)]).agg(exprs)
+
+        self._data = windowed_data
+
+        self._update_column_names()
+
+        self.metadata = Metadata()
+
+        return self
+
+    def _update_column_names(self):
+        columns = []
+        for column in self._data.columns:
+            if "(" in column:
+                m = re.search('\((.*?)\)', column)
+                columns.append(m.group(1))
+            else:
+                columns.append(column)
+        self._data = self._data.toDF(*columns)
+
+    # !!!!                              FILTERING METHODS                           !!!
+
+    def drop_column(self, *args, **kwargs):
+        """
+        calls deafult dataframe drop
+
+        Args:
+            *args:
+            **kwargs:
+        """
+        self._data = self._data.drop(*args, **kwargs)
+
+    def limit(self, *args, **kwargs):
+        """
+        calls deafult dataframe limit
+
+        Args:
+            *args:
+            **kwargs:
+        """
+        self._data = self._data.limit(*args, **kwargs)
+
+    def where(self, *args, **kwargs):
+        """
+        calls deafult dataframe where
+
+        Args:
+            *args:
+            **kwargs:
+        """
+        self._data = self._data.where(*args, **kwargs)
+
+    def filter(self, columnName, operator, value):
+        """
+        filter data
+
+        Args:
+            columnName (str): name of the column
+            operator (str): basic operators (e.g., >, <, ==, !=)
+            value (Any): if the columnName is timestamp, please provide python datatime object
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        where_clause = columnName+operator+"'"+str(value)+"'"
+        result = self._data.where(where_clause)
+        self._data = result
+        self.metadata = Metadata()
+        return self
+
+    def filter_user(self, user_ids:List):
+        """
+        filter data to get only selective users' data
+
+        Args:
+            user_ids (List[str]): list of users' UUIDs
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        if not isinstance(user_ids, list):
+            user_ids = [user_ids]
+        result = self._data.where(self._data["user"].isin(user_ids))
+        self._data = result
+        self.metadata = Metadata()
+        return self
+
+    def filter_version(self, version:List):
+        """
+        filter data to get only selective users' data
+
+        Args:
+            version (List[str]): list of stream versions
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        if not isinstance(version, list):
+            version = [version]
+        result = self._data.where(self._data["version"].isin(version))
+        self._data = result
+        self.metadata = Metadata()
+        return self
+
+    def groupby(self, columnName):
+        """
+        Group data by column name
+        Args:
+            columnName (str): name of the column to group by with
+
+        Returns:
+
+        """
+        self._data = self._data.groupby(columnName)
+        self.metadata = Metadata()
+        return self
+
+    # def win(self, udfName):
+    #     self._data = self._data.groupBy(['owner', F.window("timestamp", "60 seconds")]).apply(udfName)
+    #     self.metadata = Metadata()
+    #     return self
+
+    def compute(self, udfName):
+        self._data = self._data.apply(udfName)
+        self.metadata = Metadata()
+        return self
+
+    def show(self, *args, **kwargs):
+        self._data.show(*args, **kwargs)
+
+    def schema(self):
+        """
+        Get data schema (e.g., column names and number of columns etc.)
+
+        Returns:
+            pyspark dataframe schema object
+        """
+        return self._data.schema
+
+    def _get_column_names(self, columnName:List[str], methodName:str):
+        """
+        Get data column names and build expression for pyspark aggregate method
+
+        Args:
+            columnName(List[str]): get all column names expression if columnName is empty
+            methodName (str): name of the method that should be applied on the column
+        Todo:
+            update non-data column names
+        Returns:
+            dict: {columnName: methodName}
+        """
+        columns = self._data.columns
+
+        if "localtime" in columns:
+            black_list_column = ["timestamp", "localtime", "user", "version"]
+        else:
+            black_list_column = ["timestamp", "user", "version"]
+
+        if columnName:
+            if isinstance(columns, str):
+                columns = [columnName]
+            elif isinstance(columns, list):
+                columns = columnName
+        else:
+            columns = list(set(columns)-set(black_list_column))
+
+        exprs = {x: methodName for x in columns}
+        return exprs

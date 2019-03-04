@@ -1,30 +1,41 @@
 # CerebralCortex Kernel
 Cerebral Cortex is the big data cloud companion of mCerebrum designed to support population-scale data analysis, visualization, model development, and intervention design for mobile sensor data.
 
-CerebralCortex-KafkaStreamPreprocessor (CC-KSP) is a apache-spark based pub/sub system for processing incoming mobile sensor data.
-
 You can find more information about MD2K software on our [software website](https://md2k.org/software) or the MD2K organization on our [MD2K website](https://md2k.org/).
 
 CerebralCortex Kernel is part of our [CerebralCortex cloud platform](https://github.com/MD2Korg/CerebralCortex). CerebralCortex Kernel is mainly responsible to store/retrieve mobile sensor data along with it's metadata. 
 
-### Note
+**Note**:
+
 We have renamed following repositories.
+
 * CerebralCortex-Platform -> CerebralCortex
 * CerebralCortex - >  CerebralCortex-Kernel
 
+## Documentation
+
+- [Source code documentation](https://cerebralcortex-kernel.readthedocs.io/en/3.0.1/)
+
 ## Installation
+CerebralCortex-Kernel is a part of CerebralCortex cloud platform. To test the complete cloud platform, please visit [CerebralCortex](https://github.com/MD2Korg/CerebralCortex).
 
-Minimum requirements:
-* [Python3.6](https://www.python.org/downloads/release/python-360/)
+CerebralCortex-Kernel requires minimum [Python3.6](https://www.python.org/downloads/release/python-360/). To install CerebralCortex-Kernel as an API:
 
-To install:
+```pip3 install cerebralcortex-kernel```
 
-```git clone https://github.com/MD2Korg/CerebralCortex.git```
+- Note: please use appropriate pip (e.g., pip, pip3, pip3.6 etc.) installed on your machine 
 
-```sudo python3 setup.py install```
-### Documentation
-[CerebralCortex-Kernel Documentation](http://docs.md2k.org/CerebralCortex-Kernel/)
-# FAQ
+### Dependencies
+
+-  `Python3.6`
+
+   -  Note: Python3.7 is not compatible with some of the requirements
+   -  Make sure pip version matches Python version
+   
+## Code Example
+Please have a look at [example code](https://github.com/MD2Korg/CerebralCortex-Kernel-Examples), if you want to only see an example on how to call CerebralCortex-Kernel API.
+ 
+## FAQ
 **1 - Do I need whole CerebralCortex cloud platform to use CerebralCortex-Kernal?**
 
 No! If you want to use CerebralCortex-Kernel independently then you would need: 
@@ -32,7 +43,8 @@ No! If you want to use CerebralCortex-Kernel independently then you would need:
 * Setup the [configurations](https://github.com/MD2Korg/CerebralCortex-Kernel/tree/master/conf)
 * Use the [examples](TODO) to start exploring data
 
-**2 - I do not want to use FileSystem/HDFS as NoSQL storage. How can I change NoSQL storage backend?**
+
+**2 - How can I change NoSQL storage backend?**
 
 CerebralCortex-Kernel follows component based structure. This makes it easier to add/remove features. 
 * Add a new class in [Data manager-Raw](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/core/data_manager/raw/). 
@@ -91,4 +103,3 @@ This project is licensed under the BSD 2-Clause - see the [license](https://md2k
   * Grants: 1640813, 1722646
 * [Intelligence Advanced Research Projects Activity](https://www.iarpa.gov/)
   * Contract: 2017-17042800006
-

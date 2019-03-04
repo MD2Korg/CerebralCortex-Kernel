@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -23,27 +23,34 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from typing import List
+
 import mysql.connector
 import mysql.connector.pooling
 
+from cerebralcortex.core.data_manager.sql.cache_handler import CacheHandler
 from cerebralcortex.core.data_manager.sql.kafka_offsets_handler import KafkaOffsetsHandler
 from cerebralcortex.core.data_manager.sql.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.sql.users_handler import UserHandler
 from cerebralcortex.core.log_manager.log_handler import LogTypes
-from cerebralcortex.core.data_manager.sql.cache_handler import CacheHandler
+from cerebralcortex.core.data_manager.sql.data_ingestion_handler import DataIngestionHandler
 
 
-class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
+class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, DataIngestionHandler):
     def __init__(self, CC):
         """
+        Constructor
 
-        :param CC: CerebralCortex object reference
+        Args:
+            CC (CerebralCortex): CerebralCortex object reference
+        Raises:
+            Exception: if none MySQL SQL storage is set in cerebralcortex configurations
         """
-        self.config = CC.config
+        if isinstance(CC, dict):
+            self.config = CC
+        else:
+            self.config = CC.config
 
-        self.time_zone = CC.timezone
-
-        self.logging = CC.logging
         self.logtypes = LogTypes()
         self.sql_store = self.config["relational_storage"]
 
@@ -55,22 +62,26 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
         self.database = self.config['mysql']['database']
         self.dbUser = self.config['mysql']['db_user']
         self.dbPassword = self.config['mysql']['db_pass']
-        self.datastreamTable = self.config['mysql']['datastream_table']
-        self.kafkaOffsetsTable = self.config['mysql']['kafka_offsets_table']
-        self.userTable = self.config['mysql']['user_table']
-        self.dataReplayTable = self.config['mysql']['data_replay_table']
-        self.poolName = self.config['mysql']['connection_pool_name']
+        self.datastreamTable = "stream"
+        self.kafkaOffsetsTable = "kafka_offsets"
+        self.ingestionLogsTable = "ingestion_logs"
+        self.userTable = "user"
+        self.dataReplayTable = "data_replay"
+        self.poolName = "CC_Pool"
         self.poolSize = self.config['mysql']['connection_pool_size']
         self.pool = self.create_pool(pool_name=self.poolName, pool_size=self.poolSize)
 
-    def create_pool(self, pool_name: str = "CC_Pool", pool_size: int = 10):
+    def create_pool(self, pool_name: str = "CC_Pool", pool_size: int = 1):
         """
         Create a connection pool, after created, the request of connecting
         MySQL could get a connection from this pool instead of request to
         create a connection.
-        :param pool_name: the name of pool, default is "CC_Pool"
-        :param pool_size: the size of pool, default is 10 (min=1 and max=32)
-        :return: connection pool
+
+        Args:
+            pool_name (str): the name of pool, (default="CC_Pool")
+            pool_size (int): size of MySQL connections pool (default=1)
+        Returns:
+            object: MySQL connections pool
         """
         dbconfig = {
             "host": self.hostIP,
@@ -90,24 +101,32 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler):
     def close(self, conn, cursor):
         """
         close connection of mysql.
-        :param conn:
-        :param cursor:
-        :return:
+
+        Args:
+            conn (object): MySQL connection object
+            cursor (object): MySQL cursor object
+        Raises:
+            Exception: if connection is closed
         """
         try:
             cursor.close()
             conn.close()
         except Exception as exp:
-            self.logging.log(error_message="Cannot close connection: " + str(exp), error_type=self.logtypes.DEBUG)
+            raise Exception(exp)
 
-    def execute(self, sql, args=None, commit=False):
+    def execute(self, sql, args=None, commit=False)->List[dict]:
         """
         Execute a sql, it could be with args and with out args. The usage is
         similar with execute() function in module pymysql.
-        :param sql: sql clause
-        :param args: args need by sql clause
-        :param commit: whether to commit
-        :return: if commit, return None, else, return result
+
+        Args:
+            sql (str): sql clause
+            args (tuple): args need by sql clause
+            commit (bool): whether to commit
+        Returns:
+            list[dict]: returns a list of dicts if commit is set to False
+        Raises:
+            Exception: if MySQL query fails
         """
         # get connection form connection pool instead of create one.
         conn = self.pool.get_connection()

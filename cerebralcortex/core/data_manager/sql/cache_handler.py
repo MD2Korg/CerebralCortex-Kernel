@@ -1,4 +1,4 @@
-# Copyright (c) 2018, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -21,37 +21,44 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 import traceback
+
 
 class CacheHandler:
     def set_cache_value(self, key: str, value: str) -> bool:
         """
-        Inserts a new key,value pair in the cache table. 
-        Existing value will be overwritten.
-        :param key: key of the cache entry
-        :param value: cache entry value
-        :return: status None if update fails
-        :rtype bool
+        Creates a new cache entry in the cache. Values are overwritten for existing keys.
+
+        Args:
+            key: key in the cache
+            value: value associated with the key
+        Returns:
+            bool: True on successful insert or False otherwise.
+        Raises:
+            ValueError: if key is None or empty
         """
         if not key or not len(key):
             raise ValueError("Key cannot be empty.")
 
-        qry = 'INSERT INTO cc_cache(cache_key,cache_value) VALUES(%s,%s) ON DUPLICATE KEY UPDATE cache_value = %s;' 
-        data = (key,value,value)
+        qry = 'INSERT INTO cc_cache(cache_key,cache_value) VALUES(%s,%s) ON DUPLICATE KEY UPDATE cache_value = %s;'
+        data = (key, value, value)
         try:
-            self.execute(qry,data, commit=True)
+            self.execute(qry, data, commit=True)
             return True
         except Exception as e:
-            self.logging.log(str(traceback.format_exc()))
-            return False
-
+            raise Exception(str(e))
 
     def get_cache_value(self, key: str) -> str:
         """
-        Returns the cache value cached for the key
-        :param key: key in the cache
-        :return: value
-        :rtype str
+        Retrieves value from the cache for the given key.
+
+        Args:
+            key: key in the cache
+        Returns:
+            str: The value in the cache
+        Raises:
+            ValueError: if key is None or empty
         """
         if not key and not len(key):
             raise ValueError("Key cannot be empty.")
@@ -66,7 +73,4 @@ class CacheHandler:
             else:
                 return rows[0]["cache_value"]
         except Exception as e:
-            self.logging.log(traceback.format_exc())
-            return None
-
-
+            raise Exception(str(e))
