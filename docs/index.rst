@@ -182,8 +182,10 @@ Acknowledgments
    :maxdepth: 2
    :caption: Contents:
 
-   cc_example
    rst/cerebralcortex.rst
+   rst/cerebralcortex.data_importer
+   rst/cerebralcortex.algorithms
+   rst/cerebralcortex.test_suite
 
 
 Indices and tables

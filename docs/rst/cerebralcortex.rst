@@ -1,4 +1,4 @@
-cerebralcortex package
+CerebralCortex Core
 ======================
 
 Subpackages
@@ -7,8 +7,6 @@ Subpackages
 .. toctree::
 
     cerebralcortex.core
-    cerebralcortex.modules
-    cerebralcortex.test_suite
 
 Submodules
 ----------

@@ -1,5 +1,5 @@
-cerebralcortex.algorithms package
-=================================
+CerebralCortex Algorithms
+=========================
 
 Subpackages
 -----------

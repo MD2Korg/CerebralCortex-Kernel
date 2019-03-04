@@ -1,5 +1,5 @@
-cerebralcortex.test\_suite package
-==================================
+CerebralCortex Test Suite
+=========================
 
 Subpackages
 -----------

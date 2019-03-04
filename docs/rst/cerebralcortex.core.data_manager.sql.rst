@@ -20,6 +20,14 @@ cerebralcortex.core.data\_manager.sql.data module
     :undoc-members:
     :show-inheritance:
 
+cerebralcortex.core.data\_manager.sql.data\_ingestion\_handler module
+---------------------------------------------------------------------
+
+.. automodule:: cerebralcortex.core.data_manager.sql.data_ingestion_handler
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 cerebralcortex.core.data\_manager.sql.kafka\_offsets\_handler module
 --------------------------------------------------------------------
 
