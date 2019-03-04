@@ -26,11 +26,15 @@ We have renamed following repositories.
 -  CerebralCortex-Platform -> CerebralCortex
 -  CerebralCortex - > CerebralCortex-Kernel
 
-Documentation
--------------
+Examples
+--------
+
+-  `How to use CerebralCortex-Kernel
+   API <https://github.com/MD2Korg/CerebralCortex-kernel-Examples>`__ ##
+   Documentation
 
 -  `Source code
-   documentation <https://cerebralcortex-kernel.readthedocs.io/en/3.0.1/>`__
+   documentation <https://cerebralcortex-kernel.readthedocs.io/en/latest/>`__
 
 Installation
 ------------

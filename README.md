@@ -12,9 +12,11 @@ We have renamed following repositories.
 * CerebralCortex-Platform -> CerebralCortex
 * CerebralCortex - >  CerebralCortex-Kernel
 
+## Examples
+- [How to use CerebralCortex-Kernel API](https://github.com/MD2Korg/CerebralCortex-kernel-Examples)
 ## Documentation
 
-- [Source code documentation](https://cerebralcortex-kernel.readthedocs.io/en/3.0.1/)
+- [Source code documentation](https://cerebralcortex-kernel.readthedocs.io/en/latest/)
 
 ## Installation
 CerebralCortex-Kernel is a part of CerebralCortex cloud platform. To test the complete cloud platform, please visit [CerebralCortex](https://github.com/MD2Korg/CerebralCortex).
