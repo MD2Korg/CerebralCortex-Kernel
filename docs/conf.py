@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'CerebralCortex'
+project = 'CerebralCortex Kernel'
 copyright = '2019, MD2K'
 author = 'Nasir Ali'
 
