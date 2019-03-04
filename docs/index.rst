@@ -30,8 +30,10 @@ Examples
 --------
 
 -  `How to use CerebralCortex-Kernel
-   API <https://github.com/MD2Korg/CerebralCortex-kernel-Examples>`__ ##
-   Documentation
+   API <https://github.com/MD2Korg/CerebralCortex-kernel-Examples>`__
+
+Documentation
+-------------
 
 -  `Source code
    documentation <https://cerebralcortex-kernel.readthedocs.io/en/latest/>`__
@@ -59,14 +61,6 @@ Dependencies
 
 -  Note: Python3.7 is not compatible with some of the requirements
 -  Make sure pip version matches Python version
-
-Code Example
-------------
-
-Please have a look at `example
-code <https://github.com/MD2Korg/CerebralCortex-Kernel-Examples>`__, if
-you want to only see an example on how to call CerebralCortex-Kernel
-API.
 
 FAQ
 ---
@@ -179,6 +173,7 @@ Acknowledgments
 -  `Intelligence Advanced Research Projects
    Activity <https://www.iarpa.gov/>`__
 -  Contract: 2017-17042800006
+
 
 
 

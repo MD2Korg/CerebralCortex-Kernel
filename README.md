@@ -14,6 +14,7 @@ We have renamed following repositories.
 
 ## Examples
 - [How to use CerebralCortex-Kernel API](https://github.com/MD2Korg/CerebralCortex-kernel-Examples)
+
 ## Documentation
 
 - [Source code documentation](https://cerebralcortex-kernel.readthedocs.io/en/latest/)
@@ -34,9 +35,7 @@ CerebralCortex-Kernel requires minimum [Python3.6](https://www.python.org/downlo
    -  Note: Python3.7 is not compatible with some of the requirements
    -  Make sure pip version matches Python version
    
-## Code Example
-Please have a look at [example code](https://github.com/MD2Korg/CerebralCortex-Kernel-Examples), if you want to only see an example on how to call CerebralCortex-Kernel API.
- 
+
 ## FAQ
 **1 - Do I need whole CerebralCortex cloud platform to use CerebralCortex-Kernal?**
 
