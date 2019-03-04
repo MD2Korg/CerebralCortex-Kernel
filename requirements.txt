@@ -3,7 +3,7 @@ pytz==2017.2
 mysql-connector-python==8.0.15
 PyYAML==4.2b1
 minio==2.2.4
-kafka==1.3.5
+kafka-python==1.4.4
 influxdb==5.2.1
 pyarrow==0.11.1
 pympler==0.5

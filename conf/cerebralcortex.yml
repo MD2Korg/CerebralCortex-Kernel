@@ -77,12 +77,12 @@ messaging_service: none
 #########################################################################
 #                          Data Provenance Storage                      #
 #########################################################################
-provenance: mprov
+provenance: none
 
 mprove:
-  host: 127.0.0.1 # change if MySQL is installed remotely
-  port: 8088 # Change if MySQL is not using default port
-  username: 'sample' # Change
-  pass: 'default' # Change
-  namespace: 'http://mprov.md2k.org'
-  graph_name: 'mProv-graph'
+#  host: 127.0.0.1 # change if MySQL is installed remotely
+#  port: 8088 # Change if MySQL is not using default port
+#  username: 'sample' # Change
+#  pass: 'default' # Change
+#  namespace: 'http://mprov.md2k.org'
+#  graph_name: 'mProv-graph'

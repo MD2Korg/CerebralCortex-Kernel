@@ -6,7 +6,6 @@ Subpackages
 
 .. toctree::
 
-    cerebralcortex.core.data_manager.data_importer
     cerebralcortex.core.data_manager.object
     cerebralcortex.core.data_manager.raw
     cerebralcortex.core.data_manager.sql
