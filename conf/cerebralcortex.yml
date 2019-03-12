@@ -73,6 +73,8 @@ messaging_service: none
 #kafka:
 #  host: 127.0.0.1
 #  port: 9092
+#  ping_kafka: 5
+#  consumer_group_id: "md2k-data-ingestion"
 
 #########################################################################
 #                          Data Provenance Storage                      #

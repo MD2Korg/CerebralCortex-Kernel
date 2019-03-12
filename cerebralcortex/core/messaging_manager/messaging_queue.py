@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-
+from pyspark.streaming import StreamingContext
 from kafka import KafkaConsumer
 from kafka import KafkaProducer
 
@@ -41,13 +41,29 @@ class MessagingQueue(KafkaHandler):
             auto_offset_reset (str): smallest (start of the topic) OR largest (end of a topic) (default="largest")
         """
         self.config = CC.config
+        self.CC = CC
+
+        if CC.config["messaging_service"]=="none":
+            raise Exception("Messaging service is disabled (none) in cerebralcortex.yml. Please update configs.")
+
+
+        self.ping_kafka = self.config["kafka"]["ping_kafka"]
+        self.consumer_group_id = self.config["kafka"]["consumer_group_id"]
+
+        try:
+            ping_kafka = int(self.ping_kafka)
+        except:
+            raise Exception("ping_kafka value can only be an integer. Please check data_ingestion.yml")
+
+        self.ssc = StreamingContext(self.CC.sparkContext, ping_kafka)
+
         if self.config["messaging_service"]!="none" and "kafka" in self.config and self.config['messaging_service']=="kafka":
-            self.hostIP = self.config['kafka']['host']
-            self.hostPort = self.config['kafka']['port']
+            self.broker = self.config['kafka']['host'] +":"+self.config['kafka']['port']
             self.auto_offset_reset= auto_offset_reset
-            self.producer = KafkaProducer(bootstrap_servers=str(self.hostIP)+":"+str(self.hostPort), api_version=(0,10),
+
+            self.producer = KafkaProducer(bootstrap_servers=str(self.broker), api_version=(0,10),
                                           value_serializer=lambda v: json.dumps(v).encode('utf-8'),
                                           compression_type='gzip')
 
-            self.consumer = KafkaConsumer(bootstrap_servers=str(self.hostIP)+":"+str(self.hostPort), api_version=(0,10),
+            self.consumer = KafkaConsumer(bootstrap_servers=str(self.broker), api_version=(0,10),
                                           auto_offset_reset=self.auto_offset_reset)
