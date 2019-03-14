@@ -58,7 +58,7 @@ class MessagingQueue(KafkaHandler):
         self.ssc = StreamingContext(self.CC.sparkContext, ping_kafka)
 
         if self.config["messaging_service"]!="none" and "kafka" in self.config and self.config['messaging_service']=="kafka":
-            self.broker = self.config['kafka']['host'] +":"+self.config['kafka']['port']
+            self.broker = str(self.config['kafka']['host']) +":"+str(self.config['kafka']['port'])
             self.auto_offset_reset= auto_offset_reset
 
             self.producer = KafkaProducer(bootstrap_servers=str(self.broker), api_version=(0,10),
