@@ -26,6 +26,7 @@
 
 import traceback
 from enum import Enum
+import pandas as pd
 
 from pyspark.sql.functions import lit
 
@@ -129,23 +130,32 @@ class StreamHandler():
             metadata = self.__update_data_desciptor(data=data, metadata=metadata)
             try:
                 if datastream:
-                    column_names = data.schema.names
-                    # if 'user' not in column_names:
-                    #     raise Exception("user column is missing in data schema")
-                    if 'ver' not in column_names:
+                    if isinstance(data, pd.DataFrame):
+                        column_names = data.columns
+                    else:
+                        column_names = data.schema.names
+
+                    if 'user' not in column_names:
+                        raise Exception("user column is missing in data schema")
+
+                    if 'ver' in column_names:
                         data = data.drop('ver')
 
 
                     result = self.sql_data.save_stream_metadata(metadata)
                     if result["status"]==True:
                         version = result["version"]
-                        data = data.drop('version')
-                        data = data.withColumn('version', lit(version))
+                        if "version" in column_names:
+                            data = data.drop('version')
+                        if isinstance(data, pd.DataFrame):
+                            data["version"] = version
+                        else:
+                            data = data.withColumn('version', lit(version))
 
                         status = self.nosql.write_file(stream_name, data)
                         return status
                     else:
-                        print("Something went wrong in saving data points.")
+                        print("Something went wrong in saving data points in SQL store.")
                         return False
             except Exception as e:
                 self.logging.log(
@@ -170,12 +180,20 @@ class StreamHandler():
 
         """
         tmp = []
-        for field in data.schema.fields:
-            if field.name not in ["timestamp", "localtime", "user", "version"]:
-                basic_dd = {}
-                basic_dd["name"] = field.name
-                basic_dd["type"]= str(field.dataType)
-                tmp.append(basic_dd)
+        if isinstance(data, pd.DataFrame):
+            for field_name, field_type in zip(data.dtypes.index, data.dtypes):
+                if field_name not in ["timestamp", "localtime", "user", "version"]:
+                    basic_dd = {}
+                    basic_dd["name"] = field_name
+                    basic_dd["type"]= str(field_type)
+                    tmp.append(basic_dd)
+        else:
+            for field in data.schema.fields:
+                if field.name not in ["timestamp", "localtime", "user", "version"]:
+                    basic_dd = {}
+                    basic_dd["name"] = field.name
+                    basic_dd["type"]= str(field.dataType)
+                    tmp.append(basic_dd)
 
         new_dd = []
         for dd in metadata.data_descriptor:

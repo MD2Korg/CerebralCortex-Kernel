@@ -25,7 +25,9 @@
 
 
 from pyspark.sql.functions import lit
-
+import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 from cerebralcortex.core.datatypes import DataStream
 
 
@@ -78,9 +80,31 @@ class FileSystemStorage:
         Raises:
             Exception: if DataFrame write operation fails
         """
+        if isinstance(data, pd.DataFrame):
+            return self.write_pandas_dataframe(stream_name, data)
+        else:
+            return self.write_spark_dataframe(stream_name, data)
+
+        # hdfs_url = self._get_storage_path(stream_name)
+        # try:
+        #     data.write.partitionBy(["version","user"]).format('parquet').mode('overwrite').save(hdfs_url)
+        #     return True
+        # except Exception as e:
+        #     raise Exception("Cannot store dataframe: "+str(e))
+
+    def write_spark_dataframe(self, stream_name, data):
         hdfs_url = self._get_storage_path(stream_name)
         try:
             data.write.partitionBy(["version","user"]).format('parquet').mode('overwrite').save(hdfs_url)
+            return True
+        except Exception as e:
+            raise Exception("Cannot store dataframe: "+str(e))
+
+    def write_pandas_dataframe(self, stream_name, data):
+        try:
+            hdfs_url = self._get_storage_path(stream_name)
+            table = pa.Table.from_pandas(data, preserve_index=False)
+            pq.write_to_dataset(table, root_path=hdfs_url, partition_cols=["version", "user"])
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))

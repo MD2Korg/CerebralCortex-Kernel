@@ -71,7 +71,7 @@ class KafkaHandler():
         for message in self.consumer: #TODO: this is a test-code.
             yield json.loads(message.value.decode('utf8'))
 
-    def create_direct_kafka_stream(self, kafka_topic: str) -> KafkaDStream:
+    def create_direct_kafka_stream(self, kafka_topic: str, ssc) -> KafkaDStream:
         """
         Create a direct stream to kafka topic. Supports only one topic at a time
 
@@ -85,7 +85,8 @@ class KafkaHandler():
             Enable logging of errors
         """
         try:
-            offsets = self.CC.get_kafka_offsets(kafka_topic[0])
+            offsets = self.CC.get_kafka_offsets(kafka_topic)
+            kafka_topic = [kafka_topic]
 
             if bool(offsets):
                 fromOffset = {}
@@ -97,12 +98,12 @@ class KafkaHandler():
                     topicPartion = TopicAndPartition(topic, int(topic_partition))
                     fromOffset[topicPartion] = int(offset_start)
 
-                return KafkaUtils.createDirectStream(self.ssc, kafka_topic,
+                return KafkaUtils.createDirectStream(ssc, kafka_topic,
                                                      {"metadata.broker.list": self.broker,
                                                       "group.id": self.consumer_group_id}, fromOffsets=fromOffset)
             else:
                 offset_reset = "smallest"  # smallest OR largest
-                return KafkaUtils.createDirectStream(self.ssc, kafka_topic,
+                return KafkaUtils.createDirectStream(ssc, kafka_topic,
                                                      {"metadata.broker.list": self.broker, "auto.offset.reset": offset_reset,
                                                       "group.id": self.consumer_group_id})
         except Exception as e:

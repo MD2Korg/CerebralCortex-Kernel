@@ -24,7 +24,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from pyspark.sql.functions import lit
-
+import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 from cerebralcortex.core.datatypes import DataStream
 
 
@@ -77,15 +79,38 @@ class HDFSStorage:
         Raises:
             Exception: if DataFrame write operation fails
         """
+        if isinstance(data, pd.DataFrame):
+            return self.write_pandas_dataframe(stream_name, data)
+        else:
+            return self.write_spark_dataframe(stream_name, data)
+
+        # hdfs_url = self._get_storage_path(stream_name)
+        # try:
+        #     #data.write.save(hdfs_url, format='parquet', mode='append')
+        #     data.write.partitionBy(["version","user"]).format('parquet').mode('overwrite').save(hdfs_url)
+        #     return True
+        # except Exception as e:
+        #     raise Exception("Cannot store dataframe: "+str(e))
+
+    def write_spark_dataframe(self, stream_name, data):
         hdfs_url = self._get_storage_path(stream_name)
         try:
-            #data.write.save(hdfs_url, format='parquet', mode='append')
             data.write.partitionBy(["version","user"]).format('parquet').mode('overwrite').save(hdfs_url)
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
-    
-    def _get_storage_path(self, stream_name:str)->str:
+
+    def write_pandas_dataframe(self, stream_name, data):
+        try:
+            hdfs_url = self._get_storage_path(stream_name, no_spark=True)
+            table = pa.Table.from_pandas(data, preserve_index=False)
+            fs = pa.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+            pq.write_to_dataset(table, root_path=hdfs_url, partition_cols=["version", "user"], filesystem=fs)
+            return True
+        except Exception as e:
+            raise Exception("Cannot store dataframe: "+str(e))
+
+    def _get_storage_path(self, stream_name:str, no_spark=False)->str:
         """
         Build path of storage location
 
@@ -95,7 +120,10 @@ class HDFSStorage:
             str: storage location path
 
         """
-        storage_url = self.obj.hdfs_spark_url + self.obj.raw_files_dir
+        if no_spark:
+            storage_url = self.obj.raw_files_dir
+        else:
+            storage_url = self.obj.hdfs_spark_url + self.obj.raw_files_dir
 
         if stream_name is None or stream_name=="":
             return storage_url

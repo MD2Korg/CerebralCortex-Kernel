@@ -10,16 +10,16 @@ cc:
 #########################################################################
 #                        NoSQL Storage                                  #
 #########################################################################
-nosql_storage: hdfs
+nosql_storage: filesystem
 
 filesystem:
   # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
   filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/tmp/"
 
-hdfs:
-  host: localhost
-  port: 9001
-  raw_files_dir: "cerebralcortex/"
+#hdfs:
+#  host: localhost
+#  port: 9001
+#  raw_files_dir: "cerebralcortex/"
 
 #########################################################################
 #                        OBJECT Storage                                 #
