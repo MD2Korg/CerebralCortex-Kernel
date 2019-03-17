@@ -44,13 +44,14 @@ class StreamHandler():
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
-    def get_stream(self, stream_name:str, version:str, data_type=DataSet.COMPLETE) -> DataStream:
+    def get_stream(self, stream_name:str, version:str, user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
         """
         Retrieve a data-stream with it's metadata.
 
         Args:
             stream_name (str): name of a stream
             version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
+            user_id (str): id of a user
             data_type (DataSet):  DataSet.COMPLETE returns both Data and Metadata. DataSet.ONLY_DATA returns only Data. DataSet.ONLY_METADATA returns only metadata of a stream. (Default=DataSet.COMPLETE)
 
         Returns:
@@ -87,10 +88,10 @@ class StreamHandler():
 
         if len(stream_metadata) > 0:
             if data_type == DataSet.COMPLETE:
-                df = self.nosql.read_file(stream_name=stream_name, version=version)
+                df = self.nosql.read_file(stream_name=stream_name, version=version, user_id=user_id)
                 stream = DataStream(data=df,metadata=stream_metadata)
             elif data_type == DataSet.ONLY_DATA:
-                df = self.nosql.read_file(stream_name=stream_name, version=version)
+                df = self.nosql.read_file(stream_name=stream_name, version=version, user_id=user_id)
                 stream = DataStream(data=df)
             elif data_type == DataSet.ONLY_METADATA:
                 stream = DataStream(metadata=stream_metadata)

@@ -379,8 +379,12 @@ class DataStream:
 
         Args:
             version (List[str]): list of stream versions
+
         Returns:
             DataStream: this will return a new datastream object with blank metadata
+
+        Todo:
+            Metadata version should be return with the data
         """
         if not isinstance(version, list):
             version = [version]
