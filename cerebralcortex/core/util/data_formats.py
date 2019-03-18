@@ -54,7 +54,7 @@ def msgpack_to_pandas(input_data: object) -> pd.DataFrame:
         df = pd.DataFrame(data, columns=header)
         df.Timestamp = pd.to_datetime(df['Timestamp'], unit='us')
         df.Timestamp = df.Timestamp.dt.tz_localize('UTC')
-
+        df.columns = df.columns.str.lower()
         return df
 
 
