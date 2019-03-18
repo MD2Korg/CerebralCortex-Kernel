@@ -56,9 +56,9 @@ def get_centermost_point(cluster: object) -> object:
 
 
 schema = StructType([
-    StructField("owner", StringType()),
-    StructField("Latitude", FloatType()),
-    StructField("Longitude", FloatType())
+    StructField("user", StringType()),
+    StructField("latitude", FloatType()),
+    StructField("longitude", FloatType())
 ])
 
 @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
@@ -76,12 +76,13 @@ def gps_clusters(data: object) -> object:
     geo_fence_distance = GEO_FENCE_DISTANCE
     min_points_in_cluster = MINIMUM_POINTS_IN_CLUSTER
 
-    data = data[data.Accuracy < GPS_ACCURACY_THRESHOLD]
+    data = data[data.accuracy < GPS_ACCURACY_THRESHOLD]
 
-    id = data.owner.iloc[0]
+    id = data.user.iloc[0]
     dataframe = pd.DataFrame(
-        {'Latitude': data.Latitude, 'Longitude': data.Longitude})
-    coords = dataframe.as_matrix(columns=['Latitude', 'Longitude'])
+        {'latitude': data.latitude, 'longitude': data.longitude})
+    coords = dataframe.as_matrix(columns=['latitude', 'longitude'])
+
     epsilon = geo_fence_distance / (
             EPSILON_CONSTANT * KM_PER_RADIAN)
     db = DBSCAN(eps=epsilon, min_samples=min_points_in_cluster,
@@ -101,5 +102,5 @@ def gps_clusters(data: object) -> object:
         cols.flatten()
         cs = ([id, cols[LATITUDE], cols[LONGITUDE]])
         all_centroid.append(cs)
-    df = pd.DataFrame(all_centroid, columns=['owner', 'Latitude', 'Longitude'])
+    df = pd.DataFrame(all_centroid, columns=['user', 'latitude', 'longitude'])
     return df
