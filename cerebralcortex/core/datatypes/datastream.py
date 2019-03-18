@@ -257,10 +257,8 @@ class DataStream:
         exprs = self._get_column_names(columnName=columnName, methodName=methodName)
         result = self._data.groupBy(['user',F.window("timestamp", windowDuration)]).agg(exprs)
 
-        self._data = result
-        self._update_column_names()
-        self.metadata = Metadata()
-        return self
+        result = self._update_column_names(result)
+        return DataStream(data=result, metadata=Metadata())
 
 
     # !!!!                              WINDOWING METHODS                           !!!
@@ -290,23 +288,21 @@ class DataStream:
         else:
             windowed_data = self._data.groupBy(['user',F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)]).agg(exprs)
 
-        self._data = windowed_data
+        data = windowed_data
 
-        self._update_column_names()
+        data = self._update_column_names(data)
 
-        self.metadata = Metadata()
+        return DataStream(data=data, metadata=Metadata())
 
-        return self
-
-    def _update_column_names(self):
+    def _update_column_names(self, data):
         columns = []
-        for column in self._data.columns:
+        for column in data.columns:
             if "(" in column:
                 m = re.search('\((.*?)\)', column)
                 columns.append(m.group(1))
             else:
                 columns.append(column)
-        self._data = self._data.toDF(*columns)
+        return data.toDF(*columns)
 
     # !!!!                              FILTERING METHODS                           !!!
 
@@ -318,7 +314,8 @@ class DataStream:
             *args:
             **kwargs:
         """
-        self._data = self._data.drop(*args, **kwargs)
+        data = self._data.drop(*args, **kwargs)
+        return DataStream(data=data, metadata=Metadata())
 
     def limit(self, *args, **kwargs):
         """
@@ -328,7 +325,8 @@ class DataStream:
             *args:
             **kwargs:
         """
-        self._data = self._data.limit(*args, **kwargs)
+        data = self._data.limit(*args, **kwargs)
+        return DataStream(data=data, metadata=Metadata())
 
     def where(self, *args, **kwargs):
         """
@@ -338,7 +336,8 @@ class DataStream:
             *args:
             **kwargs:
         """
-        self._data = self._data.where(*args, **kwargs)
+        data = self._data.where(*args, **kwargs)
+        return DataStream(data=data, metadata=Metadata())
 
     def filter(self, columnName, operator, value):
         """
@@ -353,10 +352,8 @@ class DataStream:
             DataStream: this will return a new datastream object with blank metadata
         """
         where_clause = columnName+operator+"'"+str(value)+"'"
-        result = self._data.where(where_clause)
-        self._data = result
-        self.metadata = Metadata()
-        return self
+        data = self._data.where(where_clause)
+        return DataStream(data=data, metadata=Metadata())
 
     def filter_user(self, user_ids:List):
         """
@@ -369,10 +366,8 @@ class DataStream:
         """
         if not isinstance(user_ids, list):
             user_ids = [user_ids]
-        result = self._data.where(self._data["user"].isin(user_ids))
-        self._data = result
-        self.metadata = Metadata()
-        return self
+        data = self._data.where(self._data["user"].isin(user_ids))
+        return DataStream(data=data, metadata=Metadata())
 
     def filter_version(self, version:List):
         """
@@ -389,10 +384,8 @@ class DataStream:
         """
         if not isinstance(version, list):
             version = [version]
-        result = self._data.where(self._data["version"].isin(version))
-        self._data = result
-        self.metadata = Metadata()
-        return self
+        data = self._data.where(self._data["version"].isin(version))
+        return DataStream(data=data, metadata=Metadata())
 
     def groupby(self, columnName):
         """
@@ -403,9 +396,8 @@ class DataStream:
         Returns:
 
         """
-        self._data = self._data.groupby(columnName)
-        self.metadata = Metadata()
-        return self
+        data = self._data.groupby(columnName)
+        return DataStream(data=data, metadata=Metadata())
 
     # def win(self, udfName):
     #     self._data = self._data.groupBy(['owner', F.window("timestamp", "60 seconds")]).apply(udfName)
@@ -413,9 +405,8 @@ class DataStream:
     #     return self
 
     def compute(self, udfName):
-        self._data = self._data.apply(udfName)
-        self.metadata = Metadata()
-        return self
+        data = self._data.apply(udfName)
+        return DataStream(data=data, metadata=Metadata())
 
     def show(self, *args, **kwargs):
         self._data.show(*args, **kwargs)
