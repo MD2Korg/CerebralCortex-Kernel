@@ -133,7 +133,8 @@ class DataStream:
             >>> pandas_df = ds.to_pandas()
             >>> pandas_df.head()
         """
-        return self._data.toPandas()
+        return DataStream(data=self._data.toPandas(), metadata=Metadata())
+
 
     def collect(self):
         """
@@ -142,7 +143,7 @@ class DataStream:
         Returns:
             List: rows of all the dataframe
         """
-        return self._data.collect()
+        return DataStream(data=self._data.collect(), metadata=Metadata())
 
 
     # !!!!                                  STAT METHODS                           !!!
