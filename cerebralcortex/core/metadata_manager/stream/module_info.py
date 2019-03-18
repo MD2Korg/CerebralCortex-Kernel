@@ -33,7 +33,7 @@ class ModuleMetadata:
         self.name = None
         self.version = None
         self.authors = []
-        self.attributes = {}
+        self.attributes = []
 
     def set_name(self, value):
         """
@@ -98,7 +98,7 @@ class ModuleMetadata:
         """
         if key is None or key=="" or value is None or value=="":
             raise ValueError("Key and/or value cannot be None or empty.")
-        self.attributes[key] = value
+        self.attributes.append({key:value})
         return self
 
     def from_json(self, obj):

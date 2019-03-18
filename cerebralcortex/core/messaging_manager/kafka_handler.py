@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
+from pyspark.streaming.kafka import KafkaUtils, KafkaDStream, TopicAndPartition
 
 
 class KafkaHandler():
@@ -69,3 +70,41 @@ class KafkaHandler():
         self.consumer.subscribe(topic)
         for message in self.consumer: #TODO: this is a test-code.
             yield json.loads(message.value.decode('utf8'))
+
+    def create_direct_kafka_stream(self, kafka_topic: str, ssc) -> KafkaDStream:
+        """
+        Create a direct stream to kafka topic. Supports only one topic at a time
+
+        Args:
+            kafka_topic: kafka topic to create stream against
+
+        Raises:
+             Exception: if direct stream cannot be created.
+
+        Todo:
+            Enable logging of errors
+        """
+        try:
+            offsets = self.CC.get_kafka_offsets(kafka_topic)
+            kafka_topic = [kafka_topic]
+
+            if bool(offsets):
+                fromOffset = {}
+                for offset in offsets:
+                    offset_start = offset["offset_start"]
+                    topic_partition = offset["topic_partition"]
+                    topic = offset["topic"]
+
+                    topicPartion = TopicAndPartition(topic, int(topic_partition))
+                    fromOffset[topicPartion] = int(offset_start)
+
+                return KafkaUtils.createDirectStream(ssc, kafka_topic,
+                                                     {"metadata.broker.list": self.broker,
+                                                      "group.id": self.consumer_group_id}, fromOffsets=fromOffset)
+            else:
+                offset_reset = "smallest"  # smallest OR largest
+                return KafkaUtils.createDirectStream(ssc, kafka_topic,
+                                                     {"metadata.broker.list": self.broker, "auto.offset.reset": offset_reset,
+                                                      "group.id": self.consumer_group_id})
+        except Exception as e:
+            print(e)

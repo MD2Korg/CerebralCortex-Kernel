@@ -25,6 +25,7 @@
 
 import json
 import os
+import gzip
 import types
 import warnings
 from typing import Callable
@@ -66,8 +67,12 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
     Returns:
         bool: False in case of an error
 
+    Todo:
+        In case of swapped data stream (e.g., gyro data was put into accel data foler), store some data points
+
     """
     warnings.simplefilter(action='ignore', category=FutureWarning)
+
 
     if user_id is None:
         raise ValueError("user_id cannot be None.")
@@ -87,6 +92,20 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
     sql_data = SqlData(cc_config)
 
     try:
+        if compression is "gzip":
+            try:
+                df = pd.read_csv(file_path, compression=compression, delimiter="\n", header=header, quotechar='"')
+            except:
+                df = []
+                with gzip.open(file_path,'rt') as f:
+                    try:
+                        for line in f:
+                            df.append(line)
+                    except Exception as e:
+                        fault_description = "cannot read file: " \
+                                            "" + str(e)
+                        sql_data.add_ingestion_log(user_id=user_id, stream_name="no-name", file_path=file_path,
+                                                   fault_type="PARTIAL_CORRUPT_DATA_FILE", fault_description=fault_description, success=0)
         if compression is not None:
             df = pd.read_csv(file_path, compression=compression, delimiter="\n", header=header, quotechar='"')
         else:
@@ -98,7 +117,11 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
         return False
 
     try:
-        df_list = df.values.tolist()
+        if isinstance(df, list):
+            df_list = df
+        else:
+            df_list = df.values.tolist()
+
         tmp_list = []
         for tmp in df_list:
             result = data_parser(tmp)

@@ -91,7 +91,7 @@ class Kernel:
         if self.config["visualization_storage"] != "none":
             self.TimeSeriesData = TimeSeriesData(self)
 
-        if self.config["messaging_service"] != "none":
+        if enable_spark and self.config["messaging_service"] != "none":
             self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
 
         if self.config["provenance"] != "none":

@@ -24,7 +24,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from pyspark.sql.functions import lit
-
+import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 from cerebralcortex.core.datatypes import DataStream
 
 
@@ -39,12 +41,13 @@ class HDFSStorage:
         """
         self.obj = obj
 
-    def read_file(self, stream_name:str, version:str="all"):
+    def read_file(self, stream_name:str, version:str="all", user_id:str=None)->object:
         """
         Get stream data from storage system. Data would be return as pyspark DataFrame object
         Args:
             stream_name (str): name of a stream
             version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
+            user_id (str): id of a user
         Note:
             Please specify a version if you know the exact version of a stream. Getting all the stream data and then filtering versions won't be efficient.
 
@@ -53,16 +56,44 @@ class HDFSStorage:
         Raises:
             Exception: if stream name does not exist.
         """
-        if version=="all":
-            hdfs_url = self._get_storage_path(stream_name)
-            df = self.obj.sparkSession.read.load(hdfs_url)
-            return df
-        else:
-            hdfs_url = self._get_storage_path(stream_name)
-            hdfs_url = hdfs_url+"version="+str(version)
-            df = self.obj.sparkSession.read.load(hdfs_url)
+        if user_id is not None and version=="all":
+            raise Exception("Not supported, yet. You can only request only one version of a stream associated with a user.")
+
+        if stream_name!="" and stream_name is not None:
+            if not self.obj.sql_data.is_stream(stream_name=stream_name):
+                raise Exception("stream_name does not exist.")
+
+        if user_id is not None:
+            if not self.obj.sql_data.is_user(user_id=user_id):
+                raise Exception("user_id does not exist.")
+
+        hdfs_url = self._get_storage_path(stream_name)
+
+        if version is not None and version!="all":
+            hdfs_url = hdfs_url+"version="+str(version)+"/"
+        if user_id is not None:
+            hdfs_url = hdfs_url+"user="+str(user_id)+"/"
+
+        df = self.obj.sparkSession.read.load(hdfs_url)
+
+        if version is not None and version!="all":
             df = df.withColumn('version', lit(int(version)))
-            return df
+
+        if user_id is not None:
+            df = df.withColumn('user', lit(str(user_id)))
+
+        return df
+
+        # if version=="all":
+        #     hdfs_url = self._get_storage_path(stream_name)
+        #     df = self.obj.sparkSession.read.load(hdfs_url)
+        #     return df
+        # else:
+        #     hdfs_url = self._get_storage_path(stream_name)
+        #     hdfs_url = hdfs_url+"version="+str(version)
+        #     df = self.obj.sparkSession.read.load(hdfs_url)
+        #     df = df.withColumn('version', lit(int(version)))
+        #     return df
 
     def write_file(self, stream_name:str, data:DataStream.data) -> bool:
         """
@@ -77,15 +108,38 @@ class HDFSStorage:
         Raises:
             Exception: if DataFrame write operation fails
         """
+        if isinstance(data, pd.DataFrame):
+            return self.write_pandas_dataframe(stream_name, data)
+        else:
+            return self.write_spark_dataframe(stream_name, data)
+
+        # hdfs_url = self._get_storage_path(stream_name)
+        # try:
+        #     #data.write.save(hdfs_url, format='parquet', mode='append')
+        #     data.write.partitionBy(["version","user"]).format('parquet').mode('overwrite').save(hdfs_url)
+        #     return True
+        # except Exception as e:
+        #     raise Exception("Cannot store dataframe: "+str(e))
+
+    def write_spark_dataframe(self, stream_name, data):
         hdfs_url = self._get_storage_path(stream_name)
         try:
-            #data.write.save(hdfs_url, format='parquet', mode='append')
             data.write.partitionBy(["version","user"]).format('parquet').mode('overwrite').save(hdfs_url)
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
-    
-    def _get_storage_path(self, stream_name:str)->str:
+
+    def write_pandas_dataframe(self, stream_name, data):
+        try:
+            hdfs_url = self._get_storage_path(stream_name, no_spark=True)
+            table = pa.Table.from_pandas(data, preserve_index=False)
+            fs = pa.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+            pq.write_to_dataset(table, root_path=hdfs_url, partition_cols=["version", "user"], filesystem=fs)
+            return True
+        except Exception as e:
+            raise Exception("Cannot store dataframe: "+str(e))
+
+    def _get_storage_path(self, stream_name:str, no_spark=False)->str:
         """
         Build path of storage location
 
@@ -95,7 +149,10 @@ class HDFSStorage:
             str: storage location path
 
         """
-        storage_url = self.obj.hdfs_spark_url + self.obj.raw_files_dir
+        if no_spark:
+            storage_url = self.obj.raw_files_dir
+        else:
+            storage_url = self.obj.hdfs_spark_url + self.obj.raw_files_dir
 
         if stream_name is None or stream_name=="":
             return storage_url
