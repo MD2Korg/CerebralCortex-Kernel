@@ -3,13 +3,12 @@ pytz==2017.2
 mysql-connector-python==8.0.15
 PyYAML==4.2b1
 minio==2.2.4
-kafka-python==1.4.4
+kafka-python==1.4.5
 influxdb==5.2.1
 pyarrow==0.11.1
 pympler==0.5
 hdfs3==0.3.0
 pyspark==2.4.0
-pennprov==2.2.0.dev3
 msgpack==0.6.1
 PyJWT==1.7.1
 pandas==0.24.1

@@ -90,9 +90,6 @@ class Kernel:
         if enable_spark and self.config["messaging_service"] != "none":
             self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
 
-        if self.config["provenance"] != "none":
-            self.MProvConnection = MProvConnection(self)
-
     ###########################################################################
     #                     RAW DATA MANAGER METHODS                            #
     ###########################################################################
