@@ -46,7 +46,7 @@ from cerebralcortex.data_importer.util.directory_scanners import dir_scanner
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def import_file(cc_config: dict, user_id: str, file_path: str, compression: str = None, header: int = None,
+def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamname_pattern: str = None, compression: str = None, header: int = None,
                 metadata: Metadata = None, metadata_parser: Callable = None, data_parser: Callable = None):
     """
     Import a single file and its metadata into cc-storage.
@@ -88,6 +88,83 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
         raise ValueError("Either pass metadata or metadata_parser.")
 
     sql_data = SqlData(cc_config)
+
+    if metadata is not None:
+        if isinstance(metadata, str):
+            metadata_dict = json.loads(metadata)
+            try:
+                metadata = Metadata().from_json_file(metadata_dict)
+            except Exception as e:
+                fault_description = "Cannot convert string metadata into MetaData object: " + str(e)
+                sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                           file_path=file_path, fault_type="CANNOT_PARSE_METADATA_FILE",
+                                           fault_description=fault_description, success=0)
+            # df = assign_column_names_types(df, metadata_dict)
+        elif isinstance(metadata, dict):
+            metadata_dict = metadata
+            try:
+                metadata = Metadata().from_json_file(metadata_dict)
+            except Exception as e:
+                fault_description = "Cannot convert dict metadata into MetaData object: " + str(e)
+                sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                           file_path=file_path, fault_type="CANNOT_PARSE_METADATA_FILE",
+                                           fault_description=fault_description, success=0)
+                return False
+        elif isinstance(metadata, Metadata):
+            try:
+                metadata.is_valid()
+                metadata_dict = metadata.to_json()
+            except Exception as e:
+                fault_description = "metadata object is not valid: " + str(e)
+            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                       file_path=file_path, fault_type="CANNOT_PARSE_METADATA_FILE",
+                                       fault_description=fault_description, success=0)
+        else:
+            raise Exception("Invalid metadata")
+
+    else:
+        try:
+
+            file_ext = os.path.splitext(file_path)[1]
+            metadata_file = file_path.replace(file_ext, ".json")
+            if metadata_file.endswith(".json"):
+                with open(metadata_file, "r") as md:
+                    metadata = md.read()
+                    metadata = metadata.lower()
+                    metadata_dict = json.loads(metadata)
+                    cmm = sql_data.get_corrected_metadata(stream_name=metadata_dict.get("name"))
+                    if cmm:
+                        metadata_dict = cmm
+                    #metadata = Metadata().from_json_file(metadata_dict)
+        except Exception as e:
+            fault_description = "read/parse metadata: " + str(e)
+            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                       file_path=file_path, fault_type="CANNOT_PARSE_METADATA_FILE",
+                                       fault_description=fault_description, success=0)
+            return False
+
+    #df = assign_column_names_types(df, metadata_dict)
+
+    try:
+        if metadata_parser is not None:
+            metadata = metadata_parser(metadata_dict)
+        else:
+            metadata = Metadata().from_json_file(metadata_dict)
+
+    except Exception as e:
+        raise Exception("Error in converting metadata json object to Metadata class structure. "+str(e))
+
+    try:
+        if isinstance(metadata, dict):
+            metadata["stream_metadata"].is_valid()
+        else:
+            metadata.is_valid()
+    except Exception as e:
+        fault_description = "metadata is not valid: " + str(e)
+        sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                   file_path=file_path, fault_type="MISSING_METADATA_FIELDS",
+                                   fault_description=fault_description, success=0)
+        return False
 
     try:
         if compression is "gzip":
@@ -132,76 +209,9 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
         return False
 
 
-    if metadata is not None:
-        if isinstance(metadata, str):
-            metadata_dict = json.loads(metadata)
-
-            df = assign_column_names_types(df, metadata_dict)
-        if isinstance(metadata, dict):
-            metadata_dict = metadata
-            try:
-                metadata = Metadata().from_json_file(metadata)
-            except Exception as e:
-                fault_description = "Cannot convert metadata into MetaData object: " + str(e)
-                sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                           file_path=file_path, fault_type="CANNOT_PARSE_METADATA_FILE",
-                                           fault_description=fault_description, success=0)
-                return False
-        if isinstance(metadata, Metadata):
-            try:
-                metadata.is_valid()
-                metadata_dict = metadata.to_json()
-            except Exception as e:
-                fault_description = "read/parse metadata: " + str(e)
-            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                       file_path=file_path, fault_type="CANNOT_PARSE_METADATA_FILE",
-                                       fault_description=fault_description, success=0)
-
-    else:
-        try:
-
-            file_ext = os.path.splitext(file_path)[1]
-            metadata_file = file_path.replace(file_ext, ".json")
-            if metadata_file.endswith(".json"):
-                with open(metadata_file, "r") as md:
-                    metadata = md.read()
-                    metadata = metadata.lower()
-                    metadata_dict = json.loads(metadata)
-                    cmm = SqlData.get_corrected_metadata(metadata_dict.get("name"))
-                    if cmm:
-                        metadata_dict = cmm
-                    #metadata = Metadata().from_json_file(metadata_dict)
-        except Exception as e:
-            fault_description = "read/parse metadata: " + str(e)
-            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                       file_path=file_path, fault_type="CANNOT_PARSE_METADATA_FILE",
-                                       fault_description=fault_description, success=0)
-            return False
-
     df = assign_column_names_types(df, metadata_dict)
 
-    try:
-        if metadata_parser is not None:
-            metadata = metadata_parser(metadata_dict)
-        else:
-            metadata = Metadata().from_json_file(metadata_dict)
-
-    except Exception as e:
-        raise Exception("Error in converting metadata json object to Metadata class structure. "+str(e))
-
-    try:
-        if isinstance(metadata, dict):
-            metadata["stream_metadata"].is_valid()
-        else:
-            metadata.is_valid()
-    except Exception as e:
-        fault_description = "metadata is not valid: " + str(e)
-        sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                   file_path=file_path, fault_type="MISSING_METADATA_FIELDS",
-                                   fault_description=fault_description, success=0)
-        return False
-
-    # write metadata
+    # save metadata/data
     if metadata_parser is not None and metadata_parser.__name__ == 'mcerebrum_metadata_parser':
 
         platform_data = metadata_dict.get("execution_context", {}).get("platform_metadata", "")
@@ -284,6 +294,7 @@ def print_stats_table(ingestion_stats: dict):
 
 def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_file_extension: list = [],
                allowed_filename_pattern: str = None,
+               allowed_streamname_pattern: str = None,
                batch_size: int = None, compression: str = None, header: int = None, metadata: Metadata = None,
                metadata_parser: Callable = None, data_parser: Callable = None,
                gen_report: bool = False):

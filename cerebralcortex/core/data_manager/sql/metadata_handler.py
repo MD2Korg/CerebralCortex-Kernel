@@ -43,7 +43,7 @@ class MetadataHandler:
         if not stream_name:
             raise ValueError("stream_name cannot be empty.")
 
-        qry = "select * from " + self.correctedMetadata + " where stream_name=%(key)s group by stream_name"
+        qry = "select * from " + self.correctedMetadata + " where stream_name=%(stream_name)s group by stream_name"
         vals = {"stream_name": str(stream_name)}
 
         try:
@@ -51,7 +51,7 @@ class MetadataHandler:
             if len(rows) == 0:
                 return {}
             else:
-                metadata = rows[0]["metadata"]
+                metadata = rows[0]["metadata"].lower()
                 return json.loads(metadata)
         except Exception as e:
             raise Exception(str(e))
