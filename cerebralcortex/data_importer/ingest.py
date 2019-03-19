@@ -36,6 +36,7 @@ import pyarrow.parquet as pq
 from texttable import Texttable
 
 from cerebralcortex import Kernel
+from cerebralcortex.core.data_manager.raw.data import RawData
 from cerebralcortex.core.data_manager.sql.data import SqlData
 from cerebralcortex.core.metadata_manager.stream import Metadata
 from cerebralcortex.data_importer.data_parsers.util import assign_column_names_types
@@ -66,9 +67,6 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
 
     Returns:
         bool: False in case of an error
-
-    Todo:
-        In case of swapped data stream (e.g., gyro data was put into accel data foler), store some data points
 
     """
     warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -138,13 +136,6 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
         if isinstance(metadata, str):
             metadata_dict = json.loads(metadata)
 
-            # if dd_total_columns != df_total_columns:
-            #     fault_description = "number data_descriptor columns (" + str(
-            #         dd_total_columns) + ") and dataframe columns (" + str(df_total_columns) + ") do not match"
-            #     sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-            #                                file_path=file_path, fault_type="DATA_METADATA_MISMATCH",
-            #                                fault_description=fault_description, success=0)
-            #     return False
             df = assign_column_names_types(df, metadata_dict)
         if isinstance(metadata, dict):
             metadata_dict = metadata
@@ -168,6 +159,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
 
     else:
         try:
+
             file_ext = os.path.splitext(file_path)[1]
             metadata_file = file_path.replace(file_ext, ".json")
             if metadata_file.endswith(".json"):
@@ -175,6 +167,9 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
                     metadata = md.read()
                     metadata = metadata.lower()
                     metadata_dict = json.loads(metadata)
+                    cmm = SqlData.get_corrected_metadata(metadata_dict.get("name"))
+                    if cmm:
+                        metadata_dict = cmm
                     #metadata = Metadata().from_json_file(metadata_dict)
         except Exception as e:
             fault_description = "read/parse metadata: " + str(e)
@@ -182,16 +177,6 @@ def import_file(cc_config: dict, user_id: str, file_path: str, compression: str 
                                        file_path=file_path, fault_type="CANNOT_PARSE_METADATA_FILE",
                                        fault_description=fault_description, success=0)
             return False
-
-    # df_total_columns = len(df.columns) - 2
-    # dd_total_columns = len(metadata_dict.get("data_descriptor", []))
-    # if dd_total_columns != df_total_columns:
-    #     fault_description = "number data_descriptor columns (" + str(
-    #         dd_total_columns) + ") and dataframe columns (" + str(df_total_columns) + ") do not match"
-    #     sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-    #                                file_path=file_path, fault_type="DATA_METADATA_MISMATCH",
-    #                                fault_description=fault_description, success=0)
-    #     return False
 
     df = assign_column_names_types(df, metadata_dict)
 
@@ -260,18 +245,20 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
         user_id (str): user id
         stream_name (str): name of the stream
     """
-    table = pa.Table.from_pandas(df, preserve_index=False)
-
+    df["version"] = 1
+    df["user"] = str(user_id)
+    table = pa.Table.from_pandas(df)
+    partition_by = ["version", "user"]
     if cc_config["nosql_storage"] == "filesystem":
-        data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "stream="+str(stream_name), "version=1", "user="+str(user_id))
+        data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "stream="+str(stream_name))
         # data_file_url = os.path.join("/home/ali/IdeaProjects/MD2K_DATA/tmp/", "stream=" + str(stream_name), "version=1",
         #                              "user=" + str(user_id))
-        pq.write_to_dataset(table, root_path=data_file_url)
+        pq.write_to_dataset(table, root_path=data_file_url, partition_cols=partition_by, preserve_index=False)
     elif cc_config["nosql_storage"] == "hdfs":
         raw_files_dir = cc_config['hdfs']['raw_files_dir']
         fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
         with fs.open(raw_files_dir, "wb") as fw:
-            pq.write_table(table, fw)
+            pq.write_table(table, fw, partition_cols=partition_by, preserve_index=False)
 
 
 def print_stats_table(ingestion_stats: dict):
