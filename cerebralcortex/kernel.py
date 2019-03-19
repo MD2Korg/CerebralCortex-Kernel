@@ -40,7 +40,6 @@ from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
-from cerebralcortex.modules.mprov.connection.mprov_connection import MProvConnection
 
 
 class Kernel:
