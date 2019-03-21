@@ -71,6 +71,9 @@ class StreamHandler():
             raise ValueError("stream_name cannot be None or empty")
 
 
+        if not self.sql_data._is_stream(stream_name):
+            print(stream_name, "does not exist.")
+            return DataStream(data=None, metadata=None)
 
         if version is not None and version!="":
             all_versions = self.sql_data.get_stream_versions(stream_name=stream_name)
