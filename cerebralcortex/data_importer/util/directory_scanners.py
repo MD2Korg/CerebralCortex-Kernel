@@ -51,8 +51,8 @@ def dir_scanner(dir_path: str, data_file_extension: list = [], allowed_filename_
             if len(data_file_extension) > 0 and sub.suffix in data_file_extension:
                 if allowed_filename_pattern is not None:
                     try:
-                        re.compile(allowed_filename_pattern)
-                        if re.search(allowed_filename_pattern, sub._str):
+                        allowed_filename_pattern = re.compile(allowed_filename_pattern)
+                        if allowed_filename_pattern.search(sub._str):
                             yield sub._str
                     except re.error:
                         raise re.error

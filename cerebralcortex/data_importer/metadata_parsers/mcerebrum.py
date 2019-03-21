@@ -62,7 +62,7 @@ def new_data_descript_frmt(data_descriptor: dict) -> dict:
     if len(data_descriptor) == 0:
         return {}
     for key, value in data_descriptor.items():
-        if key == "data_type":
+        if key == "data_type" or key=="type":
             basic_dd["type"] = value
         elif key == "name":
             basic_dd[key] = rename_column_name(value)

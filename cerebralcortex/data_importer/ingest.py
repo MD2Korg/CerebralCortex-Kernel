@@ -29,7 +29,7 @@ import gzip
 import types
 import warnings
 from typing import Callable
-
+import re
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -133,8 +133,14 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                     metadata = metadata.lower()
                     metadata_dict = json.loads(metadata)
                     cmm = sql_data.get_corrected_metadata(stream_name=metadata_dict.get("name"))
-                    if cmm:
-                        metadata_dict = cmm
+                    if cmm.get("status")!="include":
+                        fault_description = "Ignored stream ingestion: "+str(metadata_dict.get("name"))+". Criteria: "+cmm.get("status")
+                        sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                                   file_path=file_path, fault_type="IGNORED_STREAM",
+                                                   fault_description=fault_description, success=0)
+                        return False
+                    if cmm.get("metadata"):
+                        metadata_dict = cmm.get("metadata")
                     #metadata = Metadata().from_json_file(metadata_dict)
         except Exception as e:
             fault_description = "read/parse metadata: " + str(e)
@@ -165,84 +171,98 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                                    file_path=file_path, fault_type="MISSING_METADATA_FIELDS",
                                    fault_description=fault_description, success=0)
         return False
-
-    try:
-        if compression is "gzip":
-            try:
-                df = pd.read_csv(file_path, compression=compression, delimiter="\n", header=header, quotechar='"')
-            except:
-                df = []
-                with gzip.open(file_path,'rt') as f:
-                    try:
-                        for line in f:
-                            df.append(line)
-                    except Exception as e:
-                        fault_description = "cannot read file: " \
-                                            "" + str(e)
-                        sql_data.add_ingestion_log(user_id=user_id, stream_name="no-name", file_path=file_path,
-                                                   fault_type="PARTIAL_CORRUPT_DATA_FILE", fault_description=fault_description, success=0)
-        if compression is not None:
-            df = pd.read_csv(file_path, compression=compression, delimiter="\n", header=header, quotechar='"')
-        else:
-            df = pd.read_csv(file_path, delimiter="\n", header=header, quotechar='"')
-    except Exception as e:
-        fault_description = "cannot read file:" + str(e)
-        sql_data.add_ingestion_log(user_id=user_id, stream_name="no-name", file_path=file_path,
-                                   fault_type="CORRUPT_DATA_FILE", fault_description=fault_description, success=0)
-        return False
-
-    try:
-        if isinstance(df, list):
-            df_list = df
-        else:
-            df_list = df.values.tolist()
-
-        tmp_list = []
-        for tmp in df_list:
-            result = data_parser(tmp)
-            tmp_list.append(result)
-        df = pd.DataFrame(tmp_list)
-    except Exception as e:
-        fault_description = "cannot apply parser:" + str(e)
-        sql_data.add_ingestion_log(user_id=user_id, stream_name="no-name", file_path=file_path,
-                                   fault_type="CANNOT_PARSE_DATA_FILE", fault_description=fault_description, success=0)
-        return False
-
-
-    df = assign_column_names_types(df, metadata_dict)
-
-    # save metadata/data
     if metadata_parser is not None and metadata_parser.__name__ == 'mcerebrum_metadata_parser':
-
-        platform_data = metadata_dict.get("execution_context", {}).get("platform_metadata", "")
-        if platform_data:
-            platform_df = pd.DataFrame([[df["timestamp"][0], df["localtime"][0], json.dumps(platform_data)]])
-            platform_df.columns = ["timestamp", "localtime", "device_info"]
-            sql_data.save_stream_metadata(metadata["platform_metadata"])
-            save_data(df=platform_df, cc_config=cc_config, user_id=user_id,
-                      stream_name=metadata["platform_metadata"].name)
-        try:
-            df = df.dropna()
-            save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
-            sql_data.save_stream_metadata(metadata["stream_metadata"])
-            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                       file_path=file_path, fault_type="SUCCESS", fault_description="", success=1)
-        except Exception as e:
-            fault_description = "cannot store data: " + str(e)
-            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                       file_path=file_path, fault_type="CANNOT_STORE_DATA",
-                                       fault_description=fault_description, success=0)
+        stream_metadata = metadata["stream_metadata"]
     else:
+        stream_metadata = metadata
+
+    if allowed_streamname_pattern is not None:
         try:
-            sql_data.save_stream_metadata(metadata)
-            save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata.name)
-            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                       file_path=file_path, fault_type="SUCCESS", fault_description="", success=1)
+            allowed_streamname_pattern = re.compile(allowed_streamname_pattern)
+            is_blacklisted = allowed_streamname_pattern.search(stream_metadata.name)
+        except:
+            raise Exception("allowed_streamname_pattern regular expression is not valid.")
+    else:
+        is_blacklisted = False
+
+    if not is_blacklisted:
+        try:
+            if compression is "gzip":
+                try:
+                    df = pd.read_csv(file_path, compression=compression, delimiter="\n", header=header, quotechar='"')
+                except:
+                    df = []
+                    with gzip.open(file_path,'rt') as f:
+                        try:
+                            for line in f:
+                                df.append(line)
+                        except Exception as e:
+                            fault_description = "cannot read file: " \
+                                                "" + str(e)
+                            sql_data.add_ingestion_log(user_id=user_id, stream_name=stream_metadata.name, file_path=file_path,
+                                                       fault_type="PARTIAL_CORRUPT_DATA_FILE", fault_description=fault_description, success=0)
+            if compression is not None:
+                df = pd.read_csv(file_path, compression=compression, delimiter="\n", header=header, quotechar='"')
+            else:
+                df = pd.read_csv(file_path, delimiter="\n", header=header, quotechar='"')
         except Exception as e:
-            fault_description = "cannot store data: " + str(e)
-            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                       file_path=file_path, fault_type="CANNOT_STORE_DATA",
-                                       fault_description=fault_description, success=0)
+            fault_description = "cannot read file:" + str(e)
+            sql_data.add_ingestion_log(user_id=user_id, stream_name=stream_metadata.name, file_path=file_path,
+                                       fault_type="CORRUPT_DATA_FILE", fault_description=fault_description, success=0)
+            return False
+
+        try:
+            if isinstance(df, list):
+                df_list = df
+            else:
+                df_list = df.values.tolist()
+
+            tmp_list = []
+            for tmp in df_list:
+                result = data_parser(tmp)
+                tmp_list.append(result)
+            df = pd.DataFrame(tmp_list)
+        except Exception as e:
+            fault_description = "cannot apply parser:" + str(e)
+            sql_data.add_ingestion_log(user_id=user_id, stream_name=stream_metadata.name, file_path=file_path,
+                                       fault_type="CANNOT_PARSE_DATA_FILE", fault_description=fault_description, success=0)
+            return False
+
+
+        df = assign_column_names_types(df, metadata_dict)
+
+        # save metadata/data
+        if metadata_parser is not None and metadata_parser.__name__ == 'mcerebrum_metadata_parser':
+
+            platform_data = metadata_dict.get("execution_context", {}).get("platform_metadata", "")
+            if platform_data:
+                platform_df = pd.DataFrame([[df["timestamp"][0], df["localtime"][0], json.dumps(platform_data)]])
+                platform_df.columns = ["timestamp", "localtime", "device_info"]
+                sql_data.save_stream_metadata(metadata["platform_metadata"])
+                save_data(df=platform_df, cc_config=cc_config, user_id=user_id,
+                          stream_name=metadata["platform_metadata"].name)
+            try:
+                df = df.dropna()
+                save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
+                sql_data.save_stream_metadata(metadata["stream_metadata"])
+                sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                           file_path=file_path, fault_type="SUCCESS", fault_description="", success=1)
+            except Exception as e:
+                fault_description = "cannot store data: " + str(e)
+                sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                           file_path=file_path, fault_type="CANNOT_STORE_DATA",
+                                           fault_description=fault_description, success=0)
+        else:
+            try:
+                sql_data.save_stream_metadata(metadata)
+                save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata.name)
+                sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                           file_path=file_path, fault_type="SUCCESS", fault_description="", success=1)
+            except Exception as e:
+                fault_description = "cannot store data: " + str(e)
+                sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                           file_path=file_path, fault_type="CANNOT_STORE_DATA",
+                                           fault_description=fault_description, success=0)
 
 
 def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
