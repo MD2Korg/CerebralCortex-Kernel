@@ -175,11 +175,15 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
         stream_metadata = metadata["stream_metadata"]
     else:
         stream_metadata = metadata
-    try:
-        allowed_streamname_pattern = re.compile(allowed_streamname_pattern)
-        is_blacklisted = allowed_streamname_pattern.search(stream_metadata.name)
-    except:
-        raise Exception("allowed_streamname_pattern regular expression is not valid.")
+
+    if allowed_streamname_pattern is not None:
+        try:
+            allowed_streamname_pattern = re.compile(allowed_streamname_pattern)
+            is_blacklisted = allowed_streamname_pattern.search(stream_metadata.name)
+        except:
+            raise Exception("allowed_streamname_pattern regular expression is not valid.")
+    else:
+        is_blacklisted = False
 
     if not is_blacklisted:
         try:
