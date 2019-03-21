@@ -199,7 +199,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                         except Exception as e:
                             fault_description = "cannot read file: " \
                                                 "" + str(e)
-                            sql_data.add_ingestion_log(user_id=user_id, stream_name="no-name", file_path=file_path,
+                            sql_data.add_ingestion_log(user_id=user_id, stream_name=stream_metadata.name, file_path=file_path,
                                                        fault_type="PARTIAL_CORRUPT_DATA_FILE", fault_description=fault_description, success=0)
             if compression is not None:
                 df = pd.read_csv(file_path, compression=compression, delimiter="\n", header=header, quotechar='"')
@@ -207,7 +207,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                 df = pd.read_csv(file_path, delimiter="\n", header=header, quotechar='"')
         except Exception as e:
             fault_description = "cannot read file:" + str(e)
-            sql_data.add_ingestion_log(user_id=user_id, stream_name="no-name", file_path=file_path,
+            sql_data.add_ingestion_log(user_id=user_id, stream_name=stream_metadata.name, file_path=file_path,
                                        fault_type="CORRUPT_DATA_FILE", fault_description=fault_description, success=0)
             return False
 
@@ -224,7 +224,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
             df = pd.DataFrame(tmp_list)
         except Exception as e:
             fault_description = "cannot apply parser:" + str(e)
-            sql_data.add_ingestion_log(user_id=user_id, stream_name="no-name", file_path=file_path,
+            sql_data.add_ingestion_log(user_id=user_id, stream_name=stream_metadata.name, file_path=file_path,
                                        fault_type="CANNOT_PARSE_DATA_FILE", fault_description=fault_description, success=0)
             return False
 
