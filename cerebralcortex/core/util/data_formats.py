@@ -52,9 +52,11 @@ def msgpack_to_pandas(input_data: object) -> pd.DataFrame:
         return None
     else:
         df = pd.DataFrame(data, columns=header)
-        df.Timestamp = pd.to_datetime(df['Timestamp'], unit='us')
-        df.Timestamp = df.Timestamp.dt.tz_localize('UTC')
         df.columns = df.columns.str.lower()
+        df.timestamp = pd.to_datetime(df['timestamp'], unit='us')
+        df.timestamp = df.timestamp.dt.tz_localize('UTC')
+        df.localtime = pd.to_datetime(df['localtime'], unit='us')
+        df.localtime = df.localtime.dt.tz_localize('UTC')
         return df
 
 
