@@ -46,7 +46,7 @@ from cerebralcortex.data_importer.util.directory_scanners import dir_scanner
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamname_pattern: str = None, compression: str = None, header: int = None,
+def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamname_pattern: str = None, ignore_streamname_pattern:str=None, compression: str = None, header: int = None,
                 metadata: Metadata = None, metadata_parser: Callable = None, data_parser: Callable = None):
     """
     Import a single file and its metadata into cc-storage.
@@ -56,6 +56,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
         user_id (str): user id. Currently import_dir only supports parsing directory associated with a user
         file_path (str): file path
         allowed_streamname_pattern (str): (optional) regex of stream-names to be processed only
+        ignore_streamname_pattern (str): (optional) regex of stream-names to be ignored during ingestion process
         compression (str): pass compression name if csv files are compressed
         header (str): (optional) row number that must be used to name columns. None means file does not contain any header
         metadata (Metadata): (optional) Same metadata will be used for all the data files if this parameter is passed. If metadata is passed then metadata_parser cannot be passed.
@@ -134,7 +135,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                     metadata = metadata.lower()
                     metadata_dict = json.loads(metadata)
                     cmm = sql_data.get_corrected_metadata(stream_name=metadata_dict.get("name"))
-                    if cmm.get("status")!="include":
+                    if cmm.get("status","")!="include":
                         fault_description = "Ignored stream ingestion: "+str(metadata_dict.get("name"))+". Criteria: "+cmm.get("status")
                         sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
                                                    file_path=file_path, fault_type="IGNORED_STREAM",
@@ -176,6 +177,15 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
         stream_metadata = metadata["stream_metadata"]
     else:
         stream_metadata = metadata
+
+    if ignore_streamname_pattern is not None:
+        try:
+            ignore_streamname_pattern = re.compile(ignore_streamname_pattern)
+            ignore_streamname = ignore_streamname_pattern.search(stream_metadata.name)
+            if ignore_streamname:
+                return False
+        except:
+            raise Exception("ignore_streamname_pattern regular expression is not valid.")
 
     if allowed_streamname_pattern is not None:
         try:
@@ -314,8 +324,8 @@ def print_stats_table(ingestion_stats: dict):
 
 
 def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_file_extension: list = [],
-               allowed_filename_pattern: str = None,
-               allowed_streamname_pattern: str = None,
+               allowed_filename_pattern: str = None, allowed_streamname_pattern: str = None,
+               ignore_streamname_pattern: str = None,
                batch_size: int = None, compression: str = None, header: int = None, metadata: Metadata = None,
                metadata_parser: Callable = None, data_parser: Callable = None,
                gen_report: bool = False):
@@ -329,6 +339,7 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
         data_file_extension (list[str]): (optional) provide file extensions (e.g., .doc) that must be ignored
         allowed_filename_pattern (str): (optional) regex of files that must be processed.
         allowed_streamname_pattern (str): (optional) regex of stream-names to be processed only
+        ignore_streamname_pattern (str): (optional) regex of stream-names to be ignored during ingestion process 
         batch_size (int): (optional) using this parameter will turn on spark parallelism. batch size is number of files each worker will process
         compression (str): pass compression name if csv files are compressed
         header (str): (optional) row number that must be used to name columns. None means file does not contain any header
@@ -365,7 +376,8 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
             if data_parser.__name__ == "mcerebrum_data_parser":
                 user_id = file_path.replace(input_data_dir, "")[:36]
             if batch_size is None:
-                import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, allowed_streamname_pattern=allowed_streamname_pattern,
+                import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression,
+                            allowed_streamname_pattern=allowed_streamname_pattern, ignore_streamname_pattern=ignore_streamname_pattern,
                             header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser)
             else:
                 if len(batch_files) > batch_size or tmp_user_id != user_id:
@@ -373,6 +385,7 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
                     rdd = CC.sparkContext.parallelize(batch_files)
                     rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path,
                                                               allowed_streamname_pattern=allowed_streamname_pattern,
+                                                              ignore_streamname_pattern=ignore_streamname_pattern,
                                                               compression=compression, header=header, metadata=metadata,
                                                               metadata_parser=metadata_parser, data_parser=data_parser))
                     print("Total Files Processed:", len(batch_files))
