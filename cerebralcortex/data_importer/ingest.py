@@ -54,7 +54,8 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
     Args:
         cc_config (str): cerebralcortex config directory
         user_id (str): user id. Currently import_dir only supports parsing directory associated with a user
-        file_path (str): file path.
+        file_path (str): file path
+        allowed_streamname_pattern (str): (optional) regex of stream-names to be processed only
         compression (str): pass compression name if csv files are compressed
         header (str): (optional) row number that must be used to name columns. None means file does not contain any header
         metadata (Metadata): (optional) Same metadata will be used for all the data files if this parameter is passed. If metadata is passed then metadata_parser cannot be passed.
@@ -326,7 +327,8 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
         input_data_dir (str): data directory path
         user_id (str): user id. Currently import_dir only supports parsing directory associated with a user
         data_file_extension (list[str]): (optional) provide file extensions (e.g., .doc) that must be ignored
-        allowed_filename_pattern (list[str]): (optional) regex of files that must be processed.
+        allowed_filename_pattern (str): (optional) regex of files that must be processed.
+        allowed_streamname_pattern (str): (optional) regex of stream-names to be processed only
         batch_size (int): (optional) using this parameter will turn on spark parallelism. batch size is number of files each worker will process
         compression (str): pass compression name if csv files are compressed
         header (str): (optional) row number that must be used to name columns. None means file does not contain any header
@@ -363,13 +365,14 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
             if data_parser.__name__ == "mcerebrum_data_parser":
                 user_id = file_path.replace(input_data_dir, "")[:36]
             if batch_size is None:
-                import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression,
+                import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression, allowed_streamname_pattern=allowed_streamname_pattern,
                             header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser)
             else:
                 if len(batch_files) > batch_size or tmp_user_id != user_id:
 
                     rdd = CC.sparkContext.parallelize(batch_files)
                     rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path,
+                                                              allowed_streamname_pattern=allowed_streamname_pattern,
                                                               compression=compression, header=header, metadata=metadata,
                                                               metadata_parser=metadata_parser, data_parser=data_parser))
                     print("Total Files Processed:", len(batch_files))
