@@ -38,3 +38,4 @@ class CCLogging(LogHandler):
         """
         self.debug = CC.debug
         self.throw_exception = CC.config["cc"]["throw_exception"]
+        self.log_path = CC.config["cc"]["log_files_path"]

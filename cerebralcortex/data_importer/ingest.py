@@ -118,9 +118,9 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                 metadata_dict = metadata.to_json()
             except Exception as e:
                 fault_description = "metadata object is not valid: " + str(e)
-            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                       file_path=file_path, fault_type="CANNOT_PARSE_METADATA_FILE",
-                                       fault_description=fault_description, success=0)
+                sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                           file_path=file_path, fault_type="CANNOT_PARSE_METADATA_FILE",
+                                           fault_description=fault_description, success=0)
         else:
             raise Exception("Invalid metadata")
 
