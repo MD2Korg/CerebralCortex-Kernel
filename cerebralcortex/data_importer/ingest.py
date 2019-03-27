@@ -254,10 +254,10 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                           stream_name=metadata["platform_metadata"].name, hdc=hdc)
             try:
                 df = df.dropna()  # TODO: Handle NaN cases and don't drop it
-                save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
+                save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name, hdc=hdc)
                 sql_data.save_stream_metadata(metadata["stream_metadata"])
                 sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                           file_path=file_path, fault_type="SUCCESS", fault_description="", success=1, hdc=hdc)
+                                           file_path=file_path, fault_type="SUCCESS", fault_description="", success=1)
             except Exception as e:
                 fault_description = "cannot store data: " + str(e)
                 sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
