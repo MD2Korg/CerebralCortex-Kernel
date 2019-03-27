@@ -292,14 +292,16 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
     partition_by = ["version", "user"]
     if cc_config["nosql_storage"] == "filesystem":
         data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "stream="+str(stream_name))
-        # data_file_url = os.path.join("/home/ali/IdeaProjects/MD2K_DATA/tmp/", "stream=" + str(stream_name), "version=1",
-        #                              "user=" + str(user_id))
         pq.write_to_dataset(table, root_path=data_file_url, partition_cols=partition_by, preserve_index=False)
+
     elif cc_config["nosql_storage"] == "hdfs":
-        raw_files_dir = cc_config['hdfs']['raw_files_dir']
+        data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "stream="+str(stream_name))
         fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
-        with fs.open(raw_files_dir, "wb") as fw:
-            pq.write_table(table, fw, partition_cols=partition_by, preserve_index=False)
+        with fs.open(data_file_url, "wb") as fw:
+            pq.write_to_dataset(table, filesystem=fw, partition_cols=partition_by, preserve_index=False)
+
+    else:
+        raise Exception(str(cc_config["nosql_storage"])+" is not supported yet. Please check your cerebralcortex configs (nosql_storage).")
 
 
 def print_stats_table(ingestion_stats: dict):

@@ -116,14 +116,19 @@ class DataStream:
     def to_pandas(self):
         """
         This method converts pyspark dataframe into pandas dataframe.
+
         Notes:
             This method will collect all the data on master node to convert pyspark dataframe into pandas dataframe.
             After converting to pandas dataframe datastream objects helper methods will not be accessible.
+            
+        Returns:
+            Datastream (Metadata, pandas.DataFrame): this will return a new datastream object with blank metadata 
+            
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> ds = CC.get_stream("STREAM-NAME")
-            >>> pandas_df = ds.to_pandas()
-            >>> pandas_df.head()
+            >>> new_ds = ds.to_pandas()
+            >>> new_ds.data.head()
         """
         return DataStream(data=self._data.toPandas(), metadata=Metadata())
 
