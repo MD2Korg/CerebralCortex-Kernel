@@ -135,11 +135,11 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                     metadata = metadata.lower()
                     metadata_dict = json.loads(metadata)
                     cmm = sql_data.get_corrected_metadata(stream_name=metadata_dict.get("name"))
-                    if cmm.get("status","")!="include":
-                        fault_description = "Ignored stream ingestion: "+str(metadata_dict.get("name"))+". Criteria: "+cmm.get("status")
-                        sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                                   file_path=file_path, fault_type="IGNORED_STREAM",
-                                                   fault_description=fault_description, success=0)
+                    if cmm.get("status","")!="include" and metadata_parser is not None and metadata_parser.__name__ == 'mcerebrum_metadata_parser':
+                        # fault_description = "Ignored stream ingestion: "+str(metadata_dict.get("name"))+". Criteria: "+cmm.get("status", "")
+                        # sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                        #                            file_path=file_path, fault_type="IGNORED_STREAM",
+                        #                            fault_description=fault_description, success=0)
                         return False
                     if cmm.get("metadata"):
                         metadata_dict = cmm.get("metadata")

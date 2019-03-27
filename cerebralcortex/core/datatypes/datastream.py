@@ -264,7 +264,7 @@ class DataStream:
             groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
             columnName List[str]: column names on which windowing should be performed. Windowing will be performed on all columns if none is provided
             slideDuration (int): slide duration of a window
-            startTime (datetime): start time of window. First time of data will be used as startTime if none is provided
+            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         Note:
