@@ -384,7 +384,7 @@ class DataStream:
         data = self._data.where(self._data["version"].isin(version))
         return DataStream(data=data, metadata=Metadata())
 
-    def groupby(self, columnName):
+    def groupby(self, *columnName):
         """
         Group data by column name
         Args:
@@ -393,7 +393,7 @@ class DataStream:
         Returns:
 
         """
-        data = self._data.groupby(columnName)
+        data = self._data.groupby(*columnName)
         return DataStream(data=data, metadata=Metadata())
 
     # def win(self, udfName):
