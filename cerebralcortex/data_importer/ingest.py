@@ -47,7 +47,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamname_pattern: str = None, ignore_streamname_pattern:str=None, compression: str = None, header: int = None,
-                metadata: Metadata = None, metadata_parser: Callable = None, data_parser: Callable = None):
+                metadata: Metadata = None, metadata_parser: Callable = None, data_parser: Callable = None, hdc=None):
     """
     Import a single file and its metadata into cc-storage.
 
@@ -253,7 +253,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                 save_data(df=platform_df, cc_config=cc_config, user_id=user_id,
                           stream_name=metadata["platform_metadata"].name)
             try:
-                df = df.dropna()
+                df = df.dropna()  # TODO: Handle NaN cases and don't drop it
                 save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
                 sql_data.save_stream_metadata(metadata["stream_metadata"])
                 sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
@@ -398,10 +398,11 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
                     batch_files.append(file_path)
                     tmp_user_id = user_id
     if len(batch_files) > 0:
+        fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
         rdd = CC.sparkContext.parallelize(batch_files)
         rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path,
                                                   compression=compression, header=header, metadata=metadata,
-                                                  metadata_parser=metadata_parser, data_parser=data_parser))
+                                                  metadata_parser=metadata_parser, data_parser=data_parser, hdc=fs))
         print("Total Files Processed:", len(batch_files))
 
     if gen_report:
