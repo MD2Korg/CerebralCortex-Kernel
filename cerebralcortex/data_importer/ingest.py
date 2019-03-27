@@ -295,7 +295,7 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
         pq.write_to_dataset(table, root_path=data_file_url, partition_cols=partition_by, preserve_index=False)
 
     elif cc_config["nosql_storage"] == "hdfs":
-        data_file_url = os.path.join(cc_config["filesystem"]["hdfs"])
+        data_file_url = cc_config["hdfs"]["raw_files_dir"]
         fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
         with fs.open(data_file_url, "wb") as fw:
             pq.write_to_dataset(table, root_path="stream="+str(stream_name), filesystem=fw, partition_cols=partition_by, preserve_index=False)
