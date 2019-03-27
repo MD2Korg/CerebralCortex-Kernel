@@ -251,13 +251,13 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                 platform_df.columns = ["timestamp", "localtime", "device_info"]
                 sql_data.save_stream_metadata(metadata["platform_metadata"])
                 save_data(df=platform_df, cc_config=cc_config, user_id=user_id,
-                          stream_name=metadata["platform_metadata"].name)
+                          stream_name=metadata["platform_metadata"].name, hdc=hdc)
             try:
                 df = df.dropna()  # TODO: Handle NaN cases and don't drop it
                 save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
                 sql_data.save_stream_metadata(metadata["stream_metadata"])
                 sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                           file_path=file_path, fault_type="SUCCESS", fault_description="", success=1)
+                                           file_path=file_path, fault_type="SUCCESS", fault_description="", success=1, hdc=hdc)
             except Exception as e:
                 fault_description = "cannot store data: " + str(e)
                 sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
@@ -276,7 +276,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                                            fault_description=fault_description, success=0)
 
 
-def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
+def save_data(df: object, cc_config: dict, user_id: str, stream_name: str, hdc=None):
     """
     save dataframe to cc storage system
 
@@ -296,8 +296,8 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
 
     elif cc_config["nosql_storage"] == "hdfs":
         data_file_url = os.path.join(cc_config["hdfs"]["raw_files_dir"], "stream="+str(stream_name))
-        fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
-        pq.write_to_dataset(table, root_path=data_file_url, filesystem=fs, partition_cols=partition_by, preserve_index=False)
+        #fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
+        pq.write_to_dataset(table, root_path=data_file_url, filesystem=hdc, partition_cols=partition_by, preserve_index=False)
 
     else:
         raise Exception(str(cc_config["nosql_storage"])+" is not supported yet. Please check your cerebralcortex configs (nosql_storage).")
