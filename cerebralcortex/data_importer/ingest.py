@@ -383,13 +383,13 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
                             header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser,fs=fs)
             else:
                 if len(batch_files) > batch_size or tmp_user_id != user_id:
-
+                    fd = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
                     rdd = CC.sparkContext.parallelize(batch_files)
                     rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path,
                                                               allowed_streamname_pattern=allowed_streamname_pattern,
                                                               ignore_streamname_pattern=ignore_streamname_pattern,
                                                               compression=compression, header=header, metadata=metadata,
-                                                              metadata_parser=metadata_parser, data_parser=data_parser))
+                                                              metadata_parser=metadata_parser, data_parser=data_parser,fs=fd))
                     print("Total Files Processed:", len(batch_files))
                     batch_files.clear()
                     batch_files.append(file_path)
@@ -401,7 +401,7 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
         rdd = CC.sparkContext.parallelize(batch_files)
         rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path,
                                                   compression=compression, header=header, metadata=metadata,
-                                                  metadata_parser=metadata_parser, data_parser=data_parser))
+                                                  metadata_parser=metadata_parser, data_parser=data_parser,fs=fd))
         print("Total Files Processed:", len(batch_files))
 
     if gen_report:
