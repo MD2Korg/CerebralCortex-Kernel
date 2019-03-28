@@ -26,7 +26,6 @@
 import json
 import os
 import gzip
-import uuid
 import types
 import warnings
 from typing import Callable
@@ -48,7 +47,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamname_pattern: str = None, ignore_streamname_pattern:str=None, compression: str = None, header: int = None,
-                metadata: Metadata = None, metadata_parser: Callable = None, data_parser: Callable = None):
+                metadata: Metadata = None, metadata_parser: Callable = None, data_parser: Callable = None,fs=None):
     """
     Import a single file and its metadata into cc-storage.
 
@@ -252,10 +251,10 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                 platform_df.columns = ["timestamp", "localtime", "device_info"]
                 sql_data.save_stream_metadata(metadata["platform_metadata"])
                 save_data(df=platform_df, cc_config=cc_config, user_id=user_id,
-                          stream_name=metadata["platform_metadata"].name)
+                          stream_name=metadata["platform_metadata"].name,fs=fs)
             try:
                 df = df.dropna()  # TODO: Handle NaN cases and don't drop it
-                save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
+                save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name,fs=fs)
                 sql_data.save_stream_metadata(metadata["stream_metadata"])
                 sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
                                            file_path=file_path, fault_type="SUCCESS", fault_description="", success=1)
@@ -267,7 +266,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
         else:
             try:
                 sql_data.save_stream_metadata(metadata)
-                save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata.name)
+                save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata.name,fs=fs)
                 sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
                                            file_path=file_path, fault_type="SUCCESS", fault_description="", success=1)
             except Exception as e:
@@ -277,7 +276,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                                            fault_description=fault_description, success=0)
 
 
-def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
+def save_data(df: object, cc_config: dict, user_id: str, stream_name: str,fs=None):
     """
     save dataframe to cc storage system
 
@@ -296,11 +295,9 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
         pq.write_to_dataset(table, root_path=data_file_url, partition_cols=partition_by, preserve_index=False)
 
     elif cc_config["nosql_storage"] == "hdfs":
-        data_file_url = os.path.join(cc_config["hdfs"]["raw_files_dir"], "stream="+str(stream_name), "version=1", "user="+str(user_id),str(uuid.uuid4())+".parquet")
-        fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
-        with fs.open(data_file_url, "wb") as fw:
-            pq.write_table(table, where=fw)
-#        pq.write_to_dataset(table, root_path=data_file_url, filesystem=fs, partition_cols=partition_by, preserve_index=False)
+        data_file_url = os.path.join(cc_config["hdfs"]["raw_files_dir"], "stream="+str(stream_name))
+        #fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
+        pq.write_to_dataset(table, root_path=data_file_url, filesystem=fs, partition_cols=partition_by, preserve_index=False)
 
     else:
         raise Exception(str(cc_config["nosql_storage"])+" is not supported yet. Please check your cerebralcortex configs (nosql_storage).")
@@ -374,7 +371,7 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
     if input_data_dir[:1] != "/":
         input_data_dir = input_data_dir + "/"
     processed_files_list = CC.SqlData.get_processed_files_list()
-
+    fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
     for file_path in all_files:
 
         if not file_path in processed_files_list:
@@ -383,7 +380,7 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
             if batch_size is None:
                 import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression,
                             allowed_streamname_pattern=allowed_streamname_pattern, ignore_streamname_pattern=ignore_streamname_pattern,
-                            header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser)
+                            header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser,fs=fs)
             else:
                 if len(batch_files) > batch_size or tmp_user_id != user_id:
 
