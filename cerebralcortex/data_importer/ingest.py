@@ -289,9 +289,6 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
     df["version"] = 1
     df["user"] = str(user_id)
     table = pa.Table.from_pandas(df)
-    fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
-    return False
-
     partition_by = ["version", "user"]
     if cc_config["nosql_storage"] == "filesystem":
         data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "stream="+str(stream_name))
