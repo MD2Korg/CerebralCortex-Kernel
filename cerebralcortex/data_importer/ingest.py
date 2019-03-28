@@ -26,6 +26,7 @@
 import json
 import os
 import gzip
+import uuid
 import types
 import warnings
 from typing import Callable
@@ -295,7 +296,7 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
         pq.write_to_dataset(table, root_path=data_file_url, partition_cols=partition_by, preserve_index=False)
 
     elif cc_config["nosql_storage"] == "hdfs":
-        data_file_url = os.path.join(cc_config["hdfs"]["raw_files_dir"], "stream="+str(stream_name), "version=1", "user="+str(user_id))
+        data_file_url = os.path.join(cc_config["hdfs"]["raw_files_dir"], "stream="+str(stream_name), "version=1", "user="+str(user_id),str(uuid.uuid4())+".parquet")
         fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
         with fs.open(data_file_url, "wb") as fw:
             pq.write_table(table, filesystem=fw, preserve_index=False)
