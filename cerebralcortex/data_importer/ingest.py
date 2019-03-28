@@ -47,7 +47,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamname_pattern: str = None, ignore_streamname_pattern:str=None, compression: str = None, header: int = None,
-                metadata: Metadata = None, metadata_parser: Callable = None, data_parser: Callable = None,fs=None):
+                metadata: Metadata = None, metadata_parser: Callable = None, data_parser: Callable = None):
     """
     Import a single file and its metadata into cc-storage.
 
@@ -251,10 +251,10 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                 platform_df.columns = ["timestamp", "localtime", "device_info"]
                 sql_data.save_stream_metadata(metadata["platform_metadata"])
                 save_data(df=platform_df, cc_config=cc_config, user_id=user_id,
-                          stream_name=metadata["platform_metadata"].name,fs=fs)
+                          stream_name=metadata["platform_metadata"].name)
             try:
                 df = df.dropna()  # TODO: Handle NaN cases and don't drop it
-                save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name,fs=fs)
+                save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
                 sql_data.save_stream_metadata(metadata["stream_metadata"])
                 sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
                                            file_path=file_path, fault_type="SUCCESS", fault_description="", success=1)
@@ -266,7 +266,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
         else:
             try:
                 sql_data.save_stream_metadata(metadata)
-                save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata.name,fs=fs)
+                save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata.name)
                 sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
                                            file_path=file_path, fault_type="SUCCESS", fault_description="", success=1)
             except Exception as e:
@@ -276,7 +276,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                                            fault_description=fault_description, success=0)
 
 
-def save_data(df: object, cc_config: dict, user_id: str, stream_name: str,fs=None):
+def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
     """
     save dataframe to cc storage system
 
@@ -296,7 +296,7 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str,fs=Non
 
     elif cc_config["nosql_storage"] == "hdfs":
         data_file_url = os.path.join(cc_config["hdfs"]["raw_files_dir"], "stream="+str(stream_name))
-        #fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
+        fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
         pq.write_to_dataset(table, root_path=data_file_url, filesystem=fs, partition_cols=partition_by, preserve_index=False)
 
     else:
@@ -371,7 +371,7 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
     if input_data_dir[:1] != "/":
         input_data_dir = input_data_dir + "/"
     processed_files_list = CC.SqlData.get_processed_files_list()
-    fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
+
     for file_path in all_files:
 
         if not file_path in processed_files_list:
@@ -380,16 +380,16 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
             if batch_size is None:
                 import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression,
                             allowed_streamname_pattern=allowed_streamname_pattern, ignore_streamname_pattern=ignore_streamname_pattern,
-                            header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser,fs=fs)
+                            header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser)
             else:
                 if len(batch_files) > batch_size or tmp_user_id != user_id:
-                    fd = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
+
                     rdd = CC.sparkContext.parallelize(batch_files)
                     rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path,
                                                               allowed_streamname_pattern=allowed_streamname_pattern,
                                                               ignore_streamname_pattern=ignore_streamname_pattern,
                                                               compression=compression, header=header, metadata=metadata,
-                                                              metadata_parser=metadata_parser, data_parser=data_parser,fs=fd))
+                                                              metadata_parser=metadata_parser, data_parser=data_parser))
                     print("Total Files Processed:", len(batch_files))
                     batch_files.clear()
                     batch_files.append(file_path)
@@ -401,7 +401,7 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
         rdd = CC.sparkContext.parallelize(batch_files)
         rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path,
                                                   compression=compression, header=header, metadata=metadata,
-                                                  metadata_parser=metadata_parser, data_parser=data_parser,fs=fd))
+                                                  metadata_parser=metadata_parser, data_parser=data_parser))
         print("Total Files Processed:", len(batch_files))
 
     if gen_report:
