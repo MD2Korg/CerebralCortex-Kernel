@@ -239,20 +239,19 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                                        fault_type="CANNOT_PARSE_DATA_FILE", fault_description=fault_description, success=0)
             return False
 
-        fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
-        return False
+
         df = assign_column_names_types(df, metadata_dict)
 
         # save metadata/data
         if metadata_parser is not None and metadata_parser.__name__ == 'mcerebrum_metadata_parser':
 
-            platform_data = metadata_dict.get("execution_context", {}).get("platform_metadata", "")
-            if platform_data:
-                platform_df = pd.DataFrame([[df["timestamp"][0], df["localtime"][0], json.dumps(platform_data)]])
-                platform_df.columns = ["timestamp", "localtime", "device_info"]
-                sql_data.save_stream_metadata(metadata["platform_metadata"])
-                save_data(df=platform_df, cc_config=cc_config, user_id=user_id,
-                          stream_name=metadata["platform_metadata"].name)
+            # platform_data = metadata_dict.get("execution_context", {}).get("platform_metadata", "")
+            # if platform_data:
+            #     platform_df = pd.DataFrame([[df["timestamp"][0], df["localtime"][0], json.dumps(platform_data)]])
+            #     platform_df.columns = ["timestamp", "localtime", "device_info"]
+            #     sql_data.save_stream_metadata(metadata["platform_metadata"])
+            #     save_data(df=platform_df, cc_config=cc_config, user_id=user_id,
+            #               stream_name=metadata["platform_metadata"].name)
             try:
                 df = df.dropna()  # TODO: Handle NaN cases and don't drop it
                 save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
