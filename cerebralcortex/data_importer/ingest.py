@@ -245,13 +245,13 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
         # save metadata/data
         if metadata_parser is not None and metadata_parser.__name__ == 'mcerebrum_metadata_parser':
 
-            # platform_data = metadata_dict.get("execution_context", {}).get("platform_metadata", "")
-            # if platform_data:
-            #     platform_df = pd.DataFrame([[df["timestamp"][0], df["localtime"][0], json.dumps(platform_data)]])
-            #     platform_df.columns = ["timestamp", "localtime", "device_info"]
-            #     sql_data.save_stream_metadata(metadata["platform_metadata"])
-            #     save_data(df=platform_df, cc_config=cc_config, user_id=user_id,
-            #               stream_name=metadata["platform_metadata"].name)
+            platform_data = metadata_dict.get("execution_context", {}).get("platform_metadata", "")
+            if platform_data:
+                platform_df = pd.DataFrame([[df["timestamp"][0], df["localtime"][0], json.dumps(platform_data)]])
+                platform_df.columns = ["timestamp", "localtime", "device_info"]
+                sql_data.save_stream_metadata(metadata["platform_metadata"])
+                save_data(df=platform_df, cc_config=cc_config, user_id=user_id,
+                          stream_name=metadata["platform_metadata"].name)
             try:
                 df = df.dropna()  # TODO: Handle NaN cases and don't drop it
                 save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
@@ -289,6 +289,9 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
     df["version"] = 1
     df["user"] = str(user_id)
     table = pa.Table.from_pandas(df)
+    fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
+    return False
+
     partition_by = ["version", "user"]
     if cc_config["nosql_storage"] == "filesystem":
         data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "stream="+str(stream_name))
