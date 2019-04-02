@@ -135,11 +135,11 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                     metadata = metadata.lower()
                     metadata_dict = json.loads(metadata)
                     cmm = sql_data.get_corrected_metadata(stream_name=metadata_dict.get("name"))
-                    if cmm.get("status","")!="include" and metadata_parser is not None and metadata_parser.__name__ == 'mcerebrum_metadata_parser':
-                        # fault_description = "Ignored stream ingestion: "+str(metadata_dict.get("name"))+". Criteria: "+cmm.get("status", "")
-                        # sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                        #                            file_path=file_path, fault_type="IGNORED_STREAM",
-                        #                            fault_description=fault_description, success=0)
+                    if cmm.get("status","")!="include" and metadata_parser is not None and 'mcerebrum' in metadata_parser.__name__:
+                        fault_description = "Ignored stream: "+str(metadata_dict.get("name"))+". Criteria: "+cmm.get("status", "")
+                        sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                                   file_path=file_path, fault_type="IGNORED_STREAM",
+                                                   fault_description=fault_description, success=0)
                         return False
                     if cmm.get("metadata"):
                         metadata_dict = cmm.get("metadata")
@@ -173,7 +173,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                                    file_path=file_path, fault_type="MISSING_METADATA_FIELDS",
                                    fault_description=fault_description, success=0)
         return False
-    if metadata_parser is not None and metadata_parser.__name__ == 'mcerebrum_metadata_parser':
+    if metadata_parser is not None and 'mcerebrum' in metadata_parser.__name__:
         stream_metadata = metadata["stream_metadata"]
     else:
         stream_metadata = metadata
@@ -243,7 +243,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
         df = assign_column_names_types(df, metadata_dict)
 
         # save metadata/data
-        if metadata_parser is not None and metadata_parser.__name__ == 'mcerebrum_metadata_parser':
+        if metadata_parser is not None and 'mcerebrum' in metadata_parser.__name__:
 
             platform_data = metadata_dict.get("execution_context", {}).get("platform_metadata", "")
             if platform_data:
@@ -375,7 +375,7 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
     for file_path in all_files:
 
         if not CC.SqlData.is_file_processed(file_path):
-            if data_parser.__name__ == "mcerebrum_data_parser":
+            if 'mcerebrum' in data_parser.__name__:
                 user_id = file_path.replace(input_data_dir, "")[:36]
             if batch_size is None:
                 import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression,
@@ -402,7 +402,7 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
         rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path,
                                                   compression=compression, header=header, metadata=metadata,
                                                   metadata_parser=metadata_parser, data_parser=data_parser))
-        print("Total Files Processed:", len(batch_files))
+        print("Last Batch\n","Total Files Processed:", len(batch_files))
 
     if gen_report:
         print_stats_table(CC.SqlData.get_ingestion_stats())
