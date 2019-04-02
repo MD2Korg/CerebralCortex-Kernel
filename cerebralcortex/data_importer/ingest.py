@@ -370,11 +370,11 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
 
     if input_data_dir[:1] != "/":
         input_data_dir = input_data_dir + "/"
-    processed_files_list = CC.SqlData.get_processed_files_list()
+    #processed_files_list = CC.SqlData.get_processed_files_list()
 
     for file_path in all_files:
 
-        if not file_path in processed_files_list:
+        if not CC.SqlData.is_file_processed(file_path):
             if data_parser.__name__ == "mcerebrum_data_parser":
                 user_id = file_path.replace(input_data_dir, "")[:36]
             if batch_size is None:
