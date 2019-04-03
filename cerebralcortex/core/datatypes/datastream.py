@@ -417,7 +417,7 @@ class DataStream:
         """
         return self._data.schema
 
-    def _get_column_names(self, columnName:List[str], methodName:str):
+    def _get_column_names(self, columnName:List[str], methodName:str, preserve_ts:bool=False):
         """
         Get data column names and build expression for pyspark aggregate method
 
@@ -430,11 +430,13 @@ class DataStream:
             dict: {columnName: methodName}
         """
         columns = self._data.columns
+        black_list_column = ["timestamp", "localtime", "user", "version"]
 
-        if "localtime" in columns:
-            black_list_column = ["timestamp", "localtime", "user", "version"]
-        else:
-            black_list_column = ["timestamp", "user", "version"]
+        if "localtime" not in columns:
+            black_list_column = black_list_column.pop(1)
+
+        if preserve_ts:
+            black_list_column = black_list_column.pop(0)
 
         if columnName:
             if isinstance(columns, str):

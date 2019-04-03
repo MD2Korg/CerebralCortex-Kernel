@@ -1,4 +1,6 @@
 from cerebralcortex.core.util.spark_helper import get_or_create_sc
+from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_data
+
 lst1 = [
     [1, 10,20, 6],
     [2,20,30, 7],

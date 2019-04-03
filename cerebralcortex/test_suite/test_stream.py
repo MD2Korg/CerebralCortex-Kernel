@@ -68,6 +68,11 @@ class DataStreamTest:
         self.assertEqual(len(data),17)
         self.assertEqual(len(data[0][2]), 60)
 
+        
+    
+    def test_05_window_join(self):
+        ds = self.CC.get_stream(self.stream_name)
+        win_ds = ds.window()
         print("done")
     def test_03_get_stream(self):
         """
