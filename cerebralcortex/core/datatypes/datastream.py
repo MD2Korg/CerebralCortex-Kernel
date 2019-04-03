@@ -260,7 +260,7 @@ class DataStream:
 
     # !!!!                              WINDOWING METHODS                           !!!
 
-    def window(self, windowDuration:int=60, groupByColumnName:List[str]=[], columnName:List[str]=[], slideDuration:int=None, startTime=None):
+    def window(self, windowDuration:int=60, groupByColumnName:List[str]=[], columnName:List[str]=[], slideDuration:int=None, startTime=None, preserve_ts=False):
         """
         Window data into fixed length chunks. If no columnName is provided then the windowing will be performed on all the columns.
 
@@ -270,6 +270,7 @@ class DataStream:
             columnName List[str]: column names on which windowing should be performed. Windowing will be performed on all columns if none is provided
             slideDuration (int): slide duration of a window
             startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+            preserve_ts (bool): setting this to True will return timestamps of corresponding to each windowed value
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         Note:
@@ -278,12 +279,14 @@ class DataStream:
         """
         windowDuration = str(windowDuration)+" seconds"
 
-
-        exprs = self._get_column_names(columnName=columnName, methodName="collect_list")
+        exprs = self._get_column_names(columnName=columnName, methodName="collect_list", preserve_ts=preserve_ts)
+        win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
         if len(groupByColumnName)>0:
-            windowed_data = self._data.groupBy(['user','timestamp', F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)]).agg(exprs)
+            groupByColumnName.append("user")
+            groupByColumnName.append(win)
+            windowed_data = self._data.groupBy(groupByColumnName).agg(exprs)
         else:
-            windowed_data = self._data.groupBy(['user',F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)]).agg(exprs)
+            windowed_data = self._data.groupBy(['user',win]).agg(exprs)
 
         data = windowed_data
 
@@ -434,6 +437,8 @@ class DataStream:
 
         if "localtime" not in columns:
             black_list_column = black_list_column.pop(1)
+            if preserve_ts:
+                black_list_column = black_list_column.pop(1)
 
         if preserve_ts:
             black_list_column = black_list_column.pop(0)

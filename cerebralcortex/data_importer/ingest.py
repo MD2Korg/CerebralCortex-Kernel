@@ -125,6 +125,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
             raise Exception("Invalid metadata")
 
     else:
+        metadata_dict = {}
         try:
 
             file_ext = os.path.splitext(file_path)[1]
@@ -254,6 +255,15 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                           stream_name=metadata["platform_metadata"].name)
             try:
                 df = df.dropna()  # TODO: Handle NaN cases and don't drop it
+                total_metadata_dd_columns = len(metadata["stream_metadata"].data_descriptor)
+                total_df_columns = len(df.columns.tolist())
+                if total_metadata_dd_columns!=total_df_columns:
+                    fault_description = "Metadata and Data column missmatch. Total Metadata columns " + str(total_metadata_dd_columns) +". Total data columsn: "+str(total_df_columns)
+                    sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                               file_path=file_path, fault_type="NUMBER_OF_COLUMN_MISSMATCH",
+                                               fault_description=fault_description, success=0)
+                    return False
+                
                 save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
                 sql_data.save_stream_metadata(metadata["stream_metadata"])
                 sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
@@ -368,7 +378,7 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
     CC = Kernel(cc_config, enable_spark=enable_spark)
     cc_config = CC.config
 
-    if input_data_dir[:1] != "/":
+    if input_data_dir[-1:] != "/":
         input_data_dir = input_data_dir + "/"
     #processed_files_list = CC.SqlData.get_processed_files_list()
 

@@ -90,10 +90,10 @@ def get_platform_metadata(metadata: dict) -> Metadata:
     Returns:
         Metadata: Metadata class object
     """
-    stream_name = metadata.get("name", "name_not_available")
+    stream_name = metadata.get("name", "")
     execution_context = metadata.get("execution_context")
     platform_metadata = execution_context.get("platform_metadata", {})  # dict
-    application_metadata = execution_context["application_metadata"]  # dict
+    application_metadata = execution_context.get("application_metadata", {})  # dict
     wrist = ""
     if platform_metadata.get("name", "") != "":
         if "left" in stream_name:
