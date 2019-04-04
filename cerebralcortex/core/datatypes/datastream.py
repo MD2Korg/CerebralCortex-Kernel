@@ -286,7 +286,7 @@ class DataStream:
             groupByColumnName.append(win)
             windowed_data = self._data.groupBy(groupByColumnName).agg(exprs)
         else:
-            windowed_data = self._data.groupBy(['user',win]).agg(exprs)
+            windowed_data = self._data.groupBy(['user','version',win]).agg(exprs)
 
         data = windowed_data
 
@@ -354,6 +354,11 @@ class DataStream:
         where_clause = columnName+operator+"'"+str(value)+"'"
         data = self._data.where(where_clause)
         return DataStream(data=data, metadata=Metadata())
+
+    def map_stream(self, window_ds):
+        window_ds = window_ds.data.drop("version", "user")
+        df= window_ds.join(self.data, self.data.timestamp.between(F.col("window.start"), F.col("window.end")))
+        return DataStream(data=df, metadata=Metadata())
 
     def filter_user(self, user_ids:List):
         """
@@ -436,12 +441,12 @@ class DataStream:
         black_list_column = ["timestamp", "localtime", "user", "version"]
 
         if "localtime" not in columns:
-            black_list_column = black_list_column.pop(1)
-            if preserve_ts:
-                black_list_column = black_list_column.pop(1)
+            black_list_column.pop(1)
+        elif preserve_ts:
+            black_list_column.pop(1)
 
         if preserve_ts:
-            black_list_column = black_list_column.pop(0)
+            black_list_column.pop(0)
 
         if columnName:
             if isinstance(columns, str):
