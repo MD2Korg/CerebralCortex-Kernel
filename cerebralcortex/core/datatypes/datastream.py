@@ -356,6 +356,16 @@ class DataStream:
         return DataStream(data=data, metadata=Metadata())
 
     def map_stream(self, window_ds):
+        """
+        Map/join a stream to a windowed stream
+
+        Args:
+            window_ds (Datastream): windowed datastream object
+
+        Returns:
+            Datastream: joined/mapped stream
+
+        """
         window_ds = window_ds.data.drop("version", "user")
         df= window_ds.join(self.data, self.data.timestamp.between(F.col("window.start"), F.col("window.end")))
         return DataStream(data=df, metadata=Metadata())

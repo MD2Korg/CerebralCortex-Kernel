@@ -71,18 +71,23 @@ class DataStreamTest:
 
         
     
-    def test_05_window_join(self):
-        def sum_vals(lst):
+    def test_05_map_window_to_stream(self):
+        def get_val(lst):
             return lst[0]
-        sum_vals_udf = F.udf(sum_vals)
+        sum_vals_udf = F.udf(get_val)
         ds = self.CC.get_stream(self.stream_name)
         win_ds = ds.window()
+
         # convert window stream as quality stream for next step
         win_df=win_ds.data.withColumn("some_val", sum_vals_udf(win_ds.data["battery_level"])).drop("battery_level")
         df = win_df.withColumn("quality", F.when(win_df.some_val > 97, 1).otherwise(0)).drop("some_val")
         win_quality_ds = DataStream(data=df, metadata=Metadata())
         mapped_stream = ds.map_stream(win_quality_ds)
-        print("done")
+        filtered_stream = mapped_stream.filter("quality", "=", 0)
+        bad_quality = filtered_stream.collect()
+        self.assertEqual(len(bad_quality.data), 710)
+
+
     # def test_03_get_stream(self):
     #     """
     #     Test functionality related to get a stream

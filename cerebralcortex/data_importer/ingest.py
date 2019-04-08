@@ -192,6 +192,9 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
         try:
             allowed_streamname_pattern = re.compile(allowed_streamname_pattern)
             is_blacklisted = allowed_streamname_pattern.search(stream_metadata.name)
+            if is_blacklisted is None:
+                return False
+
         except:
             raise Exception("allowed_streamname_pattern regular expression is not valid.")
     else:
@@ -256,7 +259,13 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
             try:
                 df = df.dropna()  # TODO: Handle NaN cases and don't drop it
                 total_metadata_dd_columns = len(metadata["stream_metadata"].data_descriptor)
-                total_df_columns = len(df.columns.tolist())
+                
+                # first two columns are timestamp and localtime in mcerbrum data. For all other data, first column "should be" timestamp
+                if 'mcerebrum' in data_parser.__name__:
+                    total_df_columns = len(df.columns.tolist())-2
+                else:
+                    total_df_columns = len(df.columns.tolist())-1
+                    
                 if total_metadata_dd_columns!=total_df_columns:
                     fault_description = "Metadata and Data column missmatch. Total Metadata columns " + str(total_metadata_dd_columns) +". Total data columsn: "+str(total_df_columns)
                     sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
