@@ -31,12 +31,13 @@ import mysql.connector.pooling
 from cerebralcortex.core.data_manager.sql.cache_handler import CacheHandler
 from cerebralcortex.core.data_manager.sql.kafka_offsets_handler import KafkaOffsetsHandler
 from cerebralcortex.core.data_manager.sql.stream_handler import StreamHandler
+from cerebralcortex.core.data_manager.sql.metadata_handler import MetadataHandler
 from cerebralcortex.core.data_manager.sql.users_handler import UserHandler
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.data_manager.sql.data_ingestion_handler import DataIngestionHandler
 
 
-class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, DataIngestionHandler):
+class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, DataIngestionHandler, MetadataHandler):
     def __init__(self, CC):
         """
         Constructor
@@ -65,6 +66,7 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, Dat
         self.datastreamTable = "stream"
         self.kafkaOffsetsTable = "kafka_offsets"
         self.ingestionLogsTable = "ingestion_logs"
+        self.correctedMetadata = "corrected_metadata"
         self.userTable = "user"
         self.dataReplayTable = "data_replay"
         self.poolName = "CC_Pool"

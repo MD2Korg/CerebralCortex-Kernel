@@ -37,6 +37,8 @@ def mcerebrum_metadata_parser(metadata: dict) -> dict:
     Returns:
         dict: {"platform_metadata":platform_metadata, "stream_metadata":metadata}
     """
+
+    # check stream name; get correct metadata if metadata exist in mysql
     annotation_name = None
     platform_metadata = get_platform_metadata(metadata)
     if platform_metadata:
