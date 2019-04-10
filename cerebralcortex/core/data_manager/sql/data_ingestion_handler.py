@@ -88,6 +88,23 @@ class DataIngestionHandler():
                 result.append(row["file_path"])
             return result
 
+    def is_file_processed(self, filename:str) -> bool:
+        """
+        check if a file is processed and ingested
+
+        Returns:
+            bool: True if file is already processed
+        """
+        qry = "select file_path from " + self.ingestionLogsTable + " where file_path=%(file_path)s"
+        vals = {"file_path":filename}
+        rows = self.execute(qry, vals)
+
+        if len(rows) > 0:
+            return True
+        else:
+            return False
+
+
     def get_ingestion_stats(self) -> list:
         """
         Get stats on ingested records

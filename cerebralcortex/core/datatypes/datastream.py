@@ -116,14 +116,19 @@ class DataStream:
     def to_pandas(self):
         """
         This method converts pyspark dataframe into pandas dataframe.
+
         Notes:
             This method will collect all the data on master node to convert pyspark dataframe into pandas dataframe.
             After converting to pandas dataframe datastream objects helper methods will not be accessible.
+            
+        Returns:
+            Datastream (Metadata, pandas.DataFrame): this will return a new datastream object with blank metadata 
+            
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> ds = CC.get_stream("STREAM-NAME")
-            >>> pandas_df = ds.to_pandas()
-            >>> pandas_df.head()
+            >>> new_ds = ds.to_pandas()
+            >>> new_ds.data.head()
         """
         return DataStream(data=self._data.toPandas(), metadata=Metadata())
 
@@ -255,7 +260,7 @@ class DataStream:
 
     # !!!!                              WINDOWING METHODS                           !!!
 
-    def window(self, windowDuration:int=60, groupByColumnName:List[str]=[], columnName:List[str]=[], slideDuration:int=None, startTime=None):
+    def window(self, windowDuration:int=60, groupByColumnName:List[str]=[], columnName:List[str]=[], slideDuration:int=None, startTime=None, preserve_ts=False):
         """
         Window data into fixed length chunks. If no columnName is provided then the windowing will be performed on all the columns.
 
@@ -264,7 +269,8 @@ class DataStream:
             groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
             columnName List[str]: column names on which windowing should be performed. Windowing will be performed on all columns if none is provided
             slideDuration (int): slide duration of a window
-            startTime (datetime): start time of window. First time of data will be used as startTime if none is provided
+            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+            preserve_ts (bool): setting this to True will return timestamps of corresponding to each windowed value
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         Note:
@@ -273,12 +279,14 @@ class DataStream:
         """
         windowDuration = str(windowDuration)+" seconds"
 
-
-        exprs = self._get_column_names(columnName=columnName, methodName="collect_list")
+        exprs = self._get_column_names(columnName=columnName, methodName="collect_list", preserve_ts=preserve_ts)
+        win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
         if len(groupByColumnName)>0:
-            windowed_data = self._data.groupBy(['user','timestamp', F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)]).agg(exprs)
+            groupByColumnName.append("user")
+            groupByColumnName.append(win)
+            windowed_data = self._data.groupBy(groupByColumnName).agg(exprs)
         else:
-            windowed_data = self._data.groupBy(['user',F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)]).agg(exprs)
+            windowed_data = self._data.groupBy(['user','version',win]).agg(exprs)
 
         data = windowed_data
 
@@ -347,6 +355,21 @@ class DataStream:
         data = self._data.where(where_clause)
         return DataStream(data=data, metadata=Metadata())
 
+    def map_stream(self, window_ds):
+        """
+        Map/join a stream to a windowed stream
+
+        Args:
+            window_ds (Datastream): windowed datastream object
+
+        Returns:
+            Datastream: joined/mapped stream
+
+        """
+        window_ds = window_ds.data.drop("version", "user")
+        df= window_ds.join(self.data, self.data.timestamp.between(F.col("window.start"), F.col("window.end")))
+        return DataStream(data=df, metadata=Metadata())
+
     def filter_user(self, user_ids:List):
         """
         filter data to get only selective users' data
@@ -379,7 +402,7 @@ class DataStream:
         data = self._data.where(self._data["version"].isin(version))
         return DataStream(data=data, metadata=Metadata())
 
-    def groupby(self, columnName):
+    def groupby(self, *columnName):
         """
         Group data by column name
         Args:
@@ -388,7 +411,7 @@ class DataStream:
         Returns:
 
         """
-        data = self._data.groupby(columnName)
+        data = self._data.groupby(*columnName)
         return DataStream(data=data, metadata=Metadata())
 
     # def win(self, udfName):
@@ -412,7 +435,7 @@ class DataStream:
         """
         return self._data.schema
 
-    def _get_column_names(self, columnName:List[str], methodName:str):
+    def _get_column_names(self, columnName:List[str], methodName:str, preserve_ts:bool=False):
         """
         Get data column names and build expression for pyspark aggregate method
 
@@ -425,11 +448,15 @@ class DataStream:
             dict: {columnName: methodName}
         """
         columns = self._data.columns
+        black_list_column = ["timestamp", "localtime", "user", "version"]
 
-        if "localtime" in columns:
-            black_list_column = ["timestamp", "localtime", "user", "version"]
-        else:
-            black_list_column = ["timestamp", "user", "version"]
+        if "localtime" not in columns:
+            black_list_column.pop(1)
+        elif preserve_ts:
+            black_list_column.pop(1)
+
+        if preserve_ts:
+            black_list_column.pop(0)
 
         if columnName:
             if isinstance(columns, str):
