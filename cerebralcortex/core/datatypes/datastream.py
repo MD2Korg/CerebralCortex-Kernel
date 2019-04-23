@@ -24,8 +24,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from pyspark.sql import functions as F
+from pyspark.sql.functions import udf
 from typing import List
+from pyspark.sql.types import *
+from pyspark.sql.functions import pandas_udf,PandasUDFType
+from pyspark.sql.window import Window
+
 import re
+import sys
 
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
@@ -420,8 +426,13 @@ class DataStream:
     #     return self
 
     def compute(self, udfName):
-        data = self._data.apply(udfName)
+        if 'custom_window' in self._data.columns:
+            data = self._data.groupby('user','custom_window').apply(udfName)
+        else:
+            data = self._data.groupby('user').apply(udfName)
         return DataStream(data=data, metadata=Metadata())
+
+
 
     def show(self, *args, **kwargs):
         self._data.show(*args, **kwargs)
@@ -468,3 +479,64 @@ class DataStream:
 
         exprs = {x: methodName for x in columns}
         return exprs
+
+
+
+
+
+################ New Methods by Anand #########################
+
+
+    def join(self, dataStream, propagation='forward'):
+        """
+        filter data
+
+        Args:
+            columnName (str): name of the column
+            operator (str): basic operators (e.g., >, <, ==, !=)
+            value (Any): if the columnName is timestamp, please provide python datatime object
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        combined_df = self._data.join(dataStream.data, on = ['user','timestamp', 'localtime','version'], how='full').orderBy('timestamp')
+        combined_filled = combined_df.withColumn("data_quality", F.last('data_quality', True).over(Window.partitionBy('user').orderBy('timestamp').rowsBetween(-sys.maxsize, 0)))	
+        combined_filled_filtered = combined_filled.filter(combined_filled.ecg.isNotNull())
+
+        return DataStream(data=combined_filled_filtered, metadata=Metadata())
+
+    
+
+    def create_windows(self, window_length='hour'):
+        """
+        filter data
+
+        Args:
+            columnName (str): name of the column
+            operator (str): basic operators (e.g., >, <, ==, !=)
+            value (Any): if the columnName is timestamp, please provide python datatime object
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+        """
+        windowed_df = self._data.withColumn('custom_window', windowing_udf('timestamp'))
+        return DataStream(data=windowed_df, metadata=Metadata())
+
+
+"""
+Windowing function to customize the parallelization of computation.
+"""
+def get_window(x):
+    u = '_'
+    y = x.year
+    m = x.month
+    d = x.day
+    h = x.hour
+    mi = x.minute
+    s = str(y) + u + str(m) + u + str(d) + u + str(h) #+ u + str(mi)
+
+    return s
+
+windowing_udf = udf(get_window, StringType())
+
+

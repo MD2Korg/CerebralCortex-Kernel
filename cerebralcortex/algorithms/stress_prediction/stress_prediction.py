@@ -37,7 +37,7 @@ import pickle
 schema = StructType([
     StructField("user", StringType()),
     StructField("timestamp", TimestampType()),
-    StructField("stress probability", FloatType()),
+    StructField("stress_probability", FloatType()),
 ])
 
 
@@ -54,7 +54,7 @@ def stress_prediction(data: object) -> object:
     clf_ecg = pickle.load(open('/home/a/stress_classifier/classifier_for_ecg.p','rb'))
     predicted = clf_ecg.predict_proba(fm)
 
-    df = pd.DataFrame(index = np.arange(0, len(data['timestamp'].values)), columns=['user', 'timestamp', 'stress probability'])
+    df = pd.DataFrame(index = np.arange(0, len(data['timestamp'].values)), columns=['user', 'timestamp', 'stress_probability'])
     user = data['user'].values[0]
     for c in range(len(data['timestamp'].values)):
         ts = data['timestamp'].values[c]
