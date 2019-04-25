@@ -21,6 +21,7 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 from typing import List
 import numpy as np
 from scipy import signal
@@ -31,8 +32,6 @@ from pyspark.sql.types import StructField, StructType, StringType, FloatType, Ti
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 import pandas as pd
 import datetime
-import pickle
-
 
 NOTSTRESS = "NOTSTRESS"
 UNSURE = 'UNSURE'
@@ -40,16 +39,14 @@ YESSTRESS = 'YESSTRESS'
 UNKNOWN = 'UNKNOWN'
 NOTCLASSIFIED = 'NOTCLASSIFIED'
 
-
 schema = StructType([
     StructField("user", StringType()),
     StructField("timestamp", TimestampType()),
-    StructField("stress_episodes", FloatType()),
+    StructField("stress_episode", StringType()),
 ])
 
-
-#@pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-def stress_episodes_estimation(data: object) -> object:
+@pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+def stress_episodes_estimation(stress_data: object) -> object:
     # --- Constants definitions --- 
     smoothing_window = 3 # FIXME - 3 minutes
     macd_param_fast = 7;
@@ -57,6 +54,8 @@ def stress_episodes_estimation(data: object) -> object:
     macd_param_signal = 2;
     threshold_yes = 0.36;
     threshold_no = 0.36;
+
+    data = impute(stress_data)
 
     # Smooth the stress values
     stress_smoothed_list = []
@@ -153,21 +152,18 @@ def stress_episodes_estimation(data: object) -> object:
                             stress_episode_start.append((episode_start_timestamp, UNSURE))
                             stress_episode_peak.append((stress_smoothed_list[c][0], UNSURE))
                             stress_episode_classification.append((stress_smoothed_list[c][0], UNSURE))
-                            
-
-    print(stress_episode_classification)
 
 
-    df = pd.DataFrame(index = np.arange(0, len(data['timestamp'].values)), columns=['user', 'timestamp', 'stress_episodes'])
-    '''
+    stress_episode_df = pd.DataFrame(index = np.arange(0, len(stress_episode_classification)), columns=['user', 'timestamp', 'stress_episode'])
     user = data['user'].values[0]
-    for c in range(len(data['timestamp'].values)):
-        ts = data['timestamp'].values[c]
-        prob = predicted[c][1]
-        df.loc[c] = [user, ts, prob]
-    '''
+    index = 0
+    for c in stress_episode_classification:
+        ts = c[0]
+        status = c[1]
+        stress_episode_df.loc[index] = [user, ts, status]
+        index += 1
 
-    return df
+    return stress_episode_df
 
 def ewma(x, y, alpha):
     return alpha * x + (1 - alpha) * y
@@ -215,7 +211,6 @@ def get_proportion_available(data, st, current_timestamp):
         start_timestamp = current_timestamp - np.timedelta(100, 'Y')
     for x in range(len(data)):
         row_time = data.iloc[x]['timestamp']
-        print(row_time, type(row_time))
         if row_time >= start_timestamp and row_time <= current_timestamp:
             available += data.iloc[x]['available']
             count +=1
@@ -228,32 +223,29 @@ def get_proportion_available(data, st, current_timestamp):
     return 0
 
 
-
-
 window = 60 # seconds FIXME TODO
 
-df = pd.read_csv('/home/a/stress.csv', parse_dates=['timestamp'])
-df['available'] = 1
+def impute(df):
+    df['available'] = 1
+    missing_vals = pd.DataFrame(columns=df.columns)
 
-missing_vals = pd.DataFrame(columns=df.columns)
+    for x in range(1, len(df['timestamp'].values)):
+        diff = (df['timestamp'].values[x] - df['timestamp'].values[x-1])/np.timedelta64(1, 's')#1000000000
+        if diff > 60:
+            num_rows_to_insert = int(diff/60) - 1
+            available_userid = df.iloc[x]['user']
+            available_timestamp = df.iloc[x]['timestamp']
+            available_stress = df.iloc[x]['stress_probability']
 
-for x in range(1, len(df['timestamp'].values)):
-    diff = (df['timestamp'].values[x] - df['timestamp'].values[x-1])/np.timedelta64(1, 's')#1000000000
-    if diff > 60:
-        num_rows_to_insert = int(diff/60) - 1
-        available_userid = df.iloc[x]['user']
-        available_timestamp = df.iloc[x]['timestamp']
-        available_stress = df.iloc[x]['stress_probability']
-
-        for y in range(num_rows_to_insert):
-            imputed_timestamp = available_timestamp + np.timedelta64((y+1)*window, 's')
-            new_row = [available_userid, imputed_timestamp, available_stress, 0]
-            missing_vals.loc[len(missing_vals)] = new_row
+            for y in range(num_rows_to_insert):
+                imputed_timestamp = available_timestamp + np.timedelta64((y+1)*window, 's')
+                new_row = [available_userid, imputed_timestamp, available_stress, 0]
+                missing_vals.loc[len(missing_vals)] = new_row
 
 
-#df_imputed = pd.concat([df, missing_vals])
-df_imputed = df.append(missing_vals)
+    df_imputed = df.append(missing_vals)
 
-df_imputed = df_imputed.sort_values(by=['timestamp'])
+    df_imputed = df_imputed.sort_values(by=['timestamp'])
 
-stress_episodes_estimation(df_imputed)
+    return df_imputed
+
