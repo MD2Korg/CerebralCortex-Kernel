@@ -77,6 +77,7 @@ def stress_episodes_estimation(stress_data: object) -> object:
     stress_episode_start = []
     stress_episode_peak = []
     stress_episode_classification = []
+    stress_episode_intervals = []
 
     for c in range(len(stress_smoothed_list)):
         ema_fast_prev = ema_fast_list[-1][1]
@@ -113,8 +114,14 @@ def stress_episodes_estimation(stress_data: object) -> object:
                 stress_class = stress_episode_classification[-1][1]
 
             if stress_class != -1:
-                print('Found full stress episode')
+                #print('Found full stress episode', stress_class)
                 #TODO - Handle this?????
+                stress_episode_timestamps = []
+                stress_episode_timestamps.append(start_timestamp) 
+                stress_episode_timestamps.append(peak_timestamp) 
+                stress_episode_timestamps.append(end_timestamp) 
+                stress_episode_timestamps.append(stress_class) 
+                stress_episode_intervals.append(stress_episode_timestamps) 
 
         if histogram_prev >=0 and histogram < 0:
             # Episode is in the middle, started decreasing
@@ -152,7 +159,7 @@ def stress_episodes_estimation(stress_data: object) -> object:
                             stress_episode_start.append((episode_start_timestamp, UNSURE))
                             stress_episode_peak.append((stress_smoothed_list[c][0], UNSURE))
                             stress_episode_classification.append((stress_smoothed_list[c][0], UNSURE))
-
+    
 
     stress_episode_df = pd.DataFrame(index = np.arange(0, len(stress_episode_classification)), columns=['user', 'timestamp', 'stress_episode'])
     user = data['user'].values[0]
