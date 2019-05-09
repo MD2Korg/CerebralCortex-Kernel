@@ -80,8 +80,28 @@ class DataStreamTest:
 
         # convert window stream as quality stream for next step
         win_df=win_ds.data.withColumn("some_val", sum_vals_udf(win_ds.data["battery_level"])).drop("battery_level")
+
+        from pyspark.sql.functions import pandas_udf, PandasUDFType
+        import pandas as pd
+        from pyspark.sql.types import StructField, StructType, StringType, FloatType
+        schema = StructType([
+            StructField("mean", FloatType()),
+            StructField("val_1", FloatType()),
+            StructField("val_2", FloatType())
+        ])
+        @pandas_udf(schema, PandasUDFType.GROUPED_MAP)  # doctest: +SKIP
+        def mean_udf(v):
+            print(v.dtypes)
+            all_cols = [99,23,1.3,2.5]
+            df = pd.DataFrame(all_cols, columns=['mean', 'val_1', 'val_2'])
+            return df
+        win_ds=DataStream(data=win_ds.data.drop("window"), metadata=Metadata())
+        new_ds = win_ds.groupby("user").compute(mean_udf)
+        print(new_ds.data.columns)
+        sd = new_ds.collect()
         df = win_df.withColumn("quality", F.when(win_df.some_val > 97, 1).otherwise(0)).drop("some_val")
         win_quality_ds = DataStream(data=df, metadata=Metadata())
+
         mapped_stream = ds.map_stream(win_quality_ds)
         filtered_stream = mapped_stream.filter("quality", "=", 0)
         bad_quality = filtered_stream.collect()

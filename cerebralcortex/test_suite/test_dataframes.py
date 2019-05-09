@@ -1,5 +1,6 @@
 from cerebralcortex.core.util.spark_helper import get_or_create_sc
 from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_data
+from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql import functions as F
 from typing import List
 import re
@@ -28,11 +29,17 @@ sqlContext = get_or_create_sc(type="sqlContext")
 df1 = sqlContext.createDataFrame(lst1, schema=['id', 'usr', 'st','et','val'])
 df2 = sqlContext.createDataFrame(lst2, schema=['id', 'usr', 'v1','v2','v3'])
 
-df1.show(truncate=False)
+# df1.show(truncate=False)
+#
+# df2.show(truncate=False)
+#
+# #df3 = df1.join(df2, [(df1.et <= df2.id) & (df1.st >= df2.id)])
+# dd = [str(df2.v2._jc),str(df1.et._jc)]
+# df3=df1.join(df2, df2.id.between(F.col("st"), F.col("et")))
+# df3.show(truncate=False)
 
-df2.show(truncate=False)
+@pandas_udf("double", PandasUDFType.GROUPED_AGG)  # doctest: +SKIP
+def mean_udf(v):
+    return v.mean()
 
-#df3 = df1.join(df2, [(df1.et <= df2.id) & (df1.st >= df2.id)])
-dd = [str(df2.v2._jc),str(df1.et._jc)]
-df3=df1.join(df2, df2.id.between(F.col("st"), F.col("et")))
-df3.show(truncate=False)
+win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
