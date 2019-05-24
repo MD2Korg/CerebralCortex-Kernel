@@ -65,9 +65,35 @@ class DataIngestionHandler():
         except Exception as e:
             raise Exception(e)
 
+    def add_scanned_files(self, user_id: str, stream_name: str, metadata:dict, file_path: str) -> bool:
+        """
+        Add scanned files in ingestion log table that could be processed later on. This method is specific to MD2K data ingestion.
+
+        Args:
+            user_id (str): id of a user
+            stream_name (str): name of a stream
+            metadata (dict): raw metadata
+            file_path (str): filename with its path
+
+        Returns:
+            bool
+
+        Raises:
+            Exception: if sql query fails
+        """
+
+        qry = "INSERT IGNORE INTO " + self.ingestionLogsTable + " (user_id, stream_name, metadata, file_path, fault_type, fault_description, success) VALUES(%s, %s, %s, %s, %s, %s, %s)"
+        vals = str(user_id), str(stream_name), json.dumps(metadata), str(file_path), "PENDING", "NOT-PROCESSED-YET", 5 # success=1 process, success=0 error-in-processing, and success=5 no processed yet
+
+        try:
+            self.execute(qry, vals, commit=True)
+            return True
+        except Exception as e:
+            raise Exception(e)
+
     def get_processed_files_list(self, success_type=False) -> list:
         """
-        Get a list of all the processed files
+        Get a list of all the processed/un-processed files
 
         Returns:
             list: list of all processed files list
@@ -86,6 +112,31 @@ class DataIngestionHandler():
         else:
             for row in rows:
                 result.append(row["file_path"])
+            return result
+
+    def get_files_list(self, stream_name:str=None, success_type=False) -> list:
+        """
+        Get a list of all the processed/un-processed files
+
+        Returns:
+            list: list of all processed files list
+        """
+        result = []
+        if stream_name:
+            where_clause = "stream_name"
+        if success_type:
+            qry = "select file_path from " + self.ingestionLogsTable + " where success=%(success)s"
+            vals = {"success":success_type}
+            rows = self.execute(qry, vals)
+        else:
+            qry = "select file_path from " + self.ingestionLogsTable
+            rows = self.execute(qry)
+
+        if len(rows) == 0:
+            return result
+        else:
+            for row in rows:
+                result.append({"stream_name":row["stream_name"], "metadata":json.loads(row["metadata"]), "file_path":row["file_path"]})
             return result
 
     def is_file_processed(self, filename:str) -> bool:
