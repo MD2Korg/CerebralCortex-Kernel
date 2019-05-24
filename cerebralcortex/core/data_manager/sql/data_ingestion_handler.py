@@ -83,7 +83,7 @@ class DataIngestionHandler():
         """
 
         qry = "INSERT IGNORE INTO " + self.ingestionLogsTable + " (user_id, stream_name, metadata, file_path, fault_type, fault_description, success) VALUES(%s, %s, %s, %s, %s, %s, %s)"
-        vals = str(user_id), str(stream_name), json.dumps(metadata), str(file_path), "PENDING", "NOT-PROCESSED-YET", 5 # success=1 process, success=0 error-in-processing, and success=5 no processed yet
+        vals = str(user_id), str(stream_name), json.dumps(metadata).lower(), str(file_path), "PENDING", "NOT-PROCESSED-YET", 5 # success=1 process, success=0 error-in-processing, and success=5 no processed yet
 
         try:
             self.execute(qry, vals, commit=True)
