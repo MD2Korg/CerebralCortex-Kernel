@@ -107,7 +107,7 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    def save_stream(self, datastream, ingestInfluxDB=False)->bool:
+    def save_stream(self, datastream, file_mode="append", ingestInfluxDB=False, publishOnKafka=False)->bool:
         """
         Saves datastream raw data in selected NoSQL storage and metadata in MySQL.
 
@@ -142,11 +142,11 @@ class StreamHandler():
                     if 'user' not in column_names:
                         raise Exception("user column is missing in data schema")
 
-                    if 'ver' in column_names:
-                        data = data.drop('ver')
-
+                    if 'version' in column_names:
+                        data = data.drop('version')
 
                     result = self.sql_data.save_stream_metadata(metadata)
+                    
                     if result["status"]==True:
                         version = result["version"]
                         if "version" in column_names:
@@ -156,7 +156,7 @@ class StreamHandler():
                         else:
                             data = data.withColumn('version', lit(version))
 
-                        status = self.nosql.write_file(stream_name, data)
+                        status = self.nosql.write_file(stream_name, data, file_mode)
                         return status
                     else:
                         print("Something went wrong in saving data points in SQL store.")

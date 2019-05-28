@@ -116,7 +116,7 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, Dat
         except Exception as exp:
             raise Exception(exp)
 
-    def execute(self, sql, args=None, commit=False)->List[dict]:
+    def execute(self, sql, args=None, commit=False, executemany=False)->List[dict]:
         """
         Execute a sql, it could be with args and with out args. The usage is
         similar with execute() function in module pymysql.
@@ -134,7 +134,10 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, Dat
         conn = self.pool.get_connection()
         cursor = conn.cursor(dictionary=True)
         if args:
-            cursor.execute(sql, args)
+            if executemany:
+                cursor.executemany(sql, args)
+            else:
+                cursor.execute(sql, args)
         else:
             cursor.execute(sql)
         if commit is True:

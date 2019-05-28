@@ -65,7 +65,7 @@ class DataIngestionHandler():
         except Exception as e:
             raise Exception(e)
 
-    def add_scanned_files(self, user_id: str, stream_name: str, metadata:dict, file_path: str) -> bool:
+    def add_scanned_files(self, user_id: str, stream_name: str, metadata:dict, files_list: list) -> bool:
         """
         Add scanned files in ingestion log table that could be processed later on. This method is specific to MD2K data ingestion.
 
@@ -73,7 +73,7 @@ class DataIngestionHandler():
             user_id (str): id of a user
             stream_name (str): name of a stream
             metadata (dict): raw metadata
-            file_path (str): filename with its path
+            files_list (list): list of filenames with its path
 
         Returns:
             bool
@@ -81,12 +81,13 @@ class DataIngestionHandler():
         Raises:
             Exception: if sql query fails
         """
-
+        rows = []
         qry = "INSERT IGNORE INTO " + self.ingestionLogsTable + " (user_id, stream_name, metadata, file_path, fault_type, fault_description, success) VALUES(%s, %s, %s, %s, %s, %s, %s)"
-        vals = str(user_id), str(stream_name), json.dumps(metadata).lower(), str(file_path), "PENDING", "NOT-PROCESSED-YET", 5 # success=1 process, success=0 error-in-processing, and success=5 no processed yet
+        for fp in files_list:
+            rows.append((str(user_id), str(stream_name), json.dumps(metadata).lower(), str(fp), "PENDING", "NOT-PROCESSED-YET", 5)) # success=1 process, success=0 error-in-processing, and success=5 no processed yet
 
         try:
-            self.execute(qry, vals, commit=True)
+            self.execute(qry, rows, commit=True,executemany=True)
             return True
         except Exception as e:
             raise Exception(e)
