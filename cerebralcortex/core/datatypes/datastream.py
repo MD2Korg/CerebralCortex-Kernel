@@ -429,7 +429,7 @@ class DataStream:
         if 'custom_window' in self._data.columns:
             data = self._data.groupby('user','custom_window').apply(udfName)
         else:
-            data = self._data.groupby('user').apply(udfName)
+            data = self._data.orderBy('timestamp').groupby('user').apply(udfName)
         return DataStream(data=data, metadata=Metadata())
 
 
@@ -519,14 +519,32 @@ class DataStream:
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        windowed_df = self._data.withColumn('custom_window', windowing_udf('timestamp'))
+        windowed_df = None
+        if window_length == 'day':
+            windowed_df = self._data.withColumn('custom_window', day_windows_udf('timestamp'))
+        else:
+            windowed_df = self._data.withColumn('custom_window', hour_windows_udf('timestamp'))
+            
         return DataStream(data=windowed_df, metadata=Metadata())
 
 
 """
 Windowing function to customize the parallelization of computation.
 """
-def get_window(x):
+def get_day_window(x):
+    u = '_'
+    y = x.year
+    m = x.month
+    d = x.day
+    h = x.hour
+    mi = x.minute
+    s = str(y) + u + str(m) + u + str(d) #+ u + str(h) #+ u + str(mi)
+
+    return s
+
+day_windows_udf = udf(get_day_window, StringType())
+
+def get_hour_window(x):
     u = '_'
     y = x.year
     m = x.month
@@ -537,6 +555,6 @@ def get_window(x):
 
     return s
 
-windowing_udf = udf(get_window, StringType())
+hour_windows_udf = udf(get_hour_window, StringType())
 
 
