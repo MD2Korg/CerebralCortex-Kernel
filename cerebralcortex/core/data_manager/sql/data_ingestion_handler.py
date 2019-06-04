@@ -115,7 +115,7 @@ class DataIngestionHandler():
                 result.append(row["file_path"])
             return result
 
-    def get_files_list(self, stream_name:str=None, success_type=False) -> list:
+    def get_files_list(self, stream_name:str=None, user_id=None, success_type=None) -> list:
         """
         Get a list of all the processed/un-processed files
 
@@ -123,21 +123,32 @@ class DataIngestionHandler():
             list: list of all processed files list
         """
         result = []
-        if stream_name:
-            where_clause = "stream_name"
-        if success_type:
-            qry = "select file_path from " + self.ingestionLogsTable + " where success=%(success)s"
+        if not stream_name and not user_id:
+            where_clause = " where success=%(success)s "
             vals = {"success":success_type}
-            rows = self.execute(qry, vals)
         else:
-            qry = "select file_path from " + self.ingestionLogsTable
+            where_clause = " where success=%s "
+            vals = (str(success_type),)
+
+        if stream_name:
+            where_clause += " and stream_name=%s"
+            vals = vals + (stream_name,)
+        if user_id:
+            where_clause += " and user_id=%s"
+            vals = vals + (user_id,)
+
+        if success_type==None:
+            qry = "select * from " + self.ingestionLogsTable
             rows = self.execute(qry)
+        else:
+            qry = "select * from " + self.ingestionLogsTable + where_clause
+            rows = self.execute(qry, vals)
 
         if len(rows) == 0:
             return result
         else:
             for row in rows:
-                result.append({"stream_name":row["stream_name"], "metadata":json.loads(row["metadata"]), "file_path":row["file_path"]})
+                result.append({"stream_name":row["stream_name"], "user_id": row["user_id"], "metadata":json.loads(row["metadata"]), "file_path":row["file_path"]})
             return result
 
     def is_file_processed(self, filename:str) -> bool:

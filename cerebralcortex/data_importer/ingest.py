@@ -244,7 +244,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
             return False
 
 
-        df = assign_column_names_types(df, metadata_dict)
+        df = assign_column_names_types(df, Metadata().from_json_file(metadata_dict))
 
         # save metadata/data
         if metadata_parser is not None and 'mcerebrum' in metadata_parser.__name__:
