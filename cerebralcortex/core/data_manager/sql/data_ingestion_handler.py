@@ -65,6 +65,36 @@ class DataIngestionHandler():
         except Exception as e:
             raise Exception(e)
 
+    def update_ingestion_log(self, file_path: str = "", fault_type: str = "", fault_description: str = "", success: int = None) -> bool:
+        """
+        update ingestion Logs of each record during data import process.
+
+        Args:
+            file_path (str): filename with its path
+            fault_type (str): error type
+            fault_description (str): error details
+            success (int): 1 if data was successfully ingested, 0 otherwise
+
+        Returns:
+            bool
+
+        Raises:
+            ValeError: if
+            Exception: if sql query fails user_id, file_path, fault_type, or success parameters is missing
+        """
+
+        if not fault_type or success is None:
+            raise ValueError("fault_type and success are mandatory parameters.")
+
+        qry = "UPDATE " + self.ingestionLogsTable + " SET fault_type=%s, fault_description=%s, success=%s where file_path=%s"
+        vals =  str(fault_type), str(fault_description), success, str(file_path)
+
+        try:
+            self.execute(qry, vals, commit=True)
+            return True
+        except Exception as e:
+            raise Exception(e)
+
     def add_scanned_files(self, user_id: str, stream_name: str, metadata:dict, files_list: list) -> bool:
         """
         Add scanned files in ingestion log table that could be processed later on. This method is specific to MD2K data ingestion.
@@ -187,3 +217,11 @@ class DataIngestionHandler():
             for row in rows:
                 result.append({"fault_type": row["fault_type"], "total_faults": row["total_faults"]})
             return result
+
+    def update_ingestion_log_status(self, stream_name, fault_type, fault_description, status_type):
+        qry = "update " + self.ingestionLogsTable + "set fault_type=%s, fault_description=%s, success=%s where stream_name=%s"
+        vals = str(fault_type), str(fault_description), str(status_type), str(stream_name)
+        try:
+            self.execute(qry, vals, commit=True)
+        except Exception as e:
+            print("Cannot update metadata in ingest_log table. ", str(e))

@@ -243,7 +243,6 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                                        fault_type="CANNOT_PARSE_DATA_FILE", fault_description=fault_description, success=0)
             return False
 
-
         df = assign_column_names_types(df, Metadata().from_json_file(metadata_dict))
 
         # save metadata/data
