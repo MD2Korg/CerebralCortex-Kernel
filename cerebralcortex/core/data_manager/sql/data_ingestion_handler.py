@@ -58,7 +58,7 @@ class DataIngestionHandler():
             raise ValueError("user_id, file_path, fault_type, and success are mandatory parameters.")
 
         if metadata:
-            qry = "INSERT IGNORE INTO " + self.ingestionLogsTable + " (user_id, stream_name, file_path, fault_type, fault_description, success) VALUES(%s, %s, %s, %s, %s, %s, %s)"
+            qry = "INSERT IGNORE INTO " + self.ingestionLogsTable + " (user_id, stream_name, file_path, fault_type, fault_description, success, metadata) VALUES(%s, %s, %s, %s, %s, %s, %s)"
             vals = str(user_id), str(stream_name), str(file_path), str(fault_type), json.dumps(fault_description), success, json.dumps(metadata)
         else:
             qry = "INSERT IGNORE INTO " + self.ingestionLogsTable + " (user_id, stream_name, file_path, fault_type, fault_description, success) VALUES(%s, %s, %s, %s, %s, %s)"
