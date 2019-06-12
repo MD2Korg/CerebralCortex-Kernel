@@ -27,7 +27,7 @@ import json
 
 class MetadataHandler:
 
-    def get_corrected_metadata(self, stream_name: str, status:str=["include"]) -> dict:
+    def get_corrected_metadata(self) -> dict:
         """
         Retrieves corrected metadata
 
@@ -40,19 +40,18 @@ class MetadataHandler:
         Raises:
             ValueError: if stream_name  is None/empty or error in executing query
         """
-        if not stream_name:
-            raise ValueError("stream_name cannot be empty.")
-        
-        
-        qry = "select * from " + self.correctedMetadata + " where stream_name=%(stream_name)s group by stream_name"
-        vals = {"stream_name": str(stream_name)}
+        results = []
+
+        qry = "select * from " + self.correctedMetadata + " group by stream_name"
 
         try:
-            rows = self.execute(qry, vals)
+            rows = self.execute(qry)
             if len(rows) == 0:
-                return {}
+                return []
             else:
-                metadata = rows[0]["metadata"].lower()
-                return {"metadata":json.loads(metadata), "status":rows[0]["status"]}
+                for row in rows:
+                    metadata = row["metadata"].lower()
+                    results.append({"stream_name":row["stream_name"],"metadata":json.loads(metadata), "status":row["status"]})
+                return results
         except Exception as e:
             raise Exception(str(e))

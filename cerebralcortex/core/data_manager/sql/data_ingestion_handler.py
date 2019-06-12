@@ -223,9 +223,9 @@ class DataIngestionHandler():
                 result.append({"fault_type": row["fault_type"], "total_faults": row["total_faults"]})
             return result
 
-    def update_ingestion_log_status(self, stream_name, fault_type, fault_description, status_type):
-        qry = "update " + self.ingestionLogsTable + "set fault_type=%s, fault_description=%s, success=%s where stream_name=%s"
-        vals = str(fault_type), str(fault_description), str(status_type), str(stream_name)
+    def update_ingestion_log_status(self, stream_name, fault_type, fault_description, status_type, metadata=None):
+        qry = "update " + self.ingestionLogsTable + " set metadata=%s, fault_type=%s, fault_description=%s, success=%s where stream_name=%s"
+        vals = json.dumps({}), str(fault_type), str(fault_description), str(status_type), str(stream_name)
         try:
             self.execute(qry, vals, commit=True)
         except Exception as e:
