@@ -174,12 +174,12 @@ class DataIngestionHandler():
 
         if success_type==None:
             qry = "select * from " + self.ingestionLogsTable
-            rows = self.execute(qry)
+            rows = self.execute(qry, fetchall=False)
         else:
             qry = "select * from " + self.ingestionLogsTable + where_clause
-            rows = self.execute(qry, vals)
+            rows = self.execute(qry, vals, fetchall=False)
 
-        if len(rows) == 0:
+        if rows.rowcount == 0:
             return result
         else:
             for row in rows:
@@ -225,7 +225,7 @@ class DataIngestionHandler():
 
     def update_ingestion_log_status(self, stream_name, fault_type, fault_description, status_type, metadata=None):
         qry = "update " + self.ingestionLogsTable + " set metadata=%s, fault_type=%s, fault_description=%s, success=%s where stream_name=%s"
-        vals = json.dumps({}), str(fault_type), str(fault_description), str(status_type), str(stream_name)
+        vals = json.dumps(metadata), str(fault_type), str(fault_description), str(status_type), str(stream_name)
         try:
             self.execute(qry, vals, commit=True)
         except Exception as e:
