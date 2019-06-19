@@ -176,10 +176,10 @@ class DataIngestionHandler():
             qry = "select * from " + self.ingestionLogsTable +" limit 0,22"
             rows = self.execute(qry)
         else:
-            qry = "select * from " + self.ingestionLogsTable + where_clause
+            qry = "select * from " + self.ingestionLogsTable + where_clause +" limit 0,22"
             rows = self.execute(qry, vals)
 
-        if rows.rowcount == 0:
+        if len(rows) == 0:
             return result
         else:
             for row in rows:
