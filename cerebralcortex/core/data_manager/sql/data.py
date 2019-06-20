@@ -116,7 +116,7 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, Dat
         except Exception as exp:
             raise Exception(exp)
 
-    def execute(self, sql, args=None, commit=False, executemany=False, fetchall=True)->List[dict]:
+    def execute(self, sql, args=None, commit=False, executemany=False)->List[dict]:
         """
         Execute a sql, it could be with args and with out args. The usage is
         similar with execute() function in module pymysql.
@@ -126,10 +126,8 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, Dat
             args (tuple): args need by sql clause
             commit (bool): whether to commit
             executemany (bool): execute batch
-            fetchall (bool): if set to True then results will be returned; otherwise cursor will be returned.
         Returns:
             list[dict]: returns a list of dicts if commit is set to False
-            cursor(MySql cursor): if fetchall is set to False
         Raises:
             Exception: if MySQL query fails
         """
@@ -148,9 +146,6 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, Dat
             self.close(conn, cursor)
             return None
         else:
-            if fetchall:
-                res = cursor.fetchall()
-                self.close(conn, cursor)
-                return res
-            else:
-                return cursor
+            res = cursor.fetchall()
+            self.close(conn, cursor)
+            return res
