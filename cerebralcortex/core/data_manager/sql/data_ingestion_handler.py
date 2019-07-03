@@ -232,7 +232,7 @@ class DataIngestionHandler():
             print("Cannot update metadata in ingest_log table. ", str(e))
 
     def update_ingestion_log_status_ignore(self, stream_name, fault_type, fault_description, status_type, metadata=None):
-        qry = "update " + self.ingestionLogsTable + " set metadata=%s, fault_type=%s, fault_description=%s, status_type=%s where stream_name=%s"
+        qry = "update " + self.ingestionLogsTable + " set metadata=%s, fault_type=%s, fault_description=%s, success=%s where stream_name=%s"
         vals = json.dumps(metadata), fault_type, fault_description, status_type, stream_name
         try:
             self.execute(qry, vals, commit=True)
