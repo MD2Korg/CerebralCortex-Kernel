@@ -11,16 +11,16 @@ cc:
 #########################################################################
 #                        NoSQL Storage                                  #
 #########################################################################
-nosql_storage: filesystem
+nosql_storage: hdfs
 
 filesystem:
   # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
   filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/rice_data/processed/"
 
-#hdfs:
-#  host: localhost
-#  port: 9000
-#  raw_files_dir: "/cerebralcortex/"
+hdfs:
+  host: localhost
+  port: 9001
+  raw_files_dir: "/user/ali/cc33/"
 
 #########################################################################
 #                        OBJECT Storage                                 #
@@ -74,7 +74,8 @@ messaging_service: none
 #kafka:
 #  host: 127.0.0.1
 #  port: 9092
-
+#  ping_kafka: 5
+#  consumer_group_id: "md2k"
 #########################################################################
 #                          Data Provenance Storage                      #
 #########################################################################
