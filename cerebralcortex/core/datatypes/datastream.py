@@ -29,6 +29,7 @@ from typing import List
 from pyspark.sql.types import *
 #from pyspark.sql.functions import pandas_udf,PandasUDFType
 from pyspark.sql.window import Window
+from cerebralcortex.core.plotting.basic_plots import BasicPlots
 
 import re
 import sys
@@ -52,6 +53,7 @@ class DataStream:
 
         self._data = data
         self._metadata = metadata
+        self._basic_plots = BasicPlots()
 
     def get_metadata(self, version:int=None)->Metadata:
         """
@@ -481,10 +483,18 @@ class DataStream:
         return exprs
 
 
+############################### PLOTS ###############################
+    
+    def plot_timeseries(self, y_axis_column=None):
+        pdf = self._data.toPandas()
+        self._basic_plots.timeseries(pdf, y_axis_column=y_axis_column)
+        
+    def plot_hist(self, x_axis_column=None):
+        pdf = self._data.toPandas()
+        self._basic_plots.timeseries(pdf, y_axis_column=x_axis_column)
 
 
-
-################ New Methods by Anand #########################
+###################### New Methods by Anand #########################
 
 
     def join(self, dataStream, propagation='forward'):

@@ -17,7 +17,7 @@ with open(path.join(here, 'README.md')) as f:
 setup(
     name="cerebralcortex-kernel",
 
-    version='3.0.0r23',
+    version='3.0.0r24',
 
     description='Backend data analytics platform for MD2K software',
     long_description=long_description,

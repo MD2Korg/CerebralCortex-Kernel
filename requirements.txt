@@ -19,3 +19,4 @@ Shapely==1.6.4.post2
 scikit-learn==0.20.2
 plotly==3.10.0
 matplotlib
+cufflinks==0.16
