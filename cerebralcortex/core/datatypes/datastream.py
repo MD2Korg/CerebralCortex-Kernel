@@ -485,7 +485,7 @@ class DataStream:
 
 ############################### PLOTS ###############################
     
-    def plot_timeseries(self, y_axis_column=None):
+    def plot(self, y_axis_column=None):
         pdf = self._data.toPandas()
         self._basic_plots.timeseries(pdf, y_axis_column=y_axis_column)
         

@@ -59,7 +59,7 @@ class BasicPlots():
         del pdf['version']
         del pdf['timestamp']
         if x_axis_column:
-            data = [go.Histogram(x=x_axis_column)]
+            data = [go.Histogram(x=pdf[str(x_axis_column)])]
             iplot(data, filename='basic histogram')
         else:
             pdf.iplot(kind='histogram', filename='basic histogram')
