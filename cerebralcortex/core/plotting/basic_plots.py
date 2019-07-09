@@ -43,7 +43,7 @@ class BasicPlots():
         ts = pdf['timestamp']
         del pdf['timestamp']
         if y_axis_column:
-            data = [go.Scatter(x=pdf['timestamp'], y=pdf[str(y_axis_column)])]
+            data = [go.Scatter(x=ts, y=pdf[str(y_axis_column)])]
             iplot(data, filename = 'time-series-plot')
         else:
             iplot([{
