@@ -491,7 +491,7 @@ class DataStream:
         
     def plot_hist(self, x_axis_column=None):
         pdf = self._data.toPandas()
-        self._basic_plots.timeseries(pdf, y_axis_column=x_axis_column)
+        self._basic_plots.hist(pdf, x_axis_column=x_axis_column)
 
 
 ###################### New Methods by Anand #########################
