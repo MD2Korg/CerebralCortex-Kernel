@@ -38,7 +38,6 @@ class Metadata():
 
         """
         self.name = None
-        self.version = None
         self.description = ""
         self.metadata_hash = None
         self.input_streams = []
@@ -163,20 +162,6 @@ class Metadata():
         self.name = value
         return self
 
-    def set_version(self, value:int):
-        """
-        set version of a stream
-
-        Args:
-            value (int): version of a stream
-
-        Returns:
-            self
-
-        """
-        self.version = value
-        return self
-
     def set_description(self, stream_description:str):
         """
         Add stream description
@@ -254,15 +239,16 @@ class Metadata():
             ValueError: if metadata fields are not set
 
         """
+
         if not self.name:
             raise ValueError("Stream name is not defined.")
         if not self.description:
             raise ValueError("Stream description is not defined.")
         if len(self.data_descriptor)==0:
             raise Exception("Data descriptor length cannot be 0.")
-        for dd_obj in self.data_descriptor:
-            if (dd_obj.attributes is None or len(dd_obj.attributes)==0):
-                raise ValueError("Add brief description for each column in data desciptor. For example, DataDescriptor().set_attribute('description'', 'sleep time''))")
+        # for dd_obj in self.data_descriptor:
+        #     if (dd_obj.attributes is None or len(dd_obj.attributes)==0):
+        #         raise ValueError("Add brief description for each column in data desciptor. For example, DataDescriptor().set_attribute('description'', 'sleep time''))")
         for mm_obj in self.modules:
             if (mm_obj.name is None or mm_obj.name==""):
                 raise ValueError("Module name and/or version fields are missing in module info.")
@@ -301,14 +287,13 @@ class Metadata():
             str: hash id of metadata
         """
         name = self.name
-        version = self.version
         data_descriptor = ""
         modules = ""
         for dd in self.data_descriptor:
             data_descriptor += str(dd.name)+str(dd.type)
         for mm in self.modules:
             modules += str(mm.name) + str(mm.version) + str(mm.authors)
-        hash_string = str(name)+str(version)+str(data_descriptor)+str(modules)
+        hash_string = str(name)+"None"+str(data_descriptor)+str(modules)
         hash_string = hash_string.strip().lower().replace(" ", "")
 
         return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))

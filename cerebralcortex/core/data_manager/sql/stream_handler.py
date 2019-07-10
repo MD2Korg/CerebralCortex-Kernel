@@ -283,8 +283,6 @@ class StreamHandler:
         status = is_metadata_changed.get("status")
         version = is_metadata_changed.get("version")
 
-        metadata_obj.set_version(version)
-
         metadata_str = metadata_obj.to_json()
         if (status=="exist"):
             return {"status": True,"version":version, "record_type":"exist"}
