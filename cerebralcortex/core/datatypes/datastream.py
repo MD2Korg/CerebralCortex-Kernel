@@ -138,7 +138,9 @@ class DataStream:
             >>> new_ds = ds.to_pandas()
             >>> new_ds.data.head()
         """
-        return DataStream(data=self._data.toPandas(), metadata=Metadata())
+        pdf = self._data.toPandas()
+        pdf = pdf.sort_values('timestamp')
+        return DataStream(data=pdf, metadata=Metadata())
 
 
     def collect(self):

@@ -31,7 +31,7 @@ class DataDescriptor():
         """
         self.name = None
         self.type = None
-        self.attributes = []
+        self.attributes = {}
 
     def set_attribute(self, key, value):
         """
@@ -49,33 +49,33 @@ class DataDescriptor():
         """
         if key is None or key=="" or value is None or value=="":
             raise ValueError("Key and/or value cannot be None or empty.")
-        self.attributes.append({key:value})
+        self.attributes[key]=value
         return self
 
-    def set_name(self, value):
-        """
-        Name of data descriptor
-
-        Args:
-            value (str): name
-
-        Returns:
-            self:
-        """
-        self.name = value
-        return self
-
-    def set_type(self, value:str):
-        """
-        Type of a data descriptor
-
-        Args:
-            value (str): type
-        Returns:
-            self:
-        """
-        self.type = value
-        return self
+    # def set_name(self, value):
+    #     """
+    #     Name of data descriptor
+    #
+    #     Args:
+    #         value (str): name
+    #
+    #     Returns:
+    #         self:
+    #     """
+    #     self.name = value
+    #     return self
+    #
+    # def set_type(self, value:str):
+    #     """
+    #     Type of a data descriptor
+    #
+    #     Args:
+    #         value (str): type
+    #     Returns:
+    #         self:
+    #     """
+    #     self.type = value
+    #     return self
 
     def from_json(self, obj):
         """
