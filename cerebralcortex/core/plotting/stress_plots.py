@@ -54,4 +54,5 @@ class StressStreamPlots():
 
             fig = ff.create_gantt(data, index_col='Resource', title='Stressers, Main & Sub Categories',
                                   show_colorbar=True, bar_width=0.8, showgrid_x=True, showgrid_y=True)
+            fig['layout']['yaxis'].update({"showticklabels":False})
             iplot(fig, filename='gantt-hours-minutes')
