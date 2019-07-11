@@ -30,6 +30,7 @@ from pyspark.sql.types import *
 #from pyspark.sql.functions import pandas_udf,PandasUDFType
 from pyspark.sql.window import Window
 from cerebralcortex.core.plotting.basic_plots import BasicPlots
+from cerebralcortex.core.plotting.stress_plots import StressStreamPlots
 
 import re
 import sys
@@ -54,6 +55,7 @@ class DataStream:
         self._data = data
         self._metadata = metadata
         self._basic_plots = BasicPlots()
+        self._stress_plots = StressStreamPlots()
 
     def get_metadata(self, version:int=None)->Metadata:
         """
@@ -495,6 +497,13 @@ class DataStream:
         pdf = self._data.toPandas()
         self._basic_plots.hist(pdf, x_axis_column=x_axis_column)
 
+    def plot_stress_pie(self):
+        pdf = self._data.toPandas()
+        self._stress_plots.plot_pie(pdf, "stresser_main")
+
+    def plot_stress_gantt(self):
+        pdf = self._data.toPandas()
+        self._stress_plots.plot_gantt(pdf)
 
 ###################### New Methods by Anand #########################
 
