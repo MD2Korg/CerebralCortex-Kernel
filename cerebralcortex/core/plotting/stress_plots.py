@@ -109,4 +109,4 @@ class StressStreamPlots():
         )
 
         fig = dict(data=[data], layout=layout)
-        return fig
+        iplot(fig, validate=False)
