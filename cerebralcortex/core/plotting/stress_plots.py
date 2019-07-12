@@ -52,10 +52,10 @@ class StressStreamPlots():
         for index, row in pdf.iterrows():
             data.append(dict(Task=row["stresser_sub"], Start=row["start_time"], Finish=row["end_time"], Resource=row["stresser_main"]))
 
-            fig = ff.create_gantt(data, index_col='Resource', title='Stressers, Main & Sub Categories',
-                                  show_colorbar=True, bar_width=0.8, showgrid_x=True, showgrid_y=True)
-            fig['layout']['yaxis'].update({"showticklabels":False})
-            iplot(fig, filename='gantt-hours-minutes')
+        fig = ff.create_gantt(data, index_col='Resource', title='Stressers, Main & Sub Categories',
+                              show_colorbar=True, bar_width=0.8, showgrid_x=True, showgrid_y=True)
+        fig['layout']['yaxis'].update({"showticklabels":False})
+        iplot(fig, filename='gantt-hours-minutes')
 
     def plot_sankey(self, df,cat_cols=[], value_cols='',title="Stressers' Sankey Diagram"):
         labelList = []
