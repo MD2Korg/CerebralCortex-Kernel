@@ -56,3 +56,57 @@ class StressStreamPlots():
                                   show_colorbar=True, bar_width=0.8, showgrid_x=True, showgrid_y=True)
             fig['layout']['yaxis'].update({"showticklabels":False})
             iplot(fig, filename='gantt-hours-minutes')
+
+    def plot_sankey(df,cat_cols=[], value_cols='',title="Stressers' Sankey Diagram"):
+        labelList = []
+
+        for catCol in cat_cols:
+            labelListTemp =  list(set(df[catCol].values))
+        labelList = labelList + labelListTemp
+
+        # remove duplicates from labelList
+        labelList = list(dict.fromkeys(labelList))
+
+        # transform df into a source-target pair
+        for i in range(len(cat_cols)-1):
+            if i==0:
+                sourceTargetDf = df[[cat_cols[i],cat_cols[i+1],value_cols]]
+                sourceTargetDf.columns = ['source','target','density']
+            else:
+                tempDf = df[[cat_cols[i],cat_cols[i+1],value_cols]]
+                tempDf.columns = ['source','target','density']
+                sourceTargetDf = pd.concat([sourceTargetDf,tempDf])
+            sourceTargetDf = sourceTargetDf.groupby(['source','target']).agg({'density':'sum'}).reset_index()
+
+        # add index for source-target pair
+        sourceTargetDf['sourceID'] = sourceTargetDf['source'].apply(lambda x: labelList.index(x))
+        sourceTargetDf['targetID'] = sourceTargetDf['target'].apply(lambda x: labelList.index(x))
+
+        # creating the sankey diagram
+        data = dict(
+            type='sankey',
+            node = dict(
+                pad = 15,
+                thickness = 20,
+                line = dict(
+                    color = "black",
+                    width = 0.5
+                ),
+                label = labelList
+            ),
+            link = dict(
+                source = sourceTargetDf['sourceID'],
+                target = sourceTargetDf['targetID'],
+                value = sourceTargetDf['density']
+            )
+        )
+
+        layout =  dict(
+            title = title,
+            font = dict(
+                size = 10
+            )
+        )
+
+        fig = dict(data=[data], layout=layout)
+        return fig

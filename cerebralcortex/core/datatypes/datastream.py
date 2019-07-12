@@ -505,6 +505,10 @@ class DataStream:
         pdf = self._data.toPandas()
         self._stress_plots.plot_gantt(pdf)
 
+    def plot_stress_sankey(self, cat_cols:list=["stresser_main","stresser_sub"], value_cols='density',title="Stressers' Sankey Diagram"):
+        pdf = self._data.toPandas()
+        self._stress_plots.plot_sankey(pdf,cat_cols=cat_cols, value_cols=value_cols, title=title)
+
 ###################### New Methods by Anand #########################
 
 
