@@ -57,7 +57,7 @@ class StressStreamPlots():
             fig['layout']['yaxis'].update({"showticklabels":False})
             iplot(fig, filename='gantt-hours-minutes')
 
-    def plot_sankey(df,cat_cols=[], value_cols='',title="Stressers' Sankey Diagram"):
+    def plot_sankey(self, df,cat_cols=[], value_cols='',title="Stressers' Sankey Diagram"):
         labelList = []
 
         for catCol in cat_cols:
