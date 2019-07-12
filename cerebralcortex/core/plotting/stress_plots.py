@@ -62,7 +62,7 @@ class StressStreamPlots():
 
         for catCol in cat_cols:
             labelListTemp =  list(set(df[catCol].values))
-        labelList = labelList + labelListTemp
+            labelList = labelList + labelListTemp
 
         # remove duplicates from labelList
         labelList = list(dict.fromkeys(labelList))
