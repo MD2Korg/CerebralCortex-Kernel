@@ -35,13 +35,17 @@ from datetime import datetime
 
 
 class BasicPlots():
+    def remove_cols(self, pdf, cols=["user", "version", "timestamp"]):
+        for col in cols:
+            if col in pdf.columns:
+                del pdf[col]
+        return pdf
+
     def timeseries(self, pdf, y_axis_column=None):
         cf.set_config_file(offline=True, world_readable=True, theme='ggplot')
         init_notebook_mode(connected=True)
-        del pdf['user']
-        del pdf['version']
         ts = pdf['timestamp']
-        del pdf['timestamp']
+        pdf = self.remove_cols(pdf)
         if y_axis_column:
             data = [go.Scatter(x=ts, y=pdf[str(y_axis_column)])]
             iplot(data, filename = 'time-series-plot')
@@ -55,9 +59,7 @@ class BasicPlots():
     def hist(self, pdf, x_axis_column=None):
         cf.set_config_file(offline=True, world_readable=True, theme='ggplot')
         init_notebook_mode(connected=True)
-        del pdf['user']
-        del pdf['version']
-        del pdf['timestamp']
+        pdf = self.remove_cols(pdf)
         if x_axis_column:
             data = [go.Histogram(x=pdf[str(x_axis_column)])]
             iplot(data, filename='basic histogram')
