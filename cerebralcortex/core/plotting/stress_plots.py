@@ -129,7 +129,7 @@ class StressStreamPlots():
 
             data.append(go.Bar({
                 'y': sub["density"],
-                'x': sorted(x_col_names),
+                'x': x_col_names,
                 'name': row["user_id"]
             }))
 
@@ -152,18 +152,18 @@ class StressStreamPlots():
             # get the x-axis labels that has max length
             tmp = grouped_user_pdf.append(grouped_compare_with_pdf, ignore_index=True)
 
-            x_col_names = list(set(tmp[x_axis_column]))
+            #x_col_names = list(set(tmp[x_axis_column]))
 
             data.append(go.Bar({
                 'y': grouped_user_pdf["density"],
-                'x': x_col_names,
+                'x': grouped_user_pdf[x_axis_column],
                 'name': usr_id
             }))
             if compare_with=="all":
                 compare_with = "All Users"
             data.append(go.Bar({
                 'y': grouped_compare_with_pdf["density"],
-                'x': x_col_names,
+                'x': grouped_compare_with_pdf[x_axis_column],
                 'name': compare_with
             }))
 

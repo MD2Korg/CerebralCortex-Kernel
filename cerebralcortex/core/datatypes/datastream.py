@@ -513,7 +513,7 @@ class DataStream:
         pdf = self._data.toPandas()
         self._stress_plots.plot_bar(pdf, x_axis_column=x_axis_column)
 
-    def plot_stress_comparison(self, x_axis_column=None, usr_id=None, compare_with="all"):
+    def plot_stress_comparison(self, x_axis_column="stresser_main", usr_id=None, compare_with="all"):
         pdf = self._data.toPandas()
         self._stress_plots.plot_comparison(pdf, x_axis_column=x_axis_column, usr_id=usr_id, compare_with=compare_with)
 
