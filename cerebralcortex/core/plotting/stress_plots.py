@@ -110,3 +110,65 @@ class StressStreamPlots():
 
         fig = dict(data=[data], layout=layout)
         iplot(fig, validate=False)
+
+    def plot_bar(self, pdf, x_axis_column=None):
+        grouped_pdf=pdf.groupby(["user_id",x_axis_column], as_index=False).agg('sum')
+        user_ids = pdf.groupby("user_id", as_index=False).last()
+
+        data = []
+        x_col_names = []
+        # get the x-axis labels that has max length
+        for index, row in user_ids.iterrows():
+            sub=grouped_pdf.loc[grouped_pdf['user_id'] == row["user_id"]]
+            if len(x_col_names)<len(sub[x_axis_column]):
+                x_col_names = sub[x_axis_column]
+
+        for index, row in user_ids.iterrows():
+            sub=grouped_pdf.loc[grouped_pdf['user_id'] == row["user_id"]]
+            sub.sort_values(x_axis_column)
+
+            data.append(go.Bar({
+                'y': sub["density"],
+                'x': sorted(x_col_names),
+                'name': row["user_id"]
+            }))
+
+        iplot(data, filename='basic-line')
+
+    def plot_comparison(self, pdf, x_axis_column=None, usr_id=None, compare_with="all"):
+        data = []
+        if usr_id:
+            usr_data = pdf.loc[pdf['user_id'] == str(usr_id)]
+
+            if compare_with =="all" or compare_with is None:
+                compare_with_data = pdf.loc[pdf['user_id'] != str(usr_id)]
+            else:
+                compare_with_data = pdf.loc[pdf['user_id'] == str(compare_with)]
+
+            grouped_user_pdf=usr_data.groupby([x_axis_column], as_index=False).agg('sum')
+            grouped_compare_with_pdf=compare_with_data.groupby([x_axis_column], as_index=False).agg('sum')
+
+            x_col_names = []
+            # get the x-axis labels that has max length
+            tmp = grouped_user_pdf.append(grouped_compare_with_pdf, ignore_index=True)
+
+            x_col_names = list(set(tmp[x_axis_column]))
+
+            data.append(go.Bar({
+                'y': grouped_user_pdf["density"],
+                'x': x_col_names,
+                'name': usr_id
+            }))
+            if compare_with=="all":
+                compare_with = "All Users"
+            data.append(go.Bar({
+                'y': grouped_compare_with_pdf["density"],
+                'x': x_col_names,
+                'name': compare_with
+            }))
+
+            iplot(data, filename='basic-line')
+
+        else:
+            raise Exception("usr_id cannot be None/Blank.")
+
