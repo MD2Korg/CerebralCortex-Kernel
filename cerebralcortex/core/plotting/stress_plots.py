@@ -116,12 +116,6 @@ class StressStreamPlots():
         user_ids = pdf.groupby("user_id", as_index=False).last()
 
         data = []
-        x_col_names = []
-        # get the x-axis labels that has max length
-        for index, row in user_ids.iterrows():
-            sub=grouped_pdf.loc[grouped_pdf['user_id'] == row["user_id"]]
-            if len(x_col_names)<len(sub[x_axis_column]):
-                x_col_names = sub[x_axis_column]
 
         for index, row in user_ids.iterrows():
             sub=grouped_pdf.loc[grouped_pdf['user_id'] == row["user_id"]]
@@ -129,7 +123,7 @@ class StressStreamPlots():
 
             data.append(go.Bar({
                 'y': sub["density"],
-                'x': x_col_names,
+                'x': sub[x_axis_column],
                 'name': row["user_id"]
             }))
 
@@ -147,12 +141,6 @@ class StressStreamPlots():
 
             grouped_user_pdf=usr_data.groupby([x_axis_column], as_index=False).agg('sum')
             grouped_compare_with_pdf=compare_with_data.groupby([x_axis_column], as_index=False).agg('sum')
-
-            x_col_names = []
-            # get the x-axis labels that has max length
-            tmp = grouped_user_pdf.append(grouped_compare_with_pdf, ignore_index=True)
-
-            #x_col_names = list(set(tmp[x_axis_column]))
 
             data.append(go.Bar({
                 'y': grouped_user_pdf["density"],
