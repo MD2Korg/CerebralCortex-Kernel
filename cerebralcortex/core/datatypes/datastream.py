@@ -517,6 +517,8 @@ class DataStream:
         pdf = self._data.toPandas()
         self._stress_plots.plot_comparison(pdf, x_axis_column=x_axis_column, usr_id=usr_id, compare_with=compare_with)
 
+
+
 ###################### New Methods by Anand #########################
 
 

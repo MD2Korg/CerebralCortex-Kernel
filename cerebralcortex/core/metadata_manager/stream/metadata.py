@@ -387,3 +387,7 @@ class Metadata():
 
     def __repr__(self):
         return str(self.__dict__)
+
+    ###################################### Overridden Python methods ##########################################
+    def __str__(self):
+        pass
