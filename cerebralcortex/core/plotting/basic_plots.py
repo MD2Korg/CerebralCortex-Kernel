@@ -35,7 +35,7 @@ from datetime import datetime
 
 
 class BasicPlots():
-    def remove_cols(self, pdf, cols=["user", "version", "timestamp"]):
+    def remove_cols(self, pdf, cols=["user", "version", "timestamp", "localtimestamp", "localtime"]):
         for col in cols:
             if col in pdf.columns:
                 del pdf[col]
