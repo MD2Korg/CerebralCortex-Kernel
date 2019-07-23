@@ -65,3 +65,4 @@ class BasicPlots():
             iplot(data, filename='basic histogram')
         else:
             pdf.iplot(kind='histogram', filename='basic histogram')
+

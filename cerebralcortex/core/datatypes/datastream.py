@@ -141,7 +141,8 @@ class DataStream:
             >>> new_ds.data.head()
         """
         pdf = self._data.toPandas()
-        pdf = pdf.sort_values('timestamp')
+        if "timestamp" in pdf.columns:
+            pdf = pdf.sort_values('timestamp')
         return DataStream(data=pdf, metadata=Metadata())
 
 
