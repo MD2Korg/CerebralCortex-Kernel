@@ -80,5 +80,5 @@ class BasicPlots():
             markers=(marker_list)
         )
         m.add_layer(marker_cluster);
-        m
+        return m
 
