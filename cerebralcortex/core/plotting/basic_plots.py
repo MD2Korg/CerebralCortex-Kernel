@@ -32,6 +32,7 @@ import cufflinks as cf
 from plotly.offline import iplot, init_notebook_mode
 import pandas as pd
 from datetime import datetime
+from ipyleaflet import Map, Marker, MarkerCluster
 
 
 class BasicPlots():
@@ -65,4 +66,20 @@ class BasicPlots():
             iplot(data, filename='basic histogram')
         else:
             pdf.iplot(kind='histogram', filename='basic histogram')
+
+    def plot_gps_points(gps_stream, zoom=5):
+        pdf = gps_stream.to_pandas().data
+        marker_list = []
+        center = None
+        for index, row in pdf.iterrows():
+            if center is None:
+                center = [row["latitude"], row["longitude"]]
+            marker_list.append(Marker(location=(row["latitude"], row["longitude"])))
+
+        m = Map(center=(center), zoom=zoom)
+        marker_cluster = MarkerCluster(
+            markers=(marker_list)
+        )
+        m.add_layer(marker_cluster);
+        return m
 
