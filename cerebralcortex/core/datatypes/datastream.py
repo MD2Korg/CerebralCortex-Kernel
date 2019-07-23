@@ -498,6 +498,10 @@ class DataStream:
         pdf = self._data.toPandas()
         self._basic_plots.hist(pdf, x_axis_column=x_axis_column)
 
+    def plot_gps_cords(self, zoom=5):
+        pdf = self._data.toPandas()
+        self._basic_plots.plot_gps_cords(pdf, zoom=zoom)
+
     def plot_stress_pie(self, x_axis_column="stresser_main"):
         pdf = self._data.toPandas()
         self._stress_plots.plot_pie(pdf, x_axis_column)

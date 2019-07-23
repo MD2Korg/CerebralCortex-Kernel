@@ -67,8 +67,7 @@ class BasicPlots():
         else:
             pdf.iplot(kind='histogram', filename='basic histogram')
 
-    def plot_gps_points(gps_stream, zoom=5):
-        pdf = gps_stream.to_pandas().data
+    def plot_gps_cords(self, pdf, zoom=5):
         marker_list = []
         center = None
         for index, row in pdf.iterrows():
@@ -81,5 +80,5 @@ class BasicPlots():
             markers=(marker_list)
         )
         m.add_layer(marker_cluster);
-        return m
+        m
 
