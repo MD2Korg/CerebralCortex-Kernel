@@ -197,7 +197,7 @@ class DataStream:
         """
         return self._compute_stats(windowDuration=windowDuration, methodName="sum", columnName=colmnName)
 
-    def compute_variancee(self, windowDuration:int=60, colmnName:str=None)->object:
+    def compute_variance(self, windowDuration:int=60, colmnName:str=None)->object:
         """
         Window data and compute variance of a windowed data of a single or all columns
 
@@ -296,6 +296,7 @@ class DataStream:
         win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
         if len(groupByColumnName)>0:
             groupByColumnName.append("user")
+            groupByColumnName.append("version")
             groupByColumnName.append(win)
             windowed_data = self._data.groupBy(groupByColumnName).agg(exprs)
         else:
@@ -432,14 +433,69 @@ class DataStream:
     #     self.metadata = Metadata()
     #     return self
 
-    def compute(self, udfName):
+    def compute(self, udfName, timeInterval=None):
         if 'custom_window' in self._data.columns:
             data = self._data.groupby('user','custom_window').apply(udfName)
         else:
             data = self._data.groupby('user').apply(udfName)
         return DataStream(data=data, metadata=Metadata())
 
+    def run_algorithm(self, algoName, columnName:List[str]=[], windowDuration:int=60, slideDuration:int=None, groupByColumnName:List[str]=[], startTime=None, preserve_ts=False):
+        """
+        Run an algorithm
 
+        Args:
+            algoName: Name of the algorithm
+            columnName List[str]: column names on which windowing should be performed. Windowing will be performed on all columns if none is provided
+            windowDuration (int): duration of a window in seconds
+            slideDuration (int): slide duration of a window
+            groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
+            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+            preserve_ts (bool): setting this to True will return timestamps of corresponding to each windowed value
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+
+        """
+        windowDuration = str(windowDuration)+" seconds"
+
+        exprs = self._get_column_names(columnName=columnName, methodName="collect_list", preserve_ts=preserve_ts)
+        win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
+        if len(groupByColumnName)>0:
+            groupByColumnName.append("user")
+            groupByColumnName.append("version")
+            groupByColumnName.append(win)
+            windowed_data = self._data.groupBy(groupByColumnName).agg(exprs)
+        else:
+            windowed_data = self._data.groupBy(['user','version',win]).agg(exprs)
+
+        windowed_data = self._update_column_names(windowed_data)
+
+        #windowed_data.groupBy("id", window("ts", "15 days")).agg(func_name(F.collect_list(df.val), F.collect_list(df.id))).show(truncate=False)
+
+        return DataStream(data=windowed_data, metadata=Metadata())
+
+    def run_algo(self, udfName, windowSize:str="1 minute"):
+        """
+
+        Args:
+            udfName: Name of the algorithm
+            windowSize: acceptable_params are "1 second", "1 minute", "1 hour" OR "1 day"
+        """
+        acceptable_params = ["1 second", "1 minute", "1 hour", "1 day"]
+
+        if windowSize=="1 second":
+            extended_df = self._data.withColumn("groupby_col",F.concat(F.col("timestamp").cast("date"), F.lit("-"), F.hour(F.col("timestamp")), F.lit("-"), F.minute(F.col("timestamp")), F.lit("-"), F.second(F.col("timestamp"))).cast("string"))
+        elif windowSize=="1 minute":
+            extended_df = self._data.withColumn("groupby_col",F.concat(F.col("timestamp").cast("date"), F.lit("-"), F.hour(F.col("timestamp")), F.lit("-"), F.minute(F.col("timestamp"))).cast("string"))
+        elif windowSize=="1 hour":
+            extended_df = self._data.withColumn("groupby_col",F.concat(F.col("timestamp").cast("date"), F.lit("-"), F.hour(F.col("timestamp"))).cast("string"))
+        elif windowSize=="1 day":
+            extended_df = self._data.withColumn("groupby_col",F.concat(F.col("timestamp").cast("date")).cast("string"))
+        else:
+            raise ValueError(str(windowSize)+" is not an acceptable param. Acceptable params are only: "+" OR ".join(acceptable_params))
+
+        data = extended_df.groupBy("user","version","groupby_col").apply(udfName)
+        return DataStream(data=data, metadata=Metadata())
 
     def show(self, *args, **kwargs):
         self._data.show(*args, **kwargs)
