@@ -440,12 +440,12 @@ class DataStream:
             data = self._data.groupby('user').apply(udfName)
         return DataStream(data=data, metadata=Metadata())
 
-    def run_algorithm(self, algoName, columnName:List[str]=[], windowDuration:int=60, slideDuration:int=None, groupByColumnName:List[str]=[], startTime=None, preserve_ts=False):
+    def run_algorithm(self, udfName, columnNames:List[str]=[], windowDuration:int=60, slideDuration:int=None, groupByColumnName:List[str]=[], startTime=None, preserve_ts=False):
         """
         Run an algorithm
 
         Args:
-            algoName: Name of the algorithm
+            udfName: Name of the algorithm
             columnName List[str]: column names on which windowing should be performed. Windowing will be performed on all columns if none is provided
             windowDuration (int): duration of a window in seconds
             slideDuration (int): slide duration of a window
@@ -457,22 +457,36 @@ class DataStream:
 
         """
         windowDuration = str(windowDuration)+" seconds"
+        groupbycols = ['user','version']
 
-        exprs = self._get_column_names(columnName=columnName, methodName="collect_list", preserve_ts=preserve_ts)
         win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
+
         if len(groupByColumnName)>0:
-            groupByColumnName.append("user")
-            groupByColumnName.append("version")
-            groupByColumnName.append(win)
-            windowed_data = self._data.groupBy(groupByColumnName).agg(exprs)
-        else:
-            windowed_data = self._data.groupBy(['user','version',win]).agg(exprs)
+            groupbycols.extend(groupByColumnName)
 
-        windowed_data = self._update_column_names(windowed_data)
+        groupbycols.append(win)
 
-        #windowed_data.groupBy("id", window("ts", "15 days")).agg(func_name(F.collect_list(df.val), F.collect_list(df.id))).show(truncate=False)
+        if len(columnNames)==0:
+            raise ValueError("columnNames list cannot be empty.")
 
-        return DataStream(data=windowed_data, metadata=Metadata())
+        tmp = ""
+        for col in columnNames:
+            tmp += "collect_list({}{}{}){}".format('"',col,'"',",")
+
+        tmp = "{}{}{}{}".format(str(udfName.__name__), "(",tmp.rstrip(","), ")")
+        tt = eval(tmp)
+        foobars = self._data.groupBy("id", F.window("ts", "15 days")).agg(tt.alias("foobar"))
+        cols = foobars.schema.fields
+        new_cols = []
+        for col in cols:
+            if col.name=="foobar":
+                for cl in foobars.schema.fields[2].dataType.names:
+                    new_cols.append("foobar."+cl)
+            else:
+                new_cols.append(col.name)
+        data = foobars.select(new_cols)
+
+        return DataStream(data=data, metadata=Metadata())
 
     def run_algo(self, udfName, windowSize:str="1 minute"):
         """
