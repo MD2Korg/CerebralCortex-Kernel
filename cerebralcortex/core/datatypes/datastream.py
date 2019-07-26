@@ -473,9 +473,9 @@ class DataStream:
         for col in columnNames:
             tmp += "collect_list({}{}{}){}".format('"',col,'"',",")
 
-        tmp = "{}{}{}{}".format(str(udfName.__name__), "(",tmp.rstrip(","), ")")
+        tmp = "{}{}{}{}".format(str("udfName.__name__"), "(",tmp.rstrip(","), ")")
         tt = eval(tmp)
-        foobars = self._data.groupBy("id", F.window("ts", "15 days")).agg(tt.alias("foobar"))
+        foobars = self._data.groupBy(groupbycols).agg(F.expr('find_a(collect_list("some_vals"))').alias("foobar"))
         cols = foobars.schema.fields
         new_cols = []
         for col in cols:
