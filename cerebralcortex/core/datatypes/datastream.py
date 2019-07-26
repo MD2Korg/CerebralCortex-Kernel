@@ -471,7 +471,7 @@ class DataStream:
 
         tmp = ""
         for col in columnNames:
-            tmp += "collect_list({}{}{}){}".format('"',col,'"',",")
+            tmp += "F.collect_list({}{}{}){}".format('"',col,'"',",")
 
         tmp = "{}{}{}{}".format(str("udfName.__name__"), "(",tmp.rstrip(","), ")")
         tt = eval(tmp)
