@@ -158,7 +158,7 @@ class DataStream:
 
     # !!!!                                  STAT METHODS                           !!!
 
-    def compute_average(self, windowDuration:int=60, colmnName:str=None)->object:
+    def compute_average(self, windowDuration:int=None, colmnName:str=None)->object:
         """
         Window data and compute average of a windowed data of a single or all columns
 
@@ -250,7 +250,7 @@ class DataStream:
         return self._compute_stats(windowDuration=windowDuration, methodName="max", columnName=colmnName)
 
 
-    def _compute_stats(self, windowDuration:int=60, methodName:str=None, columnName:List[str]=[])->object:
+    def _compute_stats(self, windowDuration:int=None, methodName:str=None, columnName:List[str]=[])->object:
         """
         Compute stats on pyspark dataframe
 
@@ -262,10 +262,13 @@ class DataStream:
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-
-        windowDuration = str(windowDuration)+" seconds"
         exprs = self._get_column_names(columnName=columnName, methodName=methodName)
-        result = self._data.groupBy(['user',F.window("timestamp", windowDuration)]).agg(exprs)
+        if windowDuration:
+            windowDuration = str(windowDuration)+" seconds"
+            win = F.window("timestamp", windowDuration)
+            result = self._data.groupBy(['user',win]).agg(exprs)
+        else:
+            result = self._data.groupBy(['user']).agg(exprs)
 
         result = self._update_column_names(result)
         return DataStream(data=result, metadata=Metadata())
@@ -440,12 +443,12 @@ class DataStream:
             data = self._data.groupby('user').apply(udfName)
         return DataStream(data=data, metadata=Metadata())
 
-    def run_algorithm(self, udf_method, columnNames:List[str]=[], windowDuration:int=60, slideDuration:int=None, groupByColumnName:List[str]=[], startTime=None, preserve_ts=False):
+    def run_algorithm(self, udfName, columnNames:List[str]=[], windowDuration:int=60, slideDuration:int=None, groupByColumnName:List[str]=[], startTime=None, preserve_ts=False):
         """
         Run an algorithm
 
         Args:
-            udf_method: Name of the algorithm
+            udfName: Name of the algorithm
             columnName List[str]: column names on which windowing should be performed. Windowing will be performed on all columns if none is provided
             windowDuration (int): duration of a window in seconds
             slideDuration (int): slide duration of a window
@@ -457,7 +460,7 @@ class DataStream:
 
         """
         windowDuration = str(windowDuration)+" seconds"
-        groupbycols = ["user", "version"]
+        groupbycols = []
 
         win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
 
@@ -473,7 +476,7 @@ class DataStream:
         for col in columnNames:
             tmp += "collect_list({}{}{}){}".format('"',col,'"',",")
 
-        tmp = "{}{}{}{}".format(str(udf_method.__name__), "(", tmp.rstrip(","), ")")
+        tmp = "{}{}{}{}".format("udfName", "(", tmp.rstrip(","), ")")
         merged_column = self._data.groupBy(groupbycols).agg(eval(tmp).alias("merged_column"))
         merged_column.show(truncate=False)
         cols = merged_column.schema.fields
