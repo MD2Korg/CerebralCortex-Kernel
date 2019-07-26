@@ -457,7 +457,7 @@ class DataStream:
 
         """
         windowDuration = str(windowDuration)+" seconds"
-        groupbycols = ['user','version']
+        groupbycols = ["user", "version"]
 
         win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
 
@@ -471,46 +471,45 @@ class DataStream:
 
         tmp = ""
         for col in columnNames:
-            tmp += "F.collect_list({}{}{}){}".format('"',col,'"',",")
+            tmp += "collect_list({}{}{}){}".format('"',col,'"',",")
 
-        tmp = "{}{}{}{}".format(str("udfName.__name__"), "(",tmp.rstrip(","), ")")
-        #tt = eval(tmp)
-        foobars = self._data.groupBy(groupbycols).agg(F.expr('find_a(collect_list("some_vals"))').alias("foobar"))
-        foobars.show(truncate=False)
-        cols = foobars.schema.fields
+        tmp = "{}{}{}{}".format(str(udfName.__name__), "(",tmp.rstrip(","), ")")
+        merged_column = self._data.groupBy(groupbycols).agg(F.expr(tmp).alias("merged_column"))
+        merged_column.show(truncate=False)
+        cols = merged_column.schema.fields
         new_cols = []
         for col in cols:
-            if col.name=="foobar":
-                for cl in foobars.schema.fields[2].dataType.names:
-                    new_cols.append("foobar."+cl)
+            if col.name=="merged_column":
+                for cl in col.dataType.names:
+                    new_cols.append("merged_column."+cl)
             else:
                 new_cols.append(col.name)
-        data = foobars.select(new_cols)
+        data = merged_column.select(new_cols)
 
         return DataStream(data=data, metadata=Metadata())
 
-    def run_algo(self, udfName, windowSize:str="1 minute"):
-        """
-
-        Args:
-            udfName: Name of the algorithm
-            windowSize: acceptable_params are "1 second", "1 minute", "1 hour" OR "1 day"
-        """
-        acceptable_params = ["1 second", "1 minute", "1 hour", "1 day"]
-
-        if windowSize=="1 second":
-            extended_df = self._data.withColumn("groupby_col",F.concat(F.col("timestamp").cast("date"), F.lit("-"), F.hour(F.col("timestamp")), F.lit("-"), F.minute(F.col("timestamp")), F.lit("-"), F.second(F.col("timestamp"))).cast("string"))
-        elif windowSize=="1 minute":
-            extended_df = self._data.withColumn("groupby_col",F.concat(F.col("timestamp").cast("date"), F.lit("-"), F.hour(F.col("timestamp")), F.lit("-"), F.minute(F.col("timestamp"))).cast("string"))
-        elif windowSize=="1 hour":
-            extended_df = self._data.withColumn("groupby_col",F.concat(F.col("timestamp").cast("date"), F.lit("-"), F.hour(F.col("timestamp"))).cast("string"))
-        elif windowSize=="1 day":
-            extended_df = self._data.withColumn("groupby_col",F.concat(F.col("timestamp").cast("date")).cast("string"))
-        else:
-            raise ValueError(str(windowSize)+" is not an acceptable param. Acceptable params are only: "+" OR ".join(acceptable_params))
-
-        data = extended_df.groupBy("user","version","groupby_col").apply(udfName)
-        return DataStream(data=data, metadata=Metadata())
+    # def run_algo(self, udfName, windowSize:str="1 minute"):
+    #     """
+    #
+    #     Args:
+    #         udfName: Name of the algorithm
+    #         windowSize: acceptable_params are "1 second", "1 minute", "1 hour" OR "1 day"
+    #     """
+    #     acceptable_params = ["1 second", "1 minute", "1 hour", "1 day"]
+    #
+    #     if windowSize=="1 second":
+    #         extended_df = self._data.withColumn("groupby_col",F.concat(F.col("timestamp").cast("date"), F.lit("-"), F.hour(F.col("timestamp")), F.lit("-"), F.minute(F.col("timestamp")), F.lit("-"), F.second(F.col("timestamp"))).cast("string"))
+    #     elif windowSize=="1 minute":
+    #         extended_df = self._data.withColumn("groupby_col",F.concat(F.col("timestamp").cast("date"), F.lit("-"), F.hour(F.col("timestamp")), F.lit("-"), F.minute(F.col("timestamp"))).cast("string"))
+    #     elif windowSize=="1 hour":
+    #         extended_df = self._data.withColumn("groupby_col",F.concat(F.col("timestamp").cast("date"), F.lit("-"), F.hour(F.col("timestamp"))).cast("string"))
+    #     elif windowSize=="1 day":
+    #         extended_df = self._data.withColumn("groupby_col",F.concat(F.col("timestamp").cast("date")).cast("string"))
+    #     else:
+    #         raise ValueError(str(windowSize)+" is not an acceptable param. Acceptable params are only: "+" OR ".join(acceptable_params))
+    #
+    #     data = extended_df.groupBy("user","version","groupby_col").apply(udfName)
+    #     return DataStream(data=data, metadata=Metadata())
 
     def show(self, *args, **kwargs):
         self._data.show(*args, **kwargs)
