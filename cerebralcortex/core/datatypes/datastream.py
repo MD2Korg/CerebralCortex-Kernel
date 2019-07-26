@@ -171,7 +171,7 @@ class DataStream:
         """
         return self._compute_stats(windowDuration=windowDuration, methodName="avg", columnName=colmnName)
 
-    def compute_sqrt(self, windowDuration:int=60, colmnName:str=None)->object:
+    def compute_sqrt(self, windowDuration:int=None, colmnName:str=None)->object:
         """
         Window data and compute square root of a windowed data of a single or all columns
 
@@ -184,7 +184,7 @@ class DataStream:
         """
         return self._compute_stats(windowDuration=windowDuration, methodName="sqrt", columnName=colmnName)
 
-    def compute_sum(self, windowDuration:int=60, colmnName:str=None)->object:
+    def compute_sum(self, windowDuration:int=None, colmnName:str=None)->object:
         """
         Window data and compute sum of a windowed data of a single or all columns
 
@@ -197,7 +197,7 @@ class DataStream:
         """
         return self._compute_stats(windowDuration=windowDuration, methodName="sum", columnName=colmnName)
 
-    def compute_variance(self, windowDuration:int=60, colmnName:str=None)->object:
+    def compute_variance(self, windowDuration:int=None, colmnName:str=None)->object:
         """
         Window data and compute variance of a windowed data of a single or all columns
 
@@ -210,7 +210,7 @@ class DataStream:
         """
         return self._compute_stats(windowDuration=windowDuration, methodName="variance", columnName=colmnName)
 
-    def compute_stddev(self, windowDuration:int=60, colmnName:str=None)->object:
+    def compute_stddev(self, windowDuration:int=None, colmnName:str=None)->object:
         """
         Window data and compute standard deviation of a windowed data of a single or all columns
 
@@ -223,7 +223,7 @@ class DataStream:
         """
         return self._compute_stats(windowDuration=windowDuration, methodName="stddev", columnName=colmnName)
 
-    def compute_min(self, windowDuration:int=60, colmnName:str=None)->object:
+    def compute_min(self, windowDuration:int=None, colmnName:str=None)->object:
         """
         Window data and compute min of a windowed data of a single or all columns
 
@@ -236,7 +236,7 @@ class DataStream:
         """
         return self._compute_stats(windowDuration=windowDuration, methodName="min", columnName=colmnName)
 
-    def compute_max(self, windowDuration:int=60, colmnName:str=None)->object:
+    def compute_max(self, windowDuration:int=None, colmnName:str=None)->object:
         """
         Window data and compute max of a windowed data of a single or all columns
 
