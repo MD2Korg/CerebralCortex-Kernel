@@ -294,7 +294,8 @@ class DataStream:
 
         """
         windowDuration = str(windowDuration)+" seconds"
-        slideDuration = str(slideDuration)+" seconds"
+        if slideDuration is not None:
+            slideDuration = str(slideDuration)+" seconds"
         exprs = self._get_column_names(columnName=columnName, methodName="collect_list", preserve_ts=preserve_ts)
         win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
         if len(groupByColumnName)>0:
