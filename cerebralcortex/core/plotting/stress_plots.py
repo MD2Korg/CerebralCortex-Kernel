@@ -112,19 +112,19 @@ class StressStreamPlots():
         iplot(fig, validate=False)
 
     def plot_bar(self, pdf, x_axis_column=None):
-        grouped_pdf=pdf.groupby(["user_id",x_axis_column], as_index=False).agg('sum')
-        user_ids = pdf.groupby("user_id", as_index=False).last()
+        grouped_pdf=pdf.groupby(["user",x_axis_column], as_index=False).agg('sum')
+        user_ids = pdf.groupby("user", as_index=False).last()
 
         data = []
 
         for index, row in user_ids.iterrows():
-            sub=grouped_pdf.loc[grouped_pdf['user_id'] == row["user_id"]]
+            sub=grouped_pdf.loc[grouped_pdf['user'] == row["user"]]
             sub.sort_values(x_axis_column)
 
             data.append(go.Bar({
                 'y': sub["density"],
                 'x': sub[x_axis_column],
-                'name': row["user_id"]
+                'name': row["user"]
             }))
 
         iplot(data, filename='basic-line')
@@ -132,12 +132,12 @@ class StressStreamPlots():
     def plot_comparison(self, pdf, x_axis_column=None, usr_id=None, compare_with="all"):
         data = []
         if usr_id:
-            usr_data = pdf.loc[pdf['user_id'] == str(usr_id)]
+            usr_data = pdf.loc[pdf['user'] == str(usr_id)]
 
             if compare_with =="all" or compare_with is None:
-                compare_with_data = pdf.loc[pdf['user_id'] != str(usr_id)]
+                compare_with_data = pdf.loc[pdf['user'] != str(usr_id)]
             else:
-                compare_with_data = pdf.loc[pdf['user_id'] == str(compare_with)]
+                compare_with_data = pdf.loc[pdf['user'] == str(compare_with)]
 
             grouped_user_pdf=usr_data.groupby([x_axis_column], as_index=False).agg('sum')
             grouped_compare_with_pdf=compare_with_data.groupby([x_axis_column], as_index=False).agg('sum')
