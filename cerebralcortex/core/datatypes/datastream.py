@@ -440,12 +440,12 @@ class DataStream:
             data = self._data.groupby('user').apply(udfName)
         return DataStream(data=data, metadata=Metadata())
 
-    def run_algorithm(self, gps_clusters, columnNames:List[str]=[], windowDuration:int=60, slideDuration:int=None, groupByColumnName:List[str]=[], startTime=None, preserve_ts=False):
+    def run_algorithm(self, udf_method, columnNames:List[str]=[], windowDuration:int=60, slideDuration:int=None, groupByColumnName:List[str]=[], startTime=None, preserve_ts=False):
         """
         Run an algorithm
 
         Args:
-            gps_clusters: Name of the algorithm
+            udf_method: Name of the algorithm
             columnName List[str]: column names on which windowing should be performed. Windowing will be performed on all columns if none is provided
             windowDuration (int): duration of a window in seconds
             slideDuration (int): slide duration of a window
@@ -473,7 +473,7 @@ class DataStream:
         for col in columnNames:
             tmp += "collect_list({}{}{}){}".format('"',col,'"',",")
 
-        tmp = "{}{}{}{}".format(str(gps_clusters.__name__), "(", tmp.rstrip(","), ")")
+        tmp = "{}{}{}{}".format(str(udf_method.__name__), "(", tmp.rstrip(","), ")")
         merged_column = self._data.groupBy(groupbycols).agg(eval(tmp).alias("merged_column"))
         merged_column.show(truncate=False)
         cols = merged_column.schema.fields
