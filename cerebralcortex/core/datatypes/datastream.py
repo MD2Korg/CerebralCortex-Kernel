@@ -474,7 +474,7 @@ class DataStream:
             tmp += "collect_list({}{}{}){}".format('"',col,'"',",")
 
         tmp = "{}{}{}{}".format(str(udfName.__name__), "(",tmp.rstrip(","), ")")
-        merged_column = self._data.groupBy(groupbycols).agg(F.expr(tmp).alias("merged_column"))
+        merged_column = self._data.groupBy(groupbycols).agg(eval(tmp).alias("merged_column"))
         merged_column.show(truncate=False)
         cols = merged_column.schema.fields
         new_cols = []
