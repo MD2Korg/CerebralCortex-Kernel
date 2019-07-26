@@ -386,8 +386,10 @@ class Metadata():
         return md
 
     def __repr__(self):
-        return str(self.__dict__)
+        data = self.to_json()
+        return json.dumps(data, indent=4, sort_keys=True)
+        #return str(self.__dict__)
 
     ###################################### Overridden Python methods ##########################################
-    def __str__(self):
-        pass
+    # def __str__(self):
+    #     pass
