@@ -476,6 +476,7 @@ class DataStream:
         tmp = "{}{}{}{}".format(str("udfName.__name__"), "(",tmp.rstrip(","), ")")
         tt = eval(tmp)
         foobars = self._data.groupBy(groupbycols).agg(F.expr('find_a(F.collect_list("some_vals"))').alias("foobar"))
+        foobars.show(truncate=False)
         cols = foobars.schema.fields
         new_cols = []
         for col in cols:
