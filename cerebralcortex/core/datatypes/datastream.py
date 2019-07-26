@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from pyspark.sql import functions as F
-from pyspark.sql.functions import udf
+from pyspark.sql.functions import udf, collect_list
 from typing import List
 from pyspark.sql.types import *
 #from pyspark.sql.functions import pandas_udf,PandasUDFType
@@ -475,7 +475,7 @@ class DataStream:
 
         tmp = "{}{}{}{}".format(str("udfName.__name__"), "(",tmp.rstrip(","), ")")
         #tt = eval(tmp)
-        foobars = self._data.groupBy(groupbycols).agg(F.expr('find_a(F.collect_list("some_vals"))').alias("foobar"))
+        foobars = self._data.groupBy(groupbycols).agg(F.expr('find_a(collect_list("some_vals"))').alias("foobar"))
         foobars.show(truncate=False)
         cols = foobars.schema.fields
         new_cols = []
