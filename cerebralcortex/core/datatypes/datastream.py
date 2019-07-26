@@ -163,7 +163,7 @@ class DataStream:
         Window data and compute average of a windowed data of a single or all columns
 
         Args:
-            windowDuration (int): duration of a window in seconds
+            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             colmnName (str): average will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
@@ -176,7 +176,7 @@ class DataStream:
         Window data and compute square root of a windowed data of a single or all columns
 
         Args:
-            windowDuration (int): duration of a window in seconds
+            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             colmnName (str): square root will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
@@ -189,7 +189,7 @@ class DataStream:
         Window data and compute sum of a windowed data of a single or all columns
 
         Args:
-            windowDuration (int): duration of a window in seconds
+            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             colmnName (str): average will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
@@ -202,7 +202,7 @@ class DataStream:
         Window data and compute variance of a windowed data of a single or all columns
 
         Args:
-            windowDuration (int): duration of a window in seconds
+            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             colmnName (str): variance will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
@@ -215,7 +215,7 @@ class DataStream:
         Window data and compute standard deviation of a windowed data of a single or all columns
 
         Args:
-            windowDuration (int): duration of a window in seconds
+            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             colmnName (str): standard deviation will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
@@ -228,7 +228,7 @@ class DataStream:
         Window data and compute min of a windowed data of a single or all columns
 
         Args:
-            windowDuration (int): duration of a window in seconds
+            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             colmnName (str): min value will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
@@ -241,7 +241,7 @@ class DataStream:
         Window data and compute max of a windowed data of a single or all columns
 
         Args:
-            windowDuration (int): duration of a window in seconds
+            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             colmnName (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
@@ -255,7 +255,7 @@ class DataStream:
         Compute stats on pyspark dataframe
 
         Args:
-            windowDuration (int): duration of a window in seconds
+            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             methodName (str): pyspark stat method name
             columnName (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
 
@@ -294,7 +294,7 @@ class DataStream:
 
         """
         windowDuration = str(windowDuration)+" seconds"
-
+        slideDuration = str(slideDuration)+" seconds"
         exprs = self._get_column_names(columnName=columnName, methodName="collect_list", preserve_ts=preserve_ts)
         win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
         if len(groupByColumnName)>0:
