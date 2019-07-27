@@ -335,6 +335,12 @@ class DataStream:
         data = self._data.drop(*args, **kwargs)
         return DataStream(data=data, metadata=Metadata())
 
+    def summary(self):
+        """
+        print the summary of the data
+        """
+        self._data.describe.show(truncate=False)
+
     def limit(self, *args, **kwargs):
         """
         calls deafult dataframe limit
