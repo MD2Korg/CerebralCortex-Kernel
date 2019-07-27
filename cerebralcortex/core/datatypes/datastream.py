@@ -339,7 +339,7 @@ class DataStream:
         """
         print the summary of the data
         """
-        self._data.describe.show(truncate=False)
+        self._data.describe().show(truncate=False)
 
     def limit(self, *args, **kwargs):
         """
