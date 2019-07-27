@@ -461,7 +461,7 @@ class DataStream:
 
         """
         windowDuration = str(windowDuration)+" seconds"
-        groupbycols = []
+        groupbycols = ["user", "version"]
 
         win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
 
@@ -479,15 +479,18 @@ class DataStream:
 
         tmp = "{}{}{}{}".format("udfName", "(", tmp.rstrip(","), ")")
         merged_column = self._data.groupBy(groupbycols).agg(eval(tmp).alias("merged_column"))
-        merged_column.show(truncate=False)
+
         cols = merged_column.schema.fields
-        new_cols = []
+        new_cols = ["timestamp"]
         for col in cols:
             if col.name=="merged_column":
                 for cl in col.dataType.names:
                     new_cols.append("merged_column."+cl)
             else:
                 new_cols.append(col.name)
+
+        merged_column=merged_column.withColumn("timestamp", merged_column.window.start)
+
         data = merged_column.select(new_cols)
 
         return DataStream(data=data, metadata=Metadata())
