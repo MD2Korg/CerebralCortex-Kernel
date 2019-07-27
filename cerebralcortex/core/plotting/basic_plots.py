@@ -36,7 +36,7 @@ from ipyleaflet import Map, Marker, MarkerCluster
 
 
 class BasicPlots():
-    def remove_cols(self, pdf, cols=["user", "version", "localtimestamp", "localtime", "window"]):
+    def remove_cols(self, pdf, cols=["user", "version", "timestamp", "localtimestamp", "localtime", "window"]):
         for col in cols:
             if col in pdf.columns:
                 del pdf[col]
@@ -55,7 +55,7 @@ class BasicPlots():
                 'x': ts,
                 'y': pdf[col],
                 'name': col
-            }  for col in pdf.columns if col!="timestamp"], filename='time-series-plot')
+            }  for col in pdf.columns], filename='time-series-plot')
 
     def hist(self, pdf, x_axis_column=None):
         cf.set_config_file(offline=True, world_readable=True, theme='ggplot')
