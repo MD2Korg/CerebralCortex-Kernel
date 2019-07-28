@@ -501,6 +501,24 @@ class DataStream:
 
         return DataStream(data=data, metadata=Metadata())
 
+    def sort(self, columnNames:list=[], ascending=True):
+        """
+        Sort data column in ASC or DESC order
+
+        Returns:
+            object: DataStream object
+        """
+        ascending_list = []
+        if len(columnNames)==0:
+            columnNames.append("timestamp")
+        for col in columnNames:
+            if ascending:
+                ascending_list.append(1)
+            else:
+                ascending_list.append(0)
+        data = self._data.orderBy(columnNames,ascending=ascending_list)
+        return DataStream(data=data, metadata=Metadata())
+
     # def run_algo(self, udfName, windowSize:str="1 minute"):
     #     """
     #
