@@ -511,6 +511,7 @@ class DataStream:
         ascending_list = []
         if len(columnNames)==0:
             columnNames.append("timestamp")
+
         for col in columnNames:
             if ascending:
                 ascending_list.append(1)

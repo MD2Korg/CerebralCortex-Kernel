@@ -276,20 +276,20 @@ class StreamHandler:
         """
         isQueryReady = 0
 
-        metadata_hash = metadata_obj.get_hash()
-        stream_name = metadata_obj.name
+        metadata_hash = Metadata().get_hash(metadata_obj)
+        stream_name = metadata_obj.get("name")
 
         is_metadata_changed = self._is_metadata_changed(stream_name, metadata_hash)
         status = is_metadata_changed.get("status")
         version = is_metadata_changed.get("version")
 
-        metadata_str = metadata_obj.to_json()
+        #metadata_obj = metadata_obj
         if (status=="exist"):
             return {"status": True,"version":version, "record_type":"exist"}
 
         if (status == "new"):
             qry = "INSERT INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
-            vals = str(stream_name), str(version), str(metadata_hash), json.dumps(metadata_str)
+            vals = str(stream_name), str(version), str(metadata_hash), json.dumps(metadata_obj)
             isQueryReady = 1
 
             # if nothing is changed then isQueryReady would be 0 and no database transaction would be performed
