@@ -279,7 +279,27 @@ class Metadata():
         metadata_json["modules"] = module_metadata
         return metadata_json
 
-    def get_hash(self, metadata:dict=None)->str:
+    def get_hash(self)->str:
+        """
+        Get the unique hash of metadata. Hash is generated based on "stream-name + data_descriptor + module-metadata"
+
+        Returns:
+            str: hash id of metadata
+
+        """
+        name = self.name
+        data_descriptor = ""
+        modules = ""
+        for dd in self.data_descriptor:
+            data_descriptor += str(dd.name)+str(dd.type)
+        for mm in self.modules:
+            modules += str(mm.name) + str(mm.version) + str(mm.authors)
+        hash_string = str(name)+"None"+str(data_descriptor)+str(modules)
+        hash_string = hash_string.strip().lower().replace(" ", "")
+
+        return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
+
+    def get_hash_by_json(self, metadata:dict=None)->str:
         """
         Get the unique hash of metadata. Hash is generated based on "stream-name + data_descriptor + module-metadata"
 
@@ -289,26 +309,16 @@ class Metadata():
             str: hash id of metadata
 
         """
-        if isinstance(metadata, Metadata):
-            name = self.name
-            data_descriptor = ""
-            modules = ""
-            for dd in self.data_descriptor:
-                data_descriptor += str(dd.name)+str(dd.type)
-            for mm in self.modules:
-                modules += str(mm.name) + str(mm.version) + str(mm.authors)
-            hash_string = str(name)+"None"+str(data_descriptor)+str(modules)
-            hash_string = hash_string.strip().lower().replace(" ", "")
-        else:
-            name = metadata.get("name")
-            data_descriptor = ""
-            modules = ""
-            for dd in metadata.get("data_descriptor"):
-                data_descriptor += str(dd.get("name"))+str(dd.get("type"))
-            for mm in metadata.get("modules"):
-                modules += str(mm.get("name")) + str(mm.get("version")) + str(mm.get("authors"))
-            hash_string = str(name)+"None"+str(data_descriptor)+str(modules)
-            hash_string = hash_string.strip().lower().replace(" ", "")
+
+        name = metadata.get("name")
+        data_descriptor = ""
+        modules = ""
+        for dd in metadata.get("data_descriptor"):
+            data_descriptor += str(dd.get("name"))+str(dd.get("type"))
+        for mm in metadata.get("modules"):
+            modules += str(mm.get("name")) + str(mm.get("version")) + str(mm.get("authors"))
+        hash_string = str(name)+"None"+str(data_descriptor)+str(modules)
+        hash_string = hash_string.strip().lower().replace(" ", "")
 
         return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
 

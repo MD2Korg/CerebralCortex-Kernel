@@ -276,9 +276,13 @@ class StreamHandler:
         """
         isQueryReady = 0
 
-        metadata_hash = Metadata().get_hash(metadata_obj)
+
         if isinstance(metadata_obj, Metadata):
+            metadata_hash = metadata_obj.get_hash()
             metadata_obj = metadata_obj.to_json()
+
+        else:
+            metadata_hash = Metadata().get_hash_by_json(metadata_obj)
 
         stream_name = metadata_obj.get("name")
 
