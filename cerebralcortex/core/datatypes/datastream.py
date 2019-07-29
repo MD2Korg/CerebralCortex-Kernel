@@ -594,6 +594,8 @@ class DataStream:
     def _sort_values(self, pdf):
         if "timestamp" in pdf.columns:
             return pdf.sort_values('timestamp')
+        return pdf
+
     def plot(self, y_axis_column=None):
         pdf = self._data.toPandas()
         pdf = self._sort_values(pdf)

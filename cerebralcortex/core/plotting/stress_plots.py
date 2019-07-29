@@ -129,21 +129,8 @@ class StressStreamPlots():
 
         layout = go.Layout(
             title="All Participants' Stress Levels By Each Stressors",
-            xaxis=dict(
-                title='Stressors',
-                titlefont=dict(
-                    family='Courier New, monospace',
-                    size=18,
-                    color='#7f7f7f'
-                )
-            ),
             yaxis=dict(
-                title='Stress Density',
-                titlefont=dict(
-                    family='Courier New, monospace',
-                    size=18,
-                    color='#7f7f7f'
-                )
+                title='Average Stress Density'
             )
         )
         fig = go.Figure(data=data, layout=layout)
@@ -177,21 +164,8 @@ class StressStreamPlots():
 
             layout = go.Layout(
                 title="Comparison of Stress Levels Amongst Participants",
-                xaxis=dict(
-                    title='Stressors',
-                    titlefont=dict(
-                        family='Courier New, monospace',
-                        size=18,
-                        color='#7f7f7f'
-                    )
-                ),
                 yaxis=dict(
-                    title='Stress Density',
-                    titlefont=dict(
-                        family='Courier New, monospace',
-                        size=18,
-                        color='#7f7f7f'
-                    )
+                    title='Average Stress Density'
                 )
             )
             fig = go.Figure(data=data, layout=layout)
