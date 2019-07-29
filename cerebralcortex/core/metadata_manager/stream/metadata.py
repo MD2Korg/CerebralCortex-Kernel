@@ -289,7 +289,7 @@ class Metadata():
             str: hash id of metadata
 
         """
-        if metadata is None:
+        if isinstance(metadata, Metadata):
             name = self.name
             data_descriptor = ""
             modules = ""

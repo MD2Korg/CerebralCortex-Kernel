@@ -277,6 +277,9 @@ class StreamHandler:
         isQueryReady = 0
 
         metadata_hash = Metadata().get_hash(metadata_obj)
+        if isinstance(metadata_obj, Metadata):
+            metadata_obj = metadata_obj.to_json()
+
         stream_name = metadata_obj.get("name")
 
         is_metadata_changed = self._is_metadata_changed(stream_name, metadata_hash)
