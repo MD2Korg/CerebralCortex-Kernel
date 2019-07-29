@@ -57,7 +57,7 @@ class StressStreamPlots():
         fig['layout']['yaxis'].update({"showticklabels":False})
         iplot(fig, filename='gantt-hours-minutes')
 
-    def plot_sankey(self, df,cat_cols=[], value_cols='',title="Stressers' Sankey Diagram"):
+    def plot_sankey(self, df,cat_cols=[], value_cols='',title="Stressors' Sankey Diagram"):
         labelList = []
 
         for catCol in cat_cols:
@@ -128,9 +128,9 @@ class StressStreamPlots():
             }))
 
         layout = go.Layout(
-            title="All Users' Stress Levels By Each Stresser",
+            title="All Users' Stress Levels By Each Stressors",
             xaxis=dict(
-                title='Stressers',
+                title='Stressors',
                 titlefont=dict(
                     family='Courier New, monospace',
                     size=18,
@@ -178,7 +178,7 @@ class StressStreamPlots():
             layout = go.Layout(
                 title="Comparison of Stress Levels Amongst Users",
                 xaxis=dict(
-                    title='Stressers',
+                    title='Stressors',
                     titlefont=dict(
                         family='Courier New, monospace',
                         size=18,
