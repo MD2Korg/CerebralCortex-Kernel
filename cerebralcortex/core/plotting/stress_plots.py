@@ -76,7 +76,7 @@ class StressStreamPlots():
                 tempDf = df[[cat_cols[i],cat_cols[i+1],value_cols]]
                 tempDf.columns = ['source','target','density']
                 sourceTargetDf = pd.concat([sourceTargetDf,tempDf])
-            sourceTargetDf = sourceTargetDf.groupby(['source','target']).agg({'density':'sum'}).reset_index()
+            sourceTargetDf = sourceTargetDf.groupby(['source','target']).agg({'density':'mean'}).reset_index()
 
         # add index for source-target pair
         sourceTargetDf['sourceID'] = sourceTargetDf['source'].apply(lambda x: labelList.index(x))
@@ -112,7 +112,7 @@ class StressStreamPlots():
         iplot(fig, validate=False)
 
     def plot_bar(self, pdf, x_axis_column=None):
-        grouped_pdf=pdf.groupby(["user",x_axis_column], as_index=False).agg('sum')
+        grouped_pdf=pdf.groupby(["user",x_axis_column], as_index=False).agg('mean')
         user_ids = pdf.groupby("user", as_index=False).last()
 
         data = []
@@ -128,7 +128,7 @@ class StressStreamPlots():
             }))
 
         layout = go.Layout(
-            title="All Users' Stress Levels By Each Stressors",
+            title="All Participants' Stress Levels By Each Stressors",
             xaxis=dict(
                 title='Stressors',
                 titlefont=dict(
@@ -159,8 +159,8 @@ class StressStreamPlots():
             else:
                 compare_with_data = pdf.loc[pdf['user'] == str(compare_with)]
 
-            grouped_user_pdf=usr_data.groupby([x_axis_column], as_index=False).agg('sum')
-            grouped_compare_with_pdf=compare_with_data.groupby([x_axis_column], as_index=False).agg('sum')
+            grouped_user_pdf=usr_data.groupby([x_axis_column], as_index=False).agg('mean')
+            grouped_compare_with_pdf=compare_with_data.groupby([x_axis_column], as_index=False).agg('mean')
 
             data.append(go.Bar({
                 'y': grouped_user_pdf["density"],
@@ -168,7 +168,7 @@ class StressStreamPlots():
                 'name': usr_id
             }))
             if compare_with=="all":
-                compare_with = "All Users"
+                compare_with = "All Participants"
             data.append(go.Bar({
                 'y': grouped_compare_with_pdf["density"],
                 'x': grouped_compare_with_pdf[x_axis_column],
@@ -176,7 +176,7 @@ class StressStreamPlots():
             }))
 
             layout = go.Layout(
-                title="Comparison of Stress Levels Amongst Users",
+                title="Comparison of Stress Levels Amongst Participants",
                 xaxis=dict(
                     title='Stressors',
                     titlefont=dict(
