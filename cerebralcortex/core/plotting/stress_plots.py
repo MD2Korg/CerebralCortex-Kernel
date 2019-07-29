@@ -127,7 +127,27 @@ class StressStreamPlots():
                 'name': row["user"]
             }))
 
-        iplot(data, filename='basic-line')
+        layout = go.Layout(
+            title="All Users' Stress Levels By Each Stresser",
+            xaxis=dict(
+                title='Stressers',
+                titlefont=dict(
+                    family='Courier New, monospace',
+                    size=18,
+                    color='#7f7f7f'
+                )
+            ),
+            yaxis=dict(
+                title='Stress Density',
+                titlefont=dict(
+                    family='Courier New, monospace',
+                    size=18,
+                    color='#7f7f7f'
+                )
+            )
+        )
+        fig = go.Figure(data=data, layout=layout)
+        iplot(fig, filename='basic-line')
 
     def plot_comparison(self, pdf, x_axis_column=None, usr_id=None, compare_with="all"):
         data = []
@@ -155,7 +175,29 @@ class StressStreamPlots():
                 'name': compare_with
             }))
 
-            iplot(data, filename='basic-line')
+            layout = go.Layout(
+                title="Comparison of Stress Levels Amongst Users",
+                xaxis=dict(
+                    title='Stressers',
+                    titlefont=dict(
+                        family='Courier New, monospace',
+                        size=18,
+                        color='#7f7f7f'
+                    )
+                ),
+                yaxis=dict(
+                    title='Stress Density',
+                    titlefont=dict(
+                        family='Courier New, monospace',
+                        size=18,
+                        color='#7f7f7f'
+                    )
+                )
+            )
+            fig = go.Figure(data=data, layout=layout)
+            iplot(fig, filename='basic-line')
+
+            #iplot(data, filename='basic-line')
 
         else:
             raise Exception("usr_id cannot be None/Blank.")
