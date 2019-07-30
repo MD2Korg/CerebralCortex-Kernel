@@ -142,15 +142,13 @@ class StreamHandler():
                     if 'user' not in column_names:
                         raise Exception("user column is missing in data schema")
 
-                    if 'version' in column_names:
-                        data = data.drop('version')
+                    data = self._drop_column(data, column_names)
 
                     result = self.sql_data.save_stream_metadata(metadata)
                     
                     if result["status"]==True:
                         version = result["version"]
-                        if "version" in column_names:
-                            data = data.drop('version')
+
                         if isinstance(data, pd.DataFrame):
                             data["version"] = version
                         else:
@@ -168,6 +166,13 @@ class StreamHandler():
         else:
             raise Exception("Metadata cannot be empty.")
 
+    def _drop_column(selfd, data, column_names):
+        if 'version' in column_names:
+            if isinstance(data, pd.DataFrame):
+                del data["version"]
+            else:
+                data = data.drop('version')
+        return data
     def __update_data_desciptor(self, data, metadata):
         """
         Read pyspark dataframe clumns and add each column name and type to datadescriptor field
@@ -207,7 +212,7 @@ class StreamHandler():
             new_dd.append(dd)
 
         if len(tmp)!=len(new_dd):
-            raise Exception("Data descriptor number of columns does not match with the actual number of dataframe columns. Add datadescription for each of dataframe column.")
+            raise Exception("Data descriptor number of columns does not match with the actual number of dataframe columns. Add data description for each of dataframe column.")
 
         updated_data_descriptors = []
         for (datadescipt,column_names) in zip(new_dd, tmp):
