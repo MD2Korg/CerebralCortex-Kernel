@@ -32,7 +32,7 @@ from sklearn.cluster import DBSCAN
 from pyspark.sql.types import StructField, StructType, StringType, FloatType
 
 
-EPSILON_CONSTANT = 1000
+EPSILON_CONSTANT = 1000/100.0
 LATITUDE = 0
 LONGITUDE = 1
 ACCURACY = -1
