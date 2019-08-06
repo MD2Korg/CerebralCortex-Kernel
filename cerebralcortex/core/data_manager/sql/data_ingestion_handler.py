@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
+import re
 
 
 class DataIngestionHandler():
@@ -90,6 +91,7 @@ class DataIngestionHandler():
 
         if not fault_type or success is None:
             raise ValueError("fault_type and success are mandatory parameters.")
+        fault_description=re.sub('[^A-Za-z0-9:><]+', ' ', fault_description)
 
         qry = "UPDATE " + self.ingestionLogsTable + " SET fault_type=%s, fault_description=%s, success=%s where file_path=%s"
         vals =  str(fault_type), str(fault_description), success, str(file_path)
