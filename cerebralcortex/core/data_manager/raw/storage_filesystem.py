@@ -97,7 +97,7 @@ class FileSystemStorage:
         #     df = df.withColumn('version', lit(int(version)))
         #     return df
 
-    def write_file(self, stream_name:str, data:DataStream.data) -> bool:
+    def write_file(self, stream_name:str, data:DataStream.data, file_mode) -> bool:
         """
         Write pyspark DataFrame to a file storage system
 
@@ -113,7 +113,7 @@ class FileSystemStorage:
         if isinstance(data, pd.DataFrame):
             return self.write_pandas_dataframe(stream_name, data)
         else:
-            return self.write_spark_dataframe(stream_name, data)
+            return self.write_spark_dataframe(stream_name, data, file_mode)
 
         # hdfs_url = self._get_storage_path(stream_name)
         # try:
@@ -122,10 +122,10 @@ class FileSystemStorage:
         # except Exception as e:
         #     raise Exception("Cannot store dataframe: "+str(e))
 
-    def write_spark_dataframe(self, stream_name, data):
+    def write_spark_dataframe(self, stream_name, data,file_mode):
         hdfs_url = self._get_storage_path(stream_name)
         try:
-            data.write.partitionBy(["version","user"]).format('parquet').mode('overwrite').save(hdfs_url)
+            data.write.partitionBy(["version","user"]).format('parquet').mode(file_mode).save(hdfs_url)
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))

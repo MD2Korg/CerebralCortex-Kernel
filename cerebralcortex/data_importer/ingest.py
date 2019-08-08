@@ -46,7 +46,7 @@ from cerebralcortex.data_importer.util.directory_scanners import dir_scanner
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamname_pattern: str = None, compression: str = None, header: int = None,
+def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamname_pattern: str = None, ignore_streamname_pattern:str=None, compression: str = None, header: int = None,
                 metadata: Metadata = None, metadata_parser: Callable = None, data_parser: Callable = None):
     """
     Import a single file and its metadata into cc-storage.
@@ -54,7 +54,9 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
     Args:
         cc_config (str): cerebralcortex config directory
         user_id (str): user id. Currently import_dir only supports parsing directory associated with a user
-        file_path (str): file path.
+        file_path (str): file path
+        allowed_streamname_pattern (str): (optional) regex of stream-names to be processed only
+        ignore_streamname_pattern (str): (optional) regex of stream-names to be ignored during ingestion process
         compression (str): pass compression name if csv files are compressed
         header (str): (optional) row number that must be used to name columns. None means file does not contain any header
         metadata (Metadata): (optional) Same metadata will be used for all the data files if this parameter is passed. If metadata is passed then metadata_parser cannot be passed.
@@ -116,13 +118,14 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                 metadata_dict = metadata.to_json()
             except Exception as e:
                 fault_description = "metadata object is not valid: " + str(e)
-            sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                       file_path=file_path, fault_type="CANNOT_PARSE_METADATA_FILE",
-                                       fault_description=fault_description, success=0)
+                sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                           file_path=file_path, fault_type="CANNOT_PARSE_METADATA_FILE",
+                                           fault_description=fault_description, success=0)
         else:
             raise Exception("Invalid metadata")
 
     else:
+        metadata_dict = {}
         try:
 
             file_ext = os.path.splitext(file_path)[1]
@@ -132,15 +135,15 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                     metadata = md.read()
                     metadata = metadata.lower()
                     metadata_dict = json.loads(metadata)
-                    cmm = sql_data.get_corrected_metadata(stream_name=metadata_dict.get("name"))
-                    if cmm.get("status")!="include":
-                        fault_description = "Ignored stream ingestion: "+str(metadata_dict.get("name"))+". Criteria: "+cmm.get("status")
-                        sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
-                                                   file_path=file_path, fault_type="IGNORED_STREAM",
-                                                   fault_description=fault_description, success=0)
-                        return False
-                    if cmm.get("metadata"):
-                        metadata_dict = cmm.get("metadata")
+                    # cmm = sql_data.get_corrected_metadata(stream_name=metadata_dict.get("name"))
+                    # if cmm.get("status","")!="include" and metadata_parser is not None and 'mcerebrum' in metadata_parser.__name__:
+                    #     fault_description = "Ignored stream: "+str(metadata_dict.get("name"))+". Criteria: "+cmm.get("status", "")
+                    #     sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                    #                                file_path=file_path, fault_type="IGNORED_STREAM",
+                    #                                fault_description=fault_description, success=0)
+                    #     return False
+                    # if cmm.get("metadata"):
+                    #     metadata_dict = cmm.get("metadata")
                     #metadata = Metadata().from_json_file(metadata_dict)
         except Exception as e:
             fault_description = "read/parse metadata: " + str(e)
@@ -171,15 +174,27 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                                    file_path=file_path, fault_type="MISSING_METADATA_FIELDS",
                                    fault_description=fault_description, success=0)
         return False
-    if metadata_parser is not None and metadata_parser.__name__ == 'mcerebrum_metadata_parser':
+    if metadata_parser is not None and 'mcerebrum' in metadata_parser.__name__:
         stream_metadata = metadata["stream_metadata"]
     else:
         stream_metadata = metadata
+
+    if ignore_streamname_pattern is not None:
+        try:
+            ignore_streamname_pattern = re.compile(ignore_streamname_pattern)
+            ignore_streamname = ignore_streamname_pattern.search(stream_metadata.name)
+            if ignore_streamname:
+                return False
+        except:
+            raise Exception("ignore_streamname_pattern regular expression is not valid.")
 
     if allowed_streamname_pattern is not None:
         try:
             allowed_streamname_pattern = re.compile(allowed_streamname_pattern)
             is_blacklisted = allowed_streamname_pattern.search(stream_metadata.name)
+            if is_blacklisted is None:
+                return False
+
         except:
             raise Exception("allowed_streamname_pattern regular expression is not valid.")
     else:
@@ -201,7 +216,7 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                                                 "" + str(e)
                             sql_data.add_ingestion_log(user_id=user_id, stream_name=stream_metadata.name, file_path=file_path,
                                                        fault_type="PARTIAL_CORRUPT_DATA_FILE", fault_description=fault_description, success=0)
-            if compression is not None:
+            elif compression is not None:
                 df = pd.read_csv(file_path, compression=compression, delimiter="\n", header=header, quotechar='"')
             else:
                 df = pd.read_csv(file_path, delimiter="\n", header=header, quotechar='"')
@@ -228,11 +243,10 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                                        fault_type="CANNOT_PARSE_DATA_FILE", fault_description=fault_description, success=0)
             return False
 
-
-        df = assign_column_names_types(df, metadata_dict)
+        df = assign_column_names_types(df, Metadata().from_json_file(metadata_dict))
 
         # save metadata/data
-        if metadata_parser is not None and metadata_parser.__name__ == 'mcerebrum_metadata_parser':
+        if metadata_parser is not None and 'mcerebrum' in metadata_parser.__name__:
 
             platform_data = metadata_dict.get("execution_context", {}).get("platform_metadata", "")
             if platform_data:
@@ -242,7 +256,22 @@ def import_file(cc_config: dict, user_id: str, file_path: str, allowed_streamnam
                 save_data(df=platform_df, cc_config=cc_config, user_id=user_id,
                           stream_name=metadata["platform_metadata"].name)
             try:
-                df = df.dropna()
+                df = df.dropna()  # TODO: Handle NaN cases and don't drop it
+                total_metadata_dd_columns = len(metadata["stream_metadata"].data_descriptor)
+                
+                # first two columns are timestamp and localtime in mcerbrum data. For all other data, first column "should be" timestamp
+                if 'mcerebrum' in data_parser.__name__:
+                    total_df_columns = len(df.columns.tolist())-2
+                else:
+                    total_df_columns = len(df.columns.tolist())-1
+                    
+                if total_metadata_dd_columns!=total_df_columns:
+                    fault_description = "Metadata and Data column missmatch. Total Metadata columns " + str(total_metadata_dd_columns) +". Total data columsn: "+str(total_df_columns)
+                    sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
+                                               file_path=file_path, fault_type="NUMBER_OF_COLUMN_MISSMATCH",
+                                               fault_description=fault_description, success=0)
+                    return False
+                
                 save_data(df=df, cc_config=cc_config, user_id=user_id, stream_name=metadata["stream_metadata"].name)
                 sql_data.save_stream_metadata(metadata["stream_metadata"])
                 sql_data.add_ingestion_log(user_id=user_id, stream_name=metadata_dict.get("name", "no-name"),
@@ -277,18 +306,20 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
     """
     df["version"] = 1
     df["user"] = str(user_id)
-    table = pa.Table.from_pandas(df)
+    table = pa.Table.from_pandas(df,nthreads=1)
     partition_by = ["version", "user"]
     if cc_config["nosql_storage"] == "filesystem":
         data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "stream="+str(stream_name))
-        # data_file_url = os.path.join("/home/ali/IdeaProjects/MD2K_DATA/tmp/", "stream=" + str(stream_name), "version=1",
-        #                              "user=" + str(user_id))
         pq.write_to_dataset(table, root_path=data_file_url, partition_cols=partition_by, preserve_index=False)
+
     elif cc_config["nosql_storage"] == "hdfs":
-        raw_files_dir = cc_config['hdfs']['raw_files_dir']
+        data_file_url = os.path.join(cc_config["hdfs"]["raw_files_dir"], "stream="+str(stream_name))
         fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
-        with fs.open(raw_files_dir, "wb") as fw:
-            pq.write_table(table, fw, partition_cols=partition_by, preserve_index=False)
+        pq.write_to_dataset(table, root_path=data_file_url, filesystem=fs, partition_cols=partition_by, preserve_index=False)
+
+    else:
+        raise Exception(str(cc_config["nosql_storage"])+" is not supported yet. Please check your cerebralcortex configs (nosql_storage).")
+
 
 
 def print_stats_table(ingestion_stats: dict):
@@ -313,8 +344,8 @@ def print_stats_table(ingestion_stats: dict):
 
 
 def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_file_extension: list = [],
-               allowed_filename_pattern: str = None,
-               allowed_streamname_pattern: str = None,
+               allowed_filename_pattern: str = None, allowed_streamname_pattern: str = None,
+               ignore_streamname_pattern: str = None,
                batch_size: int = None, compression: str = None, header: int = None, metadata: Metadata = None,
                metadata_parser: Callable = None, data_parser: Callable = None,
                gen_report: bool = False):
@@ -326,7 +357,9 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
         input_data_dir (str): data directory path
         user_id (str): user id. Currently import_dir only supports parsing directory associated with a user
         data_file_extension (list[str]): (optional) provide file extensions (e.g., .doc) that must be ignored
-        allowed_filename_pattern (list[str]): (optional) regex of files that must be processed.
+        allowed_filename_pattern (str): (optional) regex of files that must be processed.
+        allowed_streamname_pattern (str): (optional) regex of stream-names to be processed only
+        ignore_streamname_pattern (str): (optional) regex of stream-names to be ignored during ingestion process 
         batch_size (int): (optional) using this parameter will turn on spark parallelism. batch size is number of files each worker will process
         compression (str): pass compression name if csv files are compressed
         header (str): (optional) row number that must be used to name columns. None means file does not contain any header
@@ -353,23 +386,26 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
     CC = Kernel(cc_config, enable_spark=enable_spark)
     cc_config = CC.config
 
-    if input_data_dir[:1] != "/":
+    if input_data_dir[-1:] != "/":
         input_data_dir = input_data_dir + "/"
-    processed_files_list = CC.SqlData.get_processed_files_list()
+    #processed_files_list = CC.SqlData.get_processed_files_list()
 
     for file_path in all_files:
 
-        if not file_path in processed_files_list:
-            if data_parser.__name__ == "mcerebrum_data_parser":
+        if not CC.SqlData.is_file_processed(file_path):
+            if 'mcerebrum' in data_parser.__name__:
                 user_id = file_path.replace(input_data_dir, "")[:36]
             if batch_size is None:
                 import_file(cc_config=cc_config, user_id=user_id, file_path=file_path, compression=compression,
+                            allowed_streamname_pattern=allowed_streamname_pattern, ignore_streamname_pattern=ignore_streamname_pattern,
                             header=header, metadata=metadata, metadata_parser=metadata_parser, data_parser=data_parser)
             else:
                 if len(batch_files) > batch_size or tmp_user_id != user_id:
 
                     rdd = CC.sparkContext.parallelize(batch_files)
                     rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path,
+                                                              allowed_streamname_pattern=allowed_streamname_pattern,
+                                                              ignore_streamname_pattern=ignore_streamname_pattern,
                                                               compression=compression, header=header, metadata=metadata,
                                                               metadata_parser=metadata_parser, data_parser=data_parser))
                     print("Total Files Processed:", len(batch_files))
@@ -384,7 +420,7 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
         rdd.foreach(lambda file_path: import_file(cc_config=cc_config, user_id=user_id, file_path=file_path,
                                                   compression=compression, header=header, metadata=metadata,
                                                   metadata_parser=metadata_parser, data_parser=data_parser))
-        print("Total Files Processed:", len(batch_files))
+        print("Last Batch\n","Total Files Processed:", len(batch_files))
 
     if gen_report:
         print_stats_table(CC.SqlData.get_ingestion_stats())

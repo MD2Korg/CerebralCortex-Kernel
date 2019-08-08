@@ -24,64 +24,64 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+import logging
 import inspect
-import syslog
-from datetime import datetime
+import os
 
 
 class LogTypes():
     EXCEPTION = 1,
     CRITICAL = 2,
     ERROR = 3,
-    WARNING = 4,
+    WARNING=4,
     MISSING_DATA = 5,
     DEBUG = 6
 
 
 class LogHandler():
-    def logsyslog(self, loglevel: str, message: str):
-        """
-        Initialize logging
 
-        Args:
-            loglevel (str): log level (e.g., warning, critical etc.)
-            message (str): log message
-        """
-        syslog.openlog(ident="CerebralCortex")
-        syslog.syslog(loglevel, message)
-        syslog.closelog()
+    def log(self, error_message="", error_type=LogTypes.EXCEPTION):
 
-    def log(self, error_message: str = "", error_type=LogTypes.EXCEPTION):
-        """
-        Log errors and warnings in log file and print on console of debug is set to True
+        if not os.path.exists(self.log_path):
+            os.makedirs(self.log_path)
 
-        Args:
-            error_message (str): error message
-            error_type (LogTypes): error type (e.g., warning, critical etc.)
-        """
+        FORMAT = '[%(asctime)s] - %(message)s'
+
         execution_stats = inspect.stack()
         method_name = execution_stats[1][3]
         file_name = execution_stats[1][1]
         line_number = execution_stats[1][2]
 
-        error_message = str(datetime.now()) + " - [" + str(file_name) + " - " + str(method_name) + " - " + str(
-            line_number) + "] - " + str(error_message)
+        error_message = "[" + str(file_name) + " - " + str(method_name) + " - " + str(line_number) + "] - " + str(error_message)
 
-        if error_type == LogTypes.CRITICAL:
-            self.logsyslog(syslog.LOG_CRIT, error_message)
+        if error_type==LogTypes.CRITICAL:
+            logs_filename = self.log_path+"critical.log"
+            logging.basicConfig(filename=logs_filename,level=logging.CRITICAL, format=FORMAT)
+            logging.critical(error_message)
         elif error_type == LogTypes.ERROR:
-            self.logsyslog(syslog.LOG_ERR, error_message)
+            logs_filename = self.log_path+"error.log"
+            logging.basicConfig(filename=logs_filename,level=logging.ERROR, format=FORMAT)
+            logging.error(error_message)
         elif error_type == LogTypes.EXCEPTION:
-            self.logsyslog(syslog.LOG_ERR, error_message)
+            logs_filename = self.log_path+"error.log"
+            logging.basicConfig(filename=logs_filename,level=logging.ERROR, format=FORMAT)
+            logging.exception(error_message)
         elif error_type == LogTypes.WARNING:
-            self.logsyslog(syslog.LOG_WARNING, error_message)
+            logs_filename = self.log_path+"warning.log"
+            logging.basicConfig(filename=logs_filename,level=logging.WARNING, format=FORMAT)
+            logging.warning(error_message)
         elif error_type == LogTypes.DEBUG:
-            self.logsyslog(syslog.LOG_DEBUG, error_message)
+            logs_filename = self.log_path+"debug.log"
+            logging.basicConfig(filename=logs_filename,level=logging.DEBUG, format=FORMAT)
+            logging.debug(error_message)
         elif error_type == LogTypes.MISSING_DATA:
-            error_message = 'MISSING_DATA ' + error_message
-            self.logsyslog(syslog.LOG_ERR, error_message)
+            logs_filename = self.log_path+"missing_data.log"
+            logging.basicConfig(filename=logs_filename,level=logging.WARNING, format=FORMAT)
+            logging.warning(error_message)
         else:
-            self.logsyslog(syslog.LOG_INFO, error_message)
+            logs_filename = self.log_path+"info.log"
+            logging.basicConfig(filename=logs_filename,level=logging.INFO, format=FORMAT)
+            logging.info(error_message)
 
         if self.debug:
             print(error_message)

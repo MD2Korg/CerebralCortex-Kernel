@@ -447,8 +447,8 @@ class UserHandler():
         Raises:
             Exception: if username doesn't follow standards
         """
-        regexp = re.compile(r'W')
-        if regexp.search(username) or len(username)>25:
-            raise Exception("Only alphanumeric usernames are allowed with the max length of 25 chars.")
+        regexp = re.compile('^\w+$')
+        if not regexp.search(username) or len(username)>50:
+            raise Exception("Only alphanumeric usernames are allowed with the max length of 50 chars.")
         else:
             return True

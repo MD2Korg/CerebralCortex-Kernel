@@ -32,14 +32,14 @@ from sklearn.cluster import DBSCAN
 from pyspark.sql.types import StructField, StructType, StringType, FloatType
 
 
-EPSILON_CONSTANT = 1000
+EPSILON_CONSTANT = 1000/100.0
 LATITUDE = 0
 LONGITUDE = 1
 ACCURACY = -1
 GPS_ACCURACY_THRESHOLD = 41.0
 KM_PER_RADIAN = 6371.0088
 GEO_FENCE_DISTANCE = 2
-MINIMUM_POINTS_IN_CLUSTER = 500
+MINIMUM_POINTS_IN_CLUSTER = 50
 
 def get_centermost_point(cluster: object) -> object:
     """
