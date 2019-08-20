@@ -45,6 +45,8 @@ def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal", enable_s
     ss.config("spark.streaming.backpressure.enabled", True)
     ss.config("spark.streaming.backpressure.initialRate", 1)
     ss.config("spark.streaming.kafka.maxRatePerPartition", 2)
+    ss.config("spark.sql.session.timeZone", "UTC")
+
     if enable_spark_ui==False:
         ss.config("spark.ui.enabled", enable_spark_ui)
 
