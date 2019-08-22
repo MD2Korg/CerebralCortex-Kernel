@@ -20,13 +20,75 @@ schema = StructType([
 
 
 @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+def process_decoded_ppg(data: object) -> object:
+    df = data.sort_values(by=['timestamp'])
+    stress_model = StressModel_RF('/home/nndugudi/models/')
+    predictions = []
+    userid = df['user'].values[0]
+
+    minute_chunk_seq = []
+    minute_chunk_acc = []
+    minute_chunk_gyro = []
+    minute_chunk_ppg = []
+
+
+    st = df['timestamp'].values[0]
+    
+    minute_chunk_seq.append([df.iloc[0]['timestamp'].timestamp()*1000,df.iloc[0]['seq_number']])
+    minute_chunk_acc.append([df.iloc[0]['timestamp'].timestamp()*1000, df.iloc[0]['a_x'], df.iloc[0]['a_y'], df.iloc[0]['a_z']])
+    minute_chunk_gyro.append([df.iloc[0]['timestamp'].timestamp()*1000, df.iloc[0]['a_x'], df.iloc[0]['a_y'], df.iloc[0]['a_z']])
+    minute_chunk_ppg.append([df.iloc[0]['timestamp'].timestamp()*1000, df.iloc[0]['red'], df.iloc[0]['infrared'], df.iloc[0]['green']])
+
+    for x in range(1,len(df['timestamp'].values)):
+
+        diff = (df.iloc[x]['timestamp'] - st) / np.timedelta64(1, 's')
+        if diff <= 65.0:
+            minute_chunk_seq.append([df.iloc[x]['timestamp'].timestamp()*1000,df.iloc[x]['seq_number']])
+            minute_chunk_acc.append([df.iloc[x]['timestamp'].timestamp()*1000, df.iloc[x]['a_x'], df.iloc[x]['a_y'], df.iloc[x]['a_z']])
+            minute_chunk_gyro.append([df.iloc[x]['timestamp'].timestamp()*1000, df.iloc[x]['a_x'], df.iloc[x]['a_y'], df.iloc[x]['a_z']])
+            minute_chunk_ppg.append([df.iloc[x]['timestamp'].timestamp()*1000, df.iloc[x]['red'], df.iloc[x]['infrared'], df.iloc[x]['green']])
+        else:
+            pred = stress_model.predict(raw_data=None, sequence_numbers=np.array(minute_chunk_seq), accel_data=np.array(minute_chunk_acc), gyro_data=np.array(minute_chunk_gyro), ppg_data=np.array(minute_chunk_ppg))
+            if pred is not None:
+                #print(pred['predictions'])
+                if pred == 0 or pred == 1:
+                    predictions.append((userid, st, pred, 'GOOD'))
+                if pred == -1:
+                    predictions.append((userid, st, None, 'INSUFFICIENT_DATA'))
+                if pred == -2:
+                    predictions.append((userid, st, None, 'WATCH_IMPRORLY_WORN'))
+                if pred == -3:
+                    predictions.append((userid, st, None, 'INSUFFICIENT_HEART_RATE'))
+
+            minute_chunk_seq = []
+            minute_chunk_acc = []
+            minute_chunk_gyro = []
+            minute_chunk_ppg = []
+            minute_chunk_seq.append([df.iloc[x]['timestamp'].timestamp()*1000,df.iloc[x]['seq_number']])
+            minute_chunk_acc.append([df.iloc[x]['timestamp'].timestamp()*1000, df.iloc[x]['a_x'], df.iloc[x]['a_y'], df.iloc[x]['a_z']])
+            minute_chunk_gyro.append([df.iloc[x]['timestamp'].timestamp()*1000, df.iloc[x]['a_x'], df.iloc[x]['a_y'], df.iloc[x]['a_z']])
+            minute_chunk_ppg.append([df.iloc[x]['timestamp'].timestamp()*1000, df.iloc[x]['red'], df.iloc[x]['infrared'], df.iloc[x]['green']])
+            st = df.iloc[x]['timestamp']
+
+    df = pd.DataFrame(predictions, columns=['user', 'timestamp', 'stress_prediction', 'label'])
+    return df
+
+
+schema1 = StructType([
+    StructField("user", StringType()),
+    StructField("timestamp", TimestampType()),
+    StructField("stress_prediction", FloatType()),
+    StructField("label", StringType()),
+])
+
+
+@pandas_udf(schema1, PandasUDFType.GROUPED_MAP)
 def process_raw_ppg(data: object) -> object:
     df = data.sort_values(by=['timestamp'])
     stress_model = StressModel_RF('/home/nndugudi/models/')
     predictions = []
     userid = df['user'].values[0]
 
-    minute_chunk_list = []
     minute_chunk = []
     five_second_sliding_window = []
 
@@ -52,9 +114,7 @@ def process_raw_ppg(data: object) -> object:
           continue
         minute_chunk.append(np.array(tmp).reshape(1,21))
         #if diff >= 60.0:
-        #  five_second_sliding_window.append(df.iloc[x]['timestamp'])
       else:
-        #minute_chunk_list.append(minute_chunk)
         nparr = np.concatenate(minute_chunk)
         pred = stress_model.predict(raw_data=nparr)
         if pred is not None:
@@ -68,11 +128,6 @@ def process_raw_ppg(data: object) -> object:
           if pred == -3:
               predictions.append((userid, st, None, 'INSUFFICIENT_HEART_RATE'))
      
-        #if len(five_second_sliding_window):
-        #  minute_chunk = five_second_sliding_window
-        #  five_second_sliding_window = []
-        #else:
-        #  minute_chunk = [minute_chunk[-1]]
         minute_chunk = []
         ttmp = []
         ttmp.append(df.iloc[x]['timestamp'].timestamp())

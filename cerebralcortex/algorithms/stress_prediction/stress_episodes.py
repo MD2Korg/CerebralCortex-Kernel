@@ -48,6 +48,8 @@ schema = StructType([
 @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
 def stress_episodes_estimation(stress_data: object) -> object:
     # --- Constants definitions --- 
+    print('EPISODES '*4)
+    print(stress_data.head())
     smoothing_window = 3 # FIXME - 3 minutes
     macd_param_fast = 7;
     macd_param_slow = 19;

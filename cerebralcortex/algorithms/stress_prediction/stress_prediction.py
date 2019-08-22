@@ -51,8 +51,10 @@ def stress_prediction(data: object) -> object:
         for k in range(11):
             fm[c][k] = data['rr_feature'].values[c][k]
 
-    clf_ecg = pickle.load(open('/home/a/stress_classifier/classifier_for_ecg.p','rb'))
+    clf_ecg = pickle.load(open('/home/nndugudi/classifier_for_ecg.p','rb'))
+    print(fm)
     predicted = clf_ecg.predict_proba(fm)
+    
 
     df = pd.DataFrame(index = np.arange(0, len(data['timestamp'].values)), columns=['user', 'timestamp', 'stress_probability'])
     user = data['user'].values[0]
