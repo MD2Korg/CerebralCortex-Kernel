@@ -16,7 +16,6 @@ def Preprc(raw_data: object, flag: object = 0) -> object:
         return []
 
     data_arr1, data_arr2, err_pkts = process_raw_PPG(raw_data)
-    #print(data_arr1.shape,err_pkts)
     seq = np.copy(data_arr2[:, 1])
     # make Sq no. ordered
     d = np.diff(seq)

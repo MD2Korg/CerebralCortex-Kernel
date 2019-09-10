@@ -23,6 +23,15 @@ schema = StructType([
 def process_decoded_ppg(data: object) -> object:
     df = data.sort_values(by=['timestamp'])
     stress_model = StressModel_RF('/home/nndugudi/models/')
+
+    #TODO FIXME - tmp hack for this version of MSHRV firmware
+    c1= 'infrared'
+    c2 = 'green'
+    df['temp'] = df[c1]
+    df[c1] = df[c2]
+    df[c2] = df['temp']
+    df.drop(columns=['temp'], inplace=True)
+
     predictions = []
     userid = df['user'].values[0]
 

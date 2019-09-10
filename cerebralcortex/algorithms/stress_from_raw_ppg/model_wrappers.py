@@ -3,7 +3,7 @@ import pickle
 import sys
 import os
 import pandas as pd
-
+import matplotlib.pyplot as pt
 
 class AvailabilityModel:
     """
@@ -145,31 +145,30 @@ class StressModel:
         # Get combined data
         if raw_data is not None:
             if len(raw_data) < acceptable_fraction * window_size * Fs:
-                print('Not enough data collected')
+                #print('Not enough data collected')
                 return None
             raw_data = np.insert(raw_data,1,0,axis=1)
             X = self.get_combined_data_from_raw(raw_data)
         else:
             if len(sequence_numbers) < acceptable_fraction * window_size * Fs:
-                print('Not enough data collected')
+                #print('Not enough data collected')
                 return None
             X = self.get_combined_data(sequence_numbers, accel_data, gyro_data, ppg_data)
-        print(len(X))
         if X.shape[0] < acceptable_fraction * window_size * Fs / 2:
-            print('abcPlease wear the watch properly-not enough acceptable data')
+            #print('Please wear the watch properly-not enough acceptable data')
             return None
 
         # return heart rate
         heart_rate = self.get_heart_rate(X)
 
-        # print(heart_rate)
+        # #print(heart_rate)
         if heart_rate is None or len(heart_rate) < 10:
-            print("Number of heart rate datapoints in the window is below the threshold for predicting stress")
-            print('Please wear the watch properly-not enough acceptable data')
+            #print("Number of heart rate datapoints in the window is below the threshold for predicting stress")
+            #print('Please wear the watch properly-not enough acceptable data')
             return None
         heart_rate_dict_list = [{"t":key, "hrt":60000/value} for (key, value) in zip(list(heart_rate[:,0]),
                                                                                          list(heart_rate[:,1]))]
-        print(heart_rate_dict_list)
+        #print(heart_rate_dict_list)
 
         # return feature row
         feature = self.compute_feature_matrix(heart_rate)
@@ -178,10 +177,6 @@ class StressModel:
         feature = feature.reshape(-1)
         hrvs = {self.names[i]:list(feature)[i] for i in range(len(list(feature)))}
         # print(hrvs)
-        f = open('predictions.txt','a')
-        f.write(yhat)
-        f.write('\n')
-        f.close()
         return {"predictions":yhat,"heart_rates":heart_rate_dict_list,"features":hrvs}
 
     def get_heart_rate(self, combined_data):
@@ -264,7 +259,7 @@ class StressModel_RF:
                 ppg_data=None,
                 acceptable_fraction=.6,
                 Fs=25,
-                window_size=60):
+                window_size=65):
         """
         Take a window's worth of data, perform any necessary processing on it, and return a
         prediction.  Note that raw location data are not being transmitted from the device,
@@ -281,23 +276,15 @@ class StressModel_RF:
 
         Returns:
             yhat:                           stress predictions(a probability)
-              -1:                         Not enough data collected
-              -2:                         Watch not worn properly-not enough acceptable data
-              -3:                         Number of heart rate datapoints in the window is below the threshold for predicting stress
 
         """
         # TODO: replace code below with implementation
         # Get combined data
         if raw_data is not None:
-            #print(raw_data)
-            #print(len(raw_data),acceptable_fraction * window_size * Fs)
             if len(raw_data) < acceptable_fraction * window_size * Fs:
                 #print('Not enough data collected')
-                return -1
-            #print(len(raw_data))
+                return None
             raw_data = np.insert(raw_data,1,0,axis=1)
-            raw_data[:,0] = raw_data[:,0]*1000
-            #print(raw_data[:,0])
             X = self.get_combined_data_from_raw(raw_data)
         else:
             if len(sequence_numbers) < acceptable_fraction * window_size * Fs:
@@ -305,7 +292,6 @@ class StressModel_RF:
                 return -1
             X = self.get_combined_data(sequence_numbers, accel_data, gyro_data, ppg_data)
         if X.shape[0] < acceptable_fraction * window_size * Fs / 2:
-            #print(len(X))
             #print('Please wear the watch properly-not enough acceptable data')
             return -2
 
@@ -319,10 +305,13 @@ class StressModel_RF:
             return -3
 
         heart_rate_r = self.get_2_sec_ts(heart_rate[:,np.array([0,1])])
+        import matplotlib.pyplot as plt
+        plt.plot(heart_rate_r[:,0],heart_rate_r[:,1])
+        plt.show()
         if heart_rate_r is None or len(heart_rate_r) < 10:
             #print("Number of heart rate datapoints in the window is below the threshold for predicting stress")
             #print('Please wear the watch properly-not enough acceptable data')
-            return -3
+            return None
 
         heart_rate_dict_list = [{"t":key, "hrt":60000/value} for (key, value) in zip(list(heart_rate_r[:,0]),
                                                                                      list(heart_rate_r[:,1]))]
@@ -334,7 +323,9 @@ class StressModel_RF:
         feature = feature.reshape(-1)
         hrvs = {self.names[i]:list(feature)[i] for i in range(len(list(feature)))}
 
-        return {"predictions":yhat,"heart_rates":heart_rate_dict_list,"features":hrvs}
+        #return {"predictions":yhat,"heart_rates":heart_rate_dict_list,"features":hrvs}
+        #print( {"predictions":yhat,"heart_rates":heart_rate_dict_list,"features":hrvs})
+        return yhat
 
     def get_2_sec_ts(self,rr_ppg_int):
         m = np.mean(rr_ppg_int[:,1])
@@ -359,7 +350,8 @@ class StressModel_RF:
         self.running_mean.append(np.array([heart_rate_r[0, 0], np.mean(heart_rate_r[:, 1])]))
         self.running_std.append(np.array([heart_rate_r[0, 0], np.std(heart_rate_r[:, 1])]))
         ms = self.get_mean_std()
-        heart_rate_r[:, 1] = (heart_rate_r[:, 1] - ms[0]) / np.mean(ms[1])
+        #print(ms)
+        heart_rate_r[:, 1] = (heart_rate_r[:, 1] - ms[0]) / ms[1]
         feature_matrix = np.array(ecg_feature_computation(heart_rate_r[:, 0]/1000, heart_rate_r[:, 1]/1000)).reshape(-1, 11)
         feature_matrix = list(feature_matrix[:,np.array([0,1,3,4,5,7,8,9,10])].reshape(-1))
         diff = heart_rate[:,np.array([2])]
@@ -390,7 +382,6 @@ class StressModel_RF:
         from cerebralcortex.algorithms.stress_from_raw_ppg.util import filter, get_decoded_matrix
         combined_data = get_decoded_matrix(raw_data)
         combined_filtered_data = filter(combined_data)
-        #print('-'*10,len(combined_data),len(combined_filtered_data),'-'*10)
         return combined_filtered_data
 
 

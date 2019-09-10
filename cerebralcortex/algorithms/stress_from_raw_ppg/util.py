@@ -97,7 +97,10 @@ def preProcessing(data,Fs=25,fil_type='ppg'):
     X2 = np.zeros((np.shape(X1)[0]-len(b)+1,data.shape[1]))
     for i in range(X2.shape[1]):
         if i in [1,2,3]:
+            box_pts = 5
+            box = np.ones(box_pts)/box_pts
             X2[:,i] = signal.convolve(X1[:,i-1],b,mode='valid')
+            X2[:,i] = np.convolve(X2[:,i], box, mode='same')
         else:
             X2[:,i] = data[64:,i]
 
@@ -125,9 +128,7 @@ def filter(data:pd.DataFrame):
     """
     ind_acl = np.array([10,7,8,9,1,2,3,4,5,6])
     data = data[:,ind_acl]
-    #plt.figure()
-    #plt.plot(data[:,0],data[:,7:]*2/16328)
-    #plt.show()
+    #print(data[0])
     final_data = get_filtered_data(data)
     return final_data
 
@@ -168,6 +169,7 @@ def return_combined_data(seq:np.ndarray,data_arr1:list):
     df3.interpolate(method='time', axis=0, inplace=True)  # filling missing data
     df3.dropna(inplace=True)
     df3['time_stamps'] = np.linspace(itime, ftime, len(df2))
+    # print(df3)
     return df3.values
 
 def get_decoded_matrix(data: np.ndarray, row_length=22):
@@ -185,7 +187,6 @@ def get_decoded_matrix(data: np.ndarray, row_length=22):
     sample = np.zeros((len(ts), row_length))
     sample = data
     ts_temp = np.array([0] + list(np.diff(ts)))
-#     print(ts_temp)
     ind = np.where(ts_temp > 1000)[0]
     initial = 0
     sample_final = [0] * int(row_length / 2)
@@ -195,8 +196,8 @@ def get_decoded_matrix(data: np.ndarray, row_length=22):
         if not list(sample_temp):
             continue
         sample_final = np.vstack((sample_final, sample_temp.values))
+        # print(sample_final.shape)
     sample_temp = Preprc(raw_data=sample[initial:, :])
-    #print(sample[initial:, :].shape,sample_temp.shape)
     if np.shape(sample_temp)[0] > 0:
         sample_final = np.vstack((sample_final, sample_temp.values))
     if np.shape(sample_final)[0] == 1:
@@ -474,6 +475,12 @@ def get_data_out_rf(left_data,acl_data,Fs=25,
     ts_array = np.arange(left_data[0,0],left_data[-1,0],step_size)
     feature_final = np.zeros((0,4))
     left_data[:,1:] = RobustScaler(quantile_range=(20,80)).fit_transform(left_data[:,1:])
+
+    # from pykalman import KalmanFilter
+    # kf = KalmanFilter(n_dim_state=3, n_dim_obs=1)
+    # plt.plot(left_data[:1000,0],kf.em(left_data[:,1],n_iter=2).filter(left_data[:1000,1])[0].reshape(-1,1))
+    # plt.plot(left_data[:1000,0],left_data[:1000,1]-10,linestyle='-.')
+    # plt.show()
     for k in range(0,len(ts_array),1):
         t = ts_array[k]
         index_ppg = np.where((left_data[:,0]>=t)&(left_data[:,0]<=t+window_size*1000))[0]
@@ -512,5 +519,18 @@ def get_data_out_rf(left_data,acl_data,Fs=25,
 def get_feature_matrix_rf(data):
     ppg_data = data[:,np.array([0,1,2,3])]
     acl_data = data[:,np.array([0,0,4,5,6])]
+    # from sklearn.decomposition import FastICA
+    # transformer = FastICA(n_components=2,
+    #                       random_state=0)
+    # X_transformed = transformer.fit_transform(ppg_data[:,1:])
+    # # ppg_data[:,1] = X_transformed[:,0]
+    # # ppg_data[:,2] = X_transformed[:,0]
+    # # ppg_data[:,3] = X_transformed[:,0]
+    #
+    plt.plot(ppg_data[:,0],ppg_data[:,1:])
+    plt.show()
+    # plt.plot(left_data[:,0],left_data[:,1])
+    # plt.show()
     heart_rate = get_data_out_rf(ppg_data,acl_data)
+
     return heart_rate[:,np.array([0,3,1,2])]
