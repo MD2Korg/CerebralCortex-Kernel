@@ -322,9 +322,24 @@ class DataStream:
                 columns.append(column)
         return data.toDF(*columns)
 
+    def map_stream(self, window_ds):
+        """
+        Map/join a stream to a windowed stream
+
+        Args:
+            window_ds (Datastream): windowed datastream object
+
+        Returns:
+            Datastream: joined/mapped stream
+
+        """
+        window_ds = window_ds.data.drop("version", "user")
+        df= window_ds.join(self.data, self.data.timestamp.between(F.col("window.start"), F.col("window.end")))
+        return DataStream(data=df, metadata=Metadata())
+
     # !!!!                              FILTERING METHODS                           !!!
 
-    def drop_column(self, *args, **kwargs):
+    def drop(self, *args, **kwargs):
         """
         calls deafult dataframe drop
 
@@ -363,36 +378,85 @@ class DataStream:
         data = self._data.where(*args, **kwargs)
         return DataStream(data=data, metadata=Metadata())
 
-    def filter(self, columnName, operator, value):
+    def orderBy(self, *args, **kwargs):
         """
-        filter data
+        order by column name
 
         Args:
-            columnName (str): name of the column
-            operator (str): basic operators (e.g., >, <, ==, !=)
-            value (Any): if the columnName is timestamp, please provide python datatime object
+            *args:
+            **kwargs:
+        """
+        data = self._data.orderBy(*args, **kwargs)
+        return DataStream(data=data, metadata=Metadata())
+
+    def drop_duplicates(self, subset=None):
+        """
+        Return a new DataStream with duplicate rows removed, optionally only considering certain columns.
+
+        Args:
+            subset:
+
+        Examples:
+            >>> ds.dropDuplicates().show()
+            >>> # Example on how to use it with params
+            >>> ds.dropDuplicates(['name', 'height']).show()
+        """
+        data = self._data.drop_duplicates(subset)
+        return DataStream(data=data, metadata=Metadata())
+
+    def join(self, other, on=None, how=None):
+        """
+        Joins with another DataStream, using the given join expression.
+
+        Args:
+            other (DataStream):  Right side of the join
+            on – a string for the join column name, a list of column names, a join expression (Column), or a list of Columns. If on is a string or a list of strings indicating the name of the join column(s), the column(s) must exist on both sides, and this performs an equi-join.
+            how (str) – str, default inner. Must be one of: inner, cross, outer, full, full_outer, left, left_outer, right, right_outer, left_semi, and left_anti.
+
+        Examples:
+            >>> ds.join(ds2, 'user', 'outer').select('user', 'col1', 'col2')
+
+        Returns:
+            DataStream object with joined streams
+        """
+
+        data = self._data.join(other=other, on=on, how=how)
+        return DataStream(data=data, metadata=Metadata())
+
+    def withColumnRenamed(self, existing, new):
+        """
+        Returns a new DataStream by renaming an existing column. This is a no-op if schema doesn’t contain the given column name.
+
+        Args:
+            existing (str): string, name of the existing column to rename.
+            new (str): string, new name of the column.
+
+        Examples:
+            >>> df.withColumnRenamed('col_name', 'new_col_name')
+
+        Returns:
+            DataStream object with new column name(s)
+        """
+
+        data = self._data.withColumnRenamed(existing=existing, new=new)
+        return DataStream(data=data, metadata=Metadata())
+
+    def filter(self,  condition):
+        """
+        Filters rows using the given condition
+
+        Args:
+            condition: a Column of types.BooleanType or a string of SQL expression.
+
+        Examples:
+            >>> ds.filter("age > 3")
+            >>> df.filter(df.age > 3)
 
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        where_clause = columnName+operator+"'"+str(value)+"'"
-        data = self._data.where(where_clause)
+        data = self._data.filter(condition)
         return DataStream(data=data, metadata=Metadata())
-
-    def map_stream(self, window_ds):
-        """
-        Map/join a stream to a windowed stream
-
-        Args:
-            window_ds (Datastream): windowed datastream object
-
-        Returns:
-            Datastream: joined/mapped stream
-
-        """
-        window_ds = window_ds.data.drop("version", "user")
-        df= window_ds.join(self.data, self.data.timestamp.between(F.col("window.start"), F.col("window.end")))
-        return DataStream(data=df, metadata=Metadata())
 
     def filter_user(self, user_ids:List):
         """
@@ -426,17 +490,90 @@ class DataStream:
         data = self._data.where(self._data["version"].isin(version))
         return DataStream(data=data, metadata=Metadata())
 
-    def groupby(self, *columnName):
+    def groupby(self, *cols):
         """
-        Group data by column name
+        Groups the DataFrame using the specified columns, so we can run aggregation on them.
+
         Args:
-            columnName (str): name of the column to group by with
+            list of columns to group by. Each element should be a column name (string) or an expression (Column)
 
         Returns:
 
         """
-        data = self._data.groupby(*columnName)
+        data = self._data.groupby(*cols)
         return DataStream(data=data, metadata=Metadata())
+
+    def agg(self, *exprs):
+        """
+        Aggregate on the entire DataFrame without groups
+
+        Args:
+            *exprs:
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+
+        Examples:
+            >>> ds.agg({"age": "max"}).collect()
+            >>> # Below example shows how to use pyspark functions in add method
+            >>> from pyspark.sql import functions as F
+            >>> df.agg(F.min(df.age)).collect()
+        """
+        data = self._data.agg(*exprs)
+        return DataStream(data=data, metadata=Metadata())
+
+    def corr(self, col1, col2, method=None):
+        """
+        Calculates the correlation of two columns of a DataStream as a double value. Currently only supports the Pearson Correlation Coefficient.
+
+        Args:
+            col1 (str): The name of the first column
+            col2 (str): The name of the second column
+            method (str): The correlation method. Currently only supports “pearson”
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+
+        Examples:
+            >>> ds.corr("cal1", "col2", "pearson").collect()
+        """
+
+        data = self._data.corr(col1, col2, method)
+        return DataStream(data=data, metadata=Metadata())
+
+    def cov(self, col1, col2):
+        """
+        Calculate the sample covariance for the given columns, specified by their names, as a double value.
+
+        Args:
+            col1 (str): The name of the first column
+            col2 (str): The name of the second column
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+
+        Examples:
+            >>> ds.cov("cal1", "col2", "pearson").collect()
+        """
+
+        data = self._data.cov(col1, col2)
+        return DataStream(data=data, metadata=Metadata())
+
+    def distinct(self):
+        """
+        Returns a new DataStream containing the distinct rows in this DataStream.
+
+        Returns:
+            DataStream: this will return a new datastream object with blank metadata
+
+        Examples:
+            >>> ds.corr("cal1", "col2", "pearson").collect()
+        """
+
+        data = self._data.distinct()
+        return DataStream(data=data, metadata=Metadata())
+
+
 
     # def win(self, udfName):
     #     self._data = self._data.groupBy(['owner', F.window("timestamp", "60 seconds")]).apply(udfName)
@@ -452,7 +589,7 @@ class DataStream:
 
     def run_algorithm(self, udfName, columnNames:List[str]=[], windowDuration:int=60, slideDuration:int=None, groupByColumnName:List[str]=[], startTime=None, preserve_ts=False):
         """
-        Run an algorithm
+        Run an algorithm. This method supports running an udf method on windowed data
 
         Args:
             udfName: Name of the algorithm
@@ -641,7 +778,7 @@ class DataStream:
 ###################### New Methods by Anand #########################
 
 
-    def join(self, dataStream, propagation='forward'):
+    def join_stress(self, dataStream, propagation='forward'):
         """
         filter data
 
