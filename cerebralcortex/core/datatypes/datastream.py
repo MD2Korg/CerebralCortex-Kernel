@@ -432,7 +432,7 @@ class DataStream:
             new (str): string, new name of the column.
 
         Examples:
-            >>> df.withColumnRenamed('col_name', 'new_col_name')
+            >>> ds.withColumnRenamed('col_name', 'new_col_name')
 
         Returns:
             DataStream object with new column name(s)
@@ -440,6 +440,43 @@ class DataStream:
 
         data = self._data.withColumnRenamed(existing=existing, new=new)
         return DataStream(data=data, metadata=Metadata())
+
+    def between(self, lowerBound, upperBound):
+        """
+        A boolean expression that is evaluated to true if the value of this expression is between the given columns.
+
+        Args:
+            lowerBound:
+            upperBound:
+
+        Examples:
+            >>> ds.select(ds.timestamp, ds.data.col1.between(2, 4)).show()
+
+        Returns:
+            DataStream object
+        """
+
+        data = self._data.between(lowerBound=lowerBound, upperBound=upperBound)
+        return DataStream(data=data, metadata=Metadata())
+
+    def cast(self, dataType, columnName):
+        """
+        Convert the column into type dataType (int, string, double, float).
+
+        Args:
+            dataType (str): new dataType of the column
+            columnName (str): name of the column
+
+        Examples:
+            >>> ds.select(ds.col_name.cast("string").alias('col_name')).collect()
+
+        Returns:
+            DataStream object
+        """
+
+        data = self._data[columnName].cast(dataType=dataType)
+        return DataStream(data=data, metadata=Metadata())
+
 
     def filter(self,  condition):
         """
@@ -505,7 +542,7 @@ class DataStream:
 
     def agg(self, *exprs):
         """
-        Aggregate on the entire DataFrame without groups
+        Aggregate on the entire DataStream without groups
 
         Args:
             *exprs:

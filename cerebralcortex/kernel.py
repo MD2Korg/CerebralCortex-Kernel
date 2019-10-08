@@ -222,7 +222,7 @@ class Kernel:
             list[str]: list of all the metadata hashes
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/")
-            >>> CC.get_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> CC.get_stream_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
         """
         return self.SqlData.get_stream_metadata_hash(stream_name)
@@ -241,7 +241,7 @@ class Kernel:
             ValueError: stream_name cannot be None or empty.
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/")
-            >>> CC.get_all_users("mperf")
+            >>> CC.get_stream_metadata("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST", version=1)
             >>> [Metadata] # list of MetaData class objects
         """
         return self.SqlData.get_stream_metadata(stream_name, version)
@@ -256,7 +256,7 @@ class Kernel:
                dict: stream metadata and other info related to a stream
            Examples:
                >>> CC = Kernel("/directory/path/of/configs/")
-               >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
+               >>> CC.get_stream_info_by_hash("00ab666c-afb8-476e-9872-6472b4e66b68")
                >>> {"name": .....} # stream metadata and other information
        """
         return self.SqlData.get_stream_info_by_hash(metadata_hash=metadata_hash)
@@ -534,7 +534,7 @@ class Kernel:
         """
         self.SqlData.store_or_update_Kafka_offset(topic, topic_partition, offset_start, offset_until)
 
-    def get_kafka_offsets(self, topic: str) -> dict:
+    def get_kafka_offsets(self, topic: str) -> list[dict]:
         """
         Get last stored kafka offsets
 
@@ -653,7 +653,7 @@ class Kernel:
         """
         return self.ObjectData.is_bucket(bucket_name)
 
-    def is_object(self, bucket_name: str, object_name: str) -> bool:
+    def is_object(self, bucket_name: str, object_name: str) -> dict:
         """
         checks whether an object exist in a bucket
 

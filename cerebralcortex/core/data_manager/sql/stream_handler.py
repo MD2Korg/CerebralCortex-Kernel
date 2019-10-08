@@ -321,13 +321,13 @@ class StreamHandler:
             dict: {"version": "version_number", "status":"new" OR "exist"}
 
         """
-        version = 1
+
         qry = "select version from " + self.datastreamTable + " where metadata_hash = %(metadata_hash)s"
         vals = {"metadata_hash":metadata_hash}
-        result = self.execute(qry, vals)
-
-        if result:
-            return {"version": version, "status":"exist"}
+        rows = self.execute(qry, vals)
+        current_version = []
+        if len(rows) > 0:
+            return {"version": int(rows[0]["version"]), "status":"exist"}
         else:
             stream_versions = self.get_stream_versions(stream_name)
             if bool(stream_versions):
