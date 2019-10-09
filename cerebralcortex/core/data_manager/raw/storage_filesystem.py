@@ -63,11 +63,11 @@ class FileSystemStorage:
 
         if stream_name!="" and stream_name is not None:
             if not self.obj.sql_data.is_stream(stream_name=stream_name):
-                raise Exception("stream_name does not exist.")
+                raise Exception(stream_name+" does not exist.")
 
         if user_id is not None:
             if not self.obj.sql_data.is_user(user_id=user_id):
-                raise Exception("user_id does not exist.")
+                raise Exception(user_id+" does not exist.")
 
         hdfs_url = self._get_storage_path(stream_name)
 

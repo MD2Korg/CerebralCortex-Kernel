@@ -50,7 +50,7 @@ class StreamHandler:
             ValueError: stream_name cannot be None or empty.
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
-            >>> CC.get_all_users("mperf")
+            >>> CC.list_users("mperf")
             >>> [Metadata] # list of MetaData class objects
         """
         if stream_name is None or stream_name=="":

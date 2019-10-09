@@ -248,29 +248,30 @@ class UserHandler():
             else:
                 return True
 
-    def get_all_users(self, study_name: str) -> List[dict]:
+    def list_users(self, study_name: str=None) -> List[dict]:
         """
         Get a list of all users part of a study.
 
         Args:
-            study_name (str): name of a study
+            study_name (str): name of a study. If no study_name is provided then all users' list will be returned
         Raises:
             ValueError: Study name is a requied field.
         Returns:
             list[dict]: Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
-            >>> CC.get_all_users("mperf")
+            >>> CC.list_users("mperf")
             >>> [{"76cc444c-4fb8-776e-2872-9472b4e66b16": "nasir_ali"}] # [{user_id, user_name}]
         """
-        if not study_name:
-            raise ValueError("Study name is a requied field.")
 
         results = []
-        qry = 'SELECT user_id, username FROM ' + self.userTable + ' where user_metadata->"$.study_name"=%(study_name)s'
-        vals = {'study_name': str(study_name)}
-
-        rows = self.execute(qry, vals)
+        if study_name is None:
+            qry = 'SELECT user_id, username, JSON_UNQUOTE(JSON_EXTRACT(user_metadata, "$.study_name")) as study_name FROM ' + self.userTable
+            rows = self.execute(qry)
+        else:
+            qry = 'SELECT user_id, username, JSON_UNQUOTE(JSON_EXTRACT(user_metadata, "$.study_name")) as study_name FROM ' + self.userTable + ' where user_metadata->"$.study_name"=%(study_name)s'
+            vals = {'study_name': str(study_name)}
+            rows = self.execute(qry, vals)
 
         if len(rows) == 0:
             return []

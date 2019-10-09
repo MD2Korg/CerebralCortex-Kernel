@@ -113,12 +113,13 @@ class Kernel:
         """
         return self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB)
 
-    def get_stream(self, stream_name: str, version: str = "all", data_type=DataSet.COMPLETE) -> DataStream:
+    def get_stream(self, stream_name: str, study_name:list=None, version: str = "all", data_type=DataSet.COMPLETE) -> DataStream:
         """
         Retrieve a data-stream with it's metadata.
 
         Args:
             stream_name (str): name of a stream
+            study_name (list[str]): name of the study
             version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
             data_type (DataSet):  DataSet.COMPLETE returns both Data and Metadata. DataSet.ONLY_DATA returns only Data. DataSet.ONLY_METADATA returns only metadata of a stream. (Default=DataSet.COMPLETE)
 
@@ -136,7 +137,7 @@ class Kernel:
             >>> ds.get_metadata(version=1) # get the specific version metadata of a stream
         """
 
-        return self.RawData.get_stream(stream_name=stream_name, version=version, data_type=data_type)
+        return self.RawData.get_stream(stream_name=stream_name, study_name=study_name, version=version, data_type=data_type)
 
     ###########################################################################
     #                     TIME SERIES DATA MANAGER METHODS                    #
@@ -376,22 +377,22 @@ class Kernel:
         """
         return self.SqlData.get_user_name(user_id)
 
-    def get_all_users(self, study_name: str) -> List[dict]:
+    def list_users(self, study_name: str=None) -> List[dict]:
         """
         Get a list of all users part of a study.
 
         Args:
-            study_name (str): name of a study
+            study_name (str): name of a study. If no study_name is provided then all users' list will be returned
         Raises:
             ValueError: Study name is a requied field.
         Returns:
             list[dict]: Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/")
-            >>> CC.get_all_users("mperf")
+            >>> CC.list_users("mperf")
             >>> [{"76cc444c-4fb8-776e-2872-9472b4e66b16": "nasir_ali"}] # [{user_id, user_name}]
         """
-        return self.SqlData.get_all_users(study_name)
+        return self.SqlData.list_users(study_name=study_name)
 
     def get_user_metadata(self, user_id: str = None, username: str = None)  -> dict:
         """
@@ -534,7 +535,7 @@ class Kernel:
         """
         self.SqlData.store_or_update_Kafka_offset(topic, topic_partition, offset_start, offset_until)
 
-    def get_kafka_offsets(self, topic: str) -> list[dict]:
+    def get_kafka_offsets(self, topic: str) -> List[dict]:
         """
         Get last stored kafka offsets
 

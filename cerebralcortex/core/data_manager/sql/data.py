@@ -68,7 +68,6 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, Dat
         self.ingestionLogsTable = "ingestion_logs"
         self.correctedMetadata = "corrected_metadata"
         self.userTable = "user"
-        self.dataReplayTable = "data_replay"
         self.poolName = "CC_Pool"
         self.poolSize = self.config['mysql']['connection_pool_size']
         self.pool = self.create_pool(pool_name=self.poolName, pool_size=self.poolSize)

@@ -44,7 +44,7 @@ class StreamHandler():
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
-    def get_stream(self, stream_name:str, version:str, user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
+    def get_stream(self, stream_name:str, study_name:list=None, version:str="all", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
         """
         Retrieve a data-stream with it's metadata.
 
@@ -72,7 +72,7 @@ class StreamHandler():
 
 
         if not self.sql_data.is_stream(stream_name):
-            print(stream_name, "does not exist.")
+            print(stream_name, " does not exist.")
             return DataStream(data=None, metadata=None)
 
         if version is not None and version!="":
