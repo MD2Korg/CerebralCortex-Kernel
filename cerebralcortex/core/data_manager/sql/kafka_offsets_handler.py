@@ -28,13 +28,12 @@ from typing import List
 
 class KafkaOffsetsHandler:
 
-    def store_or_update_Kafka_offset(self, topic: str, topic_partition: str, offset_start: str, offset_until: str)->bool:
+    def store_or_update_Kafka_offset(self, topic_partition: str, offset_start: str, offset_until: str)->bool:
         """
         Store or Update kafka topic offsets. Offsets are used to track what messages have been processed.
 
         Args:
             topic (str): name of the kafka topic
-            topic_partition (str): partition number
             offset_start (str): starting of offset
             offset_until (str): last processed offset
         Raises:
@@ -44,22 +43,19 @@ class KafkaOffsetsHandler:
             bool: returns True if offsets are add/updated or throws an exception.
 
         """
-        if not topic and not topic_partition and not offset_start and not offset_until:
+        if not topic_partition and not offset_start and not offset_until:
             raise ValueError("All params are required.")
         try:
             qry = "REPLACE INTO " + self.kafkaOffsetsTable + " (topic, topic_partition, offset_start, offset_until) VALUES(%s, %s, %s, %s)"
-            vals = str(topic), str(topic_partition), str(offset_start), json.dumps(offset_until)
+            vals = str(self.study_name), str(topic_partition), str(offset_start), json.dumps(offset_until)
             self.execute(qry, vals, commit=True)
             return True
         except Exception as e:
             raise Exception("Cannot add/update kafka offsets because "+str(e))
 
-    def get_kafka_offsets(self, topic: str) -> List[dict]:
+    def get_kafka_offsets(self) -> List[dict]:
         """
         Get last stored kafka offsets
-
-        Args:
-            topic (str): kafka topic name
 
         Returns:
             list[dict]: list of kafka offsets. This method will return empty list if topic does not exist and/or no offset is stored for the topic.
@@ -70,11 +66,10 @@ class KafkaOffsetsHandler:
             >>> CC.get_kafka_offsets("live-data")
             >>> [{"id","topic", "topic_partition", "offset_start", "offset_until", "offset_update_time"}]
         """
-        if not topic:
-            raise ValueError("Topic name cannot be empty/None")
+
         results = []
         qry = "SELECT * from " + self.kafkaOffsetsTable + " where topic = %(topic)s  order by id DESC"
-        vals = {'topic': str(topic)}
+        vals = {'topic': str(self.study_name)}
         rows = self.execute(qry, vals)
         if rows:
             for row in rows:

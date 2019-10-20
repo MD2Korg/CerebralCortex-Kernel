@@ -73,3 +73,105 @@ class BlueprintStorage():
 
         # TODO: implement your own storage layer to write data
         pass
+
+    def is_stream(self, stream_name: str) -> bool:
+        """
+        Returns true if provided stream exists.
+
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            bool: True if stream_name exist False otherwise
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC.is_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> True
+        """
+        pass
+
+    def get_stream_versions(self, stream_name: str) -> list:
+        """
+        Returns a list of versions available for a stream
+
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            list: list of int
+        Raises:
+            ValueError: if stream_name is empty or None
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC.get_stream_versions("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> [1, 2, 4]
+        """
+        pass
+
+    def get_stream_name(self, metadata_hash: uuid) -> str:
+        """
+        metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
+
+        Args:
+            metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.
+        Returns:
+            str: name of a stream
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
+            >>> ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST
+        """
+        pass
+
+    def get_stream_metadata_hash(self, stream_name: str) -> list:
+        """
+        Get all the metadata_hash associated with a stream name.
+
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            list[str]: list of all the metadata hashes
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC.get_stream_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
+        """
+        pass
+
+    def list_streams(self)->List[Metadata]:
+        """
+        Get all the available stream names with metadata
+
+        Returns:
+            List[Metadata]: list of available streams metadata
+
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC.list_streams()
+        """
+        pass
+
+    def search_stream(self, stream_name):
+        """
+        Find all the stream names similar to stream_name arg. For example, passing "location"
+        argument will return all stream names that contain the word location
+
+        Returns:
+            List[str]: list of stream names similar to stream_name arg
+
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC.search_stream("battery")
+            >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
+        """
+        pass
+
+    def xx(self):
+        pass
+
+    def xx(self):
+        pass
+
+    def xx(self):
+        pass
+
+    def xx(self):
+        pass

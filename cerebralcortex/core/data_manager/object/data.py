@@ -37,7 +37,14 @@ class ObjectData(FileSystemStorage):
         self.CC = CC
         self.config = CC.config
 
+        self.study_name = CC.study_name
+
         self.logging = CC.logging
         self.logtypes = LogTypes()
-
+      
         self.filesystem_path = self.config["object_storage"]["object_storage_path"]
+        
+        if self.filesystem_path[-1]!="/":
+            self.filesystem_path += "/"
+        
+        self.filesystem_path = self.filesystem_path+self.study_name+"/"

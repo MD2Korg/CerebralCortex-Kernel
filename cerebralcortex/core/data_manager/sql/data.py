@@ -52,6 +52,8 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, Dat
         else:
             self.config = CC.config
 
+        self.study_name = CC.study_name
+        
         self.logtypes = LogTypes()
         self.sql_store = self.config["relational_storage"]
 

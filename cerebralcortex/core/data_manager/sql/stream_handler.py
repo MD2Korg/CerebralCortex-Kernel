@@ -258,6 +258,26 @@ class StreamHandler:
         else:
             return False
 
+    def is_study(self) -> bool:
+        """
+        Returns true if provided study name exists.
+
+        Returns:
+            bool: True if stream_name exist False otherwise
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.is_study("demo-study")
+            >>> True
+        """
+        qry = "SELECT * from " + self.userTable + " where study_name= = %(study_name)s"
+        vals = {'study_name': str(self.study_name)}
+        rows = self.execute(qry, vals)
+
+        if rows:
+            return True
+        else:
+            return False
+
 
     ###################################################################
     ################## STORE DATA METHODS #############################

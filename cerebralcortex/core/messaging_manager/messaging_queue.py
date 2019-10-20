@@ -43,6 +43,8 @@ class MessagingQueue(KafkaHandler):
         self.config = CC.config
         self.CC = CC
 
+        self.study_name = CC.study_name
+
         if CC.config["messaging_service"]=="none":
             raise Exception("Messaging service is disabled (none) in cerebralcortex.yml. Please update configs.")
 

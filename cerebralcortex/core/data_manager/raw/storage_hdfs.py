@@ -155,6 +155,7 @@ class HDFSStorage:
             storage_url = self.obj.hdfs_spark_url + self.obj.raw_files_dir
 
         if stream_name is None or stream_name=="":
-            return storage_url
+            return storage_url + "study_name="+self.study_name+"/"
         else:
-            return storage_url + "stream=" + stream_name + "/"
+            return storage_url + "study_name="+self.study_name+"/stream=" + stream_name + "/"
+

@@ -46,6 +46,8 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage):
         self.config = CC.config
         self.sql_data = CC.SqlData
 
+        self.study_name = CC.study_name
+
         self.logging = CC.logging
         self.nosql_store = self.config['nosql_storage']
 
@@ -72,3 +74,4 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage):
             self.timeSeriesData = TimeSeriesData(CC)
 
         self.logtypes = LogTypes()
+

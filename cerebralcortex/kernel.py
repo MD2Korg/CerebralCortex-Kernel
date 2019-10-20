@@ -44,13 +44,16 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 class Kernel:
 
-    def __init__(self, configs_dir_path: str = None, auto_offset_reset: str = "largest", enable_spark:bool=True, enable_spark_ui=False):
+    def __init__(self, configs_dir_path: str, study_name:str, auto_offset_reset: str = "largest", enable_spark:bool=True, enable_spark_ui=False):
         """
         CerebralCortex constructor
 
         Args:
-            configuration_filepath (str): Directory path of cerebralcortex configurations.
+            configs_dir_path (str): Directory path of cerebralcortex configurations.
+            study_name (str): name of the study
             auto_offset_reset (str): Kafka offset. Acceptable parameters are smallest or largest (default=largest)
+            enable_spark (bool): enable spark
+            enable_spark_ui (bool): enable spark ui
         Raises:
             ValueError: If configuration_filepath is None or empty.
         Examples:
@@ -68,7 +71,11 @@ class Kernel:
             self.sqlContext = None
             self.sparkSession = None
 
+        if not study_name:
+            raise Exception("Study name cannot be None.")
+
         self.config_filepath = configs_dir_path
+        self.study_name = study_name
         self.config = Configuration(configs_dir_path).config
 
         self.debug = self.config["cc"]["debug"]
@@ -82,7 +89,8 @@ class Kernel:
 
         warnings.simplefilter('always', DeprecationWarning)
 
-
+        if not self.SqlData.is_study():
+            raise Exception("Study name does not exist.")
 
         if self.config["visualization_storage"] != "none":
             self.TimeSeriesData = TimeSeriesData(self)
@@ -377,7 +385,7 @@ class Kernel:
         """
         return self.SqlData.get_user_name(user_id)
 
-    def list_users(self, study_name: str=None) -> List[dict]:
+    def list_users(self) -> List[dict]:
         """
         Get a list of all users part of a study.
 
@@ -389,10 +397,10 @@ class Kernel:
             list[dict]: Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/")
-            >>> CC.list_users("mperf")
+            >>> CC.list_users()
             >>> [{"76cc444c-4fb8-776e-2872-9472b4e66b16": "nasir_ali"}] # [{user_id, user_name}]
         """
-        return self.SqlData.list_users(study_name=study_name)
+        return self.SqlData.list_users()
 
     def get_user_metadata(self, user_id: str = None, username: str = None)  -> dict:
         """
@@ -517,7 +525,7 @@ class Kernel:
 
     ################### KAFKA RELATED METHODS ##################################
 
-    def store_or_update_Kafka_offset(self, topic: str, topic_partition: str, offset_start: str, offset_until: str)->bool:
+    def store_or_update_Kafka_offset(self, topic_partition: str, offset_start: str, offset_until: str)->bool:
         """
         Store or Update kafka topic offsets. Offsets are used to track what messages have been processed.
 
@@ -533,14 +541,11 @@ class Kernel:
             bool: returns True if offsets are add/updated or throws an exception.
 
         """
-        self.SqlData.store_or_update_Kafka_offset(topic, topic_partition, offset_start, offset_until)
+        self.SqlData.store_or_update_Kafka_offset(topic_partition, offset_start, offset_until)
 
-    def get_kafka_offsets(self, topic: str) -> List[dict]:
+    def get_kafka_offsets(self) -> List[dict]:
         """
         Get last stored kafka offsets
-
-        Args:
-            topic (str): kafka topic name
 
         Returns:
             list[dict]: list of kafka offsets. This method will return empty list if topic does not exist and/or no offset is stored for the topic.
@@ -551,7 +556,7 @@ class Kernel:
             >>> CC.get_kafka_offsets("live-data")
             >>> [{"id","topic", "topic_partition", "offset_start", "offset_until", "offset_update_time"}]
         """
-        return self.SqlData.get_kafka_offsets(topic)
+        return self.SqlData.get_kafka_offsets()
 
     ###########################################################################
     #                      OBJECTS DATA MANAGER METHODS                       #
@@ -673,12 +678,11 @@ class Kernel:
     #                      Kafka consumer producer                            #
     ###########################################################################
 
-    def kafka_produce_message(self, topic: str, msg: dict):
+    def kafka_produce_message(self, msg: dict):
         """
         Publish a message on kafka message queue
 
         Args:
-            topic (str): name of the kafka topic
             msg (dict): message that needs to published on kafka
         Returns:
             bool: True if successful. In case of failure, it returns an Exception message.
@@ -687,20 +691,18 @@ class Kernel:
             Exception: Error publishing message. Topic: topic_name - error-message
 
         """
-        self.MessagingQueue.produce_message(topic, msg)
+        self.MessagingQueue.produce_message(msg)
 
-    def kafka_subscribe_to_topic(self, topic: str):
+    def kafka_subscribe_to_topic(self):
         """
         Subscribe to kafka topic as a consumer
 
-        Args:
-            topic (str): name of the kafka topic
         Yields:
              dict: kafka message
         Raises:
             ValueError: Topic parameter is missing.
         """
-        return self.MessagingQueue.subscribe_to_topic(topic)
+        return self.MessagingQueue.subscribe_to_topic()
 
     ################### CACHE RELATED METHODS ##################################
 
