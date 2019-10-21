@@ -44,13 +44,14 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 class Kernel:
 
-    def __init__(self, configs_dir_path: str, study_name:str, auto_offset_reset: str = "largest", enable_spark:bool=True, enable_spark_ui=False):
+    def __init__(self, configs_dir_path: str, study_name:str, new_study:bool=False, auto_offset_reset: str = "largest", enable_spark:bool=True, enable_spark_ui=False):
         """
         CerebralCortex constructor
 
         Args:
             configs_dir_path (str): Directory path of cerebralcortex configurations.
             study_name (str): name of the study
+            new_study (bool): create a new study with study_name if it does not exist
             auto_offset_reset (str): Kafka offset. Acceptable parameters are smallest or largest (default=largest)
             enable_spark (bool): enable spark
             enable_spark_ui (bool): enable spark ui
@@ -71,6 +72,8 @@ class Kernel:
             self.sqlContext = None
             self.sparkSession = None
 
+        self.new_study = new_study
+
         if not study_name:
             raise Exception("Study name cannot be None.")
 
@@ -87,9 +90,11 @@ class Kernel:
         self.MessagingQueue = None
         self.TimeSeriesData = None
 
+
         warnings.simplefilter('always', DeprecationWarning)
 
-        if not self.SqlData.is_study():
+
+        if not new_study and not self.RawData.nosql.is_study():
             raise Exception("Study name does not exist.")
 
         if self.config["visualization_storage"] != "none":
@@ -121,13 +126,12 @@ class Kernel:
         """
         return self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB)
 
-    def get_stream(self, stream_name: str, study_name:list=None, version: str = "all", data_type=DataSet.COMPLETE) -> DataStream:
+    def get_stream(self, stream_name: str, version: str = "all", data_type=DataSet.COMPLETE) -> DataStream:
         """
         Retrieve a data-stream with it's metadata.
 
         Args:
             stream_name (str): name of a stream
-            study_name (list[str]): name of the study
             version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
             data_type (DataSet):  DataSet.COMPLETE returns both Data and Metadata. DataSet.ONLY_DATA returns only Data. DataSet.ONLY_METADATA returns only metadata of a stream. (Default=DataSet.COMPLETE)
 
@@ -145,7 +149,7 @@ class Kernel:
             >>> ds.get_metadata(version=1) # get the specific version metadata of a stream
         """
 
-        return self.RawData.get_stream(stream_name=stream_name, study_name=study_name, version=version, data_type=data_type)
+        return self.RawData.get_stream(stream_name=stream_name, version=version, data_type=data_type)
 
     ###########################################################################
     #                     TIME SERIES DATA MANAGER METHODS                    #
@@ -253,7 +257,7 @@ class Kernel:
             >>> CC.get_stream_metadata_by_name("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST", version=1)
             >>> [Metadata] # list of MetaData class objects
         """
-        return self.SqlData.get_stream_metadata(stream_name, version)
+        return self.SqlData.get_stream_metadata_by_name(stream_name, version)
 
     def get_stream_metadata_by_hash(self, metadata_hash: uuid) -> str:
         """
@@ -268,7 +272,7 @@ class Kernel:
                >>> CC.get_stream_metadata_by_hash("00ab666c-afb8-476e-9872-6472b4e66b68")
                >>> {"name": .....} # stream metadata and other information
        """
-        return self.SqlData.get_stream_info_by_hash(metadata_hash=metadata_hash)
+        return self.SqlData.get_stream_metadata_by_hash(metadata_hash=metadata_hash)
 
     def list_streams(self)->List[str]:
         """

@@ -143,6 +143,41 @@ class HDFSStorage:
 
     ###########################################################################################################
 
+    def is_study(self) -> bool:
+        """
+        Returns true if study_name exists.
+
+        Returns:
+            bool: True if study_name exist False otherwise
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.is_study("default")
+            >>> True
+        """
+        stream_path = self._get_storage_path()
+        if self.obj.fs.exists(stream_path):
+            return True
+        else:
+            return False
+
+    def list_studies(self)->List[str]:
+        """
+        Get all the available study names
+
+        Returns:
+            List[str]: list of available study names
+
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.list_studies()
+        """
+        stream_path = self._get_storage_path()
+        stream_names = []
+        all_streams = self.obj.fs.ls(stream_path)
+        for strm in all_streams:
+            stream_names.append(strm.repace(stream_path,"").replace("stream=",""))
+        return stream_names
+
     def is_stream(self, stream_name: str) -> bool:
         """
         Returns true if provided stream exists.
@@ -157,7 +192,7 @@ class HDFSStorage:
             >>> True
         """
         stream_path = self._get_storage_path(stream_name=stream_name)
-        if self.fs.exists(stream_path):
+        if self.obj.fs.exists(stream_path):
             return True
         else:
             return False
@@ -180,7 +215,7 @@ class HDFSStorage:
         stream_path = self._get_storage_path(stream_name=stream_name)
         stream_versions = []
         if self.is_stream(stream_name):
-            all_streams = self.fs.ls(stream_path)
+            all_streams = self.obj.fs.ls(stream_path)
             for strm in all_streams:
                 stream_versions.append(strm.repace(stream_path,"").replace("version=",""))
             return stream_versions
@@ -189,10 +224,10 @@ class HDFSStorage:
 
     def list_streams(self)->List[str]:
         """
-        Get all the available stream names with metadata
+        Get all the available stream names
 
         Returns:
-            List[Metadata]: list of available streams metadata
+            List[str]: list of available streams metadata
 
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
@@ -200,7 +235,7 @@ class HDFSStorage:
         """
         stream_path = self._get_storage_path()
         stream_names = []
-        all_streams = self.fs.ls(stream_path)
+        all_streams = self.obj.fs.ls(stream_path)
         for strm in all_streams:
             stream_names.append(strm.repace(stream_path,"").replace("stream=",""))
         return stream_names
@@ -219,7 +254,7 @@ class HDFSStorage:
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
         stream_path = self._get_storage_path()
-        all_streams = self.fs.ls(stream_path)
+        all_streams = self.obj.fs.ls(stream_path)
         stream_names = []
         for strm in all_streams:
             if stream_name in strm:
@@ -239,7 +274,7 @@ class HDFSStorage:
             >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
             >>> ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST
         """
-        stream_name = self.sql_data.get_stream_name(metadata_hash)
+        stream_name = self.obj.sql_data.get_stream_name(metadata_hash)
         stream_path = self._get_storage_path(stream_name=stream_name)
         if self.is_stream(stream_path):
             return stream_name
@@ -262,11 +297,11 @@ class HDFSStorage:
 
         stream_path = self._get_storage_path(stream_name=stream_name)
         if self.is_stream(stream_path):
-            return self.sql_data.get_stream_metadata_hash(stream_name)
+            return self.obj.sql_data.get_stream_metadata_hash(stream_name)
         else:
             raise Exception(stream_name+" stream does not exist.")
 
-    def _get_storage_path(self, stream_name:str, no_spark=False)->str:
+    def _get_storage_path(self, stream_name:str=None, no_spark=False)->str:
         """
         Build path of storage location
 
@@ -282,7 +317,11 @@ class HDFSStorage:
             storage_url = self.obj.hdfs_spark_url + self.obj.raw_files_dir
 
         if stream_name is None or stream_name=="":
-            return storage_url + "study_name="+self.study_name+"/"
+            storage_path = storage_url + "study="+self.obj.study_name+"/"
         else:
-            return storage_url + "study_name="+self.study_name+"/stream=" + stream_name + "/"
+            storage_path = storage_url + "study="+self.obj.study_name+"/stream=" + stream_name + "/"
 
+        if self.new_study and not self.obj.fs.exists(storage_url + "study="+self.obj.study_name+"/"):
+            self.obj.fs.mkdir(storage_url + "study="+self.obj.study_name+"/")
+
+        return storage_path

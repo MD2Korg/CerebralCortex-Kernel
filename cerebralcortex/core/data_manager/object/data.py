@@ -38,6 +38,7 @@ class ObjectData(FileSystemStorage):
         self.config = CC.config
 
         self.study_name = CC.study_name
+        self.new_study = CC.new_study
 
         self.logging = CC.logging
         self.logtypes = LogTypes()

@@ -48,6 +48,7 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage):
         self.sql_data = CC.SqlData
 
         self.study_name = CC.study_name
+        self.new_study = CC.new_study
 
         self.logging = CC.logging
         self.nosql_store = self.config['nosql_storage']

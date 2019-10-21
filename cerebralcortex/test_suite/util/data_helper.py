@@ -88,7 +88,7 @@ def gen_phone_battery_metadata()->Metadata:
         Metadata: metadata of phone battery stream
     """
     stream_metadata = Metadata()
-    stream_metadata.set_description("this is a test-stream.").set_name("BATTERY--org.md2k.phonesensor--PHONE").set_version(1) \
+    stream_metadata.set_description("this is a test-stream.").set_name("BATTERY--org.md2k.phonesensor--PHONE") \
         .add_dataDescriptor(
         DataDescriptor().set_name("level").set_type("float").set_attribute("description", "current battery charge")) \
         .add_module(

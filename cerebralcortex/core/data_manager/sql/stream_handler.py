@@ -36,7 +36,7 @@ class StreamHandler:
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_stream_metadata(self, stream_name: str, version:str= "all") -> List[Metadata]:
+    def get_stream_metadata_by_name(self, stream_name: str, version:str= "all") -> List[Metadata]:
         """
         Get a list of metadata for all versions available for a stream.
 
@@ -89,7 +89,7 @@ class StreamHandler:
         results = []
         if rows:
             for row in rows:
-                results.extend(self.get_stream_metadata(stream_name=row["name"]))
+                results.extend(self.get_stream_metadata_by_name(stream_name=row["name"]))
             return results
         else:
             return []
@@ -208,7 +208,7 @@ class StreamHandler:
         else:
             return rows[0]["name"]
 
-    def get_stream_info_by_hash(self, metadata_hash: uuid) -> str:
+    def get_stream_metadata_by_hash(self, metadata_hash: uuid) -> str:
         """
        metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
 
@@ -269,7 +269,7 @@ class StreamHandler:
             >>> CC.is_study("demo-study")
             >>> True
         """
-        qry = "SELECT * from " + self.userTable + " where study_name= = %(study_name)s"
+        qry = "SELECT * from " + self.userTable + " where study_name= %(study_name)s"
         vals = {'study_name': str(self.study_name)}
         rows = self.execute(qry, vals)
 

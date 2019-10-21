@@ -66,7 +66,7 @@ class UserHandler():
         user_uuid = str(username)+str(user_role)+str(user_metadata)
         user_uuid = str(uuid.uuid3(uuid.NAMESPACE_DNS, user_uuid))
         encrypted_password = self.encrypt_user_password(user_password)
-        qry = "INSERT INTO " + self.userTable + " (user_id, username, password, study_name, user_role, user_metadata,user_settings) VALUES(%s, %s, %s, %s, %s, %s)"
+        qry = "INSERT INTO " + self.userTable + " (user_id, username, password, study_name, user_role, user_metadata,user_settings) VALUES(%s, %s, %s, %s, %s, %s, %s)"
         vals = str(user_uuid), str(username), str(encrypted_password), str(self.study_name), str(user_role), json.dumps(user_metadata), json.dumps(user_settings)
 
         try:

@@ -143,6 +143,25 @@ class FileSystemStorage:
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
 
+    #################################################################################################################
+
+    def is_study(self) -> bool:
+        """
+        Returns true if study_name exists.
+
+        Returns:
+            bool: True if study_name exist False otherwise
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.is_study("default")
+            >>> True
+        """
+        stream_path = self._get_storage_path()
+        if os.path.exists(stream_path):
+            return True
+        else:
+            return False
+
     def is_stream(self, stream_name: str) -> bool:
         """
         Returns true if provided stream exists.
@@ -226,7 +245,7 @@ class FileSystemStorage:
             >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
             >>> ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST
         """
-        stream_name = self.sql_data.get_stream_name(metadata_hash)
+        stream_name = self.obj.sql_data.get_stream_name(metadata_hash)
         stream_path = self._get_storage_path(stream_name=stream_name)
         if self.is_stream(stream_path):
             return stream_name
@@ -249,11 +268,11 @@ class FileSystemStorage:
 
         stream_path = self._get_storage_path(stream_name=stream_name)
         if self.is_stream(stream_path):
-            return self.sql_data.get_stream_metadata_hash(stream_name)
+            return self.obj.sql_data.get_stream_metadata_hash(stream_name)
         else:
             raise Exception(stream_name+" stream does not exist.")
 
-    def _get_storage_path(self, stream_name:str)->str:
+    def _get_storage_path(self, stream_name:str=None)->str:
         """
         Build path of storage location
 
@@ -266,6 +285,11 @@ class FileSystemStorage:
         storage_url = self.obj.filesystem_path
 
         if stream_name is None or stream_name=="":
-            return storage_url + "study_name="+self.study_name+"/"
+            storage_path= storage_url + "study="+self.obj.study_name+"/"
         else:
-            return storage_url + "study_name="+self.study_name+"/stream=" + stream_name + "/"
+            storage_path = storage_url + "study="+self.obj.study_name+"/stream=" + stream_name + "/"
+
+        if self.obj.new_study and not os.path.exists(storage_url + "study="+self.obj.study_name+"/"):
+            os.mkdir(storage_url + "study="+self.obj.study_name+"/")
+
+        return storage_path

@@ -49,7 +49,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest):#, SqlStorageTest, T
         # create sample_data directory. Note: make sure this path is same as the filesystem path in cerebralcortex.yml
         pathlib.Path("./sample_data/").mkdir(parents=True, exist_ok=True)
 
-        self.CC = Kernel(config_filepath, auto_offset_reset="smallest")
+        self.CC = Kernel(config_filepath, auto_offset_reset="smallest", study_name="default", new_study=True)
         self.cc_conf = self.CC.config
 
         # TEST-PARAMS
