@@ -191,7 +191,7 @@ class Kernel:
             >>> CC.is_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> True
         """
-        return self.RawData.is_stream(stream_name)
+        return self.RawData.nosql.is_stream(stream_name)
 
     def get_stream_versions(self, stream_name: str) -> list:
         """
@@ -208,7 +208,7 @@ class Kernel:
             >>> CC.get_stream_versions("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> [1, 2, 4]
         """
-        return self.RawData.get_stream_versions(stream_name)
+        return self.RawData.nosql.get_stream_versions(stream_name)
 
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """
@@ -223,7 +223,7 @@ class Kernel:
             >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
             >>> ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST
         """
-        return self.RawData.get_stream_name(metadata_hash)
+        return self.RawData.nosql.get_stream_name(metadata_hash)
 
     def get_stream_metadata_hash(self, stream_name: str) -> list:
         """
@@ -238,7 +238,7 @@ class Kernel:
             >>> CC.get_stream_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
         """
-        return self.RawData.get_stream_metadata_hash(stream_name)
+        return self.RawData.nosql.get_stream_metadata_hash(stream_name)
 
     def get_stream_metadata_by_name(self, stream_name: str, version:str= "all") -> List[Metadata]:
         """
@@ -285,7 +285,7 @@ class Kernel:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.list_streams()
         """
-        return self.RawData.list_streams()
+        return self.RawData.nosql.list_streams()
 
     def search_stream(self, stream_name):
         """
@@ -301,7 +301,7 @@ class Kernel:
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
 
-        return self.RawData.search_stream(stream_name=stream_name)
+        return self.RawData.nosql.search_stream(stream_name=stream_name)
 
     ################### USER RELATED METHODS ##################################
 

@@ -247,10 +247,10 @@ class FileSystemStorage:
         """
         stream_name = self.obj.sql_data.get_stream_name(metadata_hash)
         stream_path = self._get_storage_path(stream_name=stream_name)
-        if self.is_stream(stream_path):
+        if self.is_stream(stream_name):
             return stream_name
         else:
-            raise Exception(metadata_hash+" stream does not exist.")
+            raise Exception(metadata_hash+" does not exist.")
 
     def get_stream_metadata_hash(self, stream_name: str) -> list:
         """
@@ -266,11 +266,10 @@ class FileSystemStorage:
             >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
         """
 
-        stream_path = self._get_storage_path(stream_name=stream_name)
-        if self.is_stream(stream_path):
+        if self.is_stream(stream_name):
             return self.obj.sql_data.get_stream_metadata_hash(stream_name)
         else:
-            raise Exception(stream_name+" stream does not exist.")
+            raise Exception(stream_name+" does not exist.")
 
     def _get_storage_path(self, stream_name:str=None)->str:
         """

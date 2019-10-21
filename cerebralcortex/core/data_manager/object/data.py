@@ -25,6 +25,7 @@
 
 from cerebralcortex.core.data_manager.object.storage_filesystem import FileSystemStorage
 from cerebralcortex.core.log_manager.log_handler import LogTypes
+import os
 
 
 class ObjectData(FileSystemStorage):
@@ -49,3 +50,6 @@ class ObjectData(FileSystemStorage):
             self.filesystem_path += "/"
         
         self.filesystem_path = self.filesystem_path+self.study_name+"/"
+
+        if self.new_study and not os.path.exists(self.filesystem_path):
+            os.mkdir(self.filesystem_path)
