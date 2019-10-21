@@ -25,7 +25,8 @@
 
 
 from cerebralcortex.core.datatypes import DataStream
-
+from typing import List
+import uuid
 
 class BlueprintStorage():
     """
@@ -83,7 +84,6 @@ class BlueprintStorage():
         Returns:
             bool: True if stream_name exist False otherwise
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.is_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> True
         """
@@ -100,7 +100,6 @@ class BlueprintStorage():
         Raises:
             ValueError: if stream_name is empty or None
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.get_stream_versions("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> [1, 2, 4]
         """
@@ -115,7 +114,6 @@ class BlueprintStorage():
         Returns:
             str: name of a stream
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
             >>> ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST
         """
@@ -130,18 +128,17 @@ class BlueprintStorage():
         Returns:
             list[str]: list of all the metadata hashes
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.get_stream_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
         """
         pass
 
-    def list_streams(self)->List[Metadata]:
+    def list_streams(self)->List[str]:
         """
         Get all the available stream names with metadata
 
         Returns:
-            List[Metadata]: list of available streams metadata
+            List[str]: list of available streams metadata
 
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/")
@@ -158,20 +155,7 @@ class BlueprintStorage():
             List[str]: list of stream names similar to stream_name arg
 
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
             >>> CC.search_stream("battery")
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
-        pass
-
-    def xx(self):
-        pass
-
-    def xx(self):
-        pass
-
-    def xx(self):
-        pass
-
-    def xx(self):
         pass

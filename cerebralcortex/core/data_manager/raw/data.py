@@ -30,6 +30,7 @@ from cerebralcortex.core.data_manager.raw.storage_hdfs import HDFSStorage
 from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
 from cerebralcortex.core.log_manager.log_handler import LogTypes
+import pyarrow as pa
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
@@ -62,6 +63,7 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage):
             self.hdfs_port = self.config['hdfs']['port']
             self.hdfs_spark_url = "hdfs://"+str(self.hdfs_ip)+":"+str(self.hdfs_port)+"/"
             self.raw_files_dir = self.config['hdfs']['raw_files_dir']
+            self.fs = pa.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         elif self.nosql_store=="filesystem":
             self.nosql = FileSystemStorage(self)
             self.filesystem_path = self.config["filesystem"]["filesystem_path"]
