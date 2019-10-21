@@ -37,7 +37,7 @@ class SqlStorageTest:
     def test_02_get_stream_versions(self):
         versions = self.CC.get_stream_versions(self.stream_name)
         for version in versions:
-            self.assertEqual(int(self.stream_version), version)
+            self.assertEqual(int(self.stream_version), int(version))
 
     def test_03_get_stream_name(self):
         ds = self.CC.get_stream(self.stream_name, data_type=DataSet.ONLY_METADATA)

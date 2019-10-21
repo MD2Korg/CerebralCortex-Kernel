@@ -56,7 +56,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         # TEST-PARAMS
         # sql/nosql params
         self.stream_name = "BATTERY--org.md2k.phonesensor--PHONE"
-        self.stream_version = "1"
+        self.stream_version = 1
         self.metadata_hash = "96816db3-ce79-37a8-bfe2-034db8c56a6d"
         self.username = "test_user"
         self.user_id = "bfb2ca0c-e19c-3956-9db2-5459ccadd40c"
@@ -69,8 +69,8 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
 
         # object test params
         self.bucket_name = "test_bucket"
-        self.obj_file_path = os.getcwd() + "/sample_data/objects/some_obj.zip"
-        self.obj_metadata_file_path = os.getcwd() + "/sample_data/objects/some_obj.json"
+        self.obj_file_path = os.getcwd() + "/sample_data/objects/test_obj.zip"
+        self.obj_metadata_file_path = os.getcwd() + "/sample_data/objects/test_obj.json"
 
         # kafka test params
         self.test_topic_name = "test_topic"
