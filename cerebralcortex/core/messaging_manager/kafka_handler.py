@@ -46,7 +46,7 @@ class KafkaHandler():
         if not msg:
             raise ValueError("topic and message parameters cannot be empty or None.")
         try:
-            self.producer.send(self.stud_name, msg)
+            self.producer.send(self.study_name, msg)
             self.producer.flush()
             return True
         except Exception as e:

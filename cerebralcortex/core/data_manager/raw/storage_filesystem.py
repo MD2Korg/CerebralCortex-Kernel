@@ -28,6 +28,7 @@ from pyspark.sql.functions import lit
 import pandas as pd
 import pyarrow as pa
 import os
+from uuid import uuid4
 import uuid
 from typing import List
 from glob import glob
@@ -142,6 +143,34 @@ class FileSystemStorage:
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
+
+    def write_pandas_to_parquet_file(self, df: pd, user_id: str, stream_name: str) -> str:
+        """
+        Convert pandas dataframe into pyarrow parquet format and store
+
+        Args:
+            df (pandas): pandas dataframe
+            user_id (str): user id
+            stream_name (str): name of a stream
+
+        Returns:
+            str: file_name of newly create parquet file
+
+        Raises:
+             Exception: if selected nosql database is not implemented
+
+        """
+        base_dir_path = self._get_storage_path(stream_name)
+        table = pa.Table.from_pandas(df, preserve_index=False)
+        file_id = str(uuid4().hex) + ".parquet"
+        data_file_url = os.path.join(base_dir_path, "version=1", "user=" + user_id)
+        file_name = os.path.join(data_file_url, file_id)
+        if not os.path.exists(data_file_url):
+            os.makedirs(data_file_url)
+
+        pq.write_table(table, file_name)
+
+        return file_name
 
     #################################################################################################################
 
@@ -288,7 +317,7 @@ class FileSystemStorage:
         else:
             storage_path = storage_url + "study="+self.obj.study_name+"/stream=" + stream_name + "/"
 
-        if self.obj.new_study and not os.path.exists(storage_url + "study="+self.obj.study_name+"/"):
+        if (self.obj.new_study or self.obj.study_name=="default") and not os.path.exists(storage_url + "study="+self.obj.study_name+"/"):
             os.mkdir(storage_url + "study="+self.obj.study_name+"/")
 
         return storage_path

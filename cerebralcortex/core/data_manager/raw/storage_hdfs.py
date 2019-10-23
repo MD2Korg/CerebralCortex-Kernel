@@ -26,6 +26,8 @@
 from pyspark.sql.functions import lit
 import pandas as pd
 import uuid
+import os
+from uuid import uuid4
 import pyarrow as pa
 import pyarrow.parquet as pq
 from typing import List
@@ -140,6 +142,34 @@ class HDFSStorage:
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
+
+    def write_pandas_to_parquet_file(self, df: pd, user_id: str, stream_name: str) -> str:
+        """
+        Convert pandas dataframe into pyarrow parquet format and store
+
+        Args:
+            df (pandas): pandas dataframe
+            user_id (str): user id
+            stream_name (str): name of a stream
+
+        Returns:
+            str: file_name of newly create parquet file
+
+        Raises:
+             Exception: if data cannot be stored
+
+        """
+        base_dir_path = self._get_storage_path(stream_name)
+        table = pa.Table.from_pandas(df, preserve_index=False)
+        file_id = str(uuid4().hex) + ".parquet"
+        data_file_url = os.path.join(base_dir_path, "version=1", "user=" + user_id)
+        file_name = os.path.join(data_file_url, file_id)
+        if not self.obj.fs.exists(data_file_url):
+            self.obj.fs.mkdir(data_file_url)
+        with self.obj.fs.open(file_name, "wb") as fp:
+            pq.write_table(table, fp)
+
+        return file_name
 
     ###########################################################################################################
 
@@ -321,7 +351,7 @@ class HDFSStorage:
         else:
             storage_path = storage_url + "study="+self.obj.study_name+"/stream=" + stream_name + "/"
 
-        if self.new_study and not self.obj.fs.exists(storage_url + "study="+self.obj.study_name+"/"):
+        if (self.obj.new_study or self.obj.study_name=="default") and not self.obj.fs.exists(storage_url + "study="+self.obj.study_name+"/"):
             self.obj.fs.mkdir(storage_url + "study="+self.obj.study_name+"/")
 
         return storage_path

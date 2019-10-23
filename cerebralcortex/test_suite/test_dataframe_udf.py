@@ -23,33 +23,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cerebralcortex.core.data_manager.object.storage_filesystem import FileSystemStorage
-from cerebralcortex.core.log_manager.log_handler import LogTypes
-import os
 
+class TestDataframeUDF:
 
-class ObjectData(FileSystemStorage):
-    def __init__(self, CC):
+    def test_01_udf_on_windows(self):
         """
-        Constructor
-        Args:
-            CC (CerebralCortex): CerebralCortex object reference
+        Window datastream and perform a udf on top of it
+
         """
-        self.CC = CC
-        self.config = CC.config
-
-        self.study_name = CC.study_name
-        self.new_study = CC.new_study
-
-        self.logging = CC.logging
-        self.logtypes = LogTypes()
-      
-        self.filesystem_path = self.config["object_storage"]["object_storage_path"]
-        
-        if self.filesystem_path[-1]!="/":
-            self.filesystem_path += "/"
-        
-        self.filesystem_path = self.filesystem_path+self.study_name+"/"
-
-        if (self.new_study or self.study_name=="default") and not os.path.exists(self.filesystem_path):
-            os.mkdir(self.filesystem_path)
+        pass
