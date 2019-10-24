@@ -201,12 +201,12 @@ class HDFSStorage:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.list_studies()
         """
-        stream_path = self._get_storage_path()
-        stream_names = []
-        all_streams = self.obj.fs.ls(stream_path)
-        for strm in all_streams:
-            stream_names.append(strm.repace(stream_path,"").replace("stream=",""))
-        return stream_names
+        study_path = self._get_storage_path()
+        study_names = []
+        all_studies = self.obj.fs.ls(study_path)
+        for strm in all_studies:
+            study_names.append(strm.repace(study_path,"").replace("study=",""))
+        return study_names
 
     def is_stream(self, stream_name: str) -> bool:
         """
