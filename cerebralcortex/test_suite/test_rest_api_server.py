@@ -23,16 +23,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import pathlib
-import unittest
-import warnings
 import json
+import os
+import unittest
 
-from cerebralcortex import Kernel
-from cerebralcortex.test_suite.test_object_storage import TestObjectStorage
-from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
-from cerebralcortex.test_suite.test_stream import DataStreamTest
 from cerebralcortex_rest import client
 
 
