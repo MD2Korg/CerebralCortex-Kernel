@@ -268,10 +268,12 @@ class UserHandler():
         if study_name:
             qry = 'SELECT * FROM ' + self.userTable + ' where user_metadata->"$.study_name"=%(study_name)s'
             vals = {'study_name': str(study_name)}
+            rows = self.execute(qry, vals)
         else:
             qry = 'SELECT * FROM ' + self.userTable
+            rows = self.execute(qry)
 
-        rows = self.execute(qry, vals)
+        
 
         if len(rows) == 0:
             return []
