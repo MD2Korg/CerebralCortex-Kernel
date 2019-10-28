@@ -376,7 +376,7 @@ class Kernel:
         """
         return self.SqlData.get_user_name(user_id)
 
-    def get_all_users(self, study_name: str) -> List[dict]:
+    def get_all_users(self, study_name: str=None) -> List[dict]:
         """
         Get a list of all users part of a study.
 
