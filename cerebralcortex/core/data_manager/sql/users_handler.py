@@ -248,7 +248,7 @@ class UserHandler():
             else:
                 return True
 
-    def get_all_users(self, study_name: str) -> List[dict]:
+    def get_all_users(self, study_name: str=None) -> List[dict]:
         """
         Get a list of all users part of a study.
 
@@ -267,8 +267,11 @@ class UserHandler():
             raise ValueError("Study name is a requied field.")
 
         results = []
-        qry = 'SELECT user_id, username FROM ' + self.userTable + ' where user_metadata->"$.study_name"=%(study_name)s'
-        vals = {'study_name': str(study_name)}
+        if study_name:
+            qry = 'SELECT * FROM ' + self.userTable + ' where user_metadata->"$.study_name"=%(study_name)s'
+            vals = {'study_name': str(study_name)}
+        else:
+            qry = 'SELECT * FROM ' + self.userTable
 
         rows = self.execute(qry, vals)
 
