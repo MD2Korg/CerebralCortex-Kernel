@@ -266,11 +266,11 @@ class UserHandler():
 
         results = []
         if study_name:
-            qry = 'SELECT * FROM ' + self.userTable + ' where user_metadata->"$.study_name"=%(study_name)s'
+            qry = "SELECT *,JSON_UNQUOTE(JSON_EXTRACT(user_metadata, '$.study_name')) FROM " + self.userTable + ' where user_metadata->"$.study_name"=%(study_name)s'
             vals = {'study_name': str(study_name)}
             rows = self.execute(qry, vals)
         else:
-            qry = 'SELECT * FROM ' + self.userTable
+            qry = "SELECT *,JSON_UNQUOTE(JSON_EXTRACT(user_metadata, '$.study_name')) as study_name FROM " + self.userTable
             rows = self.execute(qry)
 
         
