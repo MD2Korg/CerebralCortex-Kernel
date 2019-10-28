@@ -263,8 +263,6 @@ class UserHandler():
             >>> CC.get_all_users("mperf")
             >>> [{"76cc444c-4fb8-776e-2872-9472b4e66b16": "nasir_ali"}] # [{user_id, user_name}]
         """
-        if not study_name:
-            raise ValueError("Study name is a requied field.")
 
         results = []
         if study_name:
