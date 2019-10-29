@@ -267,7 +267,7 @@ class HDFSStorage:
         stream_names = []
         all_streams = self.obj.fs.ls(stream_path)
         for strm in all_streams:
-            stream_names.append(strm.replace(stream_path,"").replace("stream=",""))
+            stream_names.append(strm.replace(stream_path,"").replace("stream=","").replace("study="+self.study_name, "").replace(self.raw_files_dir,""))
         return stream_names
 
     def search_stream(self, stream_name)->List[str]:

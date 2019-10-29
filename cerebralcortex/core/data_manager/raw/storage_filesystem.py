@@ -243,7 +243,7 @@ class FileSystemStorage:
             >>> CC.list_streams()
         """
         stream_path = self._get_storage_path()
-        return [d.replace("stream=","") for d in os.listdir(stream_path) if os.path.isdir(os.path.join(stream_path, d))]
+        return [d.replace("stream=","").replace("study="+self.study_name, "").replace(self.raw_files_dir,"") for d in os.listdir(stream_path) if os.path.isdir(os.path.join(stream_path, d))]
 
     def search_stream(self, stream_name)->List[str]:
         """
