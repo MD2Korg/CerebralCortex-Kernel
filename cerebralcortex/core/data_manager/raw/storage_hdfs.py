@@ -205,7 +205,7 @@ class HDFSStorage:
         study_names = []
         all_studies = self.obj.fs.ls(study_path)
         for strm in all_studies:
-            study_names.append(strm.repace(study_path,"").replace("study=",""))
+            study_names.append(strm.replace(study_path,"").replace("study=",""))
         return study_names
 
     def is_stream(self, stream_name: str) -> bool:
@@ -247,7 +247,7 @@ class HDFSStorage:
         if self.is_stream(stream_name):
             all_streams = self.obj.fs.ls(stream_path)
             for strm in all_streams:
-                stream_versions.append(strm.repace(stream_path,"").replace("version=",""))
+                stream_versions.append(strm.replace(stream_path,"").replace("version=",""))
             return stream_versions
         else:
             raise Exception(stream_name+" does not exist")
@@ -267,7 +267,7 @@ class HDFSStorage:
         stream_names = []
         all_streams = self.obj.fs.ls(stream_path)
         for strm in all_streams:
-            stream_names.append(strm.repace(stream_path,"").replace("stream=",""))
+            stream_names.append(strm.replace(stream_path,"").replace("stream=",""))
         return stream_names
 
     def search_stream(self, stream_name)->List[str]:
@@ -288,7 +288,7 @@ class HDFSStorage:
         stream_names = []
         for strm in all_streams:
             if stream_name in strm:
-                stream_names.append(strm.repace(stream_path,"").replace("stream=",""))
+                stream_names.append(strm.replace(stream_path,"").replace("stream=",""))
         return stream_names
 
     def get_stream_name(self, metadata_hash: uuid) -> str:
