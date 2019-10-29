@@ -64,10 +64,14 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage):
             self.hdfs_port = self.config['hdfs']['port']
             self.hdfs_spark_url = "hdfs://"+str(self.hdfs_ip)+":"+str(self.hdfs_port)+"/"
             self.raw_files_dir = self.config['hdfs']['raw_files_dir']
+            if self.raw_files_dir[-1]!="/":
+                self.raw_files_dir+="/"
             self.fs = pa.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         elif self.nosql_store=="filesystem":
             self.nosql = FileSystemStorage(self)
             self.filesystem_path = self.config["filesystem"]["filesystem_path"]
+            if self.filesystem_path[-1]!="/":
+                self.filesystem_path+="/"
             if not os.access(self.filesystem_path, os.W_OK):
                 raise Exception(self.filesystem_path+" path is not writable. Please check your cerebralcortex.yml configurations.")
         else:
