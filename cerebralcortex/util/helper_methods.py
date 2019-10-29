@@ -56,7 +56,7 @@ def get_study_names(configs_dir_path: str)->List[str]:
         study_names = []
         all_studies = fs.ls(study_path)
         for strm in all_studies:
-            study_names.append(strm.repace(study_path,"").replace("study=",""))
+            study_names.append(strm.replace(study_path,"").replace("study=",""))
         return study_names
     elif nosql_store=="filesystem":
         filesystem_path = config["filesystem"]["filesystem_path"]
