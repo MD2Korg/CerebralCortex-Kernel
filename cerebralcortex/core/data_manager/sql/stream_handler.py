@@ -315,7 +315,7 @@ class StreamHandler:
             return {"status": True,"version":version, "record_type":"exist"}
 
         if (status == "new"):
-            qry = "INSERT INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
+            qry = "INSERT IGNORE INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
             vals = str(stream_name), str(version), str(metadata_hash), json.dumps(metadata_obj)
             isQueryReady = 1
 

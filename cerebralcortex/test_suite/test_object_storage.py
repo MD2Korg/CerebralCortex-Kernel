@@ -65,7 +65,7 @@ class TestObjectStorage():
 
         try:
             obj = self.CC.get_object(self.bucket_name, "some_obj.zip")
-            self.assertEqual(type(obj), bytes)
+            self.assertEqual(type(obj), dict)
         except Exception as e:
             self.fail(e.message)
 

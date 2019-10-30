@@ -50,7 +50,7 @@ class Kernel:
 
         Args:
             configs_dir_path (str): Directory path of cerebralcortex configurations.
-            study_name (str): name of the study
+            study_name (str): name of the study. If there is no study, you can pass study name as study_name="default"
             new_study (bool): create a new study with study_name if it does not exist
             auto_offset_reset (str): Kafka offset. Acceptable parameters are smallest or largest (default=largest)
             enable_spark (bool): enable spark
