@@ -113,6 +113,7 @@ class StreamHandler():
 
         Args:
             datastream (DataStream): a DataStream object
+            file_mode (str): write mode, append is currently supportes
             ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana
         Returns:
             bool: True if stream is successfully stored or throws an exception

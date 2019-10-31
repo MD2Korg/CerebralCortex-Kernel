@@ -102,13 +102,14 @@ class FileSystemStorage:
         #     df = df.withColumn('version', lit(int(version)))
         #     return df
 
-    def write_file(self, stream_name:str, data:DataStream.data, file_mode) -> bool:
+    def write_file(self, stream_name:str, data:DataStream.data, file_mode:str) -> bool:
         """
         Write pyspark DataFrame to a file storage system
 
         Args:
             stream_name (str): name of the stream
             data (object): pyspark DataFrame object
+            file_mode (str): write mode, append is currently supportes
 
         Returns:
             bool: True if data is stored successfully or throws an Exception.

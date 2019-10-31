@@ -49,7 +49,7 @@ class ObjectData(FileSystemStorage):
         if self.filesystem_path[-1]!="/":
             self.filesystem_path += "/"
         
-        self.filesystem_path = self.filesystem_path+self.study_name+"/"
+        self.filesystem_path = self.filesystem_path+"study="+self.study_name+"/"
 
         if (self.new_study or self.study_name=="default") and not os.path.exists(self.filesystem_path):
             os.mkdir(self.filesystem_path)
