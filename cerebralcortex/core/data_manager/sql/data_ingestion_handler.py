@@ -226,7 +226,7 @@ class DataIngestionHandler():
             return result
 
     def update_ingestion_log_status(self, stream_name, metadata={}, platform_metadata={}):
-        qry = "update " + self.ingestionLogsTable + " set metadata=%s, platform_metadata=%s where stream_name=%s where added_date > NOW() - INTERVAL 15"
+        qry = "update " + self.ingestionLogsTable + " set metadata=%s, platform_metadata=%s where stream_name=%s"
         vals = json.dumps(metadata), json.dumps(platform_metadata), str(stream_name)
         try:
             self.execute(qry, vals, commit=True)
