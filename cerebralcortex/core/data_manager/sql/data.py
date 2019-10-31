@@ -49,11 +49,12 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, Dat
         """
         if isinstance(CC, dict):
             self.config = CC
+            self.study_name = self.config["study_name"]
+            self.new_study = self.config["new_study"]
         else:
             self.config = CC.config
-
-        self.study_name = CC.study_name
-        self.new_study = CC.new_study
+            self.study_name = CC.study_name
+            self.new_study = CC.new_study
         
         self.logtypes = LogTypes()
         self.sql_store = self.config["relational_storage"]
