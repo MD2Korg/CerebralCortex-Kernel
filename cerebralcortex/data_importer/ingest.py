@@ -309,11 +309,11 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
     table = pa.Table.from_pandas(df,nthreads=1)
     partition_by = ["version", "user"]
     if cc_config["nosql_storage"] == "filesystem":
-        data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "stream="+str(stream_name))
+        data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "study="+str(cc_config.get("study_name")), "stream="+str(stream_name))
         pq.write_to_dataset(table, root_path=data_file_url, partition_cols=partition_by, preserve_index=False)
 
     elif cc_config["nosql_storage"] == "hdfs":
-        data_file_url = os.path.join(cc_config["hdfs"]["raw_files_dir"], "stream="+str(stream_name))
+        data_file_url = os.path.join(cc_config["hdfs"]["raw_files_dir"], "study="+str(cc_config.get("study_name")), "stream="+str(stream_name))
         fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
         pq.write_to_dataset(table, root_path=data_file_url, filesystem=fs, partition_cols=partition_by, preserve_index=False)
 
