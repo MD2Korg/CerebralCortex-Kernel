@@ -404,46 +404,44 @@ class DataStream:
         data = self._data.replace(to_replace, value, subset)
         return DataStream(data=data, metadata=Metadata())
 
-    def limit(self, *args, **kwargs):
+    def limit(self, num):
         """
-        calls deafult dataframe limit
+        Limits the result count to the number specified.
 
         Args:
-            *args:
+            num:
             **kwargs:
 
         Returns:
             Datastream:
         """
-        data = self._data.limit(*args, **kwargs)
+        data = self._data.limit(num=num)
         return DataStream(data=data, metadata=Metadata())
 
-    def where(self, *args, **kwargs):
+    def where(self, condition):
         """
-        calls deafult dataframe where
+        where() is an alias for filter().
 
         Args:
-            *args:
-            **kwargs:
+            condition:
 
         Returns:
             Datastream:
         """
-        data = self._data.where(*args, **kwargs)
+        data = self._data.where(condition)
         return DataStream(data=data, metadata=Metadata())
 
-    def orderBy(self, *args, **kwargs):
+    def orderBy(self, *cols):
         """
         order by column name
 
         Args:
-            *args:
-            **kwargs:
+            *cols:
 
         Returns:
             Datastream:
         """
-        data = self._data.orderBy(*args, **kwargs)
+        data = self._data.orderBy(*cols)
         return DataStream(data=data, metadata=Metadata())
 
     def dropDuplicates(self, subset=None):
@@ -869,23 +867,24 @@ class DataStream:
 
         return DataStream(data=data, metadata=Metadata())
 
-    def sort(self, columnNames:list=[], ascending=True):
+    def sort(self, *cols, **kwargs):
         """
-        Sort data column in ASC or DESC order
+        Returns a new DataStream sorted by the specified column(s).
+
+        Args:
+            cols: list of Column or column names to sort by.
+            ascending: boolean or list of boolean (default True). Sort ascending vs. descending. Specify list for multiple sort orders. If a list is specified, length of the list must equal length of the cols.
 
         Returns:
             object: DataStream object
-        """
-        ascending_list = []
-        if len(columnNames)==0:
-            columnNames.append("timestamp")
 
-        for col in columnNames:
-            if ascending:
-                ascending_list.append(1)
-            else:
-                ascending_list.append(0)
-        data = self._data.orderBy(columnNames,ascending=ascending_list)
+        Examples:
+            >>> ds.sort(df.age.desc())
+            >>> ds.sort("age", ascending=False)
+            >>> ds.orderBy(df.age.desc())
+
+        """
+        data = self._data.sort(*cols, **kwargs)
         return DataStream(data=data, metadata=Metadata())
 
     # def run_algo(self, udfName, windowSize:str="1 minute"):
@@ -911,8 +910,21 @@ class DataStream:
     #     data = extended_df.groupBy("user","version","groupby_col").apply(udfName)
     #     return DataStream(data=data, metadata=Metadata())
 
-    def show(self, *args, **kwargs):
-        self._data.show(*args, **kwargs)
+    def show(self, n=20, truncate=True, vertical=False):
+        """
+        Prints the first n rows to the console.
+
+        Args:
+            n: Number of rows to show.
+            truncate: If set to True, truncate strings longer than 20 chars by default. If set to a number greater than one, truncates long strings to length truncate and align cells right.
+            vertical: If set to True, print output rows vertically (one line per column value).
+
+        Examples:
+            >>> ds.show(truncate=3)
+            >>> ds.show(vertical=True)
+        """
+
+        self._data.show(n=n, truncate=truncate, vertical=vertical)
 
     def schema(self):
         """
@@ -959,6 +971,7 @@ class DataStream:
 
 
 ############################### PLOTS ###############################
+
     def _sort_values(self, pdf):
         if "timestamp" in pdf.columns:
             return pdf.sort_values('timestamp')
@@ -1009,7 +1022,7 @@ class DataStream:
 ###################### New Methods by Anand #########################
 
 
-    def join_stress(self, dataStream, propagation='forward'):
+    def join_stress_streams(self, dataStream, propagation='forward'):
         """
         filter data
 
@@ -1026,8 +1039,6 @@ class DataStream:
         combined_filled_filtered = combined_filled.filter(combined_filled.ecg.isNotNull())
 
         return DataStream(data=combined_filled_filtered, metadata=Metadata())
-
-
 
     def create_windows(self, window_length='hour'):
         """
