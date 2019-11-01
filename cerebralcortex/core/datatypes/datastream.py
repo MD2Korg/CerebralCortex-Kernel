@@ -441,6 +441,20 @@ class DataStream:
         data = self._data.withColumnRenamed(existing=existing, new=new)
         return DataStream(data=data, metadata=Metadata())
 
+    def withColumn(self, colName, col):
+        """
+        Returns a new DataStream by adding a column or replacing the existing column that has the same name. The column expression must be an expression over this DataStream; attempting to add a column from some other datastream will raise an error.
+
+        Args:
+            colName (str): name of the new column.
+            col: a Column expression for the new column.
+
+        Examples:
+            >>> ds.withColumn('col_name', ds.col_name + 2)
+        """
+        data = self._data.withColumn(colName=colName, col=col)
+        return DataStream(data=data, metadata=Metadata())
+
     def between(self, lowerBound, upperBound):
         """
         A boolean expression that is evaluated to true if the value of this expression is between the given columns.
