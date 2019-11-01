@@ -339,22 +339,70 @@ class DataStream:
 
     # !!!!                              FILTERING METHODS                           !!!
 
-    def drop(self, *args, **kwargs):
+    def drop(self, *cols):
         """
-        calls deafult dataframe drop
+        Returns a new Datastream that drops the specified column. This is a no-op if schema doesn’t contain the given column name(s).
 
         Args:
-            *args:
-            **kwargs:
+            *cols: a string name of the column to drop, or a Column to drop, or a list of string name of the columns to drop.
+
+        Returns:
+            Datastream:
+
+        Examples:
+            >>> ds.drop('col_name')
         """
-        data = self._data.drop(*args, **kwargs)
+        data = self._data.drop(*cols)
         return DataStream(data=data, metadata=Metadata())
 
-    def summary(self):
+    def describe(self, *cols):
         """
-        print the summary of the data
+        Computes basic statistics for numeric and string columns. This include count, mean, stddev, min, and max. If no columns are given, this function computes statistics for all numerical or string columns.
+
+        Args:
+            *cols:
+
+        Examples:
+            >>> ds.describe(['col_name']).show()
+            >>> ds.describe().show()
         """
-        self._data.describe().show(truncate=False)
+        self._data.describe()
+
+    def summary(self, *statistics):
+        """
+        Computes specified statistics for numeric and string columns. Available statistics are: - count - mean - stddev - min - max - arbitrary approximate percentiles specified as a percentage (eg, 75%) If no statistics are given, this function computes count, mean, stddev, min, approximate quartiles (percentiles at 25%, 50%, and 75%), and max.
+
+        Args:
+            *statistics:
+
+        Examples:
+            >>> ds.summary().show()
+            >>> ds.summary("count", "min", "25%", "75%", "max").show()
+            >>> # To do a summary for specific columns first select them:
+            >>> ds.select("col1", "col2").summary("count").show()
+        """
+        self._data.summary()
+
+    def replace(self, to_replace, value, subset=None):
+        """
+        Returns a new DataStream replacing a value with another value. Values to_replace and value must have the same type and can only be numerics, booleans, or strings. Value can have None. When replacing, the new value will be cast to the type of the existing column. For numeric replacements all values to be replaced should have unique floating point representation. In case of conflicts (for example with {42: -1, 42.0: 1}) and arbitrary replacement will be used.
+
+        Args:
+            to_replace: bool, int, long, float, string, list or dict. Value to be replaced. If the value is a dict, then value is ignored or can be omitted, and to_replace must be a mapping between a value and a replacement.
+            value: bool, int, long, float, string, list or None. The replacement value must be a bool, int, long, float, string or None. If value is a list, value should be of the same length and type as to_replace. If value is a scalar and to_replace is a sequence, then value is used as a replacement for each item in to_replace.
+            subset: optional list of column names to consider. Columns specified in subset that do not have matching data type are ignored. For example, if value is a string, and subset contains a non-string column, then the non-string column is simply ignored.
+
+        Returns:
+            Datastream:
+
+        Examples:
+            >>> df4.na.replace(10, 20).show()
+            >>> df4.na.replace('some-str', None).show()
+            >>> df4.na.replace(['old_val1', 'new_val1'], ['old_val2', 'new_val2'], 'col_name').show()
+
+        """
+        data = self._data.replace(to_replace, value, subset)
+        return DataStream(data=data, metadata=Metadata())
 
     def limit(self, *args, **kwargs):
         """
@@ -363,6 +411,9 @@ class DataStream:
         Args:
             *args:
             **kwargs:
+
+        Returns:
+            Datastream:
         """
         data = self._data.limit(*args, **kwargs)
         return DataStream(data=data, metadata=Metadata())
@@ -374,6 +425,9 @@ class DataStream:
         Args:
             *args:
             **kwargs:
+
+        Returns:
+            Datastream:
         """
         data = self._data.where(*args, **kwargs)
         return DataStream(data=data, metadata=Metadata())
@@ -385,24 +439,91 @@ class DataStream:
         Args:
             *args:
             **kwargs:
+
+        Returns:
+            Datastream:
         """
         data = self._data.orderBy(*args, **kwargs)
         return DataStream(data=data, metadata=Metadata())
 
-    def drop_duplicates(self, subset=None):
+    def dropDuplicates(self, subset=None):
         """
         Return a new DataStream with duplicate rows removed, optionally only considering certain columns.
 
         Args:
-            subset:
+            subset: optional list of column names to consider.
+
+        Returns:
+            Datastream:
 
         Examples:
             >>> ds.dropDuplicates().show()
             >>> # Example on how to use it with params
-            >>> ds.dropDuplicates(['name', 'height']).show()
+            >>> ds.dropDuplicates(['col_name1', 'col_name2']).show()
         """
-        data = self._data.drop_duplicates(subset)
+        data = self._data.dropDuplicates(subset=subset)
         return DataStream(data=data, metadata=Metadata())
+
+    def dropna(self, how='any', thresh=None, subset=None):
+        """
+        Returns a new DataStream omitting rows with null values.
+
+        Args:
+            how: ‘any’ or ‘all’. If ‘any’, drop a row if it contains any nulls. If ‘all’, drop a row only if all its values are null.
+            thresh: int, default None If specified, drop rows that have less than thresh non-null values. This overwrites the how parameter.
+            subset: optional list of column names to consider.
+
+        Returns:
+            Datastream:
+
+        Examples:
+            >>> ds.na.drop()
+
+        """
+        data = self._data.dropDuplicates(subset=subset)
+        return DataStream(data=data, metadata=Metadata())
+
+    def fillna(self, value, subset=None):
+        """
+        Replace null values
+
+        Args:
+            value: int, long, float, string, bool or dict. Value to replace null values with. If the value is a dict, then subset is ignored and value must be a mapping from column name (string) to replacement value. The replacement value must be an int, long, float, boolean, or string.
+            subset: optional list of column names to consider. Columns specified in subset that do not have matching data type are ignored. For example, if value is a string, and subset contains a non-string column, then the non-string column is simply ignored.
+
+        Returns:
+            Datastream:
+
+        Examples:
+            >>> ds.na.fill(50).show()
+            >>> ds.na.fill({'col1': 50, 'col2': 'unknown'}).show()
+
+        """
+        data = self._data.fillna(value=value, subset=subset)
+        return DataStream(data=data, metadata=Metadata())
+
+    def explain(self, extended=False):
+        """
+        Prints the (logical and physical) plans to the console for debugging purpose.
+
+        Args:
+            extended:  boolean, default False. If False, prints only the physical plan.
+
+        Examples:
+            >>> ds.explain()
+
+        """
+        self._data.explain()
+
+    def dtypes(self):
+        """
+        Returns all column names and their data types as a list.
+
+        Examples:
+            >>> ds.dtypes()
+
+        """
+        return self._data.dtypes
 
     def join(self, other, on=None, how=None):
         """
@@ -421,6 +542,57 @@ class DataStream:
         """
 
         data = self._data.join(other=other._data, on=on, how=how)
+        return DataStream(data=data, metadata=Metadata())
+
+    def crossJoin(self, other):
+        """
+        Returns the cartesian product with another DataStream
+
+        Args:
+            other: Right side of the cartesian product.
+
+        Returns:
+            DataStream object with joined streams
+
+        Examples:
+            >>> ds.crossJoin(ds2.select("col_name")).collect()
+        """
+        data = self._data.crossJoin(other=other)
+        return DataStream(data=data, metadata=Metadata())
+
+    def crosstab(self, col1, col2):
+        """
+        Computes a pair-wise frequency table of the given columns. Also known as a contingency table. The number of distinct values for each column should be less than 1e4. At most 1e6 non-zero pair frequencies will be returned. The first column of each row will be the distinct values of col1 and the column names will be the distinct values of col2. The name of the first column will be $col1_$col2. Pairs that have no occurrences will have zero as their counts.
+
+        Args:
+            col1 (str): The name of the first column. Distinct items will make the first item of each row.
+            col2 (str): The name of the second column. Distinct items will make the column names of the DataStream.
+
+        Returns:
+            DataStream object
+
+        Examples:
+            >>> ds.crosstab("col_1", "col_2")
+        """
+        data = self._data.crosstab(col1=col1, col2=col2)
+        return DataStream(data=data, metadata=Metadata())
+
+    def crosstab(self, f):
+        """
+        Applies the f function to all Row of DataStream. This is a shorthand for df.rdd.foreach()
+
+        Args:
+            f: function
+
+        Returns:
+            DataStream object
+
+        Examples:
+            >>> def f(person):
+            ...     print(person.name)
+            >>> ds.foreach(f)
+        """
+        data = self._data.foreach(f)
         return DataStream(data=data, metadata=Metadata())
 
     def withColumnRenamed(self, existing, new):
@@ -490,7 +662,6 @@ class DataStream:
 
         data = self._data[columnName].cast(dataType=dataType)
         return DataStream(data=data, metadata=Metadata())
-
 
     def filter(self,  condition):
         """
@@ -610,6 +781,15 @@ class DataStream:
         data = self._data.cov(col1, col2)
         return DataStream(data=data, metadata=Metadata())
 
+    def count(self):
+        """
+        Returns the number of rows in this DataStream.
+
+        Examples:
+            >>> ds.count()
+        """
+        return self._data.count()
+
     def distinct(self):
         """
         Returns a new DataStream containing the distinct rows in this DataStream.
@@ -618,7 +798,7 @@ class DataStream:
             DataStream: this will return a new datastream object with blank metadata
 
         Examples:
-            >>> ds.corr("cal1", "col2", "pearson").collect()
+            >>> ds.distinct().count()
         """
 
         data = self._data.distinct()
