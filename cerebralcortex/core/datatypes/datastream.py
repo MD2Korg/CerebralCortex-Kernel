@@ -420,7 +420,7 @@ class DataStream:
             DataStream object with joined streams
         """
 
-        data = self._data.join(other=other, on=on, how=how)
+        data = self._data.join(other=other._data, on=on, how=how)
         return DataStream(data=data, metadata=Metadata())
 
     def withColumnRenamed(self, existing, new):
