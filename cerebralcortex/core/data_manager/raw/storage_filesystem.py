@@ -244,7 +244,7 @@ class FileSystemStorage:
             >>> CC.list_streams()
         """
         stream_path = self._get_storage_path()
-        return [d.replace("stream=","").replace("study="+self.obj.study_name, "").replace(self.obj.raw_files_dir,"") for d in os.listdir(stream_path) if os.path.isdir(os.path.join(stream_path, d))]
+        return [d.replace("stream=","").replace("study="+self.obj.study_name, "").replace(self.obj.filesystem_path,"") for d in os.listdir(stream_path) if os.path.isdir(os.path.join(stream_path, d))]
 
     def search_stream(self, stream_name)->List[str]:
         """
@@ -260,7 +260,7 @@ class FileSystemStorage:
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
         stream_path = self._get_storage_path()
-        return [d.replace("stream=","") for d in os.listdir(stream_path) if os.path.isdir(os.path.join(stream_path, d)) and stream_name in d]
+        return [d.replace("stream=","") for d in os.listdir(stream_path) if os.path.isdir(os.path.join(stream_path, d)) and stream_name.lower() in d.lower()]
 
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """

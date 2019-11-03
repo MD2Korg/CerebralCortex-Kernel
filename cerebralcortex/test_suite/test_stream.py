@@ -45,29 +45,28 @@ class DataStreamTest:
 
         self.assertEqual(result, True)
 
-    # def test_02_stream(self):
-    #     all_streams = self.CC.list_streams()
-    #     searched_streams = self.CC.search_stream(stream_name="battery")
-    # 
-    #     self.assertEqual(len(all_streams),1)
-    #     self.assertEqual(all_streams[0].name,self.stream_name)
-    #     self.assertEqual(all_streams[0].metadata_hash,self.metadata_hash)
-    # 
-    #     self.assertEqual(len(searched_streams),2)
-    #     self.assertEqual(searched_streams[0],self.stream_name)
-    # 
-    # def test_04_test_datafram_operations(self):
-    #     ds = self.CC.get_stream(self.stream_name)
-    #     avg_ds = ds.compute_average()
-    #     data = avg_ds.collect()
-    #     self.assertEqual(len(data),17)
-    #     self.assertEqual(data[0][2],92.18333333333334)
-    # 
-    #     ds = self.CC.get_stream(self.stream_name)
-    #     window_ds = ds.window()
-    #     data = window_ds.collect()
-    #     self.assertEqual(len(data),17)
-    #     self.assertEqual(len(data[0][2]), 60)
+    def test_02_stream(self):
+        all_streams = self.CC.list_streams()
+        searched_streams = self.CC.search_stream(stream_name="battery")
+
+        self.assertEqual(len(all_streams),1)
+        self.assertEqual(all_streams[0],self.stream_name)
+
+        self.assertEqual(len(searched_streams),1)
+        self.assertEqual(searched_streams[0],self.stream_name)
+
+    def test_04_test_datafram_operations(self):
+        ds = self.CC.get_stream(self.stream_name)
+        avg_ds = ds.compute_average()
+        data = avg_ds.collect()
+        self.assertEqual(len(data.data),1)
+        self.assertEqual(data.data[0][1],95.44044044044044)
+
+        ds = self.CC.get_stream(self.stream_name)
+        window_ds = ds.window()
+        data = window_ds.collect()
+        self.assertEqual(len(data.data),17)
+        self.assertEqual(len(data.data[0][2]), 2)
 
         
     

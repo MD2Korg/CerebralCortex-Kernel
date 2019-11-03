@@ -57,6 +57,7 @@ class DataStream:
         self._basic_plots = BasicPlots()
         self._stress_plots = StressStreamPlots()
 
+
     def get_metadata(self, version:int=None)->Metadata:
         """
         get stream metadata
@@ -123,7 +124,7 @@ class DataStream:
     #############################################################################
 
     # !!!!                                  HELPER METHODS                           !!!
-    def to_pandas(self):
+    def toPandas(self):
         """
         This method converts pyspark dataframe into pandas dataframe.
 
@@ -396,9 +397,9 @@ class DataStream:
             Datastream:
 
         Examples:
-            >>> df4.na.replace(10, 20).show()
-            >>> df4.na.replace('some-str', None).show()
-            >>> df4.na.replace(['old_val1', 'new_val1'], ['old_val2', 'new_val2'], 'col_name').show()
+            >>> ds.na.replace(10, 20).show()
+            >>> ds.na.replace('some-str', None).show()
+            >>> ds.na.replace(['old_val1', 'new_val1'], ['old_val2', 'new_val2'], 'col_name').show()
 
         """
         data = self._data.replace(to_replace, value, subset)
@@ -802,7 +803,41 @@ class DataStream:
         data = self._data.distinct()
         return DataStream(data=data, metadata=Metadata())
 
+    def select(self, *cols):
+        """
+        Projects a set of expressions and returns a new DataStream
 
+        Args:
+            cols(str): list of column names (string) or expressions (Column). If one of the column names is ‘*’, that column is expanded to include all columns in the current DataStream
+
+        Returns:
+            DataStream: this will return a new datastream object with selected columns
+
+        Examples:
+            >>> ds.select('*')
+            >>> ds.select('name', 'age')
+            >>> ds.select(df.name, (df.age + 10).alias('age'))
+        """
+
+        data = self._data.select(*cols)
+        return DataStream(data=data, metadata=Metadata())
+
+    def selectExpr(self, *expr):
+        """
+        This is a variant of select() that accepts SQL expressions. Projects a set of expressions and returns a new DataStream
+
+        Args:
+            expr(str):
+
+        Returns:
+            DataStream: this will return a new datastream object with selected columns
+
+        Examples:
+            >>> ds.selectExpr("age * 2")
+        """
+
+        data = self._data.selectExpr(*expr)
+        return DataStream(data=data, metadata=Metadata())
 
     # def win(self, udfName):
     #     self._data = self._data.groupBy(['owner', F.window("timestamp", "60 seconds")]).apply(udfName)
@@ -885,6 +920,25 @@ class DataStream:
 
         """
         data = self._data.sort(*cols, **kwargs)
+        return DataStream(data=data, metadata=Metadata())
+
+    def alias(self, *alias, **kwargs):
+        """
+        Returns this column aliased with a new name or names (in the case of expressions that return more than one column, such as explode)
+
+        Args:
+            alias: strings of desired column names (collects all positional arguments passed)
+            metadata: a dict of information to be stored in metadata attribute of the corresponding :class: StructField (optional, keyword only argument)
+
+        Returns:
+            object: DataStream object
+
+        Examples:
+            >>> ds.select(df.age.alias("age2"))
+            >>> ds.select(df.age.alias("age3", metadata={'max': 99})).schema['age3'].metadata['max']
+
+        """
+        data = self._data.alias(*alias, **kwargs)
         return DataStream(data=data, metadata=Metadata())
 
     # def run_algo(self, udfName, windowSize:str="1 minute"):
