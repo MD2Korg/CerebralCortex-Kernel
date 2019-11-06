@@ -47,7 +47,7 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage):
         self.config = CC.config
         self.sql_data = CC.SqlData
 
-        self.study_name = CC.study_name
+        self.study_name = CC.study_name.lower()
         self.new_study = CC.new_study
 
         self.logging = CC.logging

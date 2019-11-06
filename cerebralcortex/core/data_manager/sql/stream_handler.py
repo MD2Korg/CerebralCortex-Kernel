@@ -316,7 +316,7 @@ class StreamHandler:
 
         if (status == "new"):
             qry = "INSERT IGNORE INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
-            vals = str(stream_name), str(version), str(metadata_hash), json.dumps(metadata_obj)
+            vals = str(stream_name).lower(), str(version), str(metadata_hash), json.dumps(metadata_obj).lower()
             isQueryReady = 1
 
             # if nothing is changed then isQueryReady would be 0 and no database transaction would be performed

@@ -59,14 +59,14 @@ class DataStreamTest:
         ds = self.CC.get_stream(self.stream_name)
         avg_ds = ds.compute_average()
         data = avg_ds.collect()
-        self.assertEqual(len(data.data),1)
-        self.assertEqual(data.data[0][1],95.44044044044044)
+        self.assertEqual(len(data),1)
+        self.assertEqual(data[0][1],95.44044044044044)
 
         ds = self.CC.get_stream(self.stream_name)
         window_ds = ds.window_ds()
         data = window_ds.collect()
-        self.assertEqual(len(data.data),17)
-        self.assertEqual(len(data.data[0][2]), 2)
+        self.assertEqual(len(data),17)
+        self.assertEqual(len(data[0][2]), 2)
 
         
     

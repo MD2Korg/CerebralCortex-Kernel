@@ -131,7 +131,7 @@ class FileSystemStorage:
     def write_spark_dataframe(self, stream_name, data,file_mode):
         hdfs_url = self._get_storage_path(stream_name)
         try:
-            data.write.partitionBy(["version","user"]).format('parquet').mode(file_mode).save(hdfs_url)
+            data.coalesce(1).write.partitionBy(["version","user"]).format('parquet').mode(file_mode).save(hdfs_url)
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
@@ -276,7 +276,7 @@ class FileSystemStorage:
             >>> ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST
         """
         stream_name = self.obj.sql_data.get_stream_name(metadata_hash)
-        stream_path = self._get_storage_path(stream_name=stream_name)
+        #stream_path = self._get_storage_path(stream_name=stream_name)
         if self.is_stream(stream_name):
             return stream_name
         else:

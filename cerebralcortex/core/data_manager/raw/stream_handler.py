@@ -70,6 +70,7 @@ class StreamHandler():
         if stream_name is None or stream_name=="":
             raise ValueError("stream_name cannot be None or empty")
 
+        stream_name = stream_name.lower()
 
         if not self.sql_data.is_stream(stream_name):
             print(stream_name, " does not exist.")
@@ -130,6 +131,7 @@ class StreamHandler():
         data = datastream.data
         if metadata:
             stream_name = metadata.name # only supports one data-stream storage at a time
+            stream_name = stream_name.lower()
             if not stream_name:
                 raise ValueError("Stream name cannot be empty/None. Check metadata.")
             metadata = self.__update_data_desciptor(data=data, metadata=metadata)

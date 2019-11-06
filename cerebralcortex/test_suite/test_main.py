@@ -55,7 +55,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
 
         # TEST-PARAMS
         # sql/nosql params
-        self.stream_name = "BATTERY--org.md2k.phonesensor--PHONE"
+        self.stream_name = "battery--org.md2k.phonesensor--phone"
         self.stream_version = 1
         self.metadata_hash = "96816db3-ce79-37a8-bfe2-034db8c56a6d"
         self.username = "test_user"
