@@ -38,7 +38,7 @@ from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
-from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
+
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
@@ -101,6 +101,7 @@ class Kernel:
             self.TimeSeriesData = TimeSeriesData(self)
 
         if self.config["messaging_service"] != "none":
+            from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
             self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
 
     ###########################################################################
