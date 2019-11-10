@@ -63,7 +63,7 @@ class DataStreamTest:
         self.assertEqual(data.data[0][1],95.44044044044044)
 
         ds = self.CC.get_stream(self.stream_name)
-        window_ds = ds.window_ds()
+        window_ds = ds.window()
         data = window_ds.collect()
         self.assertEqual(len(data.data),17)
         self.assertEqual(len(data.data[0][2]), 2)
@@ -75,7 +75,7 @@ class DataStreamTest:
             return lst[0]
         sum_vals_udf = F.udf(get_val)
         ds = self.CC.get_stream(self.stream_name)
-        win_ds = ds.window_ds()
+        win_ds = ds.window()
 
         # convert window stream as quality stream for next step
         win_df=win_ds.data.withColumn("some_val", sum_vals_udf(win_ds.data["battery_level"])).drop("battery_level")

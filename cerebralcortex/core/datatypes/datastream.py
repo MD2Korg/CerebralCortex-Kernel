@@ -246,8 +246,8 @@ class DataStream(DataFrame):
 
     # !!!!                              WINDOWING METHODS                           !!!
 
-    def window_ds(self, windowDuration: int = 60, groupByColumnName: List[str] = [], columnName: List[str] = [],
-                  slideDuration: int = None, startTime=None, preserve_ts=False):
+    def window(self, windowDuration: int = 60, groupByColumnName: List[str] = [], columnName: List[str] = [],
+               slideDuration: int = None, startTime=None, preserve_ts=False):
         """
         Window data into fixed length chunks. If no columnName is provided then the windowing will be performed on all the columns.
 
