@@ -59,14 +59,14 @@ class DataStreamTest:
         ds = self.CC.get_stream(self.stream_name)
         avg_ds = ds.compute_average()
         data = avg_ds.collect()
-        self.assertEqual(len(data),1)
-        self.assertEqual(data[0][1],95.44044044044044)
+        self.assertEqual(len(data.data),1)
+        self.assertEqual(data.data[0][1],95.44044044044044)
 
         ds = self.CC.get_stream(self.stream_name)
         window_ds = ds.window_ds()
         data = window_ds.collect()
-        self.assertEqual(len(data),17)
-        self.assertEqual(len(data[0][2]), 2)
+        self.assertEqual(len(data.data),17)
+        self.assertEqual(len(data.data[0][2]), 2)
 
         
     
@@ -90,49 +90,48 @@ class DataStreamTest:
         ])
         @pandas_udf(schema, PandasUDFType.GROUPED_MAP)  # doctest: +SKIP
         def mean_udf(v):
-            print(v.dtypes)
-            all_cols = [99,23,1.3,2.5]
+            all_cols = [[99,23,1.3]]
             df = pd.DataFrame(all_cols, columns=['mean', 'val_1', 'val_2'])
             return df
         win_ds=DataStream(data=win_ds.data.drop("window"), metadata=Metadata())
-        new_ds = win_ds.groupby("user").compute(mean_udf)
+        new_ds = win_ds.compute(mean_udf)
         print(new_ds.data.columns)
         sd = new_ds.collect()
         df = win_df.withColumn("quality", F.when(win_df.some_val > 97, 1).otherwise(0)).drop("some_val")
         win_quality_ds = DataStream(data=df, metadata=Metadata())
 
         mapped_stream = ds.map_stream(win_quality_ds)
-        filtered_stream = mapped_stream.filter("quality", "=", 0)
+        filtered_stream = mapped_stream.filter("quality==0")
         bad_quality = filtered_stream.collect()
         self.assertEqual(len(bad_quality.data), 710)
 
 
-    # def test_03_get_stream(self):
-    #     """
-    #     Test functionality related to get a stream
-    # 
-    #     """
-    #     ds = self.CC.get_stream(self.stream_name)
-    #     data = ds.data
-    #     metadata = ds.metadata[0]
-    # 
-    #     datapoint = data.take(1)
-    # 
-    #     self.assertEqual(datapoint[0][0], datetime(2019, 1, 9, 11, 49, 28))
-    #     self.assertEqual(datapoint[0][1], 92)
-    #     self.assertEqual(datapoint[0][2], 1)
-    #     self.assertEqual(datapoint[0][3], self.user_id)
-    #     self.assertEqual(data.count(), 999)
-    # 
-    #     self.assertEqual(len(metadata.data_descriptor), 1)
-    #     self.assertEqual(len(metadata.modules), 1)
-    # 
-    #     self.assertEqual(metadata.metadata_hash, self.metadata_hash)
-    #     self.assertEqual(metadata.name, self.stream_name)
-    #     self.assertEqual(metadata.version, int(self.stream_version))
-    #     self.assertEqual(metadata.data_descriptor[0].name, 'battery_level')
-    #     self.assertEqual(metadata.data_descriptor[0].type, 'LongType')
-    #     self.assertEqual(metadata.data_descriptor[0].attributes.get("description"), 'current battery charge')
-    #     self.assertEqual(metadata.modules[0].name, 'battery')
-    #     self.assertEqual(metadata.modules[0].version, '1.2.4')
-    #     self.assertEqual(metadata.modules[0].authors[0].get("test_user"), 'test_user@test_email.com')
+    def test_03_get_stream(self):
+        """
+        Test functionality related to get a stream
+
+        """
+        ds = self.CC.get_stream(self.stream_name)
+        data = ds
+        metadata = ds.metadata[0]
+
+        datapoint = data.take(1)
+
+        self.assertEqual(datapoint[0][0], datetime(2019, 1, 9, 11, 35))
+        self.assertEqual(datapoint[0][1], 100)
+        self.assertEqual(datapoint[0][2], 1)
+        self.assertEqual(datapoint[0][3], self.user_id)
+        self.assertEqual(data.count(), 999)
+
+        self.assertEqual(len(metadata.data_descriptor), 1)
+        self.assertEqual(len(metadata.modules), 1)
+
+        self.assertEqual(metadata.metadata_hash, self.metadata_hash)
+        self.assertEqual(metadata.name, self.stream_name)
+        self.assertEqual(metadata.version, int(self.stream_version))
+        self.assertEqual(metadata.data_descriptor[0].name, 'battery_level')
+        self.assertEqual(metadata.data_descriptor[0].type, 'longtype')
+        self.assertEqual(metadata.data_descriptor[0].attributes.get("description"), 'current battery charge')
+        self.assertEqual(metadata.modules[0].name, 'battery')
+        self.assertEqual(metadata.modules[0].version, '1.2.4')
+        self.assertEqual(metadata.modules[0].authors[0].get("test_user"), 'test_user@test_email.com')

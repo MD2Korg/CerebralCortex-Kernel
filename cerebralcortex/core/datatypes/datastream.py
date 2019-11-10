@@ -340,21 +340,13 @@ class DataStream(DataFrame):
         data = self._data.where(self._data["version"].isin(version))
         return DataStream(data=data, metadata=Metadata())
 
-    def compute(self, udfName, timeInterval=None):
-        if 'custom_window' in self._data.columns:
-            data = self._data.groupby('user', 'custom_window').apply(udfName)
-        else:
-            data = self._data.groupby('user').apply(udfName)
-        return DataStream(data=data, metadata=Metadata())
-
-    def run_algorithm(self, udfName, columnNames: List[str] = [], windowDuration: int = 60, slideDuration: int = None,
+    def compute(self, udfName, windowDuration: int = 60, slideDuration: int = None,
                       groupByColumnName: List[str] = [], startTime=None):
         """
         Run an algorithm. This method supports running an udf method on windowed data
 
         Args:
             udfName: Name of the algorithm
-            columnName List[str]: column names on which windowing should be performed. Windowing will be performed on all columns if none is provided
             windowDuration (int): duration of a window in seconds
             slideDuration (int): slide duration of a window
             groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
@@ -363,40 +355,80 @@ class DataStream(DataFrame):
             DataStream: this will return a new datastream object with blank metadata
 
         """
-        windowDuration = str(windowDuration) + " seconds"
-        groupbycols = ["user", "version"]
+        if 'custom_window' in self._data.columns:
+            data = self._data.groupby('user', 'custom_window').apply(udfName)
+        else:
+            windowDuration = str(windowDuration) + " seconds"
+            groupbycols = ["user", "version"]
 
-        win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
+            win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
 
-        if len(groupByColumnName) > 0:
-            groupbycols.extend(groupByColumnName)
+            if len(groupByColumnName) > 0:
+                groupbycols.extend(groupByColumnName)
 
-        groupbycols.append(win)
+            groupbycols.append(win)
 
-        # if len(columnNames) == 0:
-        #     raise ValueError("columnNames list cannot be empty.")
+            data = self._data.groupBy(groupbycols).apply(udfName)
 
-        # tmp = ""
-        # for col in columnNames:
-        #     tmp += "collect_list({}{}{}){}".format('"', col, '"', ",")
+        return DataStream(data=data, metadata=Metadata())
 
-        # tmp = "{}{}{}{}".format("udfName", "(", tmp.rstrip(","), ")")
-        merged_column = self._data.groupBy(groupbycols).apply(udfName)
+    # def compute(self, udfName, timeInterval=None):
+    #     if 'custom_window' in self._data.columns:
+    #         data = self._data.groupby('user', 'custom_window').apply(udfName)
+    #     else:
+    #         data = self._data.groupby('user','version').apply(udfName)
+    #     return DataStream(data=data, metadata=Metadata())
 
-        # cols = merged_column.schema.fields
-        # new_cols = ["timestamp"]
-        # for col in cols:
-        #     if col.name == "merged_column":
-        #         for cl in col.dataType.names:
-        #             new_cols.append("merged_column." + cl)
-        #     else:
-        #         new_cols.append(col.name)
-        #
-        # merged_column = merged_column.withColumn("timestamp", merged_column.window.start)
-        #
-        # data = merged_column.select(new_cols)
-
-        return DataStream(data=merged_column, metadata=Metadata())
+    # def run_algorithm(self, udfName, columnNames: List[str] = [], windowDuration: int = 60, slideDuration: int = None,
+    #                   groupByColumnName: List[str] = [], startTime=None):
+    #     """
+    #     Run an algorithm. This method supports running an udf method on windowed data
+    #
+    #     Args:
+    #         udfName: Name of the algorithm
+    #         columnName List[str]: column names on which windowing should be performed. Windowing will be performed on all columns if none is provided
+    #         windowDuration (int): duration of a window in seconds
+    #         slideDuration (int): slide duration of a window
+    #         groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
+    #         startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+    #     Returns:
+    #         DataStream: this will return a new datastream object with blank metadata
+    #
+    #     """
+    #     windowDuration = str(windowDuration) + " seconds"
+    #     groupbycols = ["user", "version"]
+    #
+    #     win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
+    #
+    #     if len(groupByColumnName) > 0:
+    #         groupbycols.extend(groupByColumnName)
+    #
+    #     groupbycols.append(win)
+    #
+    #     # if len(columnNames) == 0:
+    #     #     raise ValueError("columnNames list cannot be empty.")
+    #
+    #     # tmp = ""
+    #     # for col in columnNames:
+    #     #     tmp += "collect_list({}{}{}){}".format('"', col, '"', ",")
+    #
+    #     # tmp = "{}{}{}{}".format("udfName", "(", tmp.rstrip(","), ")")
+    #     merged_column = self._data.groupBy(groupbycols).apply(udfName)
+    #
+    #     # cols = merged_column.schema.fields
+    #     # new_cols = ["timestamp"]
+    #     # for col in cols:
+    #     #     if col.name == "merged_column":
+    #     #         for cl in col.dataType.names:
+    #     #             new_cols.append("merged_column." + cl)
+    #     #     else:
+    #     #         new_cols.append(col.name)
+    #     #
+    #     # merged_column = merged_column.withColumn("timestamp", merged_column.window.start)
+    #     #
+    #     # data = merged_column.select(new_cols)
+    #
+    #     return DataStream(data=merged_column, metadata=Metadata())
 
     def _get_column_names(self, columnName: List[str], methodName: str, preserve_ts: bool = False):
         """
@@ -1069,6 +1101,19 @@ class DataStream(DataFrame):
             >>> ds.select("col1", "col2").summary("count").show()
         """
         self._data.summary()
+
+    def take(self,num):
+        """
+        Returns the first num rows as a list of Row.
+
+        Returns:
+            Row(list): row(s) of a DataStream
+
+        Examples:
+            >>> ds.take()
+        """
+
+        return self._data.take(num=num)
 
     def toPandas(self):
         """
