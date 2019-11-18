@@ -38,23 +38,27 @@ from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
-from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
+
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 class Kernel:
 
-    def __init__(self, configs_dir_path: str = None, auto_offset_reset: str = "largest", enable_spark:bool=True, enable_spark_ui=False):
+    def __init__(self, configs_dir_path: str, study_name:str, new_study:bool=False, auto_offset_reset: str = "largest", enable_spark:bool=True, enable_spark_ui=False):
         """
         CerebralCortex constructor
 
         Args:
-            configuration_filepath (str): Directory path of cerebralcortex configurations.
+            configs_dir_path (str): Directory path of cerebralcortex configurations.
+            study_name (str): name of the study. If there is no study, you can pass study name as study_name="default"
+            new_study (bool): create a new study with study_name if it does not exist
             auto_offset_reset (str): Kafka offset. Acceptable parameters are smallest or largest (default=largest)
+            enable_spark (bool): enable spark
+            enable_spark_ui (bool): enable spark ui
         Raises:
             ValueError: If configuration_filepath is None or empty.
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
         """
         if configs_dir_path is None or configs_dir_path == "":
             raise ValueError("config_file path cannot be None or blank.")
@@ -68,7 +72,13 @@ class Kernel:
             self.sqlContext = None
             self.sparkSession = None
 
+        self.new_study = new_study
+
+        if not study_name:
+            raise Exception("Study name cannot be None.")
+
         self.config_filepath = configs_dir_path
+        self.study_name = study_name
         self.config = Configuration(configs_dir_path).config
 
         self.debug = self.config["cc"]["debug"]
@@ -80,14 +90,18 @@ class Kernel:
         self.MessagingQueue = None
         self.TimeSeriesData = None
 
+
         warnings.simplefilter('always', DeprecationWarning)
 
 
+        if not new_study and not self.RawData.nosql.is_study():
+            raise Exception("Study name does not exist.")
 
         if self.config["visualization_storage"] != "none":
             self.TimeSeriesData = TimeSeriesData(self)
 
-        if enable_spark and self.config["messaging_service"] != "none":
+        if self.config["messaging_service"] != "none":
+            from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
             self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
 
     ###########################################################################
@@ -107,7 +121,7 @@ class Kernel:
         Todo:
             Add functionality to store data in influxdb.
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> ds = DataStream(dataframe, MetaData)
             >>> CC.save_stream(ds)
         """
@@ -129,7 +143,7 @@ class Kernel:
         Note:
             Please specify a version if you know the exact version of a stream. Getting all the stream data and then filtering versions won't be efficient.
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> ds = CC.get_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> ds.data # an object of a dataframe
             >>> ds.metadata # an object of MetaData class
@@ -153,7 +167,7 @@ class Kernel:
         Todo:
             This needs to be updated with the new structure. Should metadata be stored or not?
         Example:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> ds = DataStream(dataframe, MetaData)
             >>> CC.save_data_to_influxdb(ds)
         """
@@ -174,11 +188,11 @@ class Kernel:
         Returns:
             bool: True if stream_name exist False otherwise
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.is_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> True
         """
-        return self.SqlData.is_stream(stream_name)
+        return self.RawData.nosql.is_stream(stream_name)
 
     def get_stream_versions(self, stream_name: str) -> list:
         """
@@ -191,11 +205,11 @@ class Kernel:
         Raises:
             ValueError: if stream_name is empty or None
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.get_stream_versions("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> [1, 2, 4]
         """
-        return self.SqlData.get_stream_versions(stream_name)
+        return self.RawData.nosql.get_stream_versions(stream_name)
 
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """
@@ -206,11 +220,11 @@ class Kernel:
         Returns:
             str: name of a stream
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
             >>> ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST
         """
-        return self.SqlData.get_stream_name(metadata_hash)
+        return self.RawData.nosql.get_stream_name(metadata_hash)
 
     def get_stream_metadata_hash(self, stream_name: str) -> list:
         """
@@ -221,13 +235,13 @@ class Kernel:
         Returns:
             list[str]: list of all the metadata hashes
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
-            >>> CC.get_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.get_stream_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
         """
-        return self.SqlData.get_stream_metadata_hash(stream_name)
+        return self.RawData.nosql.get_stream_metadata_hash(stream_name)
 
-    def get_stream_metadata(self, stream_name: str, version:str="all") -> List[Metadata]:
+    def get_stream_metadata_by_name(self, stream_name: str, version:str= "all") -> List[Metadata]:
         """
         Get a list of metadata for all versions available for a stream.
 
@@ -240,13 +254,13 @@ class Kernel:
         Raises:
             ValueError: stream_name cannot be None or empty.
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
-            >>> CC.get_all_users("mperf")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.get_stream_metadata_by_name("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST", version=1)
             >>> [Metadata] # list of MetaData class objects
         """
-        return self.SqlData.get_stream_metadata(stream_name, version)
+        return self.SqlData.get_stream_metadata_by_name(stream_name, version)
 
-    def get_stream_info_by_hash(self, metadata_hash: uuid) -> str:
+    def get_stream_metadata_by_hash(self, metadata_hash: uuid) -> str:
         """
            metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
 
@@ -255,24 +269,24 @@ class Kernel:
            Returns:
                dict: stream metadata and other info related to a stream
            Examples:
-               >>> CC = Kernel("/directory/path/of/configs/")
-               >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
+               >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+               >>> CC.get_stream_metadata_by_hash("00ab666c-afb8-476e-9872-6472b4e66b68")
                >>> {"name": .....} # stream metadata and other information
        """
-        return self.SqlData.get_stream_info_by_hash(metadata_hash=metadata_hash)
+        return self.SqlData.get_stream_metadata_by_hash(metadata_hash=metadata_hash)
 
-    def list_streams(self)->List[Metadata]:
+    def list_streams(self)->List[str]:
         """
         Get all the available stream names with metadata
 
         Returns:
-            List[Metadata]: list of available streams metadata
+            List[str]: list of available streams metadata
 
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.list_streams()
         """
-        return self.SqlData.list_streams()
+        return self.RawData.nosql.list_streams()
 
     def search_stream(self, stream_name):
         """
@@ -283,12 +297,12 @@ class Kernel:
             List[str]: list of stream names similar to stream_name arg
 
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.search_stream("battery")
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
 
-        return self.SqlData.search_stream(stream_name=stream_name)
+        return self.RawData.nosql.search_stream(stream_name=stream_name)
 
     ################### USER RELATED METHODS ##################################
 
@@ -336,7 +350,7 @@ class Kernel:
         Raises:
             ValueError: Both user_id and user_name cannot be None or empty.
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.is_user(user_id="76cc444c-4fb8-776e-2872-9472b4e66b16")
             >>> True
         """
@@ -353,7 +367,7 @@ class Kernel:
         Raises:
             ValueError: User name is a required field.
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.get_user_id("nasir_ali")
             >>> '76cc444c-4fb8-776e-2872-9472b4e66b16'
         """
@@ -370,28 +384,28 @@ class Kernel:
         Raises:
             ValueError: User ID is a required field.
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.get_user_name("76cc444c-4fb8-776e-2872-9472b4e66b16")
             >>> 'nasir_ali'
         """
         return self.SqlData.get_user_name(user_id)
 
-    def get_all_users(self, study_name: str) -> List[dict]:
+    def list_users(self) -> List[dict]:
         """
         Get a list of all users part of a study.
 
         Args:
-            study_name (str): name of a study
+            study_name (str): name of a study. If no study_name is provided then all users' list will be returned
         Raises:
             ValueError: Study name is a requied field.
         Returns:
             list[dict]: Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
-            >>> CC.get_all_users("mperf")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.list_users()
             >>> [{"76cc444c-4fb8-776e-2872-9472b4e66b16": "nasir_ali"}] # [{user_id, user_name}]
         """
-        return self.SqlData.get_all_users(study_name)
+        return self.SqlData.list_users()
 
     def get_user_metadata(self, user_id: str = None, username: str = None)  -> dict:
         """
@@ -407,7 +421,7 @@ class Kernel:
         Raises:
             ValueError: User ID/name cannot be empty.
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.get_user_metadata(username="nasir_ali")
             >>> {"study_name":"mperf"........}
         """
@@ -427,7 +441,7 @@ class Kernel:
         Raises:
             ValueError: User ID/name cannot be empty.
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.get_user_settings(username="nasir_ali")
             >>> [{"mcerebrum":"some-conf"........}]
         """
@@ -446,7 +460,7 @@ class Kernel:
         Returns:
             dict: return eturn {"status":bool, "auth_token": str, "msg": str}
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.connect("nasir_ali", "2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234", True)
             >>> True
         """
@@ -516,7 +530,7 @@ class Kernel:
 
     ################### KAFKA RELATED METHODS ##################################
 
-    def store_or_update_Kafka_offset(self, topic: str, topic_partition: str, offset_start: str, offset_until: str)->bool:
+    def store_or_update_Kafka_offset(self, topic_partition: str, offset_start: str, offset_until: str)->bool:
         """
         Store or Update kafka topic offsets. Offsets are used to track what messages have been processed.
 
@@ -532,25 +546,22 @@ class Kernel:
             bool: returns True if offsets are add/updated or throws an exception.
 
         """
-        self.SqlData.store_or_update_Kafka_offset(topic, topic_partition, offset_start, offset_until)
+        self.SqlData.store_or_update_Kafka_offset(topic_partition, offset_start, offset_until)
 
-    def get_kafka_offsets(self, topic: str) -> dict:
+    def get_kafka_offsets(self) -> List[dict]:
         """
         Get last stored kafka offsets
-
-        Args:
-            topic (str): kafka topic name
 
         Returns:
             list[dict]: list of kafka offsets. This method will return empty list if topic does not exist and/or no offset is stored for the topic.
         Raises:
             ValueError: Topic name cannot be empty/None
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.get_kafka_offsets("live-data")
             >>> [{"id","topic", "topic_partition", "offset_start", "offset_until", "offset_update_time"}]
         """
-        return self.SqlData.get_kafka_offsets(topic)
+        return self.SqlData.get_kafka_offsets()
 
     ###########################################################################
     #                      OBJECTS DATA MANAGER METHODS                       #
@@ -567,7 +578,7 @@ class Kernel:
         Raises:
             ValueError: Bucket name cannot be empty/None.
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/")
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.create_bucket("live_data_folder")
             >>> True
         """
@@ -653,7 +664,7 @@ class Kernel:
         """
         return self.ObjectData.is_bucket(bucket_name)
 
-    def is_object(self, bucket_name: str, object_name: str) -> bool:
+    def is_object(self, bucket_name: str, object_name: str) -> dict:
         """
         checks whether an object exist in a bucket
 
@@ -672,12 +683,11 @@ class Kernel:
     #                      Kafka consumer producer                            #
     ###########################################################################
 
-    def kafka_produce_message(self, topic: str, msg: dict):
+    def kafka_produce_message(self, msg: dict):
         """
         Publish a message on kafka message queue
 
         Args:
-            topic (str): name of the kafka topic
             msg (dict): message that needs to published on kafka
         Returns:
             bool: True if successful. In case of failure, it returns an Exception message.
@@ -686,20 +696,18 @@ class Kernel:
             Exception: Error publishing message. Topic: topic_name - error-message
 
         """
-        self.MessagingQueue.produce_message(topic, msg)
+        self.MessagingQueue.produce_message(msg)
 
-    def kafka_subscribe_to_topic(self, topic: str):
+    def kafka_subscribe_to_topic(self):
         """
         Subscribe to kafka topic as a consumer
 
-        Args:
-            topic (str): name of the kafka topic
         Yields:
              dict: kafka message
         Raises:
             ValueError: Topic parameter is missing.
         """
-        return self.MessagingQueue.subscribe_to_topic(topic)
+        return self.MessagingQueue.subscribe_to_topic()
 
     ################### CACHE RELATED METHODS ##################################
 

@@ -5,7 +5,7 @@ PyYAML==4.2b1
 minio==2.2.4
 kafka-python==1.4.5
 influxdb==5.2.1
-pyarrow==0.11.1
+pyarrow==0.14.1
 pympler==0.5
 hdfs3==0.3.0
 pyspark==2.4.3

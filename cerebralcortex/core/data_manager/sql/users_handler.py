@@ -66,8 +66,8 @@ class UserHandler():
         user_uuid = str(username)+str(user_role)+str(user_metadata)
         user_uuid = str(uuid.uuid3(uuid.NAMESPACE_DNS, user_uuid))
         encrypted_password = self.encrypt_user_password(user_password)
-        qry = "INSERT INTO " + self.userTable + " (user_id, username, password, user_role, user_metadata,user_settings) VALUES(%s, %s, %s, %s, %s, %s)"
-        vals = str(user_uuid), str(username), str(encrypted_password), str(user_role), json.dumps(user_metadata), json.dumps(user_settings)
+        qry = "INSERT IGNORE INTO " + self.userTable + " (user_id, username, password, study_name, user_role, user_metadata,user_settings) VALUES(%s, %s, %s, %s, %s, %s, %s)"
+        vals = str(user_uuid), str(username), str(encrypted_password), str(self.study_name), str(user_role), json.dumps(user_metadata), json.dumps(user_settings)
 
         try:
             self.execute(qry, vals, commit=True)
@@ -89,8 +89,8 @@ class UserHandler():
         """
         if not username:
             raise ValueError("username cannot be empty/None.")
-        qry = "delete from "+self.userTable+ " where username=%(username)s"
-        vals = {"username": str(username)}
+        qry = "delete from "+self.userTable+ " where username=%s and study_name=%s"
+        vals = str(username), str(self.study_name)
         try:
             self.execute(qry, vals, commit=True)
         except Exception as e:
@@ -119,14 +119,14 @@ class UserHandler():
             raise ValueError("User ID/name cannot be empty.")
 
         if user_id and not username:
-            qry = "select user_metadata from user where user_id=%(user_id)s"
-            vals = {"user_id": str(user_id)}
+            qry = "select user_metadata from user where user_id=%s and study_name=%s"
+            vals = str(user_id), self.study_name
         elif not user_id and username:
-            qry = "select user_metadata from user where username=%(username)s"
-            vals = {"username": str(username)}
+            qry = "select user_metadata from user where username=%s and study_name=%s"
+            vals = str(username), self.study_name
         else:
-            qry = "select user_metadata from user where user_id=%s and username=%s"
-            vals = str(user_id), str(username)
+            qry = "select user_metadata from user where user_id=%s and username=%s and study_name=%s"
+            vals = str(user_id), str(username), self.study_name
 
         rows = self.execute(qry, vals)
         if len(rows) > 0:
@@ -157,14 +157,14 @@ class UserHandler():
             raise ValueError("User ID or auth token cannot be empty.")
 
         if username and not auth_token:
-            qry = "select user_id, username, user_settings from user where username=%(username)s"
-            vals = {"username": str(username)}
+            qry = "select user_id, username, user_settings from user where username=%s and study_name=%s"
+            vals = str(username), self.study_name
         elif not username and auth_token:
-            qry = "select user_id, username, user_settings from user where token=%(token)s"
-            vals = {"token": str(auth_token)}
+            qry = "select user_id, username, user_settings from user where token=%s and study_name=%s"
+            vals = str(auth_token), self.study_name
         else:
-            qry = "select user_id, username, user_settings from user where username=%s and token=%s"
-            vals = str(username), str(auth_token)
+            qry = "select user_id, username, user_settings from user where username=%s and token=%s and study_name=%s"
+            vals = str(username), str(auth_token), self.study_name
 
         rows = self.execute(qry, vals)
         if len(rows) > 0:
@@ -195,8 +195,8 @@ class UserHandler():
         if not encrypted_password:
             password = self.encrypt_user_password(password)
 
-        qry = "select * from user where username=%s and password=%s"
-        vals = username, password
+        qry = "select * from user where username=%s and password=%s and study_name=%s"
+        vals = username, password, self.study_name
 
         rows = self.execute(qry, vals)
 
@@ -229,8 +229,8 @@ class UserHandler():
         if not auth_token:
             raise ValueError("Auth token cannot be null/empty.")
 
-        qry = "select * from user where token=%s and username=%s"
-        vals = auth_token, username
+        qry = "select * from user where token=%s and username=%s and study_name=%s"
+        vals = auth_token, username, self.study_name
 
         rows = self.execute(qry, vals)
 
@@ -248,28 +248,25 @@ class UserHandler():
             else:
                 return True
 
-    def get_all_users(self, study_name: str) -> List[dict]:
+    def list_users(self) -> List[dict]:
         """
         Get a list of all users part of a study.
 
         Args:
-            study_name (str): name of a study
+            study_name (str): name of a study. If no study_name is provided then all users' list will be returned
         Raises:
             ValueError: Study name is a requied field.
         Returns:
             list[dict]: Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
-            >>> CC.get_all_users("mperf")
+            >>> CC.list_users("mperf")
             >>> [{"76cc444c-4fb8-776e-2872-9472b4e66b16": "nasir_ali"}] # [{user_id, user_name}]
         """
-        if not study_name:
-            raise ValueError("Study name is a requied field.")
 
         results = []
-        qry = 'SELECT user_id, username FROM ' + self.userTable + ' where user_metadata->"$.study_name"=%(study_name)s'
-        vals = {'study_name': str(study_name)}
-
+        qry = 'SELECT user_id, username FROM ' + self.userTable +" where study_name=%(study_name)s"
+        vals = {"study_name": self.study_name}
         rows = self.execute(qry, vals)
 
         if len(rows) == 0:
@@ -297,8 +294,8 @@ class UserHandler():
         if not user_id:
             raise ValueError("User ID is a required field.")
 
-        qry = "select username from " + self.userTable + " where user_id = %(user_id)s"
-        vals = {'user_id': str(user_id)}
+        qry = "select username from " + self.userTable + " where user_id = %s and study_name=%s"
+        vals = str(user_id), self.study_name
 
         rows = self.execute(qry, vals)
 
@@ -324,14 +321,14 @@ class UserHandler():
             >>> True
         """
         if user_id and user_name:
-            qry = "select username from " + self.userTable + " where user_id = %s and username=%s"
-            vals = str(user_id), user_name
+            qry = "select username from " + self.userTable + " where user_id = %s and username=%s and study_name=%s"
+            vals = str(user_id), user_name, self.study_name
         elif user_id and not user_name:
-            qry = "select username from " + self.userTable + " where user_id = %(user_id)s"
-            vals = {'user_id': str(user_id)}
+            qry = "select username from " + self.userTable + " where user_id = %s and study_name=%s"
+            vals = str(user_id), self.study_name
         elif not user_id and user_name:
-            qry = "select username from " + self.userTable + " where username = %(username)s"
-            vals = {'username': str(user_name)}
+            qry = "select username from " + self.userTable + " where username = %s and study_name=%s"
+            vals = str(user_name), self.study_name
         else:
             raise ValueError("Both user_id and user_name cannot be None or empty.")
 
@@ -360,8 +357,8 @@ class UserHandler():
         if not user_name:
             raise ValueError("User name is a required field.")
 
-        qry = "select user_id from " + self.userTable + " where username = %(username)s"
-        vals = {'username': str(user_name)}
+        qry = "select user_id from " + self.userTable + " where username = %s and study_name=%s"
+        vals = str(user_name), self.study_name
 
         rows = self.execute(qry, vals)
 
@@ -389,8 +386,8 @@ class UserHandler():
         if not auth_token and not auth_token_expiry_time and not auth_token_issued_time:
             raise ValueError("Auth token and auth-token issue/expiry time cannot be None/empty.")
 
-        qry = "UPDATE " + self.userTable + " set token=%s, token_issued=%s, token_expiry=%s where username=%s"
-        vals = auth_token, auth_token_issued_time, auth_token_expiry_time, username
+        qry = "UPDATE " + self.userTable + " set token=%s, token_issued=%s, token_expiry=%s where username=%s and study_name=%s"
+        vals = auth_token, auth_token_issued_time, auth_token_expiry_time, username, self.study_name
 
         try:
             self.execute(qry, vals, commit=True)

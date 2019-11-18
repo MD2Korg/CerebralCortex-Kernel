@@ -30,6 +30,7 @@ from cerebralcortex.core.data_manager.raw.storage_hdfs import HDFSStorage
 from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
 from cerebralcortex.core.log_manager.log_handler import LogTypes
+import pyarrow as pa
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
@@ -46,6 +47,9 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage):
         self.config = CC.config
         self.sql_data = CC.SqlData
 
+        self.study_name = CC.study_name.lower()
+        self.new_study = CC.new_study
+
         self.logging = CC.logging
         self.nosql_store = self.config['nosql_storage']
 
@@ -60,9 +64,14 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage):
             self.hdfs_port = self.config['hdfs']['port']
             self.hdfs_spark_url = "hdfs://"+str(self.hdfs_ip)+":"+str(self.hdfs_port)+"/"
             self.raw_files_dir = self.config['hdfs']['raw_files_dir']
+            if self.raw_files_dir[-1]!="/":
+                self.raw_files_dir+="/"
+            self.fs = pa.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         elif self.nosql_store=="filesystem":
             self.nosql = FileSystemStorage(self)
             self.filesystem_path = self.config["filesystem"]["filesystem_path"]
+            if self.filesystem_path[-1]!="/":
+                self.filesystem_path+="/"
             if not os.access(self.filesystem_path, os.W_OK):
                 raise Exception(self.filesystem_path+" path is not writable. Please check your cerebralcortex.yml configurations.")
         else:
@@ -72,3 +81,4 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage):
             self.timeSeriesData = TimeSeriesData(CC)
 
         self.logtypes = LogTypes()
+

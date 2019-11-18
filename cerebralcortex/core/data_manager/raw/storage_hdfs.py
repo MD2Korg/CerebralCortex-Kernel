@@ -25,8 +25,12 @@
 
 from pyspark.sql.functions import lit
 import pandas as pd
+import uuid
+import os
+from uuid import uuid4
 import pyarrow as pa
 import pyarrow.parquet as pq
+from typing import List
 from cerebralcortex.core.datatypes import DataStream
 
 
@@ -95,13 +99,14 @@ class HDFSStorage:
         #     df = df.withColumn('version', lit(int(version)))
         #     return df
 
-    def write_file(self, stream_name:str, data:DataStream.data) -> bool:
+    def write_file(self, stream_name:str, data:DataStream.data, file_mode:str) -> bool:
         """
         Write pyspark DataFrame to HDFS
 
         Args:
             stream_name (str): name of the stream
             data (object): pyspark DataFrame object
+            file_mode (str): write mode, append is currently supportes
 
         Returns:
             bool: True if data is stored successfully or throws an Exception.
@@ -111,7 +116,7 @@ class HDFSStorage:
         if isinstance(data, pd.DataFrame):
             return self.write_pandas_dataframe(stream_name, data)
         else:
-            return self.write_spark_dataframe(stream_name, data)
+            return self.write_spark_dataframe(stream_name, data, file_mode)
 
         # hdfs_url = self._get_storage_path(stream_name)
         # try:
@@ -121,10 +126,10 @@ class HDFSStorage:
         # except Exception as e:
         #     raise Exception("Cannot store dataframe: "+str(e))
 
-    def write_spark_dataframe(self, stream_name, data):
+    def write_spark_dataframe(self, stream_name, data, file_mode:str):
         hdfs_url = self._get_storage_path(stream_name)
         try:
-            data.write.partitionBy(["version","user"]).format('parquet').mode('overwrite').save(hdfs_url)
+            data.coalesce(1).write.partitionBy(["version","user"]).format('parquet').mode(file_mode).save(hdfs_url)
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
@@ -139,7 +144,195 @@ class HDFSStorage:
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
 
-    def _get_storage_path(self, stream_name:str, no_spark=False)->str:
+    def write_pandas_to_parquet_file(self, df: pd, user_id: str, stream_name: str) -> str:
+        """
+        Convert pandas dataframe into pyarrow parquet format and store
+
+        Args:
+            df (pandas): pandas dataframe
+            user_id (str): user id
+            stream_name (str): name of a stream
+
+        Returns:
+            str: file_name of newly create parquet file
+
+        Raises:
+             Exception: if data cannot be stored
+
+        """
+        base_dir_path = self._get_storage_path(stream_name)
+        table = pa.Table.from_pandas(df, preserve_index=False)
+        file_id = str(uuid4().hex) + ".parquet"
+        data_file_url = os.path.join(base_dir_path, "version=1", "user=" + user_id)
+        file_name = os.path.join(data_file_url, file_id)
+        if not self.obj.fs.exists(data_file_url):
+            self.obj.fs.mkdir(data_file_url)
+        with self.obj.fs.open(file_name, "wb") as fp:
+            pq.write_table(table, fp)
+
+        return file_name
+
+    ###########################################################################################################
+
+    def is_study(self) -> bool:
+        """
+        Returns true if study_name exists.
+
+        Returns:
+            bool: True if study_name exist False otherwise
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.is_study("default")
+            >>> True
+        """
+        stream_path = self._get_storage_path()
+        if self.obj.fs.exists(stream_path):
+            return True
+        else:
+            return False
+
+    def list_studies(self)->List[str]:
+        """
+        Get all the available study names
+
+        Returns:
+            List[str]: list of available study names
+
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.list_studies()
+        """
+        study_path = self._get_storage_path()
+        study_names = []
+        all_studies = self.obj.fs.ls(study_path)
+        for strm in all_studies:
+            study_names.append(strm.replace(study_path,"").replace("study=",""))
+        return study_names
+
+    def is_stream(self, stream_name: str) -> bool:
+        """
+        Returns true if provided stream exists.
+
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            bool: True if stream_name exist False otherwise
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.is_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> True
+        """
+        stream_path = self._get_storage_path(stream_name=stream_name)
+        if self.obj.fs.exists(stream_path):
+            return True
+        else:
+            return False
+
+    def get_stream_versions(self, stream_name: str) -> list:
+        """
+        Returns a list of versions available for a stream
+
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            list: list of int
+        Raises:
+            ValueError: if stream_name is empty or None
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.get_stream_versions("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> [1, 2, 4]
+        """
+        stream_path = self._get_storage_path(stream_name=stream_name)
+        stream_versions = []
+        if self.is_stream(stream_name):
+            all_streams = self.obj.fs.ls(stream_path)
+            for strm in all_streams:
+                stream_versions.append(strm.replace(stream_path,"").replace("version=",""))
+            return stream_versions
+        else:
+            raise Exception(stream_name+" does not exist")
+
+    def list_streams(self)->List[str]:
+        """
+        Get all the available stream names
+
+        Returns:
+            List[str]: list of available streams metadata
+
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.list_streams()
+        """
+        stream_path = self._get_storage_path()
+        stream_names = []
+        all_streams = self.obj.fs.ls(stream_path)
+        for strm in all_streams:
+            stream_names.append(strm.replace(stream_path,"").replace("stream=","").replace("study="+self.obj.study_name, "").replace(self.obj.raw_files_dir,""))
+        return stream_names
+
+    def search_stream(self, stream_name)->List[str]:
+        """
+        Find all the stream names similar to stream_name arg. For example, passing "location"
+        argument will return all stream names that contain the word location
+
+        Returns:
+            List[str]: list of stream names similar to stream_name arg
+
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.search_stream("battery")
+            >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
+        """
+        stream_path = self._get_storage_path()
+        all_streams = self.obj.fs.ls(stream_path)
+        stream_names = []
+        for strm in all_streams:
+            if stream_name in strm:
+                stream_names.append(strm.replace(stream_path,"").replace("stream=",""))
+        return stream_names
+
+    def get_stream_name(self, metadata_hash: uuid) -> str:
+        """
+        metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
+
+        Args:
+            metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.
+        Returns:
+            str: name of a stream
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
+            >>> ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST
+        """
+        stream_name = self.obj.sql_data.get_stream_name(metadata_hash)
+        stream_path = self._get_storage_path(stream_name=stream_name)
+        if self.is_stream(stream_path):
+            return stream_name
+        else:
+            raise Exception(metadata_hash+" stream does not exist.")
+
+    def get_stream_metadata_hash(self, stream_name: str) -> list:
+        """
+        Get all the metadata_hash associated with a stream name.
+
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            list[str]: list of all the metadata hashes
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.get_stream_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
+        """
+
+        stream_path = self._get_storage_path(stream_name=stream_name)
+        if self.is_stream(stream_path):
+            return self.obj.sql_data.get_stream_metadata_hash(stream_name)
+        else:
+            raise Exception(stream_name+" stream does not exist.")
+
+    def _get_storage_path(self, stream_name:str=None, no_spark=False)->str:
         """
         Build path of storage location
 
@@ -155,6 +348,11 @@ class HDFSStorage:
             storage_url = self.obj.hdfs_spark_url + self.obj.raw_files_dir
 
         if stream_name is None or stream_name=="":
-            return storage_url
+            storage_path = storage_url + "study="+self.obj.study_name+"/"
         else:
-            return storage_url + "stream=" + stream_name + "/"
+            storage_path = storage_url + "study="+self.obj.study_name+"/stream=" + stream_name + "/"
+
+        if (self.obj.new_study or self.obj.study_name=="default") and not self.obj.fs.exists(storage_url + "study="+self.obj.study_name+"/"):
+            self.obj.fs.mkdir(storage_url + "study="+self.obj.study_name+"/")
+
+        return storage_path

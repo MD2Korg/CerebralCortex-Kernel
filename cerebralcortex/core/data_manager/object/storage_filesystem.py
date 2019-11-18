@@ -146,6 +146,8 @@ class FileSystemStorage():
             if not bucket_name or not object_name:
                 raise ValueError("Missing bucket_name and object_name params.")
             object_path = os.path.join(self.filesystem_path,bucket_name, object_name)
+            from flask import send_file
+            return send_file(object_path, as_attachment=True)
             if os.path.isfile(object_path):
                 with open(object_path, "rb") as obj:
                     object_file = obj.read()

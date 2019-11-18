@@ -36,7 +36,7 @@ class StreamHandler:
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_stream_metadata(self, stream_name: str, version:str= "all") -> List[Metadata]:
+    def get_stream_metadata_by_name(self, stream_name: str, version:str= "all") -> List[Metadata]:
         """
         Get a list of metadata for all versions available for a stream.
 
@@ -50,7 +50,7 @@ class StreamHandler:
             ValueError: stream_name cannot be None or empty.
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
-            >>> CC.get_all_users("mperf")
+            >>> CC.list_users("mperf")
             >>> [Metadata] # list of MetaData class objects
         """
         if stream_name is None or stream_name=="":
@@ -89,7 +89,7 @@ class StreamHandler:
         results = []
         if rows:
             for row in rows:
-                results.extend(self.get_stream_metadata(stream_name=row["name"]))
+                results.extend(self.get_stream_metadata_by_name(stream_name=row["name"]))
             return results
         else:
             return []
@@ -208,7 +208,7 @@ class StreamHandler:
         else:
             return rows[0]["name"]
 
-    def get_stream_info_by_hash(self, metadata_hash: uuid) -> str:
+    def get_stream_metadata_by_hash(self, metadata_hash: uuid) -> str:
         """
        metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
 
@@ -258,6 +258,26 @@ class StreamHandler:
         else:
             return False
 
+    def is_study(self) -> bool:
+        """
+        Returns true if provided study name exists.
+
+        Returns:
+            bool: True if stream_name exist False otherwise
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.is_study("demo-study")
+            >>> True
+        """
+        qry = "SELECT * from " + self.userTable + " where study_name= %(study_name)s"
+        vals = {'study_name': str(self.study_name)}
+        rows = self.execute(qry, vals)
+
+        if rows:
+            return True
+        else:
+            return False
+
 
     ###################################################################
     ################## STORE DATA METHODS #############################
@@ -295,8 +315,8 @@ class StreamHandler:
             return {"status": True,"version":version, "record_type":"exist"}
 
         if (status == "new"):
-            qry = "INSERT INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
-            vals = str(stream_name), str(version), str(metadata_hash), json.dumps(metadata_obj)
+            qry = "INSERT IGNORE INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
+            vals = str(stream_name).lower(), str(version), str(metadata_hash), json.dumps(metadata_obj).lower()
             isQueryReady = 1
 
             # if nothing is changed then isQueryReady would be 0 and no database transaction would be performed
@@ -321,13 +341,13 @@ class StreamHandler:
             dict: {"version": "version_number", "status":"new" OR "exist"}
 
         """
-        version = 1
+
         qry = "select version from " + self.datastreamTable + " where metadata_hash = %(metadata_hash)s"
         vals = {"metadata_hash":metadata_hash}
-        result = self.execute(qry, vals)
-
-        if result:
-            return {"version": version, "status":"exist"}
+        rows = self.execute(qry, vals)
+        current_version = []
+        if len(rows) > 0:
+            return {"version": int(rows[0]["version"]), "status":"exist"}
         else:
             stream_versions = self.get_stream_versions(stream_name)
             if bool(stream_versions):

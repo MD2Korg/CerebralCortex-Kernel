@@ -3,19 +3,19 @@
 #########################################################################
 cc:
   debug: True # Setting this to True will log and print errors on console as well
-  throw_exception: False #if this is set to True then application will get exceptions
+  throw_exception: True #if this is set to True then application will get exceptions
   auth_token_expire_time: 40000 #seconds
   auth_encryption_key: "md@k&#8"
-  log_files_path: ""
+  log_files_path: "/home/ali/IdeaProjects/CerebralCortex-Platform/mount_points/apiserver/data/"
 
 #########################################################################
 #                        NoSQL Storage                                  #
 #########################################################################
-nosql_storage: hdfs
+nosql_storage: filesystem
 
 filesystem:
   # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
-  filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/rice_data/processed/"
+  filesystem_path: "/home/ali/IdeaProjects/CerebralCortex-Platform/mount_points/apiserver/data/"
 
 hdfs:
   host: localhost
@@ -27,7 +27,7 @@ hdfs:
 #########################################################################
 
 object_storage:
-  object_storage_path: "/home/ali/IdeaProjects/MD2K_DATA/tmp/"
+  object_storage_path: "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/test_suite/sample_data/objects/"
 
 #minio: # AWS-S3 UPDATE
 #  host: s3.amazonaws.com # for amazon pass s3.amazonaws.com and for minio simpley pass url of minio server
@@ -57,25 +57,25 @@ mysql:
 #########################################################################
 ###################### Visualization Data Storage #######################
 #########################################################################
-visualization_storage: none
+visualization_storage: influxdb
 
-#influxdb:
-#  host: 127.0.0.1
-#  port: 8086
-#  database: cerebralcortex_raw
-#  db_user: ""
-#  db_pass: ""
+influxdb:
+  host: 127.0.0.1
+  port: 8086
+  database: cerebralcortex_raw
+  db_user: ""
+  db_pass: ""
 
 #########################################################################
 ########################### Messaging Service ###########################
 #########################################################################
 messaging_service: none
 
-#kafka:
-#  host: 127.0.0.1
-#  port: 9092
-#  ping_kafka: 5
-#  consumer_group_id: "md2k"
+kafka:
+  host: 127.0.0.1
+  port: 9092
+  ping_kafka: 5
+  consumer_group_id: "md2k"
 #########################################################################
 #                          Data Provenance Storage                      #
 #########################################################################

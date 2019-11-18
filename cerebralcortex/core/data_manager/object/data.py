@@ -25,6 +25,7 @@
 
 from cerebralcortex.core.data_manager.object.storage_filesystem import FileSystemStorage
 from cerebralcortex.core.log_manager.log_handler import LogTypes
+import os
 
 
 class ObjectData(FileSystemStorage):
@@ -37,7 +38,18 @@ class ObjectData(FileSystemStorage):
         self.CC = CC
         self.config = CC.config
 
+        self.study_name = CC.study_name
+        self.new_study = CC.new_study
+
         self.logging = CC.logging
         self.logtypes = LogTypes()
-
+      
         self.filesystem_path = self.config["object_storage"]["object_storage_path"]
+        
+        if self.filesystem_path[-1]!="/":
+            self.filesystem_path += "/"
+        
+        self.filesystem_path = self.filesystem_path+"study="+self.study_name+"/"
+
+        if (self.new_study or self.study_name=="default") and not os.path.exists(self.filesystem_path):
+            os.mkdir(self.filesystem_path)

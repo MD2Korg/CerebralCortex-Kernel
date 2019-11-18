@@ -23,47 +23,45 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from typing import List
 
-def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal", enable_spark_ui=False):
+import os
+
+import pyarrow as pa
+
+from cerebralcortex.core.config_manager.config import Configuration
+
+
+
+def get_study_names(configs_dir_path: str)->List[str]:
     """
-    get or create spark context
+    CerebralCortex constructor
 
     Args:
-        type (str): type (sparkContext, SparkSessionBuilder, sparkSession, sqlContext). (default="sparkContext")
-        name (str): spark app name (default="CerebralCortex-Kernal")
-
+        configs_dir_path (str): Directory path of cerebralcortex configurations.
     Returns:
-
+        list(str): list of study names available
+    Raises:
+        ValueError: If configuration_filepath is None or empty.
+    Examples:
+        >>> get_study_names("/directory/path/of/configs/")
     """
-    from pyspark.sql import SQLContext
-    from pyspark.sql import SparkSession
+    config = Configuration(configs_dir_path).config
 
-    ss = SparkSession.builder
-    if name:
-        ss.appName(name)
+    nosql_store = config['nosql_storage']
 
-    ss.config("spark.streaming.backpressure.enabled", True)
-    ss.config("spark.streaming.backpressure.initialRate", 1)
-    ss.config("spark.streaming.kafka.maxRatePerPartition", 2)
-    ss.config("spark.sql.session.timeZone", "UTC")
-
-    if enable_spark_ui==False:
-        ss.config("spark.ui.enabled", enable_spark_ui)
-
-    sparkSession = ss.getOrCreate()
-
-    sc = sparkSession.sparkContext
-    sc.setLogLevel("ERROR")
-
-
-    sqlContext = SQLContext(sc)
-    if type=="SparkSessionBuilder":
-        return sc
-    elif type=="sparkContext":
-        return sc
-    elif type=="sparkSession":
-        return sparkSession
-    elif type=="sqlContext":
-        return sqlContext
+    if nosql_store == "hdfs":
+        fs = pa.hdfs.connect(config['hdfs']['host'], config['hdfs']['port'])
+        study_path = config['hdfs']['raw_files_dir']
+        study_names = []
+        all_studies = fs.ls(study_path)
+        for strm in all_studies:
+            study_names.append(strm.replace(study_path,"").replace("study=",""))
+        return study_names
+    elif nosql_store=="filesystem":
+        filesystem_path = config["filesystem"]["filesystem_path"]
+        if not os.access(filesystem_path, os.W_OK):
+            raise Exception(filesystem_path+" path is not writable. Please check your cerebralcortex.yml configurations.")
+        return [d.replace("study=","") for d in os.listdir(filesystem_path) if os.path.isdir(os.path.join(filesystem_path, d))]
     else:
-        raise ValueError("Unknown type.")
+        raise ValueError(nosql_store + " is not supported.")

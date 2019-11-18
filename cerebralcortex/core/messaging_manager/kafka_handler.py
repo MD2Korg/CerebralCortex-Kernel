@@ -29,12 +29,11 @@ from pyspark.streaming.kafka import KafkaUtils, KafkaDStream, TopicAndPartition
 
 class KafkaHandler():
 
-    def produce_message(self, topic: str, msg: str):
+    def produce_message(self, msg: str):
         """
         Publish a message on kafka message queue
 
         Args:
-            topic (str): name of the kafka topic
             msg (dict): message that needs to published on kafka
         Returns:
             bool: True if successful. In case of failure, it returns an Exception message.
@@ -44,39 +43,37 @@ class KafkaHandler():
 
         """
 
-        if not topic and not msg:
+        if not msg:
             raise ValueError("topic and message parameters cannot be empty or None.")
         try:
-            self.producer.send(topic, msg)
+            self.producer.send(self.study_name, msg)
             self.producer.flush()
             return True
         except Exception as e:
-            raise Exception("Error publishing message. Topic: "+str(topic)+" - "+str(e))
+            raise Exception("Error publishing message. Topic: "+str(self.study_name)+" - "+str(e))
 
-    def subscribe_to_topic(self, topic: str)-> dict:
+    def subscribe_to_topic(self)-> dict:
         """
         Subscribe to kafka topic as a consumer
 
-        Args:
-            topic (str): name of the kafka topic
         Yields:
              dict: kafka message
         Raises:
             ValueError: Topic parameter is missing.
         """
-        if not topic:
-            raise ValueError("Topic parameter is missing.")
+        if not self.study_name:
+            raise ValueError(self.study_name+": Topic parameter is missing.")
 
-        self.consumer.subscribe(topic)
+        self.consumer.subscribe(self.study_name)
         for message in self.consumer: #TODO: this is a test-code.
             yield json.loads(message.value.decode('utf8'))
 
-    def create_direct_kafka_stream(self, kafka_topic: str, ssc) -> KafkaDStream:
+    def create_direct_kafka_stream(self, ssc) -> KafkaDStream:
         """
         Create a direct stream to kafka topic. Supports only one topic at a time
 
         Args:
-            kafka_topic: kafka topic to create stream against
+            ssc: spark streaming context
 
         Raises:
              Exception: if direct stream cannot be created.
@@ -85,8 +82,8 @@ class KafkaHandler():
             Enable logging of errors
         """
         try:
-            offsets = self.CC.get_kafka_offsets(kafka_topic)
-            kafka_topic = [kafka_topic]
+            offsets = self.CC.get_kafka_offsets(self.study_name)
+            kafka_topic = [self.study_name]
 
             if bool(offsets):
                 fromOffset = {}

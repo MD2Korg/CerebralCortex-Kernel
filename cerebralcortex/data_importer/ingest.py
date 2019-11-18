@@ -309,11 +309,11 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
     table = pa.Table.from_pandas(df,nthreads=1)
     partition_by = ["version", "user"]
     if cc_config["nosql_storage"] == "filesystem":
-        data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "stream="+str(stream_name))
+        data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "study="+str(cc_config.get("study_name")), "stream="+str(stream_name))
         pq.write_to_dataset(table, root_path=data_file_url, partition_cols=partition_by, preserve_index=False)
 
     elif cc_config["nosql_storage"] == "hdfs":
-        data_file_url = os.path.join(cc_config["hdfs"]["raw_files_dir"], "stream="+str(stream_name))
+        data_file_url = os.path.join(cc_config["hdfs"]["raw_files_dir"], "study="+str(cc_config.get("study_name")), "stream="+str(stream_name))
         fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
         pq.write_to_dataset(table, root_path=data_file_url, filesystem=fs, partition_cols=partition_by, preserve_index=False)
 
@@ -343,7 +343,7 @@ def print_stats_table(ingestion_stats: dict):
     print(table.draw())
 
 
-def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_file_extension: list = [],
+def import_dir(cc_config: dict, input_data_dir: str, study_name:str, new_study:str=False, user_id: str = None, data_file_extension: list = [],
                allowed_filename_pattern: str = None, allowed_streamname_pattern: str = None,
                ignore_streamname_pattern: str = None,
                batch_size: int = None, compression: str = None, header: int = None, metadata: Metadata = None,
@@ -356,6 +356,8 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
         cc_config (str): cerebralcortex config directory
         input_data_dir (str): data directory path
         user_id (str): user id. Currently import_dir only supports parsing directory associated with a user
+        study_name (str): a valid study name must exist OR use default as a study name
+        new_study (bool): create a new study with study_name if it does not exist
         data_file_extension (list[str]): (optional) provide file extensions (e.g., .doc) that must be ignored
         allowed_filename_pattern (str): (optional) regex of files that must be processed.
         allowed_streamname_pattern (str): (optional) regex of stream-names to be processed only
@@ -383,8 +385,10 @@ def import_dir(cc_config: dict, input_data_dir: str, user_id: str = None, data_f
     if batch_size is None:
         enable_spark = False
 
-    CC = Kernel(cc_config, enable_spark=enable_spark)
+    CC = Kernel(cc_config, study_name=study_name, new_study=new_study, enable_spark=enable_spark)
     cc_config = CC.config
+    cc_config ["study_name"] = study_name
+    cc_config["new_study"] = new_study
 
     if input_data_dir[-1:] != "/":
         input_data_dir = input_data_dir + "/"

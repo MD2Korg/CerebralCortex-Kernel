@@ -49,9 +49,13 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, Dat
         """
         if isinstance(CC, dict):
             self.config = CC
+            self.study_name = self.config["study_name"]
+            self.new_study = self.config["new_study"]
         else:
             self.config = CC.config
-
+            self.study_name = CC.study_name
+            self.new_study = CC.new_study
+        
         self.logtypes = LogTypes()
         self.sql_store = self.config["relational_storage"]
 
@@ -68,7 +72,6 @@ class SqlData(StreamHandler, UserHandler, KafkaOffsetsHandler, CacheHandler, Dat
         self.ingestionLogsTable = "ingestion_logs"
         self.correctedMetadata = "corrected_metadata"
         self.userTable = "user"
-        self.dataReplayTable = "data_replay"
         self.poolName = "CC_Pool"
         self.poolSize = self.config['mysql']['connection_pool_size']
         self.pool = self.create_pool(pool_name=self.poolName, pool_size=self.poolSize)

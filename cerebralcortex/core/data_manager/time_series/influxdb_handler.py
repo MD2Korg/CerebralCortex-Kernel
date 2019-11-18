@@ -24,12 +24,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
+import pandas as pd
 import traceback
 from datetime import datetime
 
 from influxdb import InfluxDBClient
 
 from cerebralcortex.core.datatypes import DataStream
+from influxdb import DataFrameClient
 
 
 class InfluxdbHandler():
@@ -111,3 +113,31 @@ class InfluxdbHandler():
         except:
             self.logging.log(error_message="STREAM ID: " + stream_identifier + " - Cannot save raw data. " + str(
                 traceback.format_exc()), error_type=self.logtypes.CRITICAL)
+
+
+    def write_pd_to_influxdb(self, user_id: str, username: str, stream_name: str, df: pd.DataFrame):
+        """
+        Store data in influxdb. Influxdb is used for visualization purposes
+
+        Args:
+            user_id (str): id of a user
+            username (str): username
+            stream_name (str): name of a stream
+            df (pandas): pandas dataframe
+
+        Raises:
+            Exception: if error occurs during storing data to influxdb
+        """
+        client = DataFrameClient(host=self.influxdbIP, port=self.influxdbPort, username=self.influxdbUser,
+                                password=self.influxdbPassword, database=self.influxdbDatabase)
+
+        try:
+            df["stream_name"] = stream_name
+            df["user_id"] = user_id
+            df['username'] = username
+
+            tags = ['localtime','username', 'user_id', 'stream_name']
+            df.set_index('timestamp', inplace=True)
+            client.write_points(df, measurement=stream_name, tag_columns=tags, protocol='json')
+        except Exception as e:
+            raise Exception("Error in writing data to influxdb. " + str(e))

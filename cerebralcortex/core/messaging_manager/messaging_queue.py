@@ -43,6 +43,8 @@ class MessagingQueue(KafkaHandler):
         self.config = CC.config
         self.CC = CC
 
+        self.study_name = CC.study_name
+
         if CC.config["messaging_service"]=="none":
             raise Exception("Messaging service is disabled (none) in cerebralcortex.yml. Please update configs.")
 
@@ -55,7 +57,7 @@ class MessagingQueue(KafkaHandler):
         except:
             raise Exception("ping_kafka value can only be an integer. Please check data_ingestion.yml")
 
-        self.ssc = StreamingContext(self.CC.sparkContext, ping_kafka)
+        #self.ssc = StreamingContext(self.CC.sparkContext, ping_kafka)
 
         if self.config["messaging_service"]!="none" and "kafka" in self.config and self.config['messaging_service']=="kafka":
             self.broker = str(self.config['kafka']['host']) +":"+str(self.config['kafka']['port'])

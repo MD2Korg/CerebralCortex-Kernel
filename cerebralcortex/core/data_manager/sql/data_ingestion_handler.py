@@ -225,7 +225,7 @@ class DataIngestionHandler():
                 result.append({"fault_type": row["fault_type"], "total_faults": row["total_faults"]})
             return result
 
-    def update_ingestion_log_status(self, stream_name, fault_type, fault_description, status_type, metadata={}, platform_metadata={}):
+    def update_ingestion_log_status(self, stream_name, metadata={}, platform_metadata={}):
         qry = "update " + self.ingestionLogsTable + " set metadata=%s, platform_metadata=%s where stream_name=%s"
         vals = json.dumps(metadata), json.dumps(platform_metadata), str(stream_name)
         try:

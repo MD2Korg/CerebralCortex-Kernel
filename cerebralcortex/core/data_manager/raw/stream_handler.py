@@ -44,7 +44,7 @@ class StreamHandler():
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
-    def get_stream(self, stream_name:str, version:str, user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
+    def get_stream(self, stream_name:str, version:str="all", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
         """
         Retrieve a data-stream with it's metadata.
 
@@ -70,9 +70,10 @@ class StreamHandler():
         if stream_name is None or stream_name=="":
             raise ValueError("stream_name cannot be None or empty")
 
+        stream_name = stream_name.lower()
 
         if not self.sql_data.is_stream(stream_name):
-            print(stream_name, "does not exist.")
+            print(stream_name, " does not exist.")
             return DataStream(data=None, metadata=None)
 
         if version is not None and version!="":
@@ -87,7 +88,7 @@ class StreamHandler():
         if version=="latest":
             version = max(all_versions)
 
-        stream_metadata = self.sql_data.get_stream_metadata(stream_name=stream_name, version=version)
+        stream_metadata = self.sql_data.get_stream_metadata_by_name(stream_name=stream_name, version=version)
 
         if len(stream_metadata) > 0:
             if data_type == DataSet.COMPLETE:
@@ -113,6 +114,7 @@ class StreamHandler():
 
         Args:
             datastream (DataStream): a DataStream object
+            file_mode (str): write mode, append is currently supportes
             ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana
         Returns:
             bool: True if stream is successfully stored or throws an exception
@@ -129,6 +131,7 @@ class StreamHandler():
         data = datastream.data
         if metadata:
             stream_name = metadata.name # only supports one data-stream storage at a time
+            stream_name = stream_name.lower()
             if not stream_name:
                 raise ValueError("Stream name cannot be empty/None. Check metadata.")
             metadata = self.__update_data_desciptor(data=data, metadata=metadata)

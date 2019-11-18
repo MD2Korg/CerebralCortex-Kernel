@@ -75,7 +75,7 @@ def gen_phone_battery_data()->object:
             sample = sample - 1
             tmp = 1
         timestamp = timestamp + timedelta(0, 1)
-        sample_data.append((timestamp, sample, 1, "dfce1e65-2882-395b-a641-93f31748591b"))
+        sample_data.append((timestamp, sample, 1, "bfb2ca0c-e19c-3956-9db2-5459ccadd40c"))
     df = sqlContext.createDataFrame(sample_data, column_name)
     return df
 
@@ -88,7 +88,7 @@ def gen_phone_battery_metadata()->Metadata:
         Metadata: metadata of phone battery stream
     """
     stream_metadata = Metadata()
-    stream_metadata.set_description("this is a test-stream.").set_name("BATTERY--org.md2k.phonesensor--PHONE").set_version(1) \
+    stream_metadata.set_description("this is a test-stream.").set_name("BATTERY--org.md2k.phonesensor--PHONE") \
         .add_dataDescriptor(
         DataDescriptor().set_name("level").set_type("float").set_attribute("description", "current battery charge")) \
         .add_module(
