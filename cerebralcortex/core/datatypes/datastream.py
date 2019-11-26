@@ -52,12 +52,13 @@ class DataStream(DataFrame):
             metadata (Metadata): metadata of data
 
         """
-        if isinstance(data, DataFrame):
-            super(self.__class__, self).__init__(data._jdf, data.sql_ctx)
+        
         self._data = data
         self._metadata = metadata
         self._basic_plots = BasicPlots()
         self._stress_plots = StressStreamPlots()
+        if isinstance(data, DataFrame):
+            super(self.__class__, self).__init__(data._jdf, data.sql_ctx)
 
     # !!!!                       Disable some of dataframe operations                           !!!
     def write(self):
@@ -1129,12 +1130,10 @@ class DataStream(DataFrame):
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> ds = CC.get_stream("STREAM-NAME")
-            >>> new_ds = ds.to_pandas()
+            >>> new_ds = ds.toPandas()
             >>> new_ds.data.head()
         """
         pdf = self._data.toPandas()
-        if "timestamp" in pdf.columns:
-            pdf = pdf.sort_values('timestamp')
         return DataStream(data=pdf, metadata=Metadata())
 
     def union(self, other):
