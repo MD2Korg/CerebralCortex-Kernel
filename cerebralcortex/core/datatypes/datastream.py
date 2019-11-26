@@ -1261,7 +1261,11 @@ class DataStream(DataFrame):
         windowed_df = self._data.withColumn('custom_window', windowing_udf('timestamp'))
         return DataStream(data=windowed_df, metadata=Metadata())
 
-
+    def __str__(self):
+        print("*"*10,"METADATA","*"*10)
+        print(self.metadata)
+        print("*"*10,"DATA","*"*10)
+        print(self._data)
 """
 Windowing function to customize the parallelization of computation.
 """
