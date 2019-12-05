@@ -28,11 +28,13 @@ import json
 import pandas as pd
 
 from pyspark.sql.functions import pandas_udf, PandasUDFType
-from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType
+from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
 
 schema = StructType([
     StructField("timestamp", TimestampType()),
     StructField("localtime", TimestampType()),
+    StructField("user", StringType()),
+    StructField("version", IntegerType()),
     StructField("incentive", FloatType()),
     StructField("total_incentive", FloatType()),
     StructField("ema_id", StringType()),
@@ -53,6 +55,6 @@ def get_ema_incentive_features(user_data):
         data_quality = ema["dataQuality"]
 
 
-        all_vals.append([row["timestamp"],row["localtime"],incentive,total_incentive,ema_id,data_quality])
+        all_vals.append([row["timestamp"],row["localtime"], row["user"],1,incentive,total_incentive,ema_id,data_quality])
 
-    return pd.DataFrame(all_vals,columns=['timestamp','localtime','incentive','total_incentive','ema_id','data_quality'])
+    return pd.DataFrame(all_vals,columns=['timestamp','localtime', 'user', 'version','incentive','total_incentive','ema_id','data_quality'])

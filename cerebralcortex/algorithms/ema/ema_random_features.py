@@ -36,6 +36,8 @@ from pyspark.sql.types import StructField, StructType, StringType, FloatType, Ti
 schema = StructType([
     StructField("timestamp", TimestampType()),
     StructField("localtime", TimestampType()),
+    StructField("user", StringType()),
+    StructField("version", IntegerType()),
     StructField("name", StringType()),
     StructField("trigger_type", StringType()),
     StructField("start_time", TimestampType()),
@@ -97,6 +99,6 @@ def get_ema_random_features(user_data):
         if len(question_length)>0:
             average_total_answer_options = sum(total_answer_options) / len(total_answer_options)
 
-        all_vals.append([row["timestamp"],row["localtime"],name,trigger_type,start_time,end_time,total_time,total_questions,total_answers,average_question_length,average_total_answer_options,time_between_ema,status,question_answers_])
+        all_vals.append([row["timestamp"],row["localtime"], row["user"],1,name,trigger_type,start_time,end_time,total_time,total_questions,total_answers,average_question_length,average_total_answer_options,time_between_ema,status,question_answers_])
 
-    return pd.DataFrame(all_vals,columns=['timestamp','localtime','name','trigger_type','start_time','end_time','total_time','total_questions','total_answers', 'average_question_length','average_total_answer_options','time_between_ema','status','question_answers'])
+    return pd.DataFrame(all_vals,columns=['timestamp','localtime', 'user', 'version','name','trigger_type','start_time','end_time','total_time','total_questions','total_answers', 'average_question_length','average_total_answer_options','time_between_ema','status','question_answers'])

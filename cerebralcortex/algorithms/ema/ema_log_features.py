@@ -36,6 +36,8 @@ from pyspark.sql.types import StructField, StructType, StringType, FloatType, Ti
 schema = StructType([
     StructField("timestamp", TimestampType()),
     StructField("localtime", TimestampType()),
+    StructField("user", StringType()),
+    StructField("version", IntegerType()),
     StructField("status", StringType()),
     StructField("ema_id", StringType()),
     StructField("schedule_timestamp", TimestampType()),
@@ -60,7 +62,7 @@ def get_ema_log_features(user_data):
 
 
 
-            all_vals.append([row["timestamp"],row["localtime"],status,ema_id,schedule_timestamp,operation])
+            all_vals.append([row["timestamp"],row["localtime"], row["user"],1,status,ema_id,schedule_timestamp,operation])
 
-    return pd.DataFrame(all_vals,columns=['timestamp','localtime','status','ema_id','schedule_timestamp','operation'])
+    return pd.DataFrame(all_vals,columns=['timestamp','localtime', 'user', 'version','status','ema_id','schedule_timestamp','operation'])
 
