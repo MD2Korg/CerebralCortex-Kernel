@@ -52,7 +52,7 @@ def get_ema_log_features(user_data):
 
         operation = ema["operation"].lower()
         if operation !="condition":
-            status = ema["status"]
+            status = ema.get("status","")
             ema_id = ema["id"]
             schedule_timestamp = ema.get("logSchedule",{}).get("scheduleTimestamp")
             if schedule_timestamp:
@@ -63,3 +63,4 @@ def get_ema_log_features(user_data):
             all_vals.append([row["timestamp"],row["localtime"],status,ema_id,schedule_timestamp,operation])
 
     return pd.DataFrame(all_vals,columns=['timestamp','localtime','status','ema_id','schedule_timestamp','operation'])
+

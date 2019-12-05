@@ -23,18 +23,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import numpy as np
-import pandas as pd
 import json
-from geopy.distance import great_circle
+
+import pandas as pd
+
 from pyspark.sql.functions import pandas_udf, PandasUDFType
-from shapely.geometry.multipoint import MultiPoint
-from sklearn.cluster import DBSCAN
-from pyspark.sql.types import StructField, StructType, StringType, FloatType
-from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType,DateType,TimestampType
-
-
-
+from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType
 
 schema = StructType([
     StructField("timestamp", TimestampType()),
