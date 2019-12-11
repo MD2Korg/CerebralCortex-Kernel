@@ -32,6 +32,9 @@ from pyspark.sql import functions as F
 from pyspark.sql.functions import udf
 from pyspark.sql.types import *
 # from pyspark.sql.functions import pandas_udf,PandasUDFType
+from operator import attrgetter
+from pyspark.sql.types import StructType
+from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.window import Window
 
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
@@ -341,6 +344,20 @@ class DataStream(DataFrame):
         data = self._data.where(self._data["version"].isin(version))
         return DataStream(data=data, metadata=Metadata())
 
+    def linear_interpolation(schema, freq, timestamp_col="timestamp", **kwargs):
+        @pandas_udf(
+            StructType(sorted(schema, key=attrgetter("name"))),
+            PandasUDFType.GROUPED_MAP)
+        def _(pdf):
+            pdf.set_index(timestamp_col, inplace=True)
+            pdf = pdf.resample(freq).interpolate()
+            pdf.ffill(inplace=True)
+            pdf.reset_index(drop=False, inplace=True)
+            pdf.sort_index(axis=1, inplace=True)
+            return pdf
+
+        return _
+
     def compute(self, udfName, windowDuration: int = 60, slideDuration: int = None,
                       groupByColumnName: List[str] = [], startTime=None):
         """
@@ -356,12 +373,16 @@ class DataStream(DataFrame):
             DataStream: this will return a new datastream object with blank metadata
 
         """
+        if slideDuration:
+            slideDuration = str(slideDuration) + " seconds"
+            
         if 'custom_window' in self._data.columns:
             data = self._data.groupby('user', 'custom_window').apply(udfName)
         else:
             windowDuration = str(windowDuration) + " seconds"
             groupbycols = ["user", "version"]
-
+        
+        
             win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
 
             if len(groupByColumnName) > 0:

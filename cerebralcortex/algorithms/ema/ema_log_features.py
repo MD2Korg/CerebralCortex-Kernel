@@ -32,7 +32,7 @@ from shapely.geometry.multipoint import MultiPoint
 from sklearn.cluster import DBSCAN
 from pyspark.sql.types import StructField, StructType, StringType, FloatType
 from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType,DateType,TimestampType
-
+from cerebralcortex.algorithms.ema.ema_incentive_features import get_ema_incentive_features
 schema = StructType([
     StructField("timestamp", TimestampType()),
     StructField("localtime", TimestampType()),
