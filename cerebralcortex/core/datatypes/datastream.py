@@ -27,6 +27,7 @@ import re
 import sys
 from typing import List
 
+from datetime import timedelta
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 from pyspark.sql.functions import udf
@@ -258,13 +259,15 @@ class DataStream(DataFrame):
         if windowDuration:
             windowDuration = str(windowDuration) + " seconds"
             win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
-            localtimestmp_win = F.window("localtime", windowDuration)
             result = self._data.groupBy(['user','version', win]).agg(exprs)
         else:
             result = self._data.groupBy(['user','version']).agg(exprs)
 
-        result = result.withColumn("timestamp",result.window.start)
 
+        result = result.withColumn("timestamp",result.window.start)
+        # to get local time - agg/window won't return localtimestamp col
+        offset = (self._data.first().timestamp - self._data.first().localtime).total_seconds()
+        result = result.withColumn("localtime", result.window.start+F.expr("INTERVAL "+str(offset)+" SECONDS"))
         result = self._update_column_names(result)
         return DataStream(data=result, metadata=Metadata())
 
