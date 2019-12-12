@@ -75,6 +75,7 @@ class HDFSStorage:
 
         if version is not None and version!="all":
             hdfs_url = hdfs_url+"version="+str(version)+"/"
+            
         if user_id is not None:
             hdfs_url = hdfs_url+"user="+str(user_id)+"/"
 
