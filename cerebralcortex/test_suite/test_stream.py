@@ -95,7 +95,7 @@ class DataStreamTest:
             return df
         win_ds=DataStream(data=win_ds.data.drop("window"), metadata=Metadata())
         new_ds = win_ds.compute(mean_udf)
-        print(new_ds.data.columns)
+
         sd = new_ds.collect()
         df = win_df.withColumn("quality", F.when(win_df.some_val > 97, 1).otherwise(0)).drop("some_val")
         win_quality_ds = DataStream(data=df, metadata=Metadata())
@@ -112,7 +112,10 @@ class DataStreamTest:
 
         """
         ds = self.CC.get_stream(self.stream_name)
+        df=ds.compute_stddev(60)
+        df.show(5)
         data = ds
+        
         metadata = ds.metadata[0]
 
         datapoint = data.take(1)

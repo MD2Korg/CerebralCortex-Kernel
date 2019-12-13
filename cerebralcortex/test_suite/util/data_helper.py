@@ -63,7 +63,7 @@ def gen_phone_battery_data()->object:
         DataFrame: pyspark dataframe object with columns: ["timestamp", "offset", "battery_level", "ver", "user"]
 
     """
-    column_name = ["timestamp", "battery_level", "version", "user"]
+    column_name = ["timestamp", "localtime", "battery_level", "version", "user"]
     sample_data = []
     timestamp = datetime(2019, 1, 9, 11, 34, 59)
     tmp = 1
@@ -75,7 +75,8 @@ def gen_phone_battery_data()->object:
             sample = sample - 1
             tmp = 1
         timestamp = timestamp + timedelta(0, 1)
-        sample_data.append((timestamp, sample, 1, "bfb2ca0c-e19c-3956-9db2-5459ccadd40c"))
+        localtime = timestamp + timedelta(hours=5)
+        sample_data.append((timestamp, localtime, sample, 1, "bfb2ca0c-e19c-3956-9db2-5459ccadd40c"))
     df = sqlContext.createDataFrame(sample_data, column_name)
     return df
 

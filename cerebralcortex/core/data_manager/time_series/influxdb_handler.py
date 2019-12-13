@@ -135,8 +135,8 @@ class InfluxdbHandler():
             df["stream_name"] = stream_name
             df["user_id"] = user_id
             df['username'] = username
-
-            tags = ['localtime','username', 'user_id', 'stream_name']
+            del df["localtime"]
+            tags = ['username', 'user_id', 'stream_name']
             df.set_index('timestamp', inplace=True)
             client.write_points(df, measurement=stream_name, tag_columns=tags, protocol='json')
         except Exception as e:

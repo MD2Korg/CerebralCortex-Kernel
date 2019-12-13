@@ -127,7 +127,7 @@ class Kernel:
         """
         return self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB)
 
-    def get_stream(self, stream_name: str, version: str = "all", data_type=DataSet.COMPLETE) -> DataStream:
+    def get_stream(self, stream_name: str, version: str = "all", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
         """
         Retrieve a data-stream with it's metadata.
 
@@ -149,8 +149,10 @@ class Kernel:
             >>> ds.metadata # an object of MetaData class
             >>> ds.get_metadata(version=1) # get the specific version metadata of a stream
         """
+        if user_id:
+            version = "latest"
 
-        return self.RawData.get_stream(stream_name=stream_name, version=version, data_type=data_type)
+        return self.RawData.get_stream(stream_name=stream_name, version=version, user_id=user_id, data_type=data_type)
 
     ###########################################################################
     #                     TIME SERIES DATA MANAGER METHODS                    #
