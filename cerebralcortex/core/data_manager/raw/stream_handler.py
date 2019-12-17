@@ -93,9 +93,11 @@ class StreamHandler():
         if len(stream_metadata) > 0:
             if data_type == DataSet.COMPLETE:
                 df = self.nosql.read_file(stream_name=stream_name, version=version, user_id=user_id)
+                df = df.dropDuplicates(subset=['timestamp'])
                 stream = DataStream(data=df,metadata=stream_metadata)
             elif data_type == DataSet.ONLY_DATA:
                 df = self.nosql.read_file(stream_name=stream_name, version=version, user_id=user_id)
+                df = df.dropDuplicates(subset=['timestamp'])
                 stream = DataStream(data=df)
             elif data_type == DataSet.ONLY_METADATA:
                 stream = DataStream(metadata=stream_metadata)

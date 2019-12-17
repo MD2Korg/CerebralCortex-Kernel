@@ -26,6 +26,7 @@
 import re
 import sys
 from typing import List
+import math
 
 from datetime import timedelta
 from pyspark.sql import DataFrame
@@ -367,7 +368,7 @@ class DataStream(DataFrame):
         data = self._data.where(self._data["version"].isin(version))
         return DataStream(data=data, metadata=Metadata())
 
-    def compute_magnitude(self, col_names=[]):
+    def compute_magnitude(self, col_names=[], magnitude_col_name="magnitude"):
         if len(col_names)<1:
             raise Exception("col_names param is missing.")
         tmp = ""
@@ -375,23 +376,87 @@ class DataStream(DataFrame):
             tmp += 'F.col("'+col_name+'")*F.col("'+col_name+'")+'
         tmp = tmp.rstrip("+")
 
-        data = self._data.withColumn("magnitude", F.sqrt(eval(tmp)))
+        data = self._data.withColumn(magnitude_col_name, F.sqrt(eval(tmp)))
         return DataStream(data=data, metadata=Metadata())
 
-    def linear_interpolation(self, freq, timestamp_col="timestamp"):
+    def interpolate(self, freq=16, method='linear', axis=0, limit=None, inplace=False,
+                    limit_direction='forward', limit_area=None,
+                    downcast=None):
+        """
+        Interpolate values according to different methods. This method internally uses pandas interpolation.
+
+        Args:
+            freq (int): Frequency of the signal
+            method (str): default ‘linear’
+                - ‘linear’: Ignore the index and treat the values as equally spaced. This is the only method supported on MultiIndexes.
+                - ‘time’: Works on daily and higher resolution data to interpolate given length of interval.
+                - ‘index’, ‘values’: use the actual numerical values of the index.
+                - ‘pad’: Fill in NaNs using existing values.
+                - ‘nearest’, ‘zero’, ‘slinear’, ‘quadratic’, ‘cubic’, ‘spline’, ‘barycentric’, ‘polynomial’: Passed to scipy.interpolate.interp1d. These methods use the numerical values of the index. Both ‘polynomial’ and ‘spline’ require that you also specify an order (int), e.g. df.interpolate(method='polynomial', order=5).
+                - ‘krogh’, ‘piecewise_polynomial’, ‘spline’, ‘pchip’, ‘akima’: Wrappers around the SciPy interpolation methods of similar names. See Notes.
+                - ‘from_derivatives’: Refers to scipy.interpolate.BPoly.from_derivatives which replaces ‘piecewise_polynomial’ interpolation method in scipy 0.18.
+            axis  {0 or ‘index’, 1 or ‘columns’, None}: default None. Axis to interpolate along.
+            limit (int): optional. Maximum number of consecutive NaNs to fill. Must be greater than 0.
+            inplace (bool): default False. Update the data in place if possible.
+            limit_direction {‘forward’, ‘backward’, ‘both’}: default ‘forward’. If limit is specified, consecutive NaNs will be filled in this direction.
+            limit_area  {None, ‘inside’, ‘outside’}: default None. If limit is specified, consecutive NaNs will be filled with this restriction.
+                - None: No fill restriction.
+                - ‘inside’: Only fill NaNs surrounded by valid values (interpolate).
+                - ‘outside’: Only fill NaNs outside valid values (extrapolate).
+            downcast optional, ‘infer’ or None: defaults to None
+            **kwargs: Keyword arguments to pass on to the interpolating function.
+
+        Returns DataStream: interpolated data
+
+        """
         schema = self._data.schema
-        @pandas_udf(
-            StructType(sorted(schema, key=attrgetter("name"))),
-            PandasUDFType.GROUPED_MAP)
-        def _(pdf):
-            pdf.set_index(timestamp_col, inplace=True)
-            pdf = pdf.resample(freq).interpolate()
+        sample_freq = 1000/freq
+        @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+        def interpolate_data(pdf):
+            pdf.set_index("timestamp", inplace=True)
+            pdf = pdf.resample(str(sample_freq)+"ms").bfill(limit=1).interpolate(method=method, axis=axis, limit=limit,inplace=inplace, limit_direction=limit_direction, limit_area=limit_area, downcast=downcast)
             pdf.ffill(inplace=True)
             pdf.reset_index(drop=False, inplace=True)
             pdf.sort_index(axis=1, inplace=True)
             return pdf
 
-        return _
+        data = self._data.groupby(["user", "version"]).apply(interpolate_data)
+        return DataStream(data=data,metadata=Metadata())
+
+    def complementary_filter(self, freq:int=16, accelerometer_x:str="accelerometer_x",accelerometer_y:str="accelerometer_y",accelerometer_z:str="accelerometer_z", gyroscope_x:str="gyroscope_x", gyroscope_y:str="gyroscope_y", gyroscope_z:str="gyroscope_z"):
+        """
+        Compute complementary filter on gyro and accel data.
+        Args:
+            freq (int): frequency of accel/gryo. Assumption is that frequency is equal for both gyro and accel. 
+            accelerometer_x (str): name of the column 
+            accelerometer_y (str): name of the column
+            accelerometer_z (str): name of the column
+            gyroscope_x (str): name of the column
+            gyroscope_y (str): name of the column
+            gyroscope_z (str): name of the column
+        """
+        dt = 1.0 / freq  # 1/16.0;
+        M_PI = math.pi;
+        hpf = 0.90;
+        lpf = 0.10;
+
+        window = Window.partitionBy(self._data['user']).orderBy(self._data['timestamp'])
+
+        data = self._data.withColumn("thetaX_accel",
+                             ((F.atan2(-F.col(accelerometer_z), F.col(accelerometer_y)) * 180 / M_PI)) * lpf) \
+            .withColumn("theta_x",
+                        (F.lag("thetaX_accel").over(window) + F.col(gyroscope_x) * dt) * hpf + F.col("thetaX_accel")).drop("thetaX_accel") \
+            .withColumn("thetaY_accel",
+                             ((F.atan2(-F.col(accelerometer_x), F.col(accelerometer_z)) * 180 / M_PI)) * lpf) \
+            .withColumn("theta_y",
+                        (F.lag("thetaY_accel").over(window) + F.col(gyroscope_y) * dt) * hpf + F.col("thetaY_accel")).drop("thetaY_accel")\
+            .withColumn("thetaZ_accel",
+                             ((F.atan2(-F.col(accelerometer_y), F.col(accelerometer_x)) * 180 / M_PI)) * lpf) \
+            .withColumn("theta_z",
+                        (F.lag("thetaZ_accel").over(window) + F.col(gyroscope_z) * dt) * hpf + F.col("thetaZ_accel")).drop("thetaZ_accel")
+
+        return DataStream(data=data,metadata=Metadata())
+
 
     def compute(self, udfName, windowDuration: int = 60, slideDuration: int = None,
                       groupByColumnName: List[str] = [], startTime=None):
