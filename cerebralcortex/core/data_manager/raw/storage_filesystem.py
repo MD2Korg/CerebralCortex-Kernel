@@ -89,7 +89,7 @@ class FileSystemStorage:
         if user_id is not None:
             df = df.withColumn('user', lit(str(user_id)))
 
-        return df.repartition(40)
+        return df
 
         # if version=="all":
         #     hdfs_url = self._get_storage_path(stream_name)
