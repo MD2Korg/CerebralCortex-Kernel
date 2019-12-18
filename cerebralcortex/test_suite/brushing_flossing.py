@@ -69,7 +69,49 @@ agc = ag.complementary_filter()
 # generate candidates
 
 agcc = get_candidates(agc)
-agcc.show(10,truncate=False)
-agcc.filter(agcc.candidate==1).show(10,truncate=False)
+
+schema = StructType([
+    StructField("timestamp", TimestampType()),
+    StructField("localtime", TimestampType()),
+    StructField("user", StringType()),
+    StructField("version", IntegerType()),
+    StructField("name", StringType()),
+    StructField("trigger_type", StringType()),
+    StructField("start_time", TimestampType()),
+    StructField("end_time", TimestampType()),
+    StructField("total_time", FloatType()),
+    StructField("total_questions", IntegerType()),
+    StructField("total_answers", FloatType()),
+    StructField("average_question_length", FloatType()),
+    StructField("average_total_answer_options", FloatType()),
+    StructField("time_between_ema", FloatType()),
+    StructField("status", StringType()),
+    StructField("name", StringType()),
+    StructField("trigger_type", StringType()),
+    StructField("start_time", TimestampType()),
+    StructField("end_time", TimestampType()),
+    StructField("total_time", FloatType()),
+    StructField("total_questions", IntegerType()),
+    StructField("total_answers", FloatType()),
+    StructField("average_question_length", FloatType()),
+    StructField("average_total_answer_options", FloatType()),
+    StructField("time_between_ema", FloatType()),
+    StructField("status", StringType()),
+    StructField("question_answers", StringType())
+
+
+])
+
+# compute features
+@pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+def interpolate_data(pdf):
+    pdf.set_index("timestamp", inplace=True)
+    pdf = pdf.resample(str(sample_freq)+"ms").bfill(limit=1).interpolate(method=method, axis=axis, limit=limit,inplace=inplace, limit_direction=limit_direction, limit_area=limit_area, downcast=downcast)
+    pdf.ffill(inplace=True)
+    pdf.reset_index(drop=False, inplace=True)
+    pdf.sort_index(axis=1, inplace=True)
+    return pdf
+
+agcc.groupby(["user","version"])
 #
 #agc.show(100,truncate=False)

@@ -66,15 +66,15 @@ def get_orientation_data(ds, sensor_type, wrist, ori=1, is_new_device=False):
     return data
 
 
-def get_candidates(ds):
+def get_candidates(ds, uper_limit:float=0.1, lower_limit:float=0.1, threshold:float=0.5):
     window = Window.partitionBy(["user", "version"]).rowsBetween(-3, 3).orderBy("timestamp")
 
     @pandas_udf(IntegerType(), PandasUDFType.GROUPED_AGG)
     def generate_candidates(accel_y):
-        accel_y[accel_y > 0.1] = 1
-        accel_y[accel_y <= 0.1] = 0
+        accel_y[accel_y > uper_limit] = 1
+        accel_y[accel_y <= lower_limit] = 0
 
-        if accel_y.mean() >= 0.5:
+        if accel_y.mean() >= threshold:
             return 1
         else:
             return 0

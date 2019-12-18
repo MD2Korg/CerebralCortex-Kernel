@@ -89,7 +89,7 @@ class FileSystemStorage:
         if user_id is not None:
             df = df.withColumn('user', lit(str(user_id)))
 
-        return df
+        return df.repartition(40)
 
         # if version=="all":
         #     hdfs_url = self._get_storage_path(stream_name)
@@ -131,7 +131,7 @@ class FileSystemStorage:
     def write_spark_dataframe(self, stream_name, data,file_mode):
         hdfs_url = self._get_storage_path(stream_name)
         try:
-            data.coalesce(1).write.partitionBy(["version","user"]).format('parquet').mode(file_mode).save(hdfs_url)
+            data.coalesce(15).write.partitionBy(["version","user"]).format('parquet').mode(file_mode).save(hdfs_url)
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
