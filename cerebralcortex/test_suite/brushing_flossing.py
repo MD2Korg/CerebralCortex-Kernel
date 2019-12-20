@@ -10,6 +10,10 @@ import os
 import pathlib
 import unittest
 import warnings
+import numpy as np
+import math
+from scipy.stats import skew
+from scipy.stats import kurtosis
 
 from cerebralcortex import Kernel
 from cerebralcortex.test_suite.test_object_storage import TestObjectStorage
@@ -48,59 +52,78 @@ gyro = DataStream(data=dfg, metadata=Metadata())
 schemaa = dfa.schema
 schemag = dfg.schema
 
-accel2 = get_orientation_data(ds=accel, sensor_type="accel", wrist="left")
-gyro2 = get_orientation_data(ds=gyro, sensor_type="gyro", wrist="left")
-
-#compute magnitude
-accel3 = accel2.compute_magnitude(col_names=["accelerometer_x", "accelerometer_y", "accelerometer_z"],magnitude_col_name="accel_magnitude")
-gyro3 = gyro2.compute_magnitude(col_names=["gyroscope_x", "gyroscope_y", "gyroscope_z"], magnitude_col_name="gyro_magnitude")
-
-
 # interpolation
-accel4 = accel3.interpolate()
-gyro4 = gyro3.interpolate()
+accel4 = accel.interpolate()
+gyro4 = gyro.interpolate()
 
 # join accel and gyro streams
 ag = accel4.join(gyro4, on=['user', 'timestamp', 'version'], how='full').dropna()
 
-# apply complementary filter
-agc = ag.complementary_filter()
+agc = get_candidates(ag)
 
-# generate candidates
+#remove where group==0 - non-candidates
+agc=agc.filter(agc.candidate==1)
 
-agcc = get_candidates(agc)
-
-schema = StructType([
-    StructField("timestamp", TimestampType()),
-    StructField("localtime", TimestampType()),
-    StructField("user", StringType()),
-    StructField("version", IntegerType()),
-    StructField("name", StringType()),
-    StructField("trigger_type", StringType()),
-    StructField("start_time", TimestampType()),
-    StructField("end_time", TimestampType()),
-    StructField("total_time", FloatType()),
-    StructField("total_questions", IntegerType()),
-    StructField("total_answers", FloatType()),
-    StructField("average_question_length", FloatType()),
-    StructField("average_total_answer_options", FloatType()),
-    StructField("time_between_ema", FloatType()),
-    StructField("status", StringType()),
-    StructField("name", StringType()),
-    StructField("trigger_type", StringType()),
-    StructField("start_time", TimestampType()),
-    StructField("end_time", TimestampType()),
-    StructField("total_time", FloatType()),
-    StructField("total_questions", IntegerType()),
-    StructField("total_answers", FloatType()),
-    StructField("average_question_length", FloatType()),
-    StructField("average_total_answer_options", FloatType()),
-    StructField("time_between_ema", FloatType()),
-    StructField("status", StringType()),
-    StructField("question_answers", StringType())
+# # apply complementary filter
+agcc = agc.complementary_filter()
 
 
-])
+# #compute magnitude
+# accel3 = accel2.compute_magnitude(col_names=["accelerometer_x", "accelerometer_y", "accelerometer_z"],magnitude_col_name="accel_magnitude")
+# gyro3 = gyro2.compute_magnitude(col_names=["gyroscope_x", "gyroscope_y", "gyroscope_z"], magnitude_col_name="gyro_magnitude")
+
+
+# schema = StructType([
+#     StructField("timestamp", TimestampType()),
+#     StructField("localtime", TimestampType()),
+#     StructField("user", StringType()),
+#     StructField("version", IntegerType()),
+#     StructField("name", StringType()),
+#     StructField("trigger_type", StringType()),
+#     StructField("start_time", TimestampType()),
+#     StructField("end_time", TimestampType()),
+#     StructField("total_time", FloatType()),
+#     StructField("total_questions", IntegerType()),
+#     StructField("total_answers", FloatType()),
+#     StructField("average_question_length", FloatType()),
+#     StructField("average_total_answer_options", FloatType()),
+#     StructField("time_between_ema", FloatType()),
+#     StructField("status", StringType()),
+#     StructField("name", StringType()),
+#     StructField("trigger_type", StringType()),
+#     StructField("start_time", TimestampType()),
+#     StructField("end_time", TimestampType()),
+#     StructField("total_time", FloatType()),
+#     StructField("total_questions", IntegerType()),
+#     StructField("total_answers", FloatType()),
+#     StructField("average_question_length", FloatType()),
+#     StructField("average_total_answer_options", FloatType()),
+#     StructField("time_between_ema", FloatType()),
+#     StructField("status", StringType()),
+#     StructField("question_answers", StringType())
+#
+#
+# ])
+
+def zero_cross_rate(series):
+    """
+    How often the signal changes sign (+/-)
+    """
+    series_mean = np.mean(series)
+    series = [v-series_mean for v in series]
+    zero_cross_count = (np.diff(np.sign(series)) != 0).sum()
+    # print('zero_cross_count', zero_cross_count)
+    return zero_cross_count / len(series)
+
+def compute_statistical_features(data):
+    mean = np.mean(data)
+    median = np.median(data)
+    std = np.std(data)
+    skewness = skew(data)
+    kurt = kurtosis(data)
+    power = np.mean([v * v for v in data])
+    zc = zero_cross_rate(data)
+    return [mean, median, std, skewness, kurt, power, zc]
 
 # compute features
 @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
@@ -111,7 +134,7 @@ def interpolate_data(pdf):
     pdf.reset_index(drop=False, inplace=True)
     pdf.sort_index(axis=1, inplace=True)
     return pdf
-
-agcc.groupby(["user","version"])
+#
+# agcc.groupby(["user","version"])
 #
 #agc.show(100,truncate=False)

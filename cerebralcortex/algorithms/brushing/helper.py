@@ -32,7 +32,9 @@ from pyspark.sql.window import Window
 
 
 
-def get_orientation_data(ds, sensor_type, wrist, ori=1, is_new_device=False):
+def get_orientation_data(ds, wrist, ori=1, is_new_device=False,
+                         accelerometer_x="accelerometer_x",accelerometer_y="accelerometer_y",accelerometer_z="accelerometer_z",
+                         gyroscope_x="gyroscope_x",gyroscope_y="gyroscope_y",gyroscope_z="gyroscope_z"):
     left_ori = {"old": {0: [1, 1, 1], 1: [1, 1, 1], 2: [-1, -1, 1], 3: [-1, 1, 1], 4: [1, -1, 1]},
                 "new": {0: [-1, 1, 1], 1: [-1, 1, 1], 2: [1, -1, 1], 3: [1, 1, 1], 4: [-1, -1, 1]}}
     right_ori = {"old": {0: [1, -1, 1], 1: [1, -1, 1], 2: [-1, 1, 1], 3: [-1, -1, 1], 4: [1, 1, 1]},
@@ -52,22 +54,19 @@ def get_orientation_data(ds, sensor_type, wrist, ori=1, is_new_device=False):
     else:
         raise Exception("wrist can only be left or right.")
 
-    if sensor_type == "gyro":
-        data = ds.withColumn("gyroscope_x", ds.gyroscope_x * fac[0]) \
-            .withColumn("gyroscope_y", ds.gyroscope_y * fac[1]) \
-            .withColumn("gyroscope_z", ds.gyroscope_z * fac[2])
-    elif sensor_type == "accel":
-        data = ds.withColumn("accelerometer_x", ds.accelerometer_x * fac[0]) \
-            .withColumn("accelerometer_y", ds.accelerometer_y * fac[1]) \
-            .withColumn("accelerometer_z", ds.accelerometer_z * fac[2])
-    else:
-        raise Exception("Only gyro or accel sensor_type are allowed.")
+    data = ds.withColumn(gyroscope_x, ds[gyroscope_x] * fac[0]) \
+        .withColumn(gyroscope_y, ds[gyroscope_y] * fac[1]) \
+        .withColumn(gyroscope_z, ds[gyroscope_z] * fac[2])\
+        .withColumn(accelerometer_x, ds[accelerometer_x] * fac[0]) \
+        .withColumn(accelerometer_y, ds[accelerometer_y] * fac[1]) \
+        .withColumn(accelerometer_z, ds[accelerometer_z] * fac[2])
 
     return data
 
 
 def get_candidates(ds, uper_limit:float=0.1, lower_limit:float=0.1, threshold:float=0.5):
     window = Window.partitionBy(["user", "version"]).rowsBetween(-3, 3).orderBy("timestamp")
+    window2 = Window.orderBy("timestamp")
 
     @pandas_udf(IntegerType(), PandasUDFType.GROUPED_AGG)
     def generate_candidates(accel_y):
@@ -79,4 +78,37 @@ def get_candidates(ds, uper_limit:float=0.1, lower_limit:float=0.1, threshold:fl
         else:
             return 0
 
-    return ds.withColumn("candidate", generate_candidates(ds.accelerometer_y).over(window))
+    df = ds.withColumn("candidate", generate_candidates(ds.accelerometer_y).over(window))
+
+    #df.show()
+
+    df2 = df.withColumn(
+        "userChange",
+        (F.col("user") != F.lag("user").over(window2)).cast("int")
+    ) \
+        .withColumn(
+        "candidateChange",
+        (F.col("candidate") != F.lag("candidate").over(window2)).cast("int")
+    ) \
+        .fillna(
+        0,
+        subset=["userChange", "candidateChange"]
+    ) \
+        .withColumn(
+        "indicator",
+        (~((F.col("userChange") == 0) & (F.col("candidateChange") == 0))).cast("int")
+    ) \
+        .withColumn(
+        "group",
+        F.sum(F.col("indicator")).over(window2.rangeBetween(Window.unboundedPreceding, 0))
+    ).drop("userChange").drop("candidateChange").drop("indicator")
+
+    # df3=df2.groupBy("user", "group") \
+    #     .agg(
+    #     F.min("timestamp").alias("start_time"),
+    #     F.max("timestamp").alias("end_time"),
+    #     F.min("candidate").alias("candidate")
+    # ) \
+    #     .drop("group")
+
+    return df2

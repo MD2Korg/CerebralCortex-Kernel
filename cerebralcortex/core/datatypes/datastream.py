@@ -959,6 +959,22 @@ class DataStream(DataFrame):
         data = self._data.fillna(value=value, subset=subset)
         return DataStream(data=data, metadata=Metadata())
 
+    def repartition(self, numPartitions, *cols):
+        """
+        Returns a new DataStream partitioned by the given partitioning expressions. The resulting DataStream is hash partitioned.
+
+        numPartitions can be an int to specify the target number of partitions or a Column. If it is a Column, it will be used as the first partitioning column. If not specified, the default number of partitions is used.
+
+        Args:
+            numPartitions:
+            *cols:
+
+        Returns:
+
+        """
+        data = self._data.repartition(numPartitions,*cols)
+        return DataStream(data=data, metadata=Metadata())
+
     def filter(self, condition):
         """
         Filters rows using the given condition
