@@ -80,8 +80,6 @@ def get_candidates(ds, uper_limit:float=0.1, lower_limit:float=0.1, threshold:fl
 
     df = ds.withColumn("candidate", generate_candidates(ds.accelerometer_y).over(window))
 
-    #df.show()
-
     df2 = df.withColumn(
         "userChange",
         (F.col("user") != F.lag("user").over(window2)).cast("int")
@@ -112,3 +110,4 @@ def get_candidates(ds, uper_limit:float=0.1, lower_limit:float=0.1, threshold:fl
     #     .drop("group")
 
     return df2
+

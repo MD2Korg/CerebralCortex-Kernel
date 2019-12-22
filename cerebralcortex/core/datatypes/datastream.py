@@ -27,6 +27,8 @@ import re
 import sys
 from typing import List
 import math
+import pandas as pd
+import numpy as np
 
 from datetime import timedelta
 from pyspark.sql import DataFrame
@@ -458,7 +460,7 @@ class DataStream(DataFrame):
         return DataStream(data=data,metadata=Metadata())
 
 
-    def compute(self, udfName, windowDuration: int = 60, slideDuration: int = None,
+    def compute(self, udfName, windowDuration: int = None, slideDuration: int = None,
                       groupByColumnName: List[str] = [], startTime=None):
         """
         Run an algorithm. This method supports running an udf method on windowed data
@@ -479,16 +481,17 @@ class DataStream(DataFrame):
         if 'custom_window' in self._data.columns:
             data = self._data.groupby('user', 'custom_window').apply(udfName)
         else:
-            windowDuration = str(windowDuration) + " seconds"
             groupbycols = ["user", "version"]
         
-        
-            win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
+            if windowDuration:
+                windowDuration = str(windowDuration) + " seconds"
+                win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
+                groupbycols.append(win)
 
             if len(groupByColumnName) > 0:
                 groupbycols.extend(groupByColumnName)
 
-            groupbycols.append(win)
+
 
             data = self._data.groupBy(groupbycols).apply(udfName)
 
@@ -1360,6 +1363,272 @@ class DataStream(DataFrame):
         return DataStream(data=data, metadata=Metadata())
 
     # !!!!                       END Wrapper for PySpark Methods                           !!!
+
+    ##################### !!!!!!!!!!!!!!!! FEATURE COMPUTATION UDFS !!!!!!!!!!!!!!!!!!! ################################
+
+    ### COMPUTE STATISTICAL FEATURES
+
+    def compute_statistical_features(self, exclude_col_names: list = [], windowDuration: int = None, slideDuration: int = None,
+                      groupByColumnName: List[str] = [], startTime=None):
+
+        feature_names = ['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
+                      'kurt', 'power', 'zero_cross_rate']
+        exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
+
+
+        data = self._data.drop(*exclude_col_names)
+
+        df_column_names = data.columns
+
+
+        basic_schema = StructType([
+            StructField("timestamp", TimestampType()),
+            StructField("localtime", TimestampType()),
+            StructField("user", StringType()),
+            StructField("version", IntegerType()),
+            StructField("start_time", TimestampType()),
+            StructField("end_time", TimestampType())
+        ])
+
+        features_list = []
+        for cn in df_column_names:
+            for sf in feature_names:
+                features_list.append(StructField(cn + "_" + sf, FloatType(), True))
+
+        features_schema = StructType(basic_schema.fields + features_list)
+
+        def calculate_zero_cross_rate(series):
+            """
+            How often the signal changes sign (+/-)
+            """
+            series_mean = np.mean(series)
+            series = [v - series_mean for v in series]
+            zero_cross_count = (np.diff(np.sign(series)) != 0).sum()
+            return zero_cross_count / len(series)
+
+        def get_power(series):
+            power = np.mean([v * v for v in series])
+            return power
+
+        @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
+        def get_stats_features_udf(df):
+            timestamp = df['timestamp'].iloc[0]
+            localtime = df['localtime'].iloc[0]
+            user = df['user'].iloc[0]
+            version = df['version'].iloc[0]
+            start_time = timestamp
+            end_time = df['timestamp'].iloc[-1]
+
+            df.drop(exclude_col_names, axis=1, inplace=True)
+
+            df_mean = df.mean()
+            df_mean.index += '_mean'
+
+            df_median = df.median()
+            df_median.index += '_median'
+
+            df_stddev = df.std()
+            df_stddev.index += '_stddev'
+
+            df_var = df.var()
+            df_var.index += '_variance'
+
+            df_max = df.max()
+            df_max.index += '_max'
+
+            df_min = df.min()
+            df_min.index += '_min'
+
+            df_skew = df.skew()
+            df_skew.index += '_skew'
+
+            df_kurt = df.kurt()
+            df_kurt.index += '_kurt'
+
+            df_zero_cross_rate = df.apply(calculate_zero_cross_rate)
+            df_zero_cross_rate.index += '_zero_cross_rate'
+
+            df_power = df.apply(get_power)
+            df_power.index += '_power'
+
+            output = pd.DataFrame(pd.concat(
+                [df_mean, df_median, df_stddev, df_var, df_max, df_min, df_skew, df_kurt, df_zero_cross_rate,
+                 df_power])).T
+
+            basic_df = pd.DataFrame([[timestamp, localtime, user, int(version), start_time, end_time]],
+                                    columns=['timestamp', 'localtime', 'user', 'version', 'start_time', 'end_time'])
+            return basic_df.assign(**output)
+
+        data = self.compute(get_stats_features_udf, windowDuration=windowDuration, slideDuration=slideDuration,
+                            groupByColumnName=groupByColumnName, startTime=startTime)
+        return DataStream(data=data, metadata=Metadata())
+
+    ### COMPUTE FFT FEATURES
+
+    def compute_fouriar_features(self, exclude_col_names: list = [], windowDuration: int = None, slideDuration: int = None,
+                      groupByColumnName: List[str] = [], startTime=None):
+        eps = 0.00000001
+        feature_names = ["spectral_cenroid", 'spread', 'spectral_entropy', 'spectral_entropy_old', 'spectral_flux',
+            'spectral_folloff']
+        exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
+
+        data = self._data.drop(*exclude_col_names)
+
+        df_column_names = data.columns
+
+        basic_schema = StructType([
+            StructField("timestamp", TimestampType()),
+            StructField("localtime", TimestampType()),
+            StructField("user", StringType()),
+            StructField("version", IntegerType()),
+            StructField("start_time", TimestampType()),
+            StructField("end_time", TimestampType())
+        ])
+
+        features_list = []
+        for cn in df_column_names:
+            for sf in feature_names:
+                features_list.append(StructField(cn + "_" + sf, FloatType(), True))
+
+        features_schema = StructType(basic_schema.fields + features_list)
+
+        def stSpectralCentroidAndSpread(X, fs):
+            """Computes spectral centroid of frame (given abs(FFT))"""
+            ind = (np.arange(1, len(X) + 1)) * (fs / (2.0 * len(X)))
+
+            Xt = X.copy()
+            Xt = Xt / Xt.max()
+            NUM = np.sum(ind * Xt)
+            DEN = np.sum(Xt) + eps
+
+            # Centroid:
+            C = (NUM / DEN)
+
+            # Spread:
+            S = np.sqrt(np.sum(((ind - C) ** 2) * Xt) / DEN)
+
+            # Normalize:
+            C = C / (fs / 2.0)
+            S = S / (fs / 2.0)
+
+            return (C, S)
+
+        def stSpectralEntropy(X, numOfShortBlocks=10):
+            """Computes the spectral entropy"""
+            L = len(X)  # number of frame samples
+            Eol = np.sum(X ** 2)  # total spectral energy
+
+            subWinLength = int(np.floor(L / numOfShortBlocks))  # length of sub-frame
+            if L != subWinLength * numOfShortBlocks:
+                X = X[0:subWinLength * numOfShortBlocks]
+
+            subWindows = X.reshape(subWinLength, numOfShortBlocks,
+                                   order='F').copy()  # define sub-frames (using matrix reshape)
+            s = np.sum(subWindows ** 2, axis=0) / (Eol + eps)  # compute spectral sub-energies
+            En = -np.sum(s * np.log2(s + eps))  # compute spectral entropy
+
+            return En
+
+        def stSpectralFlux(X, Xprev):
+            """
+            Computes the spectral flux feature of the current frame
+            ARGUMENTS:
+                X:        the abs(fft) of the current frame
+                Xpre:        the abs(fft) of the previous frame
+            """
+            # compute the spectral flux as the sum of square distances:
+
+            sumX = np.sum(X + eps)
+            sumPrevX = np.sum(Xprev + eps)
+            F = np.sum((X / sumX - Xprev / sumPrevX) ** 2)
+
+            return F
+
+        def stSpectralRollOff(X, c, fs):
+            """Computes spectral roll-off"""
+
+            totalEnergy = np.sum(X ** 2)
+            fftLength = len(X)
+            Thres = c * totalEnergy
+            # Ffind the spectral rolloff as the frequency position where the respective spectral energy is equal to c*totalEnergy
+            CumSum = np.cumsum(X ** 2) + eps
+            [a, ] = np.nonzero(CumSum > Thres)
+            if len(a) > 0:
+                mC = np.float64(a[0]) / (float(fftLength))
+            else:
+                mC = 0.0
+            return (mC)
+
+        def spectral_entropy(data, sampling_freq, bands=None):
+
+            psd = np.abs(np.fft.rfft(data)) ** 2
+            psd /= np.sum(psd)  # psd as a pdf (normalised to one)
+
+            if bands is None:
+                power_per_band = psd[psd > 0]
+            else:
+                freqs = np.fft.rfftfreq(data.size, 1 / float(sampling_freq))
+                bands = np.asarray(bands)
+
+                freq_limits_low = np.concatenate([[0.0], bands])
+                freq_limits_up = np.concatenate([bands, [np.Inf]])
+
+                power_per_band = [np.sum(psd[np.bitwise_and(freqs >= low, freqs < up)])
+                                  for low, up in zip(freq_limits_low, freq_limits_up)]
+
+                power_per_band = power_per_band[power_per_band > 0]
+
+            return -np.sum(power_per_band * np.log2(power_per_band))
+
+        def fouriar_features_pandas_udf(data, frequency: float = 16.0):
+
+            Fs = frequency  # the sampling freq (in Hz)
+
+            # fourier transforms!
+            data_fft = abs(np.fft.rfft(data))
+
+            X = abs(np.fft.fft(data))
+            nFFT = int(len(X) / 2) + 1
+
+            X = X[0:nFFT]  # normalize fft
+            X = X / len(X)
+
+            C, S = stSpectralCentroidAndSpread(X, Fs)  # spectral centroid and spread
+            se = stSpectralEntropy(X)  # spectral entropy
+            se_old = spectral_entropy(X, frequency)  # spectral flux
+            flx = stSpectralFlux(X, X.copy())  # spectral flux
+            roff = stSpectralRollOff(X, 0.90, frequency)  # spectral rolloff
+
+            return [C, S, se, se_old, flx, roff]
+
+        @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
+        def get_fft_features(df):
+            timestamp = df['timestamp'].iloc[0]
+            localtime = df['localtime'].iloc[0]
+            user = df['user'].iloc[0]
+            version = df['version'].iloc[0]
+            start_time = timestamp
+            end_time = df['timestamp'].iloc[-1]
+
+            df.drop(exclude_col_names, axis=1, inplace=True)
+
+            df_ff = df.apply(fouriar_features_pandas_udf)
+
+            # split column into multiple columns
+            df3 = pd.DataFrame(df_ff.values.tolist(), index=df_ff.index)
+            df3.columns = feature_names
+
+            # multiple rows to one row
+            output = df3.unstack().to_frame().sort_index(level=1).T
+            output.columns = [f'{j}_{i}' for i, j in output.columns]
+
+            basic_df = pd.DataFrame([[timestamp, localtime, user, int(version), start_time, end_time]],
+                                    columns=['timestamp', 'localtime', 'user', 'version', 'start_time', 'end_time'])
+            # df.insert(loc=0, columns=, value=basic_cols)
+            return basic_df.assign(**output)
+
+        data = self.compute(get_fft_features, windowDuration=windowDuration, slideDuration=slideDuration, groupByColumnName=groupByColumnName, startTime=startTime)
+        return DataStream(data=data, metadata=Metadata())
 
     ###################### New Methods by Anand #########################
 

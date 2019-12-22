@@ -43,6 +43,9 @@ from cerebralcortex.core.plotting.stress_plots import StressStreamPlots
 sqlContext = get_or_create_sc("sqlContext")
 dfa=sqlContext.read.parquet("/home/ali/IdeaProjects/MD2K_DATA/cc3/moral_sample_data/accel/")
 dfg=sqlContext.read.parquet("/home/ali/IdeaProjects/MD2K_DATA/cc3/moral_sample_data/gyro/")
+dfa = dfa.withColumn("localtime", dfa.timestamp)
+dfg = dfg.withColumn("localtime", dfg.timestamp)
+
 
 CC = Kernel("./../../conf/", auto_offset_reset="smallest", study_name="default")
 
@@ -57,13 +60,15 @@ accel4 = accel.interpolate()
 gyro4 = gyro.interpolate()
 
 # join accel and gyro streams
-ag = accel4.join(gyro4, on=['user', 'timestamp', 'version'], how='full').dropna()
+ag = accel4.join(gyro4, on=['user', 'timestamp', 'localtime', 'version'], how='full').dropna()
 
 agc = get_candidates(ag)
 
 #remove where group==0 - non-candidates
 agc=agc.filter(agc.candidate==1)
 
+sf=agc.compute_fouriar_features(exclude_col_names=['group','candidate'])
+sf.show()
 # # apply complementary filter
 agcc = agc.complementary_filter()
 
@@ -125,16 +130,25 @@ def compute_statistical_features(data):
     zc = zero_cross_rate(data)
     return [mean, median, std, skewness, kurt, power, zc]
 
+stats_schema = StructType([
+    StructField("timestamp", TimestampType()),
+    StructField("localtime", TimestampType()),
+    StructField("user", StringType()),
+    StructField("version", IntegerType()),
+])
+
+stats_features = ['mean', 'mode', 'median', 'std', 'variance', 'max', 'min', 'lower_quartile', 'upper_quartile', 'sqrt', 'skewness', 'kurt', 'power', 'zero_crossing']
+column_names = ['accelerometer_x', 'accelerometer_y', 'accelerometer_z', 'gyroscope_y', 'gyroscope_x', 'gyroscope_z']
 # compute features
-@pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-def interpolate_data(pdf):
-    pdf.set_index("timestamp", inplace=True)
-    pdf = pdf.resample(str(sample_freq)+"ms").bfill(limit=1).interpolate(method=method, axis=axis, limit=limit,inplace=inplace, limit_direction=limit_direction, limit_area=limit_area, downcast=downcast)
-    pdf.ffill(inplace=True)
-    pdf.reset_index(drop=False, inplace=True)
-    pdf.sort_index(axis=1, inplace=True)
-    return pdf
-#
+# @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+# def interpolate_data(pdf):
+#     pdf.set_index("timestamp", inplace=True)
+#     pdf = pdf.resample(str(sample_freq)+"ms").bfill(limit=1).interpolate(method=method, axis=axis, limit=limit,inplace=inplace, limit_direction=limit_direction, limit_area=limit_area, downcast=downcast)
+#     pdf.ffill(inplace=True)
+#     pdf.reset_index(drop=False, inplace=True)
+#     pdf.sort_index(axis=1, inplace=True)
+#     return pdf
+# #
 # agcc.groupby(["user","version"])
 #
 #agc.show(100,truncate=False)
