@@ -457,7 +457,7 @@ class DataStream(DataFrame):
             .withColumn("theta_z",
                         (F.lag("thetaZ_accel").over(window) + F.col(gyroscope_z) * dt) * hpf + F.col("thetaZ_accel")).drop("thetaZ_accel")
 
-        return DataStream(data=data,metadata=Metadata())
+        return DataStream(data=data.dropna(),metadata=Metadata())
 
 
     def compute(self, udfName, windowDuration: int = None, slideDuration: int = None,
@@ -1531,7 +1531,7 @@ class DataStream(DataFrame):
             return basic_df.assign(**output)
 
         data = self.compute(get_fft_features, windowDuration=windowDuration, slideDuration=slideDuration, groupByColumnName=groupByColumnName, startTime=startTime)
-        return DataStream(data=data, metadata=Metadata())
+        return DataStream(data=data._data, metadata=Metadata())
 
         ### COMPUTE STATISTICAL FEATURES
 
@@ -1627,7 +1627,7 @@ class DataStream(DataFrame):
 
         data = self.compute(get_stats_features_udf, windowDuration=windowDuration, slideDuration=slideDuration,
                             groupByColumnName=groupByColumnName, startTime=startTime)
-        return DataStream(data=data, metadata=Metadata())
+        return DataStream(data=data._data, metadata=Metadata())
 
     ### COMPUTE Correlation and Mean Standard Error (MSE) FEATURES
 
@@ -1691,7 +1691,7 @@ class DataStream(DataFrame):
 
         data = self.compute(get_corr_mse_features_udf, windowDuration=windowDuration, slideDuration=slideDuration,
                             groupByColumnName=groupByColumnName, startTime=startTime)
-        return DataStream(data=data, metadata=Metadata())
+        return DataStream(data=data._data, metadata=Metadata())
 
     ###################### New Methods by Anand #########################
 

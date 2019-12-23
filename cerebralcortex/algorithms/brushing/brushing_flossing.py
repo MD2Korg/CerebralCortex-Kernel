@@ -34,7 +34,7 @@ from pyspark.sql.window import Window
 
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
-from cerebralcortex.algorithms.brushing.helper import get_orientation_data, get_candidates
+from cerebralcortex.algorithms.brushing.helper import get_orientation_data, get_candidates, classify_brushing
 from cerebralcortex.core.plotting.basic_plots import BasicPlots
 from cerebralcortex.core.plotting.stress_plots import StressStreamPlots
 
@@ -46,43 +46,52 @@ dfg=sqlContext.read.parquet("/home/ali/IdeaProjects/MD2K_DATA/cc3/moral_sample_d
 dfa = dfa.withColumn("localtime", dfa.timestamp)
 dfg = dfg.withColumn("localtime", dfg.timestamp)
 
+##########################################################################################################
 
-CC = Kernel("./../../conf/", auto_offset_reset="smallest", study_name="default")
+CC = Kernel("../../conf/", auto_offset_reset="smallest", study_name="default")
 
-accel = DataStream(data=dfa, metadata=Metadata())
-gyro = DataStream(data=dfg, metadata=Metadata())
-
-schemaa = dfa.schema
-schemag = dfg.schema
+ds_accel = DataStream(data=dfa, metadata=Metadata())
+ds_gyro = DataStream(data=dfg, metadata=Metadata())
 
 # interpolation
-accel4 = accel.interpolate()
-gyro4 = gyro.interpolate()
+ds_accel_interpolated = ds_accel.interpolate()
+ds_gyro_interpolated = ds_gyro.interpolate()
+
+##compute magnitude
+ds_accel_magnitude = ds_accel_interpolated.compute_magnitude(col_names=["accelerometer_x", "accelerometer_y", "accelerometer_z"], magnitude_col_name="accel_magnitude")
+ds_gyro_magnitude = ds_gyro_interpolated.compute_magnitude(col_names=["gyroscope_x", "gyroscope_y", "gyroscope_z"], magnitude_col_name="gyro_magnitude")
 
 # join accel and gyro streams
-ag = accel4.join(gyro4, on=['user', 'timestamp', 'localtime', 'version'], how='full').dropna()
+ds_ag = ds_accel_magnitude.join(ds_gyro_magnitude, on=['user', 'timestamp', 'localtime', 'version'], how='full').dropna()
 
-agc = get_candidates(ag)
+# get orientation
+ds_ag_orientation = get_orientation_data(ds_ag,wrist="left")
+
+## apply complementary filter
+ds_ag_complemtary_filtered = ds_ag_orientation.complementary_filter()
+
+# get brushing candidate groups
+ds_ag_candidates = get_candidates(ds_ag_complemtary_filtered)
 
 #remove where group==0 - non-candidates
-agc=agc.filter(agc.candidate==1)
+ds_ag_candidates=ds_ag_candidates.filter(ds_ag_candidates.candidate==1)
 
-# # apply complementary filter
-agcc = agc.complementary_filter().dropna()
 
 ## compute features
-ff=agcc.compute_fouriar_features(exclude_col_names=['group','candidate'], groupByColumnName=["group"])
-sf = agc.compute_statistical_features(exclude_col_names=['group','candidate'], groupByColumnName=["group"])
-rmf = agc.compute_corr_mse_accel_gyro(exclude_col_names=['group','candidate'], groupByColumnName=["group"])
-#ff.show(truncate=False)
-ff.show(truncate=False)
+ds_fouriar_features=ds_ag_candidates.compute_fouriar_features(exclude_col_names=['group', 'candidate'], groupByColumnName=["group"])
+ds_statistical_features = ds_ag_candidates.compute_statistical_features(exclude_col_names=['group','candidate'], groupByColumnName=["group"])
+ds_corr_mse_features = ds_ag_candidates.compute_corr_mse_accel_gyro(exclude_col_names=['group','candidate'], groupByColumnName=["group"])
 
+ds_features = ds_fouriar_features\
+    .join(ds_statistical_features, on=['user', 'timestamp', 'localtime', 'version'], how='full')\
+    .join(ds_corr_mse_features, on=['user', 'timestamp', 'localtime', 'version'], how='full')
 
+pdf_features = ds_features.toPandas()
 
+pdf_predictions = classify_brushing(pdf_features,model_file_name="model/AB_model_brushing_all_features.model")
 
-# #compute magnitude
-# accel3 = accel2.compute_magnitude(col_names=["accelerometer_x", "accelerometer_y", "accelerometer_z"],magnitude_col_name="accel_magnitude")
-# gyro3 = gyro2.compute_magnitude(col_names=["gyroscope_x", "gyroscope_y", "gyroscope_z"], magnitude_col_name="gyro_magnitude")
+print(pdf_predictions)
+
 
 
 # schema = StructType([

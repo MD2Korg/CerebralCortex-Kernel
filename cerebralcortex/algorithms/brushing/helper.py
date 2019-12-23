@@ -19,6 +19,8 @@ from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
 from cerebralcortex.test_suite.test_stream import DataStreamTest
 from functools import reduce
 import math
+import pickle
+import pandas as pd
 from datetime import timedelta
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
@@ -111,3 +113,11 @@ def get_candidates(ds, uper_limit:float=0.1, lower_limit:float=0.1, threshold:fl
 
     return df2
 
+def classify_brushing(X: pd.DataFrame,model_file_name:str):
+    with open(model_file_name, 'rb') as handle:
+        clf = pickle.load(handle)
+    X=X.values
+    X = X[:,4:]
+    preds = clf.predict(X)
+
+    return preds
