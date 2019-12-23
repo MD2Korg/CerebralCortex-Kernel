@@ -67,10 +67,17 @@ agc = get_candidates(ag)
 #remove where group==0 - non-candidates
 agc=agc.filter(agc.candidate==1)
 
-sf=agc.compute_fouriar_features(exclude_col_names=['group','candidate'])
-sf.show()
 # # apply complementary filter
-agcc = agc.complementary_filter()
+agcc = agc.complementary_filter().dropna()
+
+## compute features
+ff=agcc.compute_fouriar_features(exclude_col_names=['group','candidate'], groupByColumnName=["group"])
+sf = agc.compute_statistical_features(exclude_col_names=['group','candidate'], groupByColumnName=["group"])
+rmf = agc.compute_corr_mse_accel_gyro(exclude_col_names=['group','candidate'], groupByColumnName=["group"])
+#ff.show(truncate=False)
+ff.show(truncate=False)
+
+
 
 
 # #compute magnitude

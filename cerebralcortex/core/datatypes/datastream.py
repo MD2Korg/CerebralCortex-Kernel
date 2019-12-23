@@ -1366,103 +1366,6 @@ class DataStream(DataFrame):
 
     ##################### !!!!!!!!!!!!!!!! FEATURE COMPUTATION UDFS !!!!!!!!!!!!!!!!!!! ################################
 
-    ### COMPUTE STATISTICAL FEATURES
-
-    def compute_statistical_features(self, exclude_col_names: list = [], windowDuration: int = None, slideDuration: int = None,
-                      groupByColumnName: List[str] = [], startTime=None):
-
-        feature_names = ['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
-                      'kurt', 'power', 'zero_cross_rate']
-        exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
-
-
-        data = self._data.drop(*exclude_col_names)
-
-        df_column_names = data.columns
-
-
-        basic_schema = StructType([
-            StructField("timestamp", TimestampType()),
-            StructField("localtime", TimestampType()),
-            StructField("user", StringType()),
-            StructField("version", IntegerType()),
-            StructField("start_time", TimestampType()),
-            StructField("end_time", TimestampType())
-        ])
-
-        features_list = []
-        for cn in df_column_names:
-            for sf in feature_names:
-                features_list.append(StructField(cn + "_" + sf, FloatType(), True))
-
-        features_schema = StructType(basic_schema.fields + features_list)
-
-        def calculate_zero_cross_rate(series):
-            """
-            How often the signal changes sign (+/-)
-            """
-            series_mean = np.mean(series)
-            series = [v - series_mean for v in series]
-            zero_cross_count = (np.diff(np.sign(series)) != 0).sum()
-            return zero_cross_count / len(series)
-
-        def get_power(series):
-            power = np.mean([v * v for v in series])
-            return power
-
-        @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
-        def get_stats_features_udf(df):
-            timestamp = df['timestamp'].iloc[0]
-            localtime = df['localtime'].iloc[0]
-            user = df['user'].iloc[0]
-            version = df['version'].iloc[0]
-            start_time = timestamp
-            end_time = df['timestamp'].iloc[-1]
-
-            df.drop(exclude_col_names, axis=1, inplace=True)
-
-            df_mean = df.mean()
-            df_mean.index += '_mean'
-
-            df_median = df.median()
-            df_median.index += '_median'
-
-            df_stddev = df.std()
-            df_stddev.index += '_stddev'
-
-            df_var = df.var()
-            df_var.index += '_variance'
-
-            df_max = df.max()
-            df_max.index += '_max'
-
-            df_min = df.min()
-            df_min.index += '_min'
-
-            df_skew = df.skew()
-            df_skew.index += '_skew'
-
-            df_kurt = df.kurt()
-            df_kurt.index += '_kurt'
-
-            df_zero_cross_rate = df.apply(calculate_zero_cross_rate)
-            df_zero_cross_rate.index += '_zero_cross_rate'
-
-            df_power = df.apply(get_power)
-            df_power.index += '_power'
-
-            output = pd.DataFrame(pd.concat(
-                [df_mean, df_median, df_stddev, df_var, df_max, df_min, df_skew, df_kurt, df_zero_cross_rate,
-                 df_power])).T
-
-            basic_df = pd.DataFrame([[timestamp, localtime, user, int(version), start_time, end_time]],
-                                    columns=['timestamp', 'localtime', 'user', 'version', 'start_time', 'end_time'])
-            return basic_df.assign(**output)
-
-        data = self.compute(get_stats_features_udf, windowDuration=windowDuration, slideDuration=slideDuration,
-                            groupByColumnName=groupByColumnName, startTime=startTime)
-        return DataStream(data=data, metadata=Metadata())
-
     ### COMPUTE FFT FEATURES
 
     def compute_fouriar_features(self, exclude_col_names: list = [], windowDuration: int = None, slideDuration: int = None,
@@ -1628,6 +1531,166 @@ class DataStream(DataFrame):
             return basic_df.assign(**output)
 
         data = self.compute(get_fft_features, windowDuration=windowDuration, slideDuration=slideDuration, groupByColumnName=groupByColumnName, startTime=startTime)
+        return DataStream(data=data, metadata=Metadata())
+
+        ### COMPUTE STATISTICAL FEATURES
+
+    def compute_statistical_features(self, exclude_col_names: list = [], windowDuration: int = None,
+                                     slideDuration: int = None,
+                                     groupByColumnName: List[str] = [], startTime=None):
+
+        feature_names = ['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
+                         'kurt', 'power', 'zero_cross_rate']
+        exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
+
+        data = self._data.drop(*exclude_col_names)
+
+        df_column_names = data.columns
+
+        basic_schema = StructType([
+            StructField("timestamp", TimestampType()),
+            StructField("localtime", TimestampType()),
+            StructField("user", StringType()),
+            StructField("version", IntegerType()),
+            StructField("start_time", TimestampType()),
+            StructField("end_time", TimestampType())
+        ])
+
+        features_list = []
+        for cn in df_column_names:
+            for sf in feature_names:
+                features_list.append(StructField(cn + "_" + sf, FloatType(), True))
+
+        features_schema = StructType(basic_schema.fields + features_list)
+
+        def calculate_zero_cross_rate(series):
+            """
+            How often the signal changes sign (+/-)
+            """
+            series_mean = np.mean(series)
+            series = [v - series_mean for v in series]
+            zero_cross_count = (np.diff(np.sign(series)) != 0).sum()
+            return zero_cross_count / len(series)
+
+        def get_power(series):
+            power = np.mean([v * v for v in series])
+            return power
+
+        @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
+        def get_stats_features_udf(df):
+            timestamp = df['timestamp'].iloc[0]
+            localtime = df['localtime'].iloc[0]
+            user = df['user'].iloc[0]
+            version = df['version'].iloc[0]
+            start_time = timestamp
+            end_time = df['timestamp'].iloc[-1]
+
+            df.drop(exclude_col_names, axis=1, inplace=True)
+
+            df_mean = df.mean()
+            df_mean.index += '_mean'
+
+            df_median = df.median()
+            df_median.index += '_median'
+
+            df_stddev = df.std()
+            df_stddev.index += '_stddev'
+
+            df_var = df.var()
+            df_var.index += '_variance'
+
+            df_max = df.max()
+            df_max.index += '_max'
+
+            df_min = df.min()
+            df_min.index += '_min'
+
+            df_skew = df.skew()
+            df_skew.index += '_skew'
+
+            df_kurt = df.kurt()
+            df_kurt.index += '_kurt'
+
+            df_zero_cross_rate = df.apply(calculate_zero_cross_rate)
+            df_zero_cross_rate.index += '_zero_cross_rate'
+
+            df_power = df.apply(get_power)
+            df_power.index += '_power'
+
+            output = pd.DataFrame(pd.concat(
+                [df_mean, df_median, df_stddev, df_var, df_max, df_min, df_skew, df_kurt, df_zero_cross_rate,
+                 df_power])).T
+
+            basic_df = pd.DataFrame([[timestamp, localtime, user, int(version), start_time, end_time]],
+                                    columns=['timestamp', 'localtime', 'user', 'version', 'start_time', 'end_time'])
+            return basic_df.assign(**output)
+
+        data = self.compute(get_stats_features_udf, windowDuration=windowDuration, slideDuration=slideDuration,
+                            groupByColumnName=groupByColumnName, startTime=startTime)
+        return DataStream(data=data, metadata=Metadata())
+
+    ### COMPUTE Correlation and Mean Standard Error (MSE) FEATURES
+
+    def compute_corr_mse_accel_gyro(self, exclude_col_names: list = [], accel_column_names:list=['accelerometer_x','accelerometer_y', 'accelerometer_z'], gyro_column_names:list=['gyroscope_y', 'gyroscope_x', 'gyroscope_z'], windowDuration: int = None,
+                                     slideDuration: int = None,
+                                     groupByColumnName: List[str] = [], startTime=None):
+
+        feature_names = ["ax_ay_corr", 'ax_az_corr', 'ay_az_corr', 'gx_gy_corr', 'gx_gz_corr',
+                         'gy_gz_corr', 'ax_ay_mse', 'ax_az_mse', 'ay_az_mse', 'gx_gy_mse', 'gx_gz_mse', 'gy_gz_mse']
+
+        exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
+
+        data = self._data.drop(*exclude_col_names)
+
+        basic_schema = StructType([
+            StructField("timestamp", TimestampType()),
+            StructField("localtime", TimestampType()),
+            StructField("user", StringType()),
+            StructField("version", IntegerType()),
+            StructField("start_time", TimestampType()),
+            StructField("end_time", TimestampType())
+        ])
+
+        features_list = []
+        for fn in feature_names:
+            features_list.append(StructField(fn, FloatType(), True))
+
+        features_schema = StructType(basic_schema.fields + features_list)
+
+        @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
+        def get_corr_mse_features_udf(df):
+            timestamp = df['timestamp'].iloc[0]
+            localtime = df['localtime'].iloc[0]
+            user = df['user'].iloc[0]
+            version = df['version'].iloc[0]
+            start_time = timestamp
+            end_time = df['timestamp'].iloc[-1]
+
+            ax_ay_corr = df[accel_column_names[0]].corr(df[accel_column_names[1]])
+            ax_az_corr = df[accel_column_names[0]].corr(df[accel_column_names[2]])
+            ay_az_corr = df[accel_column_names[1]].corr(df[accel_column_names[2]])
+            gx_gy_corr = df[gyro_column_names[0]].corr(df[gyro_column_names[1]])
+            gx_gz_corr = df[gyro_column_names[0]].corr(df[gyro_column_names[2]])
+            gy_gz_corr = df[gyro_column_names[1]].corr(df[gyro_column_names[2]])
+
+            ax_ay_mse = ((df[accel_column_names[0]] - df[accel_column_names[1]]) ** 2).mean()
+            ax_az_mse = ((df[accel_column_names[0]] - df[accel_column_names[2]]) ** 2).mean()
+            ay_az_mse = ((df[accel_column_names[1]] - df[accel_column_names[2]]) ** 2).mean()
+            gx_gy_mse = ((df[accel_column_names[0]] - df[accel_column_names[1]]) ** 2).mean()
+            gx_gz_mse = ((df[accel_column_names[0]] - df[accel_column_names[2]]) ** 2).mean()
+            gy_gz_mse = ((df[accel_column_names[1]] - df[accel_column_names[2]]) ** 2).mean()
+
+            basic_df = pd.DataFrame([[timestamp, localtime, user, int(version), start_time, end_time, ax_ay_corr,
+                                      ax_az_corr, ay_az_corr, gx_gy_corr, gx_gz_corr, gy_gz_corr, ax_ay_mse, ax_az_mse,
+                                      ay_az_mse, gx_gy_mse, gx_gz_mse, gy_gz_mse]],
+                                    columns=['timestamp', 'localtime', 'user', 'version', 'start_time', 'end_time',
+                                             "ax_ay_corr", 'ax_az_corr', 'ay_az_corr', 'gx_gy_corr', 'gx_gz_corr',
+                                             'gy_gz_corr', 'ax_ay_mse', 'ax_az_mse', 'ay_az_mse', 'gx_gy_mse',
+                                             'gx_gz_mse', 'gy_gz_mse'])
+            return basic_df
+
+        data = self.compute(get_corr_mse_features_udf, windowDuration=windowDuration, slideDuration=slideDuration,
+                            groupByColumnName=groupByColumnName, startTime=startTime)
         return DataStream(data=data, metadata=Metadata())
 
     ###################### New Methods by Anand #########################
