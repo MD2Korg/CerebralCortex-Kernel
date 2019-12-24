@@ -34,7 +34,7 @@ from pyspark.sql.window import Window
 
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
-from cerebralcortex.algorithms.brushing.helper import get_orientation_data, get_candidates, classify_brushing
+from cerebralcortex.algorithms.brushing.helper import get_orientation_data, get_candidates, classify_brushing, get_max_features
 from cerebralcortex.core.plotting.basic_plots import BasicPlots
 from cerebralcortex.core.plotting.stress_plots import StressStreamPlots
 
@@ -78,19 +78,26 @@ ds_ag_candidates=ds_ag_candidates.filter(ds_ag_candidates.candidate==1)
 
 
 ## compute features
-ds_fouriar_features=ds_ag_candidates.compute_fouriar_features(exclude_col_names=['group', 'candidate'], groupByColumnName=["group"])
-ds_statistical_features = ds_ag_candidates.compute_statistical_features(exclude_col_names=['group','candidate'], groupByColumnName=["group"])
-ds_corr_mse_features = ds_ag_candidates.compute_corr_mse_accel_gyro(exclude_col_names=['group','candidate'], groupByColumnName=["group"])
+ds_fouriar_features=ds_ag_candidates.compute_fouriar_features(exclude_col_names=['group', 'candidate',"accel_magnitude","gyro_magnitude"], groupByColumnName=["group"])
+ds_statistical_features = ds_ag_candidates.compute_statistical_features(exclude_col_names=['group','candidate',"accel_magnitude","gyro_magnitude"], groupByColumnName=["group"],feature_names = ['mean', 'median', 'stddev', 'skew',
+                         'kurt', 'power', 'zero_cross_rate'])
+ds_corr_mse_features = ds_ag_candidates.compute_corr_mse_accel_gyro(exclude_col_names=['group','candidate',"accel_magnitude","gyro_magnitude"], groupByColumnName=["group"])
 
 ds_features = ds_fouriar_features\
-    .join(ds_statistical_features, on=['user', 'timestamp', 'localtime', 'version'], how='full')\
-    .join(ds_corr_mse_features, on=['user', 'timestamp', 'localtime', 'version'], how='full')
+    .join(ds_statistical_features, on=['user', 'timestamp', 'localtime', 'version', 'start_time', 'end_time'], how='full')\
+    .join(ds_corr_mse_features, on=['user', 'timestamp', 'localtime', 'version', 'start_time', 'end_time'], how='full')
+
+ds_features = ds_features.withColumn("duration", (ds_features.end_time.cast("long") - ds_features.start_time.cast("long")))
+
+ds_features = get_max_features(ds_features)
 
 pdf_features = ds_features.toPandas()
 
-pdf_predictions = classify_brushing(pdf_features,model_file_name="model/AB_model_brushing_all_features.model")
+pdf_predictions = classify_brushing(pdf_features,model_file_name="/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/algorithms/brushing/model/AB_model_brushing_all_features.model")
 
 print(pdf_predictions)
+
+#print(pdf_predictions)
 
 
 

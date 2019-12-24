@@ -446,15 +446,15 @@ class DataStream(DataFrame):
 
         data = self._data.withColumn("thetaX_accel",
                              ((F.atan2(-F.col(accelerometer_z), F.col(accelerometer_y)) * 180 / M_PI)) * lpf) \
-            .withColumn("theta_x",
+            .withColumn("roll",
                         (F.lag("thetaX_accel").over(window) + F.col(gyroscope_x) * dt) * hpf + F.col("thetaX_accel")).drop("thetaX_accel") \
             .withColumn("thetaY_accel",
                              ((F.atan2(-F.col(accelerometer_x), F.col(accelerometer_z)) * 180 / M_PI)) * lpf) \
-            .withColumn("theta_y",
+            .withColumn("pitch",
                         (F.lag("thetaY_accel").over(window) + F.col(gyroscope_y) * dt) * hpf + F.col("thetaY_accel")).drop("thetaY_accel")\
             .withColumn("thetaZ_accel",
                              ((F.atan2(-F.col(accelerometer_y), F.col(accelerometer_x)) * 180 / M_PI)) * lpf) \
-            .withColumn("theta_z",
+            .withColumn("yaw",
                         (F.lag("thetaZ_accel").over(window) + F.col(gyroscope_z) * dt) * hpf + F.col("thetaZ_accel")).drop("thetaZ_accel")
 
         return DataStream(data=data.dropna(),metadata=Metadata())
@@ -757,7 +757,7 @@ class DataStream(DataFrame):
         Examples:
             >>> ds.collect()
         """
-        return DataStream(data=self._data.collect(), metadata=Metadata())
+        return self._data.collect()
 
     def crossJoin(self, other):
         """
@@ -1274,7 +1274,7 @@ class DataStream(DataFrame):
             >>> new_ds.data.head()
         """
         pdf = self._data.toPandas()
-        return DataStream(data=pdf, metadata=Metadata())
+        return pdf
 
     def union(self, other):
         """
@@ -1368,11 +1368,11 @@ class DataStream(DataFrame):
 
     ### COMPUTE FFT FEATURES
 
-    def compute_fouriar_features(self, exclude_col_names: list = [], windowDuration: int = None, slideDuration: int = None,
+    def compute_fouriar_features(self, exclude_col_names: list = [], feature_names = ["fft_centroid", 'fft_spread', 'spectral_entropy', 'spectral_entropy_old', 'fft_flux',
+            'spectral_folloff'], windowDuration: int = None, slideDuration: int = None,
                       groupByColumnName: List[str] = [], startTime=None):
         eps = 0.00000001
-        feature_names = ["spectral_cenroid", 'spread', 'spectral_entropy', 'spectral_entropy_old', 'spectral_flux',
-            'spectral_folloff']
+
         exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
 
         data = self._data.drop(*exclude_col_names)
@@ -1486,7 +1486,7 @@ class DataStream(DataFrame):
         def fouriar_features_pandas_udf(data, frequency: float = 16.0):
 
             Fs = frequency  # the sampling freq (in Hz)
-
+            results = []
             # fourier transforms!
             data_fft = abs(np.fft.rfft(data))
 
@@ -1496,13 +1496,26 @@ class DataStream(DataFrame):
             X = X[0:nFFT]  # normalize fft
             X = X / len(X)
 
-            C, S = stSpectralCentroidAndSpread(X, Fs)  # spectral centroid and spread
-            se = stSpectralEntropy(X)  # spectral entropy
-            se_old = spectral_entropy(X, frequency)  # spectral flux
-            flx = stSpectralFlux(X, X.copy())  # spectral flux
-            roff = stSpectralRollOff(X, 0.90, frequency)  # spectral rolloff
+            if "fft_centroid" or "fft_spread" in feature_names:
+                C, S = stSpectralCentroidAndSpread(X, Fs)  # spectral centroid and spread
+                if "fft_centroid" in feature_names:
+                    results.append(C)
+                if "fft_spread" in feature_names:
+                    results.append(S)
+            if "spectral_entropy" in feature_names:
+                se = stSpectralEntropy(X)  # spectral entropy
+                results.append(se)
+            if "spectral_entropy_old" in feature_names:
+                se_old = spectral_entropy(X, frequency)  # spectral flux
+                results.append(se_old)
+            if "fft_flux" in feature_names:
+                flx = stSpectralFlux(X, X.copy())  # spectral flux
+                results.append(flx)
+            if "spectral_folloff" in feature_names:
+                roff = stSpectralRollOff(X, 0.90, frequency)  # spectral rolloff
+                results.append(roff)
 
-            return [C, S, se, se_old, flx, roff]
+            return results
 
         @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
         def get_fft_features(df):
@@ -1535,12 +1548,12 @@ class DataStream(DataFrame):
 
         ### COMPUTE STATISTICAL FEATURES
 
-    def compute_statistical_features(self, exclude_col_names: list = [], windowDuration: int = None,
+    def compute_statistical_features(self, exclude_col_names: list = [], feature_names = ['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
+                         'kurt', 'power', 'zero_cross_rate'], windowDuration: int = None,
                                      slideDuration: int = None,
                                      groupByColumnName: List[str] = [], startTime=None):
 
-        feature_names = ['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
-                         'kurt', 'power', 'zero_cross_rate']
+
         exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
 
         data = self._data.drop(*exclude_col_names)
@@ -1578,6 +1591,7 @@ class DataStream(DataFrame):
 
         @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
         def get_stats_features_udf(df):
+            results = []
             timestamp = df['timestamp'].iloc[0]
             localtime = df['localtime'].iloc[0]
             user = df['user'].iloc[0]
@@ -1587,39 +1601,57 @@ class DataStream(DataFrame):
 
             df.drop(exclude_col_names, axis=1, inplace=True)
 
-            df_mean = df.mean()
-            df_mean.index += '_mean'
+            if "mean" in feature_names:
+                df_mean = df.mean()
+                df_mean.index += '_mean'
+                results.append(df_mean)
 
-            df_median = df.median()
-            df_median.index += '_median'
+            if "median" in feature_names:
+                df_median = df.median()
+                df_median.index += '_median'
+                results.append(df_median)
 
-            df_stddev = df.std()
-            df_stddev.index += '_stddev'
+            if "stddev" in feature_names:
+                df_stddev = df.std()
+                df_stddev.index += '_stddev'
+                results.append(df_stddev)
 
-            df_var = df.var()
-            df_var.index += '_variance'
+            if "variance" in feature_names:
+                df_var = df.var()
+                df_var.index += '_variance'
+                results.append(df_var)
 
-            df_max = df.max()
-            df_max.index += '_max'
+            if "max" in feature_names:
+                df_max = df.max()
+                df_max.index += '_max'
+                results.append(df_max)
 
-            df_min = df.min()
-            df_min.index += '_min'
+            if "min" in feature_names:
+                df_min = df.min()
+                df_min.index += '_min'
+                results.append(df_min)
 
-            df_skew = df.skew()
-            df_skew.index += '_skew'
+            if "skew" in feature_names:
+                df_skew = df.skew()
+                df_skew.index += '_skew'
+                results.append(df_skew)
 
-            df_kurt = df.kurt()
-            df_kurt.index += '_kurt'
+            if "kurt" in feature_names:
+                df_kurt = df.kurt()
+                df_kurt.index += '_kurt'
+                results.append(df_kurt)
 
-            df_zero_cross_rate = df.apply(calculate_zero_cross_rate)
-            df_zero_cross_rate.index += '_zero_cross_rate'
+            if "zero_cross_rate" in feature_names:
+                df_zero_cross_rate = df.apply(calculate_zero_cross_rate)
+                df_zero_cross_rate.index += '_zero_cross_rate'
+                results.append(df_zero_cross_rate)
 
-            df_power = df.apply(get_power)
-            df_power.index += '_power'
+            if "power" in feature_names:
+                df_power = df.apply(get_power)
+                df_power.index += '_power'
+                results.append(df_power)
 
-            output = pd.DataFrame(pd.concat(
-                [df_mean, df_median, df_stddev, df_var, df_max, df_min, df_skew, df_kurt, df_zero_cross_rate,
-                 df_power])).T
+            output = pd.DataFrame(pd.concat(results)).T
 
             basic_df = pd.DataFrame([[timestamp, localtime, user, int(version), start_time, end_time]],
                                     columns=['timestamp', 'localtime', 'user', 'version', 'start_time', 'end_time'])
@@ -1729,12 +1761,13 @@ class DataStream(DataFrame):
         """
         windowed_df = self._data.withColumn('custom_window', windowing_udf('timestamp'))
         return DataStream(data=windowed_df, metadata=Metadata())
+        return DataStream(data=windowed_df, metadata=Metadata())
 
-    def __str__(self):
-        print("*"*10,"METADATA","*"*10)
-        print(self.metadata)
-        print("*"*10,"DATA","*"*10)
-        print(self._data)
+    # def __str__(self):
+    #     print("*"*10,"METADATA","*"*10)
+    #     print(self.metadata)
+    #     print("*"*10,"DATA","*"*10)
+    #     print(self._data)
 """
 Windowing function to customize the parallelization of computation.
 """

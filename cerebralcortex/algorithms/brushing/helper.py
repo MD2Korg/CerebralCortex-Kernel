@@ -113,6 +113,45 @@ def get_candidates(ds, uper_limit:float=0.1, lower_limit:float=0.1, threshold:fl
 
     return df2
 
+def get_max_features(ds):
+    return ds.withColumn("max_accl_mean",
+                         F.greatest(ds.accelerometer_x_mean, ds.accelerometer_y_mean,
+                                    ds.accelerometer_z_mean)) \
+        .withColumn("max_accl_median",
+                    F.greatest(ds.accelerometer_x_median, ds.accelerometer_y_median,
+                               ds.accelerometer_z_median)) \
+        .withColumn("max_accl_stddev",
+                    F.greatest(ds.accelerometer_x_stddev, ds.accelerometer_y_stddev,
+                               ds.accelerometer_z_stddev)) \
+        .withColumn("max_accl_skew", F.greatest(ds.accelerometer_x_skew, ds.accelerometer_y_skew,
+                                                ds.accelerometer_z_skew)) \
+        .withColumn("max_accl_kurt", F.greatest(ds.accelerometer_x_kurt, ds.accelerometer_y_kurt,
+                                                ds.accelerometer_z_kurt)) \
+        .withColumn("max_accl_power", F.greatest(ds.accelerometer_x_power, ds.accelerometer_y_power,
+                                                 ds.accelerometer_z_power)) \
+        .withColumn("max_accl_zero_cross_rate",
+                    F.greatest(ds.accelerometer_x_zero_cross_rate, ds.accelerometer_y_zero_cross_rate,
+                               ds.accelerometer_z_zero_cross_rate)) \
+        .withColumn("max_accl_fft_centroid",
+                    F.greatest(ds.accelerometer_x_fft_centroid, ds.accelerometer_y_fft_centroid,
+                               ds.accelerometer_z_fft_centroid)) \
+        .withColumn("max_accl_fft_spread",
+                    F.greatest(ds.accelerometer_x_fft_spread, ds.accelerometer_y_fft_spread,
+                               ds.accelerometer_z_fft_spread)) \
+        .withColumn("max_accl_spectral_entropy", F.greatest(ds.accelerometer_x_spectral_entropy,
+                                                            ds.accelerometer_y_spectral_entropy,
+                                                            ds.accelerometer_z_spectral_entropy)) \
+        .withColumn("max_accl_spectral_entropy_old", F.greatest(ds.accelerometer_x_spectral_entropy_old,
+                                                                ds.accelerometer_y_spectral_entropy_old,
+                                                                ds.accelerometer_z_spectral_entropy_old)) \
+        .withColumn("max_accl_fft_flux",
+                    F.greatest(ds.accelerometer_x_fft_flux, ds.accelerometer_y_fft_flux,
+                               ds.accelerometer_z_fft_flux)) \
+        .withColumn("max_accl_spec_rolloff", F.greatest(ds.accelerometer_x_spectral_folloff,
+                                                        ds.accelerometer_y_spectral_folloff,
+                                                        ds.accelerometer_z_spectral_folloff))
+
+
 def classify_brushing(X: pd.DataFrame,model_file_name:str):
     with open(model_file_name, 'rb') as handle:
         clf = pickle.load(handle)
