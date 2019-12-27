@@ -147,16 +147,28 @@ def get_max_features(ds):
         .withColumn("max_accl_fft_flux",
                     F.greatest(ds.accelerometer_x_fft_flux, ds.accelerometer_y_fft_flux,
                                ds.accelerometer_z_fft_flux)) \
-        .withColumn("max_accl_spec_rolloff", F.greatest(ds.accelerometer_x_spectral_folloff,
+        .withColumn("max_accl_spectral_folloff", F.greatest(ds.accelerometer_x_spectral_folloff,
                                                         ds.accelerometer_y_spectral_folloff,
                                                         ds.accelerometer_z_spectral_folloff))
 
+
+def reorder_columns(ds):
+    feature_names = ['accelerometer_x','accelerometer_y', 'accelerometer_z', 'max_accl', 'gyroscope_y', 'gyroscope_x', 'gyroscope_z', 'roll', 'pitch', 'yaw']
+    sensor_names = ['mean', 'median', 'stddev', 'skew', 'kurt', 'power', 'zero_cross_rate', "fft_centroid", 'fft_spread', 'spectral_entropy', 'spectral_entropy_old', 'fft_flux', 'spectral_folloff']
+    extra_features = ["ax_ay_corr", 'ax_az_corr', 'ay_az_corr', 'gx_gy_corr', 'gx_gz_corr', 'gy_gz_corr', 'ax_ay_mse', 'ax_az_mse', 'ay_az_mse', 'gx_gy_mse', 'gx_gz_mse', 'gy_gz_mse']
+    col_names = ["timestamp", "localtime", "user", "version", "start_time", "end_time", "duration"]
+
+    for fn in feature_names:
+        for sn in sensor_names:
+            col_names.append(fn+"_"+sn)
+    col_names.extend(extra_features)
+    return ds.select(*col_names)
 
 def classify_brushing(X: pd.DataFrame,model_file_name:str):
     with open(model_file_name, 'rb') as handle:
         clf = pickle.load(handle)
     X=X.values
-    X = X[:,4:]
+    X = X[:,6:]
     preds = clf.predict(X)
 
     return preds

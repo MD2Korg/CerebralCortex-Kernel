@@ -11,7 +11,7 @@ hdfs3==0.3.0
 pyspark==3.0.0.dev0
 msgpack==0.6.1
 PyJWT==1.7.1
-pandas==0.24.1
+pandas==0.25.3
 texttable
 numpy==1.16.1
 geopy==1.18.1

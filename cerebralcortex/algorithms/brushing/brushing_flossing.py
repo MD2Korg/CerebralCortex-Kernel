@@ -34,7 +34,7 @@ from pyspark.sql.window import Window
 
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
-from cerebralcortex.algorithms.brushing.helper import get_orientation_data, get_candidates, classify_brushing, get_max_features
+from cerebralcortex.algorithms.brushing.helper import get_orientation_data, get_candidates, classify_brushing, get_max_features, reorder_columns
 from cerebralcortex.core.plotting.basic_plots import BasicPlots
 from cerebralcortex.core.plotting.stress_plots import StressStreamPlots
 
@@ -90,6 +90,8 @@ ds_features = ds_fouriar_features\
 ds_features = ds_features.withColumn("duration", (ds_features.end_time.cast("long") - ds_features.start_time.cast("long")))
 
 ds_features = get_max_features(ds_features)
+
+ds_features = reorder_columns(ds_features)
 
 pdf_features = ds_features.toPandas()
 
