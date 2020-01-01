@@ -70,17 +70,11 @@ def get_candidates(ds, uper_limit:float=0.1, lower_limit:float=0.1, threshold:fl
     window = Window.partitionBy(["user", "version"]).rowsBetween(-3, 3).orderBy("timestamp")
     window2 = Window.orderBy("timestamp")
 
-    @pandas_udf(IntegerType(), PandasUDFType.GROUPED_AGG)
-    def generate_candidates(accel_y):
-        accel_y[accel_y > uper_limit] = 1
-        accel_y[accel_y <= lower_limit] = 0
+    df1 = ds.withColumn("candidate", F.when(F.col("accelerometer_y")>uper_limit, F.lit(1)).otherwise(F.lit(0)))
 
-        if accel_y.mean() >= threshold:
-            return 1
-        else:
-            return 0
-
-    df = ds.withColumn("candidate", generate_candidates(ds.accelerometer_y).over(window))
+    df = df1.withColumn("candidate",
+                         F.when((F.avg(df1.candidate).over(window)) >= 0.5, F.lit(1))
+                         .otherwise(F.lit(0)))
 
     df2 = df.withColumn(
         "userChange",

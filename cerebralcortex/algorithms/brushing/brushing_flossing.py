@@ -41,14 +41,19 @@ from cerebralcortex.core.plotting.stress_plots import StressStreamPlots
 #df3=reduce(lambda x, y: x.join(y, ['timestamp'], how='left'), dfs)
 
 sqlContext = get_or_create_sc("sqlContext")
-dfa=sqlContext.read.parquet("/home/ali/IdeaProjects/MD2K_DATA/cc3/moral_sample_data/accel/")
-dfg=sqlContext.read.parquet("/home/ali/IdeaProjects/MD2K_DATA/cc3/moral_sample_data/gyro/")
-dfa = dfa.withColumn("localtime", dfa.timestamp)
-dfg = dfg.withColumn("localtime", dfg.timestamp)
+dfa=sqlContext.read.parquet("/home/ali/IdeaProjects/MD2K_DATA/moral_parsed/study=moral/stream=accelerometer--org.md2k.motionsense--motion_sense--left_wrist/version=1/user=820c/")
+dfg=sqlContext.read.parquet("/home/ali/IdeaProjects/MD2K_DATA/moral_parsed/study=moral/stream=gyroscope--org.md2k.motionsense--motion_sense--left_wrist/version=1/user=820c/")
+dfa = dfa.withColumn("version", F.lit(1))
+dfa = dfa.withColumn("user", F.lit("820c"))
 
+dfg = dfg.withColumn("version", F.lit(1))
+dfg = dfg.withColumn("user", F.lit("820c"))
+
+dfa = dfa.dropDuplicates(subset=['timestamp'])
+dfg = dfg.dropDuplicates(subset=['timestamp'])
 ##########################################################################################################
 
-CC = Kernel("../../conf/", auto_offset_reset="smallest", study_name="default")
+CC = Kernel("/home/ali/IdeaProjects/CerebralCortex-2.0/conf/", auto_offset_reset="smallest", study_name="default")
 
 ds_accel = DataStream(data=dfa, metadata=Metadata())
 ds_gyro = DataStream(data=dfg, metadata=Metadata())
@@ -73,14 +78,17 @@ ds_ag_complemtary_filtered = ds_ag_orientation.complementary_filter()
 # get brushing candidate groups
 ds_ag_candidates = get_candidates(ds_ag_complemtary_filtered)
 
+#ds_ag_candidates.show(1)
 #remove where group==0 - non-candidates
 ds_ag_candidates=ds_ag_candidates.filter(ds_ag_candidates.candidate==1)
 
 
 ## compute features
 ds_fouriar_features=ds_ag_candidates.compute_fouriar_features(exclude_col_names=['group', 'candidate',"accel_magnitude","gyro_magnitude"], groupByColumnName=["group"])
+
 ds_statistical_features = ds_ag_candidates.compute_statistical_features(exclude_col_names=['group','candidate',"accel_magnitude","gyro_magnitude"], groupByColumnName=["group"],feature_names = ['mean', 'median', 'stddev', 'skew',
                          'kurt', 'power', 'zero_cross_rate'])
+
 ds_corr_mse_features = ds_ag_candidates.compute_corr_mse_accel_gyro(exclude_col_names=['group','candidate',"accel_magnitude","gyro_magnitude"], groupByColumnName=["group"])
 
 ds_features = ds_fouriar_features\
@@ -93,11 +101,12 @@ ds_features = get_max_features(ds_features)
 
 ds_features = reorder_columns(ds_features)
 
-pdf_features = ds_features.toPandas()
+ds_features._data.repartition(1).write.csv("/home/ali/IdeaProjects/MD2K_DATA/moral_parsed/features/user=820c/brushing.csv")
+#pdf_features = ds_features.toPandas()
 
-pdf_predictions = classify_brushing(pdf_features,model_file_name="/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/algorithms/brushing/model/AB_model_brushing_all_features.model")
+#pdf_predictions = classify_brushing(pdf_features,model_file_name="/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/algorithms/brushing/model/AB_model_brushing_all_features.model")
 
-print(pdf_predictions)
+#print(pdf_predictions)
 
 #print(pdf_predictions)
 
