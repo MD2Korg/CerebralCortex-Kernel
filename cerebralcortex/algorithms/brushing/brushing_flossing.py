@@ -43,6 +43,7 @@ from cerebralcortex.core.plotting.stress_plots import StressStreamPlots
 sqlContext = get_or_create_sc("sqlContext")
 dfa=sqlContext.read.parquet("/home/ali/IdeaProjects/MD2K_DATA/moral_parsed/study=moral/stream=accelerometer--org.md2k.motionsense--motion_sense--left_wrist/version=1/user=820c/")
 dfg=sqlContext.read.parquet("/home/ali/IdeaProjects/MD2K_DATA/moral_parsed/study=moral/stream=gyroscope--org.md2k.motionsense--motion_sense--left_wrist/version=1/user=820c/")
+
 dfa = dfa.withColumn("version", F.lit(1))
 dfa = dfa.withColumn("user", F.lit("820c"))
 
@@ -58,6 +59,8 @@ CC = Kernel("/home/ali/IdeaProjects/CerebralCortex-2.0/conf/", auto_offset_reset
 ds_accel = DataStream(data=dfa, metadata=Metadata())
 ds_gyro = DataStream(data=dfg, metadata=Metadata())
 
+ds_gyro.show(1)
+ds_accel.show(1)
 # interpolation
 ds_accel_interpolated = ds_accel.interpolate()
 ds_gyro_interpolated = ds_gyro.interpolate()
@@ -110,79 +113,3 @@ ds_features._data.repartition(1).write.csv("/home/ali/IdeaProjects/MD2K_DATA/mor
 
 #print(pdf_predictions)
 
-
-
-# schema = StructType([
-#     StructField("timestamp", TimestampType()),
-#     StructField("localtime", TimestampType()),
-#     StructField("user", StringType()),
-#     StructField("version", IntegerType()),
-#     StructField("name", StringType()),
-#     StructField("trigger_type", StringType()),
-#     StructField("start_time", TimestampType()),
-#     StructField("end_time", TimestampType()),
-#     StructField("total_time", FloatType()),
-#     StructField("total_questions", IntegerType()),
-#     StructField("total_answers", FloatType()),
-#     StructField("average_question_length", FloatType()),
-#     StructField("average_total_answer_options", FloatType()),
-#     StructField("time_between_ema", FloatType()),
-#     StructField("status", StringType()),
-#     StructField("name", StringType()),
-#     StructField("trigger_type", StringType()),
-#     StructField("start_time", TimestampType()),
-#     StructField("end_time", TimestampType()),
-#     StructField("total_time", FloatType()),
-#     StructField("total_questions", IntegerType()),
-#     StructField("total_answers", FloatType()),
-#     StructField("average_question_length", FloatType()),
-#     StructField("average_total_answer_options", FloatType()),
-#     StructField("time_between_ema", FloatType()),
-#     StructField("status", StringType()),
-#     StructField("question_answers", StringType())
-#
-#
-# ])
-
-def zero_cross_rate(series):
-    """
-    How often the signal changes sign (+/-)
-    """
-    series_mean = np.mean(series)
-    series = [v-series_mean for v in series]
-    zero_cross_count = (np.diff(np.sign(series)) != 0).sum()
-    # print('zero_cross_count', zero_cross_count)
-    return zero_cross_count / len(series)
-
-def compute_statistical_features(data):
-    mean = np.mean(data)
-    median = np.median(data)
-    std = np.std(data)
-    skewness = skew(data)
-    kurt = kurtosis(data)
-    power = np.mean([v * v for v in data])
-    zc = zero_cross_rate(data)
-    return [mean, median, std, skewness, kurt, power, zc]
-
-stats_schema = StructType([
-    StructField("timestamp", TimestampType()),
-    StructField("localtime", TimestampType()),
-    StructField("user", StringType()),
-    StructField("version", IntegerType()),
-])
-
-stats_features = ['mean', 'mode', 'median', 'std', 'variance', 'max', 'min', 'lower_quartile', 'upper_quartile', 'sqrt', 'skewness', 'kurt', 'power', 'zero_crossing']
-column_names = ['accelerometer_x', 'accelerometer_y', 'accelerometer_z', 'gyroscope_y', 'gyroscope_x', 'gyroscope_z']
-# compute features
-# @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-# def interpolate_data(pdf):
-#     pdf.set_index("timestamp", inplace=True)
-#     pdf = pdf.resample(str(sample_freq)+"ms").bfill(limit=1).interpolate(method=method, axis=axis, limit=limit,inplace=inplace, limit_direction=limit_direction, limit_area=limit_area, downcast=downcast)
-#     pdf.ffill(inplace=True)
-#     pdf.reset_index(drop=False, inplace=True)
-#     pdf.sort_index(axis=1, inplace=True)
-#     return pdf
-# #
-# agcc.groupby(["user","version"])
-#
-#agc.show(100,truncate=False)

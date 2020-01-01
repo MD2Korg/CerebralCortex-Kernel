@@ -48,7 +48,7 @@ def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal", enable_s
     ss.config("spark.sql.session.timeZone", "UTC")
 
     if enable_spark_ui==False:
-        ss.config("spark.ui.enabled", enable_spark_ui)
+        ss.config("spark.ui.enabled", True)
 
     sparkSession = ss.getOrCreate()
 
