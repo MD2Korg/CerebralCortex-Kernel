@@ -156,6 +156,7 @@ def get_max_features(ds):
                      columns=["timestamp",  "localtime", "user", "version", "start_time", "end_time", "max_accl_mean", "max_accl_median", "max_accl_skew", "max_accl_kurt", "max_accl_power", "max_accl_zero_cross_rate", "max_accl_fft_centroid", "max_accl_fft_spread", "max_accl_spectral_entropy","max_accl_spectral_entropy_old",  "max_accl_fft_flux",  "max_accl_spectral_folloff"])
 
         return results
+    return ds.compute(get_max_vals_features)
 
     # return ds.withColumn("max_accl_mean",
     #                      F.greatest(ds.accelerometer_x_mean, ds.accelerometer_y_mean,

@@ -1488,7 +1488,7 @@ class DataStream(DataFrame):
             Fs = frequency  # the sampling freq (in Hz)
             results = []
             # fourier transforms!
-            data_fft = abs(np.fft.rfft(data))
+            # data_fft = abs(np.fft.rfft(data))
 
             X = abs(np.fft.fft(data))
             nFFT = int(len(X) / 2) + 1
@@ -1514,8 +1514,8 @@ class DataStream(DataFrame):
             if "spectral_folloff" in feature_names:
                 roff = stSpectralRollOff(X, 0.90, frequency)  # spectral rolloff
                 results.append(roff)
-
-            return results
+            print("+"*20, results)
+            return pd.Series(results)
 
         @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
         def get_fft_features(df):
@@ -1529,9 +1529,18 @@ class DataStream(DataFrame):
             df.drop(exclude_col_names, axis=1, inplace=True)
 
             df_ff = df.apply(fouriar_features_pandas_udf)
-
+            df3 = df_ff.T
+            pd.set_option('display.max_colwidth', -1)
             # split column into multiple columns
-            df3 = pd.DataFrame(df_ff.values.tolist(), index=df_ff.index)
+            #df3 = pd.DataFrame(df_ff.values.tolist(), index=df_ff.index)
+            # print("**"*50)
+            # print(type(df), type(df_ff), type(df3))
+            # print(df)
+            # print(df_ff)
+            # print(df_ff.values.tolist())
+            # print(df3)
+            # print("**" * 50)
+            # print("FEATURE-NAMES", feature_names)
             df3.columns = feature_names
 
             # multiple rows to one row
@@ -1540,11 +1549,11 @@ class DataStream(DataFrame):
 
             basic_df = pd.DataFrame([[timestamp, localtime, user, int(version), start_time, end_time]],
                                     columns=['timestamp', 'localtime', 'user', 'version', 'start_time', 'end_time'])
-            # df.insert(loc=0, columns=, value=basic_cols)
+            #df.insert(loc=0, columns=, value=basic_cols)
             return basic_df.assign(**output)
 
-        data = self.compute(get_fft_features, windowDuration=windowDuration, slideDuration=slideDuration, groupByColumnName=groupByColumnName, startTime=startTime)
-        return DataStream(data=data._data, metadata=Metadata())
+        return self.compute(get_fft_features, windowDuration=windowDuration, slideDuration=slideDuration, groupByColumnName=groupByColumnName, startTime=startTime)
+        #return DataStream(data=data._data, metadata=Metadata())
 
         ### COMPUTE STATISTICAL FEATURES
 
