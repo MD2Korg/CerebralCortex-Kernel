@@ -1,7 +1,8 @@
 from cerebralcortex.kernel import Kernel
 import pandas as pd
 from cerebralcortex.algorithms.brushing.helper import get_orientation_data, get_candidates, get_max_features, \
-    reorder_columns
+    reorder_columns, classify_brushing
+from datetime import datetime
 from cerebralcortex.core.datatypes.datastream import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from pyspark.sql import functions as F
@@ -32,8 +33,7 @@ CC = Kernel("/home/ali/IdeaProjects/CerebralCortex-2.0/conf/", study_name="moral
 ds_accel = CC.get_stream("accelerometer--org.md2k.motionsense--motion_sense--left_wrist", user_id="820c")
 ds_gyro = CC.get_stream("gyroscope--org.md2k.motionsense--motion_sense--left_wrist", user_id="820c")
 
-ds_gyro.show(1)
-ds_accel.show(1)
+print("START-TIME", datetime.now())
 # interpolation
 ds_accel_interpolated = ds_accel.interpolate()
 ds_gyro_interpolated = ds_gyro.interpolate()
@@ -61,13 +61,13 @@ ds_ag_candidates = get_candidates(ds_ag_complemtary_filtered)
 # remove where group==0 - non-candidates
 ds_ag_candidates = ds_ag_candidates.filter(ds_ag_candidates.candidate == 1)
 
-## compute features
-ds_fouriar_features = ds_ag_candidates.compute_fouriar_features(
-    exclude_col_names=['group', 'candidate', "accel_magnitude", "gyro_magnitude"], groupByColumnName=["group"])
+ds_ag_candidates._data.repartition(1).write.mode("overwrite").parquet(
+    "/home/ali/IdeaProjects/MD2K_DATA/moral_parsed/features/user=820c/brushing_parquet")
 
-ds_fouriar_features._data.repartition(1).write.mode("overwrite").csv(
-    "/home/ali/IdeaProjects/MD2K_DATA/moral_parsed/features/user=820c/brushing.csv")
-
+# ## compute features
+# ds_fouriar_features = ds_ag_candidates.compute_fouriar_features(
+#     exclude_col_names=['group', 'candidate', "accel_magnitude", "gyro_magnitude"], groupByColumnName=["group"])
+#
 # ds_statistical_features = ds_ag_candidates.compute_statistical_features(
 #     exclude_col_names=['group', 'candidate', "accel_magnitude", "gyro_magnitude"], groupByColumnName=["group"],
 #     feature_names=['mean', 'median', 'stddev', 'skew',
@@ -83,17 +83,17 @@ ds_fouriar_features._data.repartition(1).write.mode("overwrite").csv(
 #
 # ds_features = ds_features.withColumn("duration",
 #                                      (ds_features.end_time.cast("long") - ds_features.start_time.cast("long")))
-#
+
 # #ds_features = get_max_features(ds_features)
 #
 # #ds_features = reorder_columns(ds_features)
 #
-# ds_features._data.repartition(1).write.csv(
-#     "/home/ali/IdeaProjects/MD2K_DATA/moral_parsed/features/user=820c/brushing.csv")
-# pdf_features = ds_features.toPandas()
 
-# pdf_predictions = classify_brushing(pdf_features,model_file_name="/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/algorithms/brushing/model/AB_model_brushing_all_features.model")
+print("END-TIME", datetime.now())
+#pdf_features = ds_features.toPandas()
 
-# print(pdf_predictions)
+#pdf_predictions = classify_brushing(pdf_features,model_file_name="/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/algorithms/brushing/model/AB_model_brushing_all_features.model")
+
+#print(pdf_predictions)
 
 # print(pdf_predictions)

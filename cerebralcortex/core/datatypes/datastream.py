@@ -1514,7 +1514,6 @@ class DataStream(DataFrame):
             if "spectral_folloff" in feature_names:
                 roff = stSpectralRollOff(X, 0.90, frequency)  # spectral rolloff
                 results.append(roff)
-            print("+"*20, results)
             return pd.Series(results)
 
         @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)

@@ -108,15 +108,11 @@ def get_candidates(ds, uper_limit:float=0.1, lower_limit:float=0.1, threshold:fl
     return df2
 
 def get_max_features(ds):
-    features_schema = StructType([
-        StructField("timestamp", TimestampType()),
-        StructField("localtime", TimestampType()),
-        StructField("user", StringType()),
-        StructField("version", IntegerType()),
-        StructField("start_time", TimestampType()),
-        StructField("end_time", TimestampType()),
+    basic_schema = ds.schema
+    max_feature_schema = [
         StructField("max_accl_mean", FloatType()),
         StructField("max_accl_median", FloatType()),
+        StructField("max_accl_stddev", FloatType()),
         StructField("max_accl_skew", FloatType()),
         StructField("max_accl_kurt", FloatType()),
         StructField("max_accl_power", FloatType()),
@@ -127,10 +123,14 @@ def get_max_features(ds):
         StructField("max_accl_spectral_entropy_old", FloatType()),
         StructField("max_accl_fft_flux", FloatType()),
         StructField("max_accl_spectral_folloff", FloatType())
-    ])
+    ]
+
+    features_schema = StructType(basic_schema.fields + max_feature_schema)
+
     @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
     def get_max_vals_features(df):
         vals = []
+        max_accl_mean, max_accl_median, max_accl_stddev, max_accl_skew, max_accl_kurt, max_accl_power, max_accl_zero_cross_rate, max_accl_fft_centroid, max_accl_fft_spread, max_accl_spectral_entropy, max_accl_spectral_entropy_old, max_accl_fft_flux, max_accl_spectral_folloff = ([] for i in range(13))
         vals.append(df['timestamp'].iloc[0])
         vals.append(df['localtime'].iloc[0])
         vals.append(df['user'].iloc[0])
@@ -138,24 +138,40 @@ def get_max_features(ds):
         vals.append(df['timestamp'].iloc[0])
         vals.append(df['timestamp'].iloc[-1])
 
-        vals.append(max(df["accelerometer_x_mean"],df["accelerometer_y_mean"],df["accelerometer_z_mean"]))
-        vals.append(max(df["accelerometer_x_median"], df["accelerometer_y_median"], df["accelerometer_z_median"]))
-        vals.append(max(df["accelerometer_x_stddev"], df["accelerometer_y_stddev"], df["accelerometer_z_stddev"]))
-        vals.append(max(df["accelerometer_x_skew"], df["accelerometer_y_skew"], df["accelerometer_z_skew"]))
-        vals.append(max(df["accelerometer_x_kurt"], df["accelerometer_y_kurt"], df["accelerometer_z_kurt"]))
-        vals.append(max(df["accelerometer_x_power"], df["accelerometer_y_power"], df["accelerometer_z_power"]))
-        vals.append(max(df["accelerometer_x_zero_cross_rate"], df["accelerometer_y_zero_cross_rate"], df["accelerometer_z_zero_cross_rate"]))
-        vals.append(max(df["accelerometer_x_fft_centroid"], df["accelerometer_y_fft_centroid"], df["accelerometer_z_fft_centroid"]))
-        vals.append(max(df["accelerometer_x_fft_spread"], df["accelerometer_y_fft_spread"], df["accelerometer_z_fft_spread"]))
-        vals.append(max(df["accelerometer_x_spectral_entropy"], df["accelerometer_y_spectral_entropy"], df["accelerometer_z_spectral_entropy"]))
-        vals.append(max(df["accelerometer_x_spectral_entropy_old"], df["accelerometer_y_spectral_entropy_old"], df["accelerometer_z_spectral_entropy_old"]))
-        vals.append(max(df["accelerometer_x_fft_flux"], df["accelerometer_y_fft_flux"], df["accelerometer_z_fft_flux"]))
-        vals.append(max(df["accelerometer_x_spectral_folloff"], df["accelerometer_y_spectral_folloff"], df["accelerometer_z_spectral_folloff"]))
+        for indx, row in df.iterrows():
+            max_accl_mean.append(max(row["accelerometer_x_mean"],row["accelerometer_y_mean"],row["accelerometer_z_mean"]))
+            max_accl_median.append(max(row["accelerometer_x_median"], row["accelerometer_y_median"], row["accelerometer_z_median"]))
+            max_accl_stddev.append(max(row["accelerometer_x_stddev"], row["accelerometer_y_stddev"], row["accelerometer_z_stddev"]))
+            max_accl_skew.append(max(row["accelerometer_x_skew"], row["accelerometer_y_skew"], row["accelerometer_z_skew"]))
+            max_accl_kurt.append(max(row["accelerometer_x_kurt"], row["accelerometer_y_kurt"], row["accelerometer_z_kurt"]))
+            max_accl_power.append(max(row["accelerometer_x_power"], row["accelerometer_y_power"], row["accelerometer_z_power"]))
+            max_accl_zero_cross_rate.append(max(row["accelerometer_x_zero_cross_rate"], row["accelerometer_y_zero_cross_rate"], row["accelerometer_z_zero_cross_rate"]))
+            max_accl_fft_centroid.append(max(row["accelerometer_x_fft_centroid"], row["accelerometer_y_fft_centroid"], row["accelerometer_z_fft_centroid"]))
+            max_accl_fft_spread.append(max(row["accelerometer_x_fft_spread"], row["accelerometer_y_fft_spread"], row["accelerometer_z_fft_spread"]))
+            max_accl_spectral_entropy.append(max(row["accelerometer_x_spectral_entropy"], row["accelerometer_y_spectral_entropy"], row["accelerometer_z_spectral_entropy"]))
+            max_accl_spectral_entropy_old.append(max(row["accelerometer_x_spectral_entropy_old"], row["accelerometer_y_spectral_entropy_old"], row["accelerometer_z_spectral_entropy_old"]))
+            max_accl_fft_flux.append(max(row["accelerometer_x_fft_flux"], row["accelerometer_y_fft_flux"], row["accelerometer_z_fft_flux"]))
+            max_accl_spectral_folloff.append(max(row["accelerometer_x_spectral_folloff"], row["accelerometer_y_spectral_folloff"], row["accelerometer_z_spectral_folloff"]))
 
-        results = pd.DataFrame([vals],
-                     columns=["timestamp",  "localtime", "user", "version", "start_time", "end_time", "max_accl_mean", "max_accl_median", "max_accl_skew", "max_accl_kurt", "max_accl_power", "max_accl_zero_cross_rate", "max_accl_fft_centroid", "max_accl_fft_spread", "max_accl_spectral_entropy","max_accl_spectral_entropy_old",  "max_accl_fft_flux",  "max_accl_spectral_folloff"])
 
-        return results
+        df["max_accl_mean"] = max_accl_mean
+        df["max_accl_median"] = max_accl_median
+        df["max_accl_stddev"] = max_accl_stddev
+        df["max_accl_skew"] = max_accl_skew
+        df["max_accl_kurt"] = max_accl_kurt
+        df["max_accl_power"] = max_accl_power
+        df["max_accl_zero_cross_rate"] = max_accl_zero_cross_rate
+        df["max_accl_fft_centroid"] = max_accl_fft_centroid
+        df["max_accl_fft_spread"] = max_accl_fft_spread
+        df["max_accl_spectral_entropy"] = max_accl_spectral_entropy
+        df["max_accl_spectral_entropy_old"] = max_accl_spectral_entropy_old
+        df["max_accl_fft_flux"] = max_accl_fft_flux
+        df["max_accl_spectral_folloff"] = max_accl_spectral_folloff
+
+        #results = pd.DataFrame([vals],
+        #             columns=["timestamp",  "localtime", "user", "version", "start_time", "end_time", "max_accl_mean", "max_accl_median", "max_accl_skew", "max_accl_kurt", "max_accl_power", "max_accl_zero_cross_rate", "max_accl_fft_centroid", "max_accl_fft_spread", "max_accl_spectral_entropy","max_accl_spectral_entropy_old",  "max_accl_fft_flux",  "max_accl_spectral_folloff"])
+
+        return df
     return ds.compute(get_max_vals_features)
 
     # return ds.withColumn("max_accl_mean",
@@ -195,6 +211,23 @@ def get_max_features(ds):
     #                                                     ds.accelerometer_y_spectral_folloff,
     #                                                     ds.accelerometer_z_spectral_folloff))
 
+def filter_candidates(ds):
+    features_schema = ds.schema
+    MIN_SEGMENT_DURATION = 15  # seconds
+    MAX_SEGMENT_DURATION = 5 * 60  # seconds
+
+    @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
+    def get_max_vals_features(df):
+        if df['candidate'].iloc[0]==1:
+            duration = ( df['timestamp'].iloc[-1]-df['timestamp'].iloc[0]).seconds
+            if duration >= MIN_SEGMENT_DURATION and duration<=MAX_SEGMENT_DURATION:
+                print(df['timestamp'].iloc[0], df['timestamp'].iloc[-1], duration, df['group'].iloc[0])
+                return df
+            else:
+                return pd.DataFrame(columns=df.columns)
+        else:
+            return pd.DataFrame(columns=df.columns)
+    return ds.compute(get_max_vals_features, groupByColumnName=["group"])
 
 def reorder_columns(ds):
     feature_names = ['accelerometer_x','accelerometer_y', 'accelerometer_z', 'max_accl', 'gyroscope_y', 'gyroscope_x', 'gyroscope_z', 'roll', 'pitch', 'yaw']
