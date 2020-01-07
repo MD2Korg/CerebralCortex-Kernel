@@ -20,7 +20,7 @@ ds_features = DataStream(data=df_features, metadata=Metadata())
 
 pdf_features = ds_features.toPandas()
 
-pdf_predictions = classify_brushing(pdf_features,model_file_name="/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/algorithms/brushing/model/AB_model_brushing_all_features.model")
+pdf_predictions = classify_brushing(pdf_features,model_file_name="./model/AB_model_brushing_all_features.model")
 
 pdf_features['predictions'] = pdf_predictions
 

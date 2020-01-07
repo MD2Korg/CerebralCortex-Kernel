@@ -12,7 +12,7 @@ sqlContext = get_or_create_sc(enable_spark_ui=True, type="sqlContext")
 ds_candidates = sqlContext.read.parquet(
     "/home/ali/IdeaProjects/MD2K_DATA/moral_parsed/features/user=820c/brushing_candidates/")
 ##########################################################################################################
-pd.set_option('display.max_colwidth', -1)
+
 
 CC = Kernel("/home/ali/IdeaProjects/CerebralCortex-2.0/conf/", study_name="moral")
 

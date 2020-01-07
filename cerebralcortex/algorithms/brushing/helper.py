@@ -221,7 +221,6 @@ def filter_candidates(ds):
         if df['candidate'].iloc[0]==1:
             duration = ( df['timestamp'].iloc[-1]-df['timestamp'].iloc[0]).seconds
             if duration >= MIN_SEGMENT_DURATION and duration<=MAX_SEGMENT_DURATION:
-                print(df['timestamp'].iloc[0], df['timestamp'].iloc[-1], duration, df['group'].iloc[0])
                 return df
             else:
                 return pd.DataFrame(columns=df.columns)
@@ -239,7 +238,9 @@ def reorder_columns(ds):
         for sn in sensor_names:
             col_names.append(fn+"_"+sn)
     col_names.extend(extra_features)
-    return ds.select(*col_names)
+    ds = ds.select(*col_names)
+    ds = ds.orderBy("timestamp")
+    return ds
 
 def classify_brushing(X: pd.DataFrame,model_file_name:str):
     with open(model_file_name, 'rb') as handle:

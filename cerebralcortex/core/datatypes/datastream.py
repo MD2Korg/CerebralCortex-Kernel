@@ -41,7 +41,7 @@ from pyspark.sql.types import StructType
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.window import Window
 
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
 from cerebralcortex.core.plotting.basic_plots import BasicPlots
 from cerebralcortex.core.plotting.stress_plots import StressStreamPlots
 
@@ -64,8 +64,12 @@ class DataStream(DataFrame):
         self._metadata = metadata
         self._basic_plots = BasicPlots()
         self._stress_plots = StressStreamPlots()
+
         if isinstance(data, DataFrame):
             super(self.__class__, self).__init__(data._jdf, data.sql_ctx)
+
+        if not isinstance(self.metadata,list) and len(self.metadata.data_descriptor)==0:
+            self.metadata = self._gen_metadata()
 
     # !!!!                       Disable some of dataframe operations                           !!!
     def write(self):
@@ -495,7 +499,7 @@ class DataStream(DataFrame):
 
             data = self._data.groupBy(groupbycols).apply(udfName)
 
-        return DataStream(data=data, metadata=Metadata())
+        return DataStream(data=data, metadata=self._gen_metadata())
 
     # def compute(self, udfName, timeInterval=None):
     #     if 'custom_window' in self._data.columns:
@@ -1732,6 +1736,24 @@ class DataStream(DataFrame):
         data = self.compute(get_corr_mse_features_udf, windowDuration=windowDuration, slideDuration=slideDuration,
                             groupByColumnName=groupByColumnName, startTime=startTime)
         return DataStream(data=data._data, metadata=Metadata())
+
+    ## !!!! HELPER METHOD !!!!!! ##
+    def _gen_metadata(self):
+        schema = self._data.schema
+        stream_metadata = Metadata()
+        for field in schema.fields:
+            stream_metadata.add_dataDescriptor(
+                DataDescriptor().set_name(str(field.name)).set_type(str(field.dataType))
+            )
+
+        stream_metadata.add_module(
+            ModuleMetadata().set_name("cerebralcortex.core.datatypes.datastream.DataStream").set_attribute("url",
+                                                                                                       "hhtps://md2k.org").set_author(
+                "Nasir Ali", "nasir.ali08@gmail.com"))
+
+        return stream_metadata
+
+
 
     ###################### New Methods by Anand #########################
 

@@ -5,12 +5,12 @@ from datetime import datetime
 
 CC = Kernel("/home/ali/IdeaProjects/CerebralCortex-2.0/conf/", study_name="moral")
 
-ds_accel = CC.get_stream("accelerometer--org.md2k.motionsense--motion_sense--left_wrist", user_id="820c_03_18_2017")
-ds_gyro = CC.get_stream("gyroscope--org.md2k.motionsense--motion_sense--left_wrist", user_id="820c_03_18_2017")
+ds_accel = CC.get_stream("accelerometer--org.md2k.motionsense--motion_sense--right_wrist", user_id="820c_03_18_2017")
+ds_gyro = CC.get_stream("gyroscope--org.md2k.motionsense--motion_sense--right_wrist", user_id="820c_03_18_2017")
 
 print("START-TIME", datetime.now())
 # interpolation
-ds_accel_interpolated = ds_accel.interpolate()
+ds_accel_interpolated = ds_accel.interpolate(limit=1)
 ds_gyro_interpolated = ds_gyro.interpolate()
 
 ##compute magnitude

@@ -33,6 +33,9 @@ CC = Kernel("/home/ali/IdeaProjects/CerebralCortex-2.0/conf/", study_name="moral
 ds_accel = CC.get_stream("accelerometer--org.md2k.motionsense--motion_sense--left_wrist", user_id="820c")
 ds_gyro = CC.get_stream("gyroscope--org.md2k.motionsense--motion_sense--left_wrist", user_id="820c")
 
+ds2=ds_accel.withColumn("day", F.to_date(F.col("timestamp")).cast("string"))
+ds3 = ds2.filter("day=2017-03-18")
+
 print("START-TIME", datetime.now())
 # interpolation
 ds_accel_interpolated = ds_accel.interpolate()

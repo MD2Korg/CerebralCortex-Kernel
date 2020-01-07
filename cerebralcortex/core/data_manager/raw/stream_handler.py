@@ -196,18 +196,18 @@ class StreamHandler():
         tmp = []
         if isinstance(data, pd.DataFrame):
             for field_name, field_type in zip(data.dtypes.index, data.dtypes):
-                if field_name not in ["timestamp", "localtime", "user", "version"]:
-                    basic_dd = {}
-                    basic_dd["name"] = field_name
-                    basic_dd["type"]= str(field_type)
-                    tmp.append(basic_dd)
+                #if field_name not in ["timestamp", "localtime", "user", "version"]:
+                basic_dd = {}
+                basic_dd["name"] = field_name
+                basic_dd["type"]= str(field_type)
+                tmp.append(basic_dd)
         else:
             for field in data.schema.fields:
-                if field.name not in ["timestamp", "localtime", "user", "version"]:
-                    basic_dd = {}
-                    basic_dd["name"] = field.name
-                    basic_dd["type"]= str(field.dataType)
-                    tmp.append(basic_dd)
+                #if field.name not in ["timestamp", "localtime", "user", "version"]:
+                basic_dd = {}
+                basic_dd["name"] = field.name
+                basic_dd["type"]= str(field.dataType)
+                tmp.append(basic_dd)
 
         new_dd = []
         for dd in metadata.data_descriptor:
