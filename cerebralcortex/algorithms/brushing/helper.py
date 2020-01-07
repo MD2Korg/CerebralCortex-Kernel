@@ -66,14 +66,14 @@ def get_orientation_data(ds, wrist, ori=1, is_new_device=False,
     return data
 
 
-def get_candidates(ds, uper_limit:float=0.1, lower_limit:float=0.1, threshold:float=0.5):
+def get_candidates(ds, uper_limit:float=0.1,  threshold:float=0.5):
     window = Window.partitionBy(["user", "version"]).rowsBetween(-3, 3).orderBy("timestamp")
     window2 = Window.orderBy("timestamp")
 
     df1 = ds.withColumn("candidate", F.when(F.col("accelerometer_y")>uper_limit, F.lit(1)).otherwise(F.lit(0)))
 
     df = df1.withColumn("candidate",
-                         F.when((F.avg(df1.candidate).over(window)) >= 0.5, F.lit(1))
+                         F.when((F.avg(df1.candidate).over(window)) >= threshold, F.lit(1))
                          .otherwise(F.lit(0)))
 
     df2 = df.withColumn(

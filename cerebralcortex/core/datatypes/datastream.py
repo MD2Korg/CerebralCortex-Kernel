@@ -499,7 +499,7 @@ class DataStream(DataFrame):
 
             data = self._data.groupBy(groupbycols).apply(udfName)
 
-        return DataStream(data=data, metadata=self._gen_metadata())
+        return DataStream(data=data, metadata=Metadata())
 
     # def compute(self, udfName, timeInterval=None):
     #     if 'custom_window' in self._data.columns:
