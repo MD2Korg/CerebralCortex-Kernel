@@ -1,17 +1,8 @@
-from cerebralcortex.kernel import Kernel
-import pandas as pd
-from cerebralcortex.algorithms.brushing.helper import get_orientation_data, get_candidates, get_max_features, \
-    reorder_columns, classify_brushing
-from datetime import datetime
 import argparse
-from cerebralcortex.core.datatypes.datastream import DataStream
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
-from pyspark.sql import functions as F
-from cerebralcortex.kernel import Kernel
-import pandas as pd
+
+from cerebralcortex.algorithms.brushing.helper import get_max_features, reorder_columns, classify_brushing
 from cerebralcortex.algorithms.brushing.helper import get_orientation_data, get_candidates, filter_candidates
-from datetime import datetime
-from pyspark.sql.functions import pandas_udf,PandasUDFType
+from cerebralcortex.kernel import Kernel
 
 
 ###!!!                 GET DATA RAW DATA                          !!!###
@@ -55,6 +46,7 @@ def generate_candidates(CC, user_id, accel_stream_name, gyro_stream_name, output
 
     print("Generated candidates stream.")
 
+
 ###!!!                 CC OBJECT CREATION                         !!!###
 
 def generate_features(CC, user_id, candidate_stream_name, output_stream_name):
@@ -75,7 +67,8 @@ def generate_features(CC, user_id, candidate_stream_name, output_stream_name):
     ds_features = ds_fouriar_features \
         .join(ds_statistical_features, on=['user', 'timestamp', 'localtime', 'version', 'start_time', 'end_time'],
               how='full') \
-        .join(ds_corr_mse_features, on=['user', 'timestamp', 'localtime', 'version', 'start_time', 'end_time'], how='full')
+        .join(ds_corr_mse_features, on=['user', 'timestamp', 'localtime', 'version', 'start_time', 'end_time'],
+              how='full')
 
     ds_features = ds_features.withColumn("duration",
                                          (ds_features.end_time.cast("long") - ds_features.start_time.cast("long")))
@@ -90,6 +83,7 @@ def generate_features(CC, user_id, candidate_stream_name, output_stream_name):
 
     print("Generated brushing features.")
 
+
 ###!!!                 PREDICT BRUSHING                         !!!###
 
 def predict_brushing(CC, user_id, features_stream_name):
@@ -97,23 +91,23 @@ def predict_brushing(CC, user_id, features_stream_name):
 
     features = reorder_columns(features)
     pdf_features = features.toPandas()
-    pdf_predictions = classify_brushing(pdf_features,model_file_name="./model/AB_model_brushing_all_features.model")
+    pdf_predictions = classify_brushing(pdf_features, model_file_name="./model/AB_model_brushing_all_features.model")
     pdf_features['predictions'] = pdf_predictions
-    detected_episodes = pdf_features.loc[pdf_features['predictions']==1]
+    detected_episodes = pdf_features.loc[pdf_features['predictions'] == 1]
 
     print("PREDICTED BRUSHING ESPISODES\n")
     print(detected_episodes[["start_time", "end_time"]])
 
 
-if __name__=="main":
-    
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Brushing episode detection")
 
     parser.add_argument('-c', '--config_dir', help='CC Configuration directory path', required=True)
     parser.add_argument('-a', '--accel_stream_name', help='Accel stream name', required=True)
     parser.add_argument('-g', '--gyro_stream_name', help='Gyro stream name', required=True)
     parser.add_argument('-w', '--wrist', help="wrist ('left', 'right')", required=True)
-    parser.add_argument('-u', '--user_id', help='User ID. Optional if you want to process data for just one user', required=True)
+    parser.add_argument('-u', '--user_id', help='User ID. Optional if you want to process data for just one user',
+                        required=True)
 
     args = vars(parser.parse_args())
 
@@ -121,15 +115,17 @@ if __name__=="main":
     accel_stream_name = str(args["accel_stream_name"]).strip()
     gyro_stream_name = str(args["gyro_stream_name"]).strip()
     wrist = str(args["wrist"]).strip()
-    user_id = str(args["user_id"]).strip()  
-    
+    user_id = str(args["user_id"]).strip()
+
     CC = Kernel(config_dir, study_name="moral")
-    
-    candidate_stream_name = "brushing-candidates--org.md2k.motionsense--motion_sense--"+wrist+"_wrist"
-    features_stream_name = "brushing-features--org.md2k.motionsense--motion_sense--"+wrist+"_wrist"
-    
-    generate_candidates(CC, user_id=user_id, accel_stream_name=accel_stream_name,gyro_stream_name=gyro_stream_name,output_stream_name=candidate_stream_name)
-    
-    generate_features(CC,user_id=user_id, candidate_stream_name=candidate_stream_name,output_stream_name=features_stream_name)
-    
+
+    candidate_stream_name = "brushing-candidates--org.md2k.motionsense--motion_sense--" + wrist + "_wrist"
+    features_stream_name = "brushing-features--org.md2k.motionsense--motion_sense--" + wrist + "_wrist"
+
+    generate_candidates(CC, user_id=user_id, accel_stream_name=accel_stream_name, gyro_stream_name=gyro_stream_name,
+                        output_stream_name=candidate_stream_name)
+
+    generate_features(CC, user_id=user_id, candidate_stream_name=candidate_stream_name,
+                      output_stream_name=features_stream_name)
+
     predict_brushing(CC, user_id=user_id, features_stream_name=features_stream_name)
