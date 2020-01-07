@@ -110,13 +110,13 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    def save_stream(self, datastream, file_mode="append", ingestInfluxDB=False, publishOnKafka=False)->bool:
+    def save_stream(self, datastream, overwrite=False, ingestInfluxDB=False, publishOnKafka=False)->bool:
         """
         Saves datastream raw data in selected NoSQL storage and metadata in MySQL.
 
         Args:
             datastream (DataStream): a DataStream object
-            file_mode (str): write mode, append is currently supportes
+            overwrite (bool): if set to true, whole existing datastream data will be overwritten by new data
             ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana
         Returns:
             bool: True if stream is successfully stored or throws an exception
@@ -129,6 +129,11 @@ class StreamHandler():
             >>> ds = DataStream(dataframe, MetaData)
             >>> CC.save_stream(ds)
         """
+        if overwrite:
+            file_mode="overwrite"
+        else:
+            file_mode = "append"
+            
         metadata = datastream.metadata
         data = datastream.data
         if metadata:

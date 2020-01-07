@@ -59,9 +59,9 @@ candidate_stream_name = "brushing-candidates--org.md2k.motionsense--motion_sense
 ds_ag_candidates.metadata.name = candidate_stream_name
 ds_ag_candidates.metadata.description = "This stream contains the 'Brushing Candidates Based on Event'. group column contains the ids of each candidate group and candidate column represents whether a datapoint is a candidate or not."
 
-CC.save_stream(ds_ag_candidates)
+CC.save_stream(ds_ag_candidates, overwrite=True)
 
-print("Generate candidates stream.")
+print("Generated candidates stream.")
 
 ###!!!                 CC OBJECT CREATION                         !!!###
 
@@ -89,13 +89,28 @@ ds_features = ds_features.withColumn("duration",
 
 ds_features = get_max_features(ds_features)
 
-ds_features = reorder_columns(ds_features)
-
 ## set metadata details for candidate stream
 features_stream_name = "brushing-features--org.md2k.motionsense--motion_sense--"+wrist+"_wrist"
 ds_features.metadata.name = features_stream_name
 ds_features.metadata.description = "This stream contains the brushing features computed for each brushing candidate window."
 
-CC.save_stream(ds_features)
+CC.save_stream(ds_features, overwrite=True)
 
-###!!!                 CC OBJECT CREATION                         !!!###
+print("Generated brushing features.")
+
+###!!!                 PREDICT BRUSHING                         !!!###
+
+features = CC.get_stream(features_stream_name, user_id=user_id)
+
+features = reorder_columns(features)
+
+pdf_features = features.toPandas()
+
+pdf_predictions = classify_brushing(pdf_features,model_file_name="./model/AB_model_brushing_all_features.model")
+
+pdf_features['predictions'] = pdf_predictions
+
+detected_episodes = pdf_features.loc[pdf_features['predictions']==1]
+
+print("PREDICTED BRUSHING ESPISODES\n")
+print(detected_episodes[["start_time", "end_time"]])
