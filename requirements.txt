@@ -8,7 +8,7 @@ influxdb==5.2.1
 pyarrow==0.14.1
 pympler==0.5
 hdfs3==0.3.0
-pyspark==3.0.0.dev0
+pyspark==2.4.4
 msgpack==0.6.1
 PyJWT==1.7.1
 pandas==0.24.2
