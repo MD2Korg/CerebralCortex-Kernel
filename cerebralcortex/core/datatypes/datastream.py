@@ -1372,9 +1372,24 @@ class DataStream(DataFrame):
 
     ### COMPUTE FFT FEATURES
 
-    def compute_fouriar_features(self, exclude_col_names: list = [], feature_names = ["fft_centroid", 'fft_spread', 'spectral_entropy', 'spectral_entropy_old', 'fft_flux',
+    def compute_fourier_features(self, exclude_col_names: list = [], feature_names = ["fft_centroid", 'fft_spread', 'spectral_entropy', 'spectral_entropy_old', 'fft_flux',
             'spectral_folloff'], windowDuration: int = None, slideDuration: int = None,
-                      groupByColumnName: List[str] = [], startTime=None):
+                                 groupByColumnName: List[str] = [], startTime=None):
+        """
+        Transforms data from time domain to frequency domain.
+
+        Args:
+            exclude_col_names list(str): name of the columns on which features should not be computed
+            feature_names list(str): names of the features. Supported features are fft_centroid, fft_spread, spectral_entropy, spectral_entropy_old, fft_flux, spectral_folloff
+            windowDuration (int): duration of a window in seconds
+            slideDuration (int): slide duration of a window
+            groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
+            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+
+
+        Returns:
+            DataStream object with all the existing data columns and FFT features
+        """
         eps = 0.00000001
 
         exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
@@ -1420,22 +1435,6 @@ class DataStream(DataFrame):
 
             return (C, S)
 
-        def stSpectralEntropy(X, numOfShortBlocks=10):
-            """Computes the spectral entropy"""
-            L = len(X)  # number of frame samples
-            Eol = np.sum(X ** 2)  # total spectral energy
-
-            subWinLength = int(np.floor(L / numOfShortBlocks))  # length of sub-frame
-            if L != subWinLength * numOfShortBlocks:
-                X = X[0:subWinLength * numOfShortBlocks]
-
-            subWindows = X.reshape(subWinLength, numOfShortBlocks,
-                                   order='F').copy()  # define sub-frames (using matrix reshape)
-            s = np.sum(subWindows ** 2, axis=0) / (Eol + eps)  # compute spectral sub-energies
-            En = -np.sum(s * np.log2(s + eps))  # compute spectral entropy
-
-            return En
-
         def stSpectralFlux(X, Xprev):
             """
             Computes the spectral flux feature of the current frame
@@ -1465,7 +1464,23 @@ class DataStream(DataFrame):
             else:
                 mC = 0.0
             return (mC)
+        
+        def stSpectralEntropy(X, numOfShortBlocks=10):
+            """Computes the spectral entropy"""
+            L = len(X)  # number of frame samples
+            Eol = np.sum(X ** 2)  # total spectral energy
 
+            subWinLength = int(np.floor(L / numOfShortBlocks))  # length of sub-frame
+            if L != subWinLength * numOfShortBlocks:
+                X = X[0:subWinLength * numOfShortBlocks]
+
+            subWindows = X.reshape(subWinLength, numOfShortBlocks,
+                                   order='F').copy()  # define sub-frames (using matrix reshape)
+            s = np.sum(subWindows ** 2, axis=0) / (Eol + eps)  # compute spectral sub-energies
+            En = -np.sum(s * np.log2(s + eps))  # compute spectral entropy
+
+            return En
+        
         def spectral_entropy(data, sampling_freq, bands=None):
 
             psd = np.abs(np.fft.rfft(data)) ** 2
@@ -1487,7 +1502,7 @@ class DataStream(DataFrame):
 
             return -np.sum(power_per_band * np.log2(power_per_band))
 
-        def fouriar_features_pandas_udf(data, frequency: float = 16.0):
+        def fourier_features_pandas_udf(data, frequency: float = 16.0):
 
             Fs = frequency  # the sampling freq (in Hz)
             results = []
@@ -1531,7 +1546,7 @@ class DataStream(DataFrame):
 
             df.drop(exclude_col_names, axis=1, inplace=True)
 
-            df_ff = df.apply(fouriar_features_pandas_udf)
+            df_ff = df.apply(fourier_features_pandas_udf)
             df3 = df_ff.T
             pd.set_option('display.max_colwidth', -1)
             # split column into multiple columns
@@ -1561,11 +1576,26 @@ class DataStream(DataFrame):
         ### COMPUTE STATISTICAL FEATURES
 
     def compute_statistical_features(self, exclude_col_names: list = [], feature_names = ['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
-                         'kurt', 'power', 'zero_cross_rate'], windowDuration: int = None,
+                         'kurt', 'sqr', 'zero_cross_rate'], windowDuration: int = None,
                                      slideDuration: int = None,
                                      groupByColumnName: List[str] = [], startTime=None):
 
+        """
+        Compute statistical features.
 
+        Args:
+            exclude_col_names list(str): name of the columns on which features should not be computed
+            feature_names list(str): names of the features. Supported features are ['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
+                         'kurt', 'sqr', 'zero_cross_rate'
+            windowDuration (int): duration of a window in seconds
+            slideDuration (int): slide duration of a window
+            groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
+            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+
+
+        Returns:
+            DataStream object with all the existing data columns and FFT features
+        """
         exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
 
         data = self._data.drop(*exclude_col_names)
@@ -1597,9 +1627,9 @@ class DataStream(DataFrame):
             zero_cross_count = (np.diff(np.sign(series)) != 0).sum()
             return zero_cross_count / len(series)
 
-        def get_power(series):
-            power = np.mean([v * v for v in series])
-            return power
+        def get_sqr(series):
+            sqr = np.mean([v * v for v in series])
+            return sqr
 
         @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
         def get_stats_features_udf(df):
@@ -1658,10 +1688,10 @@ class DataStream(DataFrame):
                 df_zero_cross_rate.index += '_zero_cross_rate'
                 results.append(df_zero_cross_rate)
 
-            if "power" in feature_names:
-                df_power = df.apply(get_power)
-                df_power.index += '_power'
-                results.append(df_power)
+            if "sqr" in feature_names:
+                df_sqr = df.apply(get_sqr)
+                df_sqr.index += '_sqr'
+                results.append(df_sqr)
 
             output = pd.DataFrame(pd.concat(results)).T
 
@@ -1678,7 +1708,22 @@ class DataStream(DataFrame):
     def compute_corr_mse_accel_gyro(self, exclude_col_names: list = [], accel_column_names:list=['accelerometer_x','accelerometer_y', 'accelerometer_z'], gyro_column_names:list=['gyroscope_y', 'gyroscope_x', 'gyroscope_z'], windowDuration: int = None,
                                      slideDuration: int = None,
                                      groupByColumnName: List[str] = [], startTime=None):
+        """
+        Compute correlation and mean standard error of accel and gyro sensors
 
+        Args:
+            exclude_col_names list(str): name of the columns on which features should not be computed
+            accel_column_names list(str): name of accel data column
+            gyro_column_names list(str): name of gyro data column
+            windowDuration (int): duration of a window in seconds
+            slideDuration (int): slide duration of a window
+            groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
+            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+
+
+        Returns:
+            DataStream object with all the existing data columns and FFT features
+        """
         feature_names = ["ax_ay_corr", 'ax_az_corr', 'ay_az_corr', 'gx_gy_corr', 'gx_gz_corr',
                          'gy_gz_corr', 'ax_ay_mse', 'ax_az_mse', 'ay_az_mse', 'gx_gy_mse', 'gx_gz_mse', 'gy_gz_mse']
 

@@ -13,6 +13,24 @@ def get_orientation_data(ds, wrist, ori=1, is_new_device=False,
                          accelerometer_x="accelerometer_x", accelerometer_y="accelerometer_y",
                          accelerometer_z="accelerometer_z",
                          gyroscope_x="gyroscope_x", gyroscope_y="gyroscope_y", gyroscope_z="gyroscope_z"):
+    """
+    Get the orientation of hand using accel and gyro data. 
+    Args:
+        ds: DataStream object
+        wrist: name of the wrist smart watch was worn
+        ori: 
+        is_new_device: this param is for motionsense smart watch version 
+        accelerometer_x (float): 
+        accelerometer_y (float): 
+        accelerometer_z (float): 
+        gyroscope_x (float): 
+        gyroscope_y (float): 
+        gyroscope_z (float): 
+
+    Returns:
+        DataStream object
+        
+    """
     left_ori = {"old": {0: [1, 1, 1], 1: [1, 1, 1], 2: [-1, -1, 1], 3: [-1, 1, 1], 4: [1, -1, 1]},
                 "new": {0: [-1, 1, 1], 1: [-1, 1, 1], 2: [1, -1, 1], 3: [1, 1, 1], 4: [-1, -1, 1]}}
     right_ori = {"old": {0: [1, -1, 1], 1: [1, -1, 1], 2: [-1, 1, 1], 3: [-1, -1, 1], 4: [1, 1, 1]},
@@ -43,6 +61,16 @@ def get_orientation_data(ds, wrist, ori=1, is_new_device=False,
 
 
 def get_candidates(ds, uper_limit: float = 0.1, threshold: float = 0.5):
+    """
+    Get brushing candidates. Data is windowed into potential brushing candidate
+    Args:
+        ds (DataStream):
+        uper_limit (float): threashold for accel. This is used to know how high the hand is
+        threshold (float): 
+
+    Returns:
+
+    """
     window = Window.partitionBy(["user", "version"]).rowsBetween(-3, 3).orderBy("timestamp")
     window2 = Window.orderBy("timestamp")
 
@@ -77,6 +105,14 @@ def get_candidates(ds, uper_limit: float = 0.1, threshold: float = 0.5):
 
 
 def get_max_features(ds):
+    """
+    This method will compute what are the max values for accel and gyro statistical/FFT features
+    Args:
+        ds (DataStream): 
+
+    Returns:
+        DataStream
+    """
     basic_schema = ds.schema
     max_feature_schema = [
         StructField("max_accl_mean", FloatType()),
@@ -84,7 +120,7 @@ def get_max_features(ds):
         StructField("max_accl_stddev", FloatType()),
         StructField("max_accl_skew", FloatType()),
         StructField("max_accl_kurt", FloatType()),
-        StructField("max_accl_power", FloatType()),
+        StructField("max_accl_sqr", FloatType()),
         StructField("max_accl_zero_cross_rate", FloatType()),
         StructField("max_accl_fft_centroid", FloatType()),
         StructField("max_accl_fft_spread", FloatType()),
@@ -99,7 +135,7 @@ def get_max_features(ds):
     @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
     def get_max_vals_features(df):
         vals = []
-        max_accl_mean, max_accl_median, max_accl_stddev, max_accl_skew, max_accl_kurt, max_accl_power, max_accl_zero_cross_rate, max_accl_fft_centroid, max_accl_fft_spread, max_accl_spectral_entropy, max_accl_spectral_entropy_old, max_accl_fft_flux, max_accl_spectral_folloff = (
+        max_accl_mean, max_accl_median, max_accl_stddev, max_accl_skew, max_accl_kurt, max_accl_sqr, max_accl_zero_cross_rate, max_accl_fft_centroid, max_accl_fft_spread, max_accl_spectral_entropy, max_accl_spectral_entropy_old, max_accl_fft_flux, max_accl_spectral_folloff = (
         [] for i in range(13))
         vals.append(df['timestamp'].iloc[0])
         vals.append(df['localtime'].iloc[0])
@@ -119,8 +155,8 @@ def get_max_features(ds):
                 max(row["accelerometer_x_skew"], row["accelerometer_y_skew"], row["accelerometer_z_skew"]))
             max_accl_kurt.append(
                 max(row["accelerometer_x_kurt"], row["accelerometer_y_kurt"], row["accelerometer_z_kurt"]))
-            max_accl_power.append(
-                max(row["accelerometer_x_power"], row["accelerometer_y_power"], row["accelerometer_z_power"]))
+            max_accl_sqr.append(
+                max(row["accelerometer_x_sqr"], row["accelerometer_y_sqr"], row["accelerometer_z_sqr"]))
             max_accl_zero_cross_rate.append(
                 max(row["accelerometer_x_zero_cross_rate"], row["accelerometer_y_zero_cross_rate"],
                     row["accelerometer_z_zero_cross_rate"]))
@@ -145,7 +181,7 @@ def get_max_features(ds):
         df["max_accl_stddev"] = max_accl_stddev
         df["max_accl_skew"] = max_accl_skew
         df["max_accl_kurt"] = max_accl_kurt
-        df["max_accl_power"] = max_accl_power
+        df["max_accl_sqr"] = max_accl_sqr
         df["max_accl_zero_cross_rate"] = max_accl_zero_cross_rate
         df["max_accl_fft_centroid"] = max_accl_fft_centroid
         df["max_accl_fft_spread"] = max_accl_fft_spread
@@ -181,7 +217,7 @@ def filter_candidates(ds):
 def reorder_columns(ds):
     feature_names = ['accelerometer_x', 'accelerometer_y', 'accelerometer_z', 'max_accl', 'gyroscope_y', 'gyroscope_x',
                      'gyroscope_z', 'roll', 'pitch', 'yaw']
-    sensor_names = ['mean', 'median', 'stddev', 'skew', 'kurt', 'power', 'zero_cross_rate', "fft_centroid",
+    sensor_names = ['mean', 'median', 'stddev', 'skew', 'kurt', 'sqr', 'zero_cross_rate', "fft_centroid",
                     'fft_spread', 'spectral_entropy', 'spectral_entropy_old', 'fft_flux', 'spectral_folloff']
     extra_features = ["ax_ay_corr", 'ax_az_corr', 'ay_az_corr', 'gx_gy_corr', 'gx_gz_corr', 'gy_gz_corr', 'ax_ay_mse',
                       'ax_az_mse', 'ay_az_mse', 'gx_gy_mse', 'gx_gz_mse', 'gy_gz_mse']

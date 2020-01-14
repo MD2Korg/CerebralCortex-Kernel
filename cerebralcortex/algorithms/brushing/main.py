@@ -1,21 +1,19 @@
 import argparse
 
-from cerebralcortex.algorithms.brushing.helper import get_max_features, reorder_columns, classify_brushing
-from cerebralcortex.algorithms.brushing.helper import get_orientation_data, get_candidates, filter_candidates
+from cerebralcortex.algorithms.brushing.features import get_max_features, reorder_columns, classify_brushing
+from cerebralcortex.algorithms.brushing.features import get_orientation_data, get_candidates, filter_candidates
 from cerebralcortex.kernel import Kernel
 
 
-###!!!                 GET DATA RAW DATA                          !!!###
 def generate_candidates(CC, user_id, accel_stream_name, gyro_stream_name, output_stream_name):
     ds_accel = CC.get_stream(accel_stream_name, user_id=user_id)
     ds_gyro = CC.get_stream(gyro_stream_name, user_id=user_id)
 
-    ###!!!                 BRUSHING CANDIDATE GENERATION              !!!###
-    # interpolation
-    ds_accel_interpolated = ds_accel.interpolate(limit=1)
+    # interpolation - default interpolation is linear
+    ds_accel_interpolated = ds_accel.interpolate()
     ds_gyro_interpolated = ds_gyro.interpolate()
 
-    ##compute magnitude
+    ##compute magnitude - xyz axis of accell and gyro
     ds_accel_magnitude = ds_accel_interpolated.compute_magnitude(
         col_names=["accelerometer_x", "accelerometer_y", "accelerometer_z"], magnitude_col_name="accel_magnitude")
     ds_gyro_magnitude = ds_gyro_interpolated.compute_magnitude(col_names=["gyroscope_x", "gyroscope_y", "gyroscope_z"],
@@ -25,17 +23,16 @@ def generate_candidates(CC, user_id, accel_stream_name, gyro_stream_name, output
     ds_ag = ds_accel_magnitude.join(ds_gyro_magnitude, on=['user', 'timestamp', 'localtime', 'version'],
                                     how='full').dropna()
 
-    # get orientation
+    # get wrist orientation
     ds_ag_orientation = get_orientation_data(ds_ag, wrist="left")
 
-    ## apply complementary filter
+    ## apply complementary filter - roll, pitch, yaw
     ds_ag_complemtary_filtered = ds_ag_orientation.complementary_filter()
 
     # get brushing candidate groups
     ds_ag_candidates = get_candidates(ds_ag_complemtary_filtered)
 
     # remove where group==0 - non-candidates
-
     ds_ag_candidates = filter_candidates(ds_ag_candidates)
 
     ## set metadata details for candidate stream
@@ -46,20 +43,17 @@ def generate_candidates(CC, user_id, accel_stream_name, gyro_stream_name, output
 
     print("Generated candidates stream.")
 
-
-###!!!                 CC OBJECT CREATION                         !!!###
-
 def generate_features(CC, user_id, candidate_stream_name, output_stream_name):
     ds_candidates = CC.get_stream(candidate_stream_name, user_id=user_id)
 
     ## compute features
-    ds_fouriar_features = ds_candidates.compute_fouriar_features(
+    ds_fouriar_features = ds_candidates.compute_fourier_features(
         exclude_col_names=['group', 'candidate', "accel_magnitude", "gyro_magnitude"], groupByColumnName=["group"])
 
     ds_statistical_features = ds_candidates.compute_statistical_features(
         exclude_col_names=['group', 'candidate', "accel_magnitude", "gyro_magnitude"], groupByColumnName=["group"],
         feature_names=['mean', 'median', 'stddev', 'skew',
-                       'kurt', 'power', 'zero_cross_rate'])
+                       'kurt', 'sqr', 'zero_cross_rate'])
 
     ds_corr_mse_features = ds_candidates.compute_corr_mse_accel_gyro(
         exclude_col_names=['group', 'candidate', "accel_magnitude", "gyro_magnitude"], groupByColumnName=["group"])
@@ -82,9 +76,6 @@ def generate_features(CC, user_id, candidate_stream_name, output_stream_name):
     CC.save_stream(ds_features, overwrite=True)
 
     print("Generated brushing features.")
-
-
-###!!!                 PREDICT BRUSHING                         !!!###
 
 def predict_brushing(CC, user_id, features_stream_name):
     features = CC.get_stream(features_stream_name, user_id=user_id)
