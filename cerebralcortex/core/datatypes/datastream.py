@@ -266,9 +266,9 @@ class DataStream(DataFrame):
         if windowDuration:
             windowDuration = str(windowDuration) + " seconds"
             win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
-            result = self._data.groupBy(['user','version', win]).agg(exprs)
+            result = self._data.groupBy(['user','version', win]).agg(exprs)._data
         else:
-            result = self._data.groupBy(['user','version']).agg(exprs)
+            result = self._data.groupBy(['user','version']).agg(exprs)._data
 
 
         result = result.withColumn("timestamp",result.window.start)
@@ -1245,7 +1245,7 @@ class DataStream(DataFrame):
             >>> # To do a summary for specific columns first select them:
             >>> ds.select("col1", "col2").summary("count").show()
         """
-        return self._data.summary().show(truncate=False)
+        self._data.summary().show(truncate=False)
 
     def take(self,num):
         """

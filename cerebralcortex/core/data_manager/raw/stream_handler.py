@@ -221,7 +221,7 @@ class StreamHandler():
             dd.attributes = dd.attributes
             new_dd.append(dd)
 
-        if len(tmp)!=len(new_dd) or len(tmp)-4!=len(new_dd):
+        if len(tmp)!=len(new_dd) and (len(tmp)-4)!=len(new_dd):
             raise Exception("Data descriptor number of columns does not match with the actual number of dataframe columns. Add data description for each of dataframe column.")
 
         updated_data_descriptors = []
