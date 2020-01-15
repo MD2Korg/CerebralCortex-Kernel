@@ -306,16 +306,16 @@ def save_data(df: object, cc_config: dict, user_id: str, stream_name: str):
     """
     df["version"] = 1
     df["user"] = str(user_id)
-    table = pa.Table.from_pandas(df,nthreads=1)
+    table = pa.Table.from_pandas(df,nthreads=1,preserve_index=False)
     partition_by = ["version", "user"]
     if cc_config["nosql_storage"] == "filesystem":
         data_file_url = os.path.join(cc_config["filesystem"]["filesystem_path"], "study="+str(cc_config.get("study_name")), "stream="+str(stream_name))
-        pq.write_to_dataset(table, root_path=data_file_url, partition_cols=partition_by, preserve_index=False)
+        pq.write_to_dataset(table, root_path=data_file_url, partition_cols=partition_by, )
 
     elif cc_config["nosql_storage"] == "hdfs":
         data_file_url = os.path.join(cc_config["hdfs"]["raw_files_dir"], "study="+str(cc_config.get("study_name")), "stream="+str(stream_name))
         fs = pa.hdfs.connect(cc_config['hdfs']['host'], cc_config['hdfs']['port'])
-        pq.write_to_dataset(table, root_path=data_file_url, filesystem=fs, partition_cols=partition_by, preserve_index=False)
+        pq.write_to_dataset(table, root_path=data_file_url, filesystem=fs, partition_cols=partition_by)
 
     else:
         raise Exception(str(cc_config["nosql_storage"])+" is not supported yet. Please check your cerebralcortex configs (nosql_storage).")

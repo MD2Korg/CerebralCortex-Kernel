@@ -266,9 +266,9 @@ class DataStream(DataFrame):
         if windowDuration:
             windowDuration = str(windowDuration) + " seconds"
             win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
-            result = self._data.groupBy(['user','version', win]).agg(exprs)._data
+            result = self._data.groupBy(['user','version', win]).agg(exprs)
         else:
-            result = self._data.groupBy(['user','version']).agg(exprs)._data
+            result = self._data.groupBy(['user','version']).agg(exprs)
 
 
         result = result.withColumn("timestamp",result.window.start)
