@@ -68,7 +68,7 @@ class DataStream(DataFrame):
         if isinstance(data, DataFrame):
             super(self.__class__, self).__init__(data._jdf, data.sql_ctx)
 
-        if not isinstance(self.metadata,list) and len(self.metadata.data_descriptor)==0 and data is not None:
+        if self._metadata is not None and not isinstance(self.metadata,list) and len(self.metadata.data_descriptor)==0 and data is not None:
             self.metadata = self._gen_metadata()
 
     # !!!!                       Disable some of dataframe operations                           !!!
