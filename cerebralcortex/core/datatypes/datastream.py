@@ -883,7 +883,7 @@ class DataStream(DataFrame):
             >>> ds.describe(['col_name']).show()
             >>> ds.describe().show()
         """
-        self._data.describe()
+        return self._data.describe()
 
     def dropDuplicates(self, subset=None):
         """
@@ -1245,7 +1245,7 @@ class DataStream(DataFrame):
             >>> # To do a summary for specific columns first select them:
             >>> ds.select("col1", "col2").summary("count").show()
         """
-        self._data.summary()
+        return self._data.summary().show(truncate=False)
 
     def take(self,num):
         """
