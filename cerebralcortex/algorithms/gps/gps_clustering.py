@@ -77,30 +77,32 @@ def gps_clusters(data: object) -> object:
     min_points_in_cluster = MINIMUM_POINTS_IN_CLUSTER
 
     data = data[data.accuracy < GPS_ACCURACY_THRESHOLD]
-
-    id = data.user.iloc[0]
-    dataframe = pd.DataFrame(
-        {'latitude': data.latitude, 'longitude': data.longitude})
-    coords = dataframe.as_matrix(columns=['latitude', 'longitude'])
-
-    epsilon = geo_fence_distance / (
-            EPSILON_CONSTANT * KM_PER_RADIAN)
-    db = DBSCAN(eps=epsilon, min_samples=min_points_in_cluster,
-                algorithm='ball_tree', metric='haversine').fit(
-        np.radians(coords))
-    cluster_labels = db.labels_
-    num_clusters = len(set(cluster_labels))
-    clusters = pd.Series(
-        [coords[cluster_labels == n] for n in range(-1, num_clusters)])
-    clusters = clusters.apply(lambda y: np.nan if len(y) == 0 else y)
-    clusters.dropna(how='any', inplace=True)
-    centermost_points = clusters.map(get_centermost_point)
-    centermost_points = np.array(centermost_points)
-    all_centroid = []
-    for cols in centermost_points:
-        cols = np.array(cols)
-        cols.flatten()
-        cs = ([id, cols[LATITUDE], cols[LONGITUDE]])
-        all_centroid.append(cs)
-    df = pd.DataFrame(all_centroid, columns=['user', 'latitude', 'longitude'])
-    return df
+    try:
+        id = data.user.iloc[0]
+        dataframe = pd.DataFrame(
+            {'latitude': data.latitude, 'longitude': data.longitude})
+        coords = dataframe.as_matrix(columns=['latitude', 'longitude'])
+    
+        epsilon = geo_fence_distance / (
+                EPSILON_CONSTANT * KM_PER_RADIAN)
+        db = DBSCAN(eps=epsilon, min_samples=min_points_in_cluster,
+                    algorithm='ball_tree', metric='haversine').fit(
+            np.radians(coords))
+        cluster_labels = db.labels_
+        num_clusters = len(set(cluster_labels))
+        clusters = pd.Series(
+            [coords[cluster_labels == n] for n in range(-1, num_clusters)])
+        clusters = clusters.apply(lambda y: np.nan if len(y) == 0 else y)
+        clusters.dropna(how='any', inplace=True)
+        centermost_points = clusters.map(get_centermost_point)
+        centermost_points = np.array(centermost_points)
+        all_centroid = []
+        for cols in centermost_points:
+            cols = np.array(cols)
+            cols.flatten()
+            cs = ([id, cols[LATITUDE], cols[LONGITUDE]])
+            all_centroid.append(cs)
+        df = pd.DataFrame(all_centroid, columns=['user', 'latitude', 'longitude'])
+        return df
+    except:
+        pass
