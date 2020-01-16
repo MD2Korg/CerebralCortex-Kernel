@@ -107,13 +107,14 @@ class Kernel:
     ###########################################################################
     #                     RAW DATA MANAGER METHODS                            #
     ###########################################################################
-    def save_stream(self, datastream: DataStream, ingestInfluxDB: bool = False)->bool:
+    def save_stream(self, datastream: DataStream, ingestInfluxDB: bool = False, overwrite=False)->bool:
         """
         Saves datastream raw data in selected NoSQL storage and metadata in MySQL.
 
         Args:
             datastream (DataStream): a DataStream object
             ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana
+            overwrite (bool): if set to true, whole existing datastream data will be overwritten by new data
         Returns:
             bool: True if stream is successfully stored or throws an exception
         Raises:
@@ -125,7 +126,7 @@ class Kernel:
             >>> ds = DataStream(dataframe, MetaData)
             >>> CC.save_stream(ds)
         """
-        return self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB)
+        return self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB, overwrite=overwrite)
 
     def get_stream(self, stream_name: str, version: str = "all", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
         """

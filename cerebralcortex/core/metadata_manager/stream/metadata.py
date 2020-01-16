@@ -380,10 +380,13 @@ class Metadata():
         """
         data_descriptor_list = []
         module_list = []
-
+        
         if isinstance(metadata, str):
             metadata = json.loads(metadata)
 
+        metadata = json.dumps(metadata)
+        metadata = json.loads(metadata.lower())
+        
         md = Metadata()
         if isinstance(metadata, dict):
             data_descriptors = metadata["data_descriptor"]

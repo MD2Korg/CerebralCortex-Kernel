@@ -69,10 +69,11 @@ class FileSystemStorage:
         if stream_name!="" and stream_name is not None:
             if not self.obj.sql_data.is_stream(stream_name=stream_name):
                 raise Exception(stream_name+" does not exist.")
-
-        if user_id is not None:
-            if not self.obj.sql_data.is_user(user_id=user_id):
-                raise Exception(user_id+" does not exist.")
+        
+        # disabled it because cc1 data has no users' ids
+        # if user_id is not None:
+        #     if not self.obj.sql_data.is_user(user_id=user_id):
+        #         raise Exception(user_id+" does not exist.")
 
         hdfs_url = self._get_storage_path(stream_name)
 
@@ -131,7 +132,7 @@ class FileSystemStorage:
     def write_spark_dataframe(self, stream_name, data,file_mode):
         hdfs_url = self._get_storage_path(stream_name)
         try:
-            data.coalesce(1).write.partitionBy(["version","user"]).format('parquet').mode(file_mode).save(hdfs_url)
+            data.write.partitionBy(["version","user"]).format('parquet').mode(file_mode).save(hdfs_url)
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))

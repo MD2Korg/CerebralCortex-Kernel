@@ -93,9 +93,11 @@ class StreamHandler():
         if len(stream_metadata) > 0:
             if data_type == DataSet.COMPLETE:
                 df = self.nosql.read_file(stream_name=stream_name, version=version, user_id=user_id)
+                #df = df.dropDuplicates(subset=['timestamp'])
                 stream = DataStream(data=df,metadata=stream_metadata)
             elif data_type == DataSet.ONLY_DATA:
                 df = self.nosql.read_file(stream_name=stream_name, version=version, user_id=user_id)
+                #df = df.dropDuplicates(subset=['timestamp'])
                 stream = DataStream(data=df)
             elif data_type == DataSet.ONLY_METADATA:
                 stream = DataStream(metadata=stream_metadata)
@@ -108,13 +110,13 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    def save_stream(self, datastream, file_mode="append", ingestInfluxDB=False, publishOnKafka=False)->bool:
+    def save_stream(self, datastream, overwrite=False, ingestInfluxDB=False, publishOnKafka=False)->bool:
         """
         Saves datastream raw data in selected NoSQL storage and metadata in MySQL.
 
         Args:
             datastream (DataStream): a DataStream object
-            file_mode (str): write mode, append is currently supportes
+            overwrite (bool): if set to true, whole existing datastream data will be overwritten by new data
             ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana
         Returns:
             bool: True if stream is successfully stored or throws an exception
@@ -127,6 +129,11 @@ class StreamHandler():
             >>> ds = DataStream(dataframe, MetaData)
             >>> CC.save_stream(ds)
         """
+        if overwrite:
+            file_mode="overwrite"
+        else:
+            file_mode = "append"
+            
         metadata = datastream.metadata
         data = datastream.data
         if metadata:
@@ -194,18 +201,18 @@ class StreamHandler():
         tmp = []
         if isinstance(data, pd.DataFrame):
             for field_name, field_type in zip(data.dtypes.index, data.dtypes):
-                if field_name not in ["timestamp", "localtime", "user", "version"]:
-                    basic_dd = {}
-                    basic_dd["name"] = field_name
-                    basic_dd["type"]= str(field_type)
-                    tmp.append(basic_dd)
+                #if field_name not in ["timestamp", "localtime", "user", "version"]:
+                basic_dd = {}
+                basic_dd["name"] = field_name
+                basic_dd["type"]= str(field_type)
+                tmp.append(basic_dd)
         else:
             for field in data.schema.fields:
-                if field.name not in ["timestamp", "localtime", "user", "version"]:
-                    basic_dd = {}
-                    basic_dd["name"] = field.name
-                    basic_dd["type"]= str(field.dataType)
-                    tmp.append(basic_dd)
+                #if field.name not in ["timestamp", "localtime", "user", "version"]:
+                basic_dd = {}
+                basic_dd["name"] = field.name
+                basic_dd["type"]= str(field.dataType)
+                tmp.append(basic_dd)
 
         new_dd = []
         for dd in metadata.data_descriptor:
@@ -214,7 +221,7 @@ class StreamHandler():
             dd.attributes = dd.attributes
             new_dd.append(dd)
 
-        if len(tmp)!=len(new_dd):
+        if len(tmp)!=len(new_dd) and (len(tmp)-4)!=len(new_dd):
             raise Exception("Data descriptor number of columns does not match with the actual number of dataframe columns. Add data description for each of dataframe column.")
 
         updated_data_descriptors = []
