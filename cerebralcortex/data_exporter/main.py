@@ -47,7 +47,7 @@ from cerebralcortex.data_importer.util.directory_scanners import dir_scanner
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def export_data(cc_config: dict, export_data_dir: str, study_name:str, stream_names:list[str]=False, user_ids: list[str] = None, export_type: str = "csv"):
+def export_data(cc_config: dict, export_data_dir: str, study_name:str, stream_names:list=False, user_ids: list = None, export_type: str = "csv"):
     """
     Scan data directory, parse files and ingest data in cerebralcortex backend.
 
@@ -83,16 +83,17 @@ def export_data(cc_config: dict, export_data_dir: str, study_name:str, stream_na
                     for user in hdfs.ls(version):
                         if all(s not in user for s in ['SUCCESS', '_tmp']):
                             path_array = user.split("/")
-                            user_id = path_array[4]
-                            version_id = path_array[3]
-                            stream_name = path_array[2]
-                            export_path = export_data_dir+"study=" + user["study_name"] + "/" + stream_name + "/" + str(version_id) + "/user="+user_id + "/"
+                            user_id = path_array[5]
+                            version_id = path_array[4]
+                            stream_name = path_array[3]
+                            export_path = export_data_dir+"study=" + study_name + "/" + stream_name + "/" + str(version_id) + "/user="+user_id + "/"
 
                             if not os.path.exists(export_path):
-                                os.mkdirs(export_path, exist_ok=True)
-                            if hdfs.exists(export_path):
+                                os.makedirs(export_path, exist_ok=True)
+                            if os.path.exists(export_path):
                                 for user_files in hdfs.ls(user):
                                     print(user_files)
+                                exit()
     #processed_files_list = CC.SqlData.get_processed_files_list()
 
 
