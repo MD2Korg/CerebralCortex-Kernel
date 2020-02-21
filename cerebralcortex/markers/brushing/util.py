@@ -8,7 +8,7 @@ from pyspark.sql.types import *
 from pyspark.sql.types import StructType
 from pyspark.sql.window import Window
 
-
+#re-orient-signal
 def get_orientation_data(ds, wrist, ori=1, is_new_device=False,
                          accelerometer_x="accelerometer_x", accelerometer_y="accelerometer_y",
                          accelerometer_z="accelerometer_z",

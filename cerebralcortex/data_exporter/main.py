@@ -93,6 +93,8 @@ def export_data(cc_config: dict, export_data_dir: str, study_name:str, stream_na
                             if os.path.exists(export_path):
                                 for user_files in hdfs.ls(user):
                                     print(user_files)
+                                    df = pd.read_parquet(user_files)
+                                    df.to_csv(export_path)
                                 exit()
     #processed_files_list = CC.SqlData.get_processed_files_list()
 

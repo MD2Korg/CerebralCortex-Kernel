@@ -1,7 +1,7 @@
 import argparse
 
-from cerebralcortex.algorithms.brushing.features import get_max_features, reorder_columns, classify_brushing
-from cerebralcortex.algorithms.brushing.features import get_orientation_data, get_candidates, filter_candidates
+from cerebralcortex.markers.brushing.util import get_max_features, reorder_columns, classify_brushing
+from cerebralcortex.markers.brushing.util import get_orientation_data, get_candidates, filter_candidates
 from cerebralcortex.kernel import Kernel
 
 

@@ -374,6 +374,7 @@ class DataStream(DataFrame):
         data = self._data.where(self._data["version"].isin(version))
         return DataStream(data=data, metadata=Metadata())
 
+#stat
     def compute_magnitude(self, col_names=[], magnitude_col_name="magnitude"):
         if len(col_names)<1:
             raise Exception("col_names param is missing.")
@@ -384,7 +385,7 @@ class DataStream(DataFrame):
 
         data = self._data.withColumn(magnitude_col_name, F.sqrt(eval(tmp)))
         return DataStream(data=data, metadata=Metadata())
-
+#stat
     def interpolate(self, freq=16, method='linear', axis=0, limit=None, inplace=False,
                     limit_direction='forward', limit_area=None,
                     downcast=None):
@@ -428,7 +429,7 @@ class DataStream(DataFrame):
 
         data = self._data.groupby(["user", "version"]).apply(interpolate_data)
         return DataStream(data=data,metadata=Metadata())
-
+#signal_processing
     def complementary_filter(self, freq:int=16, accelerometer_x:str="accelerometer_x",accelerometer_y:str="accelerometer_y",accelerometer_z:str="accelerometer_z", gyroscope_x:str="gyroscope_x", gyroscope_y:str="gyroscope_y", gyroscope_z:str="gyroscope_z"):
         """
         Compute complementary filter on gyro and accel data.
@@ -609,7 +610,7 @@ class DataStream(DataFrame):
         pdf = self._data.toPandas()
         pdf = self._sort_values(pdf)
         self._basic_plots.hist(pdf, x_axis_column=x_axis_column)
-
+#TODO: move visualization to their own algo modules
     def plot_gps_cords(self, zoom=5):
         pdf = self._data.toPandas()
         pdf = self._sort_values(pdf)
@@ -814,7 +815,7 @@ class DataStream(DataFrame):
 
         data = self._data.corr(col1, col2, method)
         return DataStream(data=data, metadata=Metadata())
-
+#TODO: missing param for cov algo = pearson
     def cov(self, col1, col2):
         """
         Calculate the sample covariance for the given columns, specified by their names, as a double value.
@@ -1245,7 +1246,7 @@ class DataStream(DataFrame):
             >>> # To do a summary for specific columns first select them:
             >>> ds.select("col1", "col2").summary("count").show()
         """
-        self._data.summary().show(truncate=False)
+        self._data.summary(statistics).show(truncate=False)
 
     def take(self,num):
         """
@@ -1372,15 +1373,16 @@ class DataStream(DataFrame):
 
     ### COMPUTE FFT FEATURES
 
+#signal-processing
     def compute_fourier_features(self, exclude_col_names: list = [], feature_names = ["fft_centroid", 'fft_spread', 'spectral_entropy', 'spectral_entropy_old', 'fft_flux',
-            'spectral_folloff'], windowDuration: int = None, slideDuration: int = None,
+            'spectral_falloff'], windowDuration: int = None, slideDuration: int = None,
                                  groupByColumnName: List[str] = [], startTime=None):
         """
         Transforms data from time domain to frequency domain.
 
         Args:
             exclude_col_names list(str): name of the columns on which features should not be computed
-            feature_names list(str): names of the features. Supported features are fft_centroid, fft_spread, spectral_entropy, spectral_entropy_old, fft_flux, spectral_folloff
+            feature_names list(str): names of the features. Supported features are fft_centroid, fft_spread, spectral_entropy, spectral_entropy_old, fft_flux, spectral_falloff
             windowDuration (int): duration of a window in seconds
             slideDuration (int): slide duration of a window
             groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
@@ -1574,7 +1576,7 @@ class DataStream(DataFrame):
         #return DataStream(data=data._data, metadata=Metadata())
 
         ### COMPUTE STATISTICAL FEATURES
-
+#stats
     def compute_statistical_features(self, exclude_col_names: list = [], feature_names = ['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
                          'kurt', 'sqr', 'zero_cross_rate'], windowDuration: int = None,
                                      slideDuration: int = None,
@@ -1683,6 +1685,7 @@ class DataStream(DataFrame):
                 df_kurt.index += '_kurt'
                 results.append(df_kurt)
 
+            # zero and sqr are not statistical feature
             if "zero_cross_rate" in feature_names:
                 df_zero_cross_rate = df.apply(calculate_zero_cross_rate)
                 df_zero_cross_rate.index += '_zero_cross_rate'
@@ -1705,6 +1708,7 @@ class DataStream(DataFrame):
 
     ### COMPUTE Correlation and Mean Standard Error (MSE) FEATURES
 
+#brushing
     def compute_corr_mse_accel_gyro(self, exclude_col_names: list = [], accel_column_names:list=['accelerometer_x','accelerometer_y', 'accelerometer_z'], gyro_column_names:list=['gyroscope_y', 'gyroscope_x', 'gyroscope_z'], windowDuration: int = None,
                                      slideDuration: int = None,
                                      groupByColumnName: List[str] = [], startTime=None):
