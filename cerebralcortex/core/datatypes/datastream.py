@@ -142,7 +142,7 @@ class DataStream(DataFrame):
 
     # !!!!                                  STAT METHODS                           !!!
 
-    def compute_average(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnName: str = None) -> object:
+    def compute_average(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
         """
         Window data and compute average of a windowed data of a single or all columns
 
@@ -150,14 +150,14 @@ class DataStream(DataFrame):
             windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             slideDuration (int): slide duration of a window
             startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnName (str): average will be computed for all the columns if columnName param is not provided (for all windows)
+            colmnNames (list): average will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration,startTime=startTime, methodName="avg", columnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="avg", columnNames=colmnNames)
 
-    def compute_sqrt(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnName: str = None) -> object:
+    def compute_sqrt(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
         """
         Window data and compute square root of a windowed data of a single or all columns
 
@@ -165,14 +165,14 @@ class DataStream(DataFrame):
             windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             slideDuration (int): slide duration of a window
             startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnName (str): square root will be computed for all the columns if columnName param is not provided (for all windows)
+            colmnNames (list): square root will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration,startTime=startTime, methodName="sqrt", columnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="sqrt", columnNames=colmnNames)
 
-    def compute_sum(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnName: str = None) -> object:
+    def compute_sum(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
         """
         Window data and compute sum of a windowed data of a single or all columns
 
@@ -180,14 +180,14 @@ class DataStream(DataFrame):
             windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             slideDuration (int): slide duration of a window
             startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnName (str): average will be computed for all the columns if columnName param is not provided (for all windows)
+            colmnNames (list): average will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration,startTime=startTime, methodName="sum", columnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="sum", columnNames=colmnNames)
 
-    def compute_variance(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnName: str = None) -> object:
+    def compute_variance(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
         """
         Window data and compute variance of a windowed data of a single or all columns
 
@@ -195,14 +195,14 @@ class DataStream(DataFrame):
             windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             slideDuration (int): slide duration of a window
             startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnName (str): variance will be computed for all the columns if columnName param is not provided (for all windows)
+            colmnNames (list): variance will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration,startTime=startTime, methodName="variance", columnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="variance", columnNames=colmnNames)
 
-    def compute_stddev(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnName: str = None) -> object:
+    def compute_stddev(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
         """
         Window data and compute standard deviation of a windowed data of a single or all columns
 
@@ -210,14 +210,14 @@ class DataStream(DataFrame):
             windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             slideDuration (int): slide duration of a window
             startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnName (str): standard deviation will be computed for all the columns if columnName param is not provided (for all windows)
+            colmnNames (list): standard deviation will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration,startTime=startTime, methodName="stddev", columnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="stddev", columnNames=colmnNames)
 
-    def compute_min(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnName: str = None) -> object:
+    def compute_min(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
         """
         Window data and compute min of a windowed data of a single or all columns
 
@@ -225,14 +225,14 @@ class DataStream(DataFrame):
             windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             slideDuration (int): slide duration of a window
             startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnName (str): min value will be computed for all the columns if columnName param is not provided (for all windows)
+            colmnNames (list): min value will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration,startTime=startTime, methodName="min", columnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="min", columnNames=colmnNames)
 
-    def compute_max(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnName: str = None) -> object:
+    def compute_max(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
         """
         Window data and compute max of a windowed data of a single or all columns
 
@@ -240,14 +240,14 @@ class DataStream(DataFrame):
             windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
             slideDuration (int): slide duration of a window
             startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnName (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
+            colmnNames (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
 
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration,startTime=startTime, methodName="max", columnName=colmnName)
+        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="max", columnNames=colmnNames)
 
-    def _compute_stats(self, windowDuration: int = None, slideDuration:int=None, startTime=None, methodName: str = None, columnName: List[str] = []) -> object:
+    def _compute_stats(self, windowDuration: int = None, slideDuration:int=None, startTime=None, methodName: str = None, columnNames: List[str] = []) -> object:
         """
         Compute stats on pyspark dataframe
 
@@ -256,13 +256,13 @@ class DataStream(DataFrame):
             slideDuration (int): slide duration of a window
             startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
             methodName (str): pyspark stat method name
-            columnName (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
+            columnNames (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
             
             
         Returns:
             DataStream: this will return a new datastream object with blank metadata
         """       
-        exprs = self._get_column_names(columnName=columnName, methodName=methodName)
+        exprs = self._get_column_names(columnNames=columnNames, methodName=methodName)
         if windowDuration:
             windowDuration = str(windowDuration) + " seconds"
             win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
@@ -301,7 +301,7 @@ class DataStream(DataFrame):
         windowDuration = str(windowDuration) + " seconds"
         if slideDuration is not None:
             slideDuration = str(slideDuration) + " seconds"
-        exprs = self._get_column_names(columnName=columnName, methodName="collect_list", preserve_ts=preserve_ts)
+        exprs = self._get_column_names(columnNames=columnName, methodName="collect_list", preserve_ts=preserve_ts)
         win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
         if len(groupByColumnName) > 0:
             groupByColumnName.append("user")
@@ -373,96 +373,6 @@ class DataStream(DataFrame):
             version = [version]
         data = self._data.where(self._data["version"].isin(version))
         return DataStream(data=data, metadata=Metadata())
-
-#stat
-    def compute_magnitude(self, col_names=[], magnitude_col_name="magnitude"):
-        if len(col_names)<1:
-            raise Exception("col_names param is missing.")
-        tmp = ""
-        for col_name in col_names:
-            tmp += 'F.col("'+col_name+'")*F.col("'+col_name+'")+'
-        tmp = tmp.rstrip("+")
-
-        data = self._data.withColumn(magnitude_col_name, F.sqrt(eval(tmp)))
-        return DataStream(data=data, metadata=Metadata())
-#stat
-    def interpolate(self, freq=16, method='linear', axis=0, limit=None, inplace=False,
-                    limit_direction='forward', limit_area=None,
-                    downcast=None):
-        """
-        Interpolate values according to different methods. This method internally uses pandas interpolation.
-
-        Args:
-            freq (int): Frequency of the signal
-            method (str): default ‘linear’
-                - ‘linear’: Ignore the index and treat the values as equally spaced. This is the only method supported on MultiIndexes.
-                - ‘time’: Works on daily and higher resolution data to interpolate given length of interval.
-                - ‘index’, ‘values’: use the actual numerical values of the index.
-                - ‘pad’: Fill in NaNs using existing values.
-                - ‘nearest’, ‘zero’, ‘slinear’, ‘quadratic’, ‘cubic’, ‘spline’, ‘barycentric’, ‘polynomial’: Passed to scipy.interpolate.interp1d. These methods use the numerical values of the index. Both ‘polynomial’ and ‘spline’ require that you also specify an order (int), e.g. df.interpolate(method='polynomial', order=5).
-                - ‘krogh’, ‘piecewise_polynomial’, ‘spline’, ‘pchip’, ‘akima’: Wrappers around the SciPy interpolation methods of similar names. See Notes.
-                - ‘from_derivatives’: Refers to scipy.interpolate.BPoly.from_derivatives which replaces ‘piecewise_polynomial’ interpolation method in scipy 0.18.
-            axis  {0 or ‘index’, 1 or ‘columns’, None}: default None. Axis to interpolate along.
-            limit (int): optional. Maximum number of consecutive NaNs to fill. Must be greater than 0.
-            inplace (bool): default False. Update the data in place if possible.
-            limit_direction {‘forward’, ‘backward’, ‘both’}: default ‘forward’. If limit is specified, consecutive NaNs will be filled in this direction.
-            limit_area  {None, ‘inside’, ‘outside’}: default None. If limit is specified, consecutive NaNs will be filled with this restriction.
-                - None: No fill restriction.
-                - ‘inside’: Only fill NaNs surrounded by valid values (interpolate).
-                - ‘outside’: Only fill NaNs outside valid values (extrapolate).
-            downcast optional, ‘infer’ or None: defaults to None
-            **kwargs: Keyword arguments to pass on to the interpolating function.
-
-        Returns DataStream: interpolated data
-
-        """
-        schema = self._data.schema
-        sample_freq = 1000/freq
-        @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-        def interpolate_data(pdf):
-            pdf.set_index("timestamp", inplace=True)
-            pdf = pdf.resample(str(sample_freq)+"ms").bfill(limit=1).interpolate(method=method, axis=axis, limit=limit,inplace=inplace, limit_direction=limit_direction, limit_area=limit_area, downcast=downcast)
-            pdf.ffill(inplace=True)
-            pdf.reset_index(drop=False, inplace=True)
-            pdf.sort_index(axis=1, inplace=True)
-            return pdf
-
-        data = self._data.groupby(["user", "version"]).apply(interpolate_data)
-        return DataStream(data=data,metadata=Metadata())
-#signal_processing
-    def complementary_filter(self, freq:int=16, accelerometer_x:str="accelerometer_x",accelerometer_y:str="accelerometer_y",accelerometer_z:str="accelerometer_z", gyroscope_x:str="gyroscope_x", gyroscope_y:str="gyroscope_y", gyroscope_z:str="gyroscope_z"):
-        """
-        Compute complementary filter on gyro and accel data.
-        Args:
-            freq (int): frequency of accel/gryo. Assumption is that frequency is equal for both gyro and accel. 
-            accelerometer_x (str): name of the column 
-            accelerometer_y (str): name of the column
-            accelerometer_z (str): name of the column
-            gyroscope_x (str): name of the column
-            gyroscope_y (str): name of the column
-            gyroscope_z (str): name of the column
-        """
-        dt = 1.0 / freq  # 1/16.0;
-        M_PI = math.pi;
-        hpf = 0.90;
-        lpf = 0.10;
-
-        window = Window.partitionBy(self._data['user']).orderBy(self._data['timestamp'])
-
-        data = self._data.withColumn("thetaX_accel",
-                             ((F.atan2(-F.col(accelerometer_z), F.col(accelerometer_y)) * 180 / M_PI)) * lpf) \
-            .withColumn("roll",
-                        (F.lag("thetaX_accel").over(window) + F.col(gyroscope_x) * dt) * hpf + F.col("thetaX_accel")).drop("thetaX_accel") \
-            .withColumn("thetaY_accel",
-                             ((F.atan2(-F.col(accelerometer_x), F.col(accelerometer_z)) * 180 / M_PI)) * lpf) \
-            .withColumn("pitch",
-                        (F.lag("thetaY_accel").over(window) + F.col(gyroscope_y) * dt) * hpf + F.col("thetaY_accel")).drop("thetaY_accel")\
-            .withColumn("thetaZ_accel",
-                             ((F.atan2(-F.col(accelerometer_y), F.col(accelerometer_x)) * 180 / M_PI)) * lpf) \
-            .withColumn("yaw",
-                        (F.lag("thetaZ_accel").over(window) + F.col(gyroscope_z) * dt) * hpf + F.col("thetaZ_accel")).drop("thetaZ_accel")
-
-        return DataStream(data=data.dropna(),metadata=Metadata())
 
 
     def compute(self, udfName, windowDuration: int = None, slideDuration: int = None,
@@ -560,12 +470,12 @@ class DataStream(DataFrame):
     #
     #     return DataStream(data=merged_column, metadata=Metadata())
 
-    def _get_column_names(self, columnName: List[str], methodName: str, preserve_ts: bool = False):
+    def _get_column_names(self, columnNames: List[str], methodName: str, preserve_ts: bool = False):
         """
         Get data column names and build expression for pyspark aggregate method
 
         Args:
-            columnName(List[str]): get all column names expression if columnName is empty
+            columnNames(List[str]): get all column names expression if columnName is empty
             methodName (str): name of the method that should be applied on the column
         Todo:
             update non-data column names
@@ -583,11 +493,11 @@ class DataStream(DataFrame):
         if preserve_ts:
             black_list_column.pop(0)
 
-        if columnName:
+        if columnNames:
             if isinstance(columns, str):
-                columns = [columnName]
+                columns = [columnNames]
             elif isinstance(columns, list):
-                columns = columnName
+                columns = columnNames
         else:
             columns = list(set(columns) - set(black_list_column))
 
@@ -1369,422 +1279,6 @@ class DataStream(DataFrame):
 
     # !!!!                       END Wrapper for PySpark Methods                           !!!
 
-    ##################### !!!!!!!!!!!!!!!! FEATURE COMPUTATION UDFS !!!!!!!!!!!!!!!!!!! ################################
-
-    ### COMPUTE FFT FEATURES
-
-#signal-processing
-    def compute_fourier_features(self, exclude_col_names: list = [], feature_names = ["fft_centroid", 'fft_spread', 'spectral_entropy', 'spectral_entropy_old', 'fft_flux',
-            'spectral_falloff'], windowDuration: int = None, slideDuration: int = None,
-                                 groupByColumnName: List[str] = [], startTime=None):
-        """
-        Transforms data from time domain to frequency domain.
-
-        Args:
-            exclude_col_names list(str): name of the columns on which features should not be computed
-            feature_names list(str): names of the features. Supported features are fft_centroid, fft_spread, spectral_entropy, spectral_entropy_old, fft_flux, spectral_falloff
-            windowDuration (int): duration of a window in seconds
-            slideDuration (int): slide duration of a window
-            groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
-            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-
-
-        Returns:
-            DataStream object with all the existing data columns and FFT features
-        """
-        eps = 0.00000001
-
-        exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
-
-        data = self._data.drop(*exclude_col_names)
-
-        df_column_names = data.columns
-
-        basic_schema = StructType([
-            StructField("timestamp", TimestampType()),
-            StructField("localtime", TimestampType()),
-            StructField("user", StringType()),
-            StructField("version", IntegerType()),
-            StructField("start_time", TimestampType()),
-            StructField("end_time", TimestampType())
-        ])
-
-        features_list = []
-        for cn in df_column_names:
-            for sf in feature_names:
-                features_list.append(StructField(cn + "_" + sf, FloatType(), True))
-
-        features_schema = StructType(basic_schema.fields + features_list)
-
-        def stSpectralCentroidAndSpread(X, fs):
-            """Computes spectral centroid of frame (given abs(FFT))"""
-            ind = (np.arange(1, len(X) + 1)) * (fs / (2.0 * len(X)))
-
-            Xt = X.copy()
-            Xt = Xt / Xt.max()
-            NUM = np.sum(ind * Xt)
-            DEN = np.sum(Xt) + eps
-
-            # Centroid:
-            C = (NUM / DEN)
-
-            # Spread:
-            S = np.sqrt(np.sum(((ind - C) ** 2) * Xt) / DEN)
-
-            # Normalize:
-            C = C / (fs / 2.0)
-            S = S / (fs / 2.0)
-
-            return (C, S)
-
-        def stSpectralFlux(X, Xprev):
-            """
-            Computes the spectral flux feature of the current frame
-            ARGUMENTS:
-                X:        the abs(fft) of the current frame
-                Xpre:        the abs(fft) of the previous frame
-            """
-            # compute the spectral flux as the sum of square distances:
-
-            sumX = np.sum(X + eps)
-            sumPrevX = np.sum(Xprev + eps)
-            F = np.sum((X / sumX - Xprev / sumPrevX) ** 2)
-
-            return F
-
-        def stSpectralRollOff(X, c, fs):
-            """Computes spectral roll-off"""
-
-            totalEnergy = np.sum(X ** 2)
-            fftLength = len(X)
-            Thres = c * totalEnergy
-            # Ffind the spectral rolloff as the frequency position where the respective spectral energy is equal to c*totalEnergy
-            CumSum = np.cumsum(X ** 2) + eps
-            [a, ] = np.nonzero(CumSum > Thres)
-            if len(a) > 0:
-                mC = np.float64(a[0]) / (float(fftLength))
-            else:
-                mC = 0.0
-            return (mC)
-        
-        def stSpectralEntropy(X, numOfShortBlocks=10):
-            """Computes the spectral entropy"""
-            L = len(X)  # number of frame samples
-            Eol = np.sum(X ** 2)  # total spectral energy
-
-            subWinLength = int(np.floor(L / numOfShortBlocks))  # length of sub-frame
-            if L != subWinLength * numOfShortBlocks:
-                X = X[0:subWinLength * numOfShortBlocks]
-
-            subWindows = X.reshape(subWinLength, numOfShortBlocks,
-                                   order='F').copy()  # define sub-frames (using matrix reshape)
-            s = np.sum(subWindows ** 2, axis=0) / (Eol + eps)  # compute spectral sub-energies
-            En = -np.sum(s * np.log2(s + eps))  # compute spectral entropy
-
-            return En
-        
-        def spectral_entropy(data, sampling_freq, bands=None):
-
-            psd = np.abs(np.fft.rfft(data)) ** 2
-            psd /= np.sum(psd)  # psd as a pdf (normalised to one)
-
-            if bands is None:
-                power_per_band = psd[psd > 0]
-            else:
-                freqs = np.fft.rfftfreq(data.size, 1 / float(sampling_freq))
-                bands = np.asarray(bands)
-
-                freq_limits_low = np.concatenate([[0.0], bands])
-                freq_limits_up = np.concatenate([bands, [np.Inf]])
-
-                power_per_band = [np.sum(psd[np.bitwise_and(freqs >= low, freqs < up)])
-                                  for low, up in zip(freq_limits_low, freq_limits_up)]
-
-                power_per_band = power_per_band[power_per_band > 0]
-
-            return -np.sum(power_per_band * np.log2(power_per_band))
-
-        def fourier_features_pandas_udf(data, frequency: float = 16.0):
-
-            Fs = frequency  # the sampling freq (in Hz)
-            results = []
-            # fourier transforms!
-            # data_fft = abs(np.fft.rfft(data))
-
-            X = abs(np.fft.fft(data))
-            nFFT = int(len(X) / 2) + 1
-
-            X = X[0:nFFT]  # normalize fft
-            X = X / len(X)
-
-            if "fft_centroid" or "fft_spread" in feature_names:
-                C, S = stSpectralCentroidAndSpread(X, Fs)  # spectral centroid and spread
-                if "fft_centroid" in feature_names:
-                    results.append(C)
-                if "fft_spread" in feature_names:
-                    results.append(S)
-            if "spectral_entropy" in feature_names:
-                se = stSpectralEntropy(X)  # spectral entropy
-                results.append(se)
-            if "spectral_entropy_old" in feature_names:
-                se_old = spectral_entropy(X, frequency)  # spectral flux
-                results.append(se_old)
-            if "fft_flux" in feature_names:
-                flx = stSpectralFlux(X, X.copy())  # spectral flux
-                results.append(flx)
-            if "spectral_folloff" in feature_names:
-                roff = stSpectralRollOff(X, 0.90, frequency)  # spectral rolloff
-                results.append(roff)
-            return pd.Series(results)
-
-        @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
-        def get_fft_features(df):
-            timestamp = df['timestamp'].iloc[0]
-            localtime = df['localtime'].iloc[0]
-            user = df['user'].iloc[0]
-            version = df['version'].iloc[0]
-            start_time = timestamp
-            end_time = df['timestamp'].iloc[-1]
-
-            df.drop(exclude_col_names, axis=1, inplace=True)
-
-            df_ff = df.apply(fourier_features_pandas_udf)
-            df3 = df_ff.T
-            pd.set_option('display.max_colwidth', -1)
-            # split column into multiple columns
-            #df3 = pd.DataFrame(df_ff.values.tolist(), index=df_ff.index)
-            # print("**"*50)
-            # print(type(df), type(df_ff), type(df3))
-            # print(df)
-            # print(df_ff)
-            # print(df_ff.values.tolist())
-            # print(df3)
-            # print("**" * 50)
-            # print("FEATURE-NAMES", feature_names)
-            df3.columns = feature_names
-
-            # multiple rows to one row
-            output = df3.unstack().to_frame().sort_index(level=1).T
-            output.columns = [f'{j}_{i}' for i, j in output.columns]
-
-            basic_df = pd.DataFrame([[timestamp, localtime, user, int(version), start_time, end_time]],
-                                    columns=['timestamp', 'localtime', 'user', 'version', 'start_time', 'end_time'])
-            #df.insert(loc=0, columns=, value=basic_cols)
-            return basic_df.assign(**output)
-
-        return self.compute(get_fft_features, windowDuration=windowDuration, slideDuration=slideDuration, groupByColumnName=groupByColumnName, startTime=startTime)
-        #return DataStream(data=data._data, metadata=Metadata())
-
-        ### COMPUTE STATISTICAL FEATURES
-#stats
-    def compute_statistical_features(self, exclude_col_names: list = [], feature_names = ['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
-                         'kurt', 'sqr', 'zero_cross_rate'], windowDuration: int = None,
-                                     slideDuration: int = None,
-                                     groupByColumnName: List[str] = [], startTime=None):
-
-        """
-        Compute statistical features.
-
-        Args:
-            exclude_col_names list(str): name of the columns on which features should not be computed
-            feature_names list(str): names of the features. Supported features are ['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
-                         'kurt', 'sqr', 'zero_cross_rate'
-            windowDuration (int): duration of a window in seconds
-            slideDuration (int): slide duration of a window
-            groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
-            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-
-
-        Returns:
-            DataStream object with all the existing data columns and FFT features
-        """
-        exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
-
-        data = self._data.drop(*exclude_col_names)
-
-        df_column_names = data.columns
-
-        basic_schema = StructType([
-            StructField("timestamp", TimestampType()),
-            StructField("localtime", TimestampType()),
-            StructField("user", StringType()),
-            StructField("version", IntegerType()),
-            StructField("start_time", TimestampType()),
-            StructField("end_time", TimestampType())
-        ])
-
-        features_list = []
-        for cn in df_column_names:
-            for sf in feature_names:
-                features_list.append(StructField(cn + "_" + sf, FloatType(), True))
-
-        features_schema = StructType(basic_schema.fields + features_list)
-
-        def calculate_zero_cross_rate(series):
-            """
-            How often the signal changes sign (+/-)
-            """
-            series_mean = np.mean(series)
-            series = [v - series_mean for v in series]
-            zero_cross_count = (np.diff(np.sign(series)) != 0).sum()
-            return zero_cross_count / len(series)
-
-        def get_sqr(series):
-            sqr = np.mean([v * v for v in series])
-            return sqr
-
-        @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
-        def get_stats_features_udf(df):
-            results = []
-            timestamp = df['timestamp'].iloc[0]
-            localtime = df['localtime'].iloc[0]
-            user = df['user'].iloc[0]
-            version = df['version'].iloc[0]
-            start_time = timestamp
-            end_time = df['timestamp'].iloc[-1]
-
-            df.drop(exclude_col_names, axis=1, inplace=True)
-
-            if "mean" in feature_names:
-                df_mean = df.mean()
-                df_mean.index += '_mean'
-                results.append(df_mean)
-
-            if "median" in feature_names:
-                df_median = df.median()
-                df_median.index += '_median'
-                results.append(df_median)
-
-            if "stddev" in feature_names:
-                df_stddev = df.std()
-                df_stddev.index += '_stddev'
-                results.append(df_stddev)
-
-            if "variance" in feature_names:
-                df_var = df.var()
-                df_var.index += '_variance'
-                results.append(df_var)
-
-            if "max" in feature_names:
-                df_max = df.max()
-                df_max.index += '_max'
-                results.append(df_max)
-
-            if "min" in feature_names:
-                df_min = df.min()
-                df_min.index += '_min'
-                results.append(df_min)
-
-            if "skew" in feature_names:
-                df_skew = df.skew()
-                df_skew.index += '_skew'
-                results.append(df_skew)
-
-            if "kurt" in feature_names:
-                df_kurt = df.kurt()
-                df_kurt.index += '_kurt'
-                results.append(df_kurt)
-
-            # zero and sqr are not statistical feature
-            if "zero_cross_rate" in feature_names:
-                df_zero_cross_rate = df.apply(calculate_zero_cross_rate)
-                df_zero_cross_rate.index += '_zero_cross_rate'
-                results.append(df_zero_cross_rate)
-
-            if "sqr" in feature_names:
-                df_sqr = df.apply(get_sqr)
-                df_sqr.index += '_sqr'
-                results.append(df_sqr)
-
-            output = pd.DataFrame(pd.concat(results)).T
-
-            basic_df = pd.DataFrame([[timestamp, localtime, user, int(version), start_time, end_time]],
-                                    columns=['timestamp', 'localtime', 'user', 'version', 'start_time', 'end_time'])
-            return basic_df.assign(**output)
-
-        data = self.compute(get_stats_features_udf, windowDuration=windowDuration, slideDuration=slideDuration,
-                            groupByColumnName=groupByColumnName, startTime=startTime)
-        return DataStream(data=data._data, metadata=Metadata())
-
-    ### COMPUTE Correlation and Mean Standard Error (MSE) FEATURES
-
-#brushing
-    def compute_corr_mse_accel_gyro(self, exclude_col_names: list = [], accel_column_names:list=['accelerometer_x','accelerometer_y', 'accelerometer_z'], gyro_column_names:list=['gyroscope_y', 'gyroscope_x', 'gyroscope_z'], windowDuration: int = None,
-                                     slideDuration: int = None,
-                                     groupByColumnName: List[str] = [], startTime=None):
-        """
-        Compute correlation and mean standard error of accel and gyro sensors
-
-        Args:
-            exclude_col_names list(str): name of the columns on which features should not be computed
-            accel_column_names list(str): name of accel data column
-            gyro_column_names list(str): name of gyro data column
-            windowDuration (int): duration of a window in seconds
-            slideDuration (int): slide duration of a window
-            groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
-            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-
-
-        Returns:
-            DataStream object with all the existing data columns and FFT features
-        """
-        feature_names = ["ax_ay_corr", 'ax_az_corr', 'ay_az_corr', 'gx_gy_corr', 'gx_gz_corr',
-                         'gy_gz_corr', 'ax_ay_mse', 'ax_az_mse', 'ay_az_mse', 'gx_gy_mse', 'gx_gz_mse', 'gy_gz_mse']
-
-        exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
-
-        data = self._data.drop(*exclude_col_names)
-
-        basic_schema = StructType([
-            StructField("timestamp", TimestampType()),
-            StructField("localtime", TimestampType()),
-            StructField("user", StringType()),
-            StructField("version", IntegerType()),
-            StructField("start_time", TimestampType()),
-            StructField("end_time", TimestampType())
-        ])
-
-        features_list = []
-        for fn in feature_names:
-            features_list.append(StructField(fn, FloatType(), True))
-
-        features_schema = StructType(basic_schema.fields + features_list)
-
-        @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
-        def get_corr_mse_features_udf(df):
-            timestamp = df['timestamp'].iloc[0]
-            localtime = df['localtime'].iloc[0]
-            user = df['user'].iloc[0]
-            version = df['version'].iloc[0]
-            start_time = timestamp
-            end_time = df['timestamp'].iloc[-1]
-
-            ax_ay_corr = df[accel_column_names[0]].corr(df[accel_column_names[1]])
-            ax_az_corr = df[accel_column_names[0]].corr(df[accel_column_names[2]])
-            ay_az_corr = df[accel_column_names[1]].corr(df[accel_column_names[2]])
-            gx_gy_corr = df[gyro_column_names[0]].corr(df[gyro_column_names[1]])
-            gx_gz_corr = df[gyro_column_names[0]].corr(df[gyro_column_names[2]])
-            gy_gz_corr = df[gyro_column_names[1]].corr(df[gyro_column_names[2]])
-
-            ax_ay_mse = ((df[accel_column_names[0]] - df[accel_column_names[1]]) ** 2).mean()
-            ax_az_mse = ((df[accel_column_names[0]] - df[accel_column_names[2]]) ** 2).mean()
-            ay_az_mse = ((df[accel_column_names[1]] - df[accel_column_names[2]]) ** 2).mean()
-            gx_gy_mse = ((df[accel_column_names[0]] - df[accel_column_names[1]]) ** 2).mean()
-            gx_gz_mse = ((df[accel_column_names[0]] - df[accel_column_names[2]]) ** 2).mean()
-            gy_gz_mse = ((df[accel_column_names[1]] - df[accel_column_names[2]]) ** 2).mean()
-
-            basic_df = pd.DataFrame([[timestamp, localtime, user, int(version), start_time, end_time, ax_ay_corr,
-                                      ax_az_corr, ay_az_corr, gx_gy_corr, gx_gz_corr, gy_gz_corr, ax_ay_mse, ax_az_mse,
-                                      ay_az_mse, gx_gy_mse, gx_gz_mse, gy_gz_mse]],
-                                    columns=['timestamp', 'localtime', 'user', 'version', 'start_time', 'end_time',
-                                             "ax_ay_corr", 'ax_az_corr', 'ay_az_corr', 'gx_gy_corr', 'gx_gz_corr',
-                                             'gy_gz_corr', 'ax_ay_mse', 'ax_az_mse', 'ay_az_mse', 'gx_gy_mse',
-                                             'gx_gz_mse', 'gy_gz_mse'])
-            return basic_df
-
-        data = self.compute(get_corr_mse_features_udf, windowDuration=windowDuration, slideDuration=slideDuration,
-                            groupByColumnName=groupByColumnName, startTime=startTime)
-        return DataStream(data=data._data, metadata=Metadata())
 
     ## !!!! HELPER METHOD !!!!!! ##
     def _gen_metadata(self):

@@ -31,7 +31,7 @@ from shapely.geometry.multipoint import MultiPoint
 from sklearn.cluster import DBSCAN
 from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
 
-def cluster_gps(epsilon_constant = 10, latitude = 0,longitude = 1, gps_accuracy_threashold = 41.0,km_per_radian = 6371.0088, geo_fence_distance = 2,minimum_points_in_cluster = 50):
+def cluster_gps(ds, epsilon_constant = 10, latitude = 0,longitude = 1, gps_accuracy_threashold = 41.0,km_per_radian = 6371.0088, geo_fence_distance = 2,minimum_points_in_cluster = 50):
 
     def get_centermost_point(cluster: object) -> object:
         """
@@ -106,5 +106,6 @@ def cluster_gps(epsilon_constant = 10, latitude = 0,longitude = 1, gps_accuracy_
             return df
         except:
             pass
-
-
+    
+    data = ds.compute(gps_clusters)
+    return data

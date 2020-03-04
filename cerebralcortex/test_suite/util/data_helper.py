@@ -102,6 +102,7 @@ def gen_phone_battery_metadata()->Metadata:
     return stream_metadata
 
 
+# GPS stream
 def gen_location_datastream(user_id, stream_name) -> object:
     """
     Create pyspark dataframe with some sample gps data (Memphis, TN, lat, long, alt coordinates)
