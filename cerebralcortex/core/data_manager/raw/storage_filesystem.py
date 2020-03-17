@@ -28,6 +28,7 @@ from pyspark.sql.functions import lit
 import pandas as pd
 import pyarrow as pa
 import os
+from csv import reader
 from uuid import uuid4
 import uuid
 from typing import List
@@ -185,7 +186,9 @@ class FileSystemStorage:
 
         """
         base_dir_path = self._get_storage_path(stream_name)
-        table = pa.Table.from_pandas(csv_file, preserve_index=False)
+
+        df = pd.DataFrame( list(reader(csv_file)))
+        table = pa.Table.from_pandas(df, preserve_index=False)
         file_id = str(uuid4().hex) + ".parquet"
         data_file_url = os.path.join(base_dir_path, "version=1", "user=" + user_id)
         file_name = os.path.join(data_file_url, file_id)
