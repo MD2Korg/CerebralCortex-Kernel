@@ -158,12 +158,34 @@ class FileSystemStorage:
         Returns:
             str: file_name of newly create parquet file
 
-        Raises:
-             Exception: if selected nosql database is not implemented
-
         """
         base_dir_path = self._get_storage_path(stream_name)
         table = pa.Table.from_pandas(df, preserve_index=False)
+        file_id = str(uuid4().hex) + ".parquet"
+        data_file_url = os.path.join(base_dir_path, "version=1", "user=" + user_id)
+        file_name = os.path.join(data_file_url, file_id)
+        if not os.path.exists(data_file_url):
+            os.makedirs(data_file_url)
+
+        pq.write_table(table, file_name)
+
+        return file_name
+
+    def write_pandas_to_csv_file(self, csv_file: pd, user_id: str, stream_name: str) -> str:
+        """
+        Convert pandas dataframe into pyarrow parquet format and store
+
+        Args:
+            csv_file: csv file
+            user_id (str): user id
+            stream_name (str): name of a stream
+
+        Returns:
+            str: file_name of newly create parquet file
+
+        """
+        base_dir_path = self._get_storage_path(stream_name)
+        table = pa.Table.from_pandas(csv_file, preserve_index=False)
         file_id = str(uuid4().hex) + ".parquet"
         data_file_url = os.path.join(base_dir_path, "version=1", "user=" + user_id)
         file_name = os.path.join(data_file_url, file_id)

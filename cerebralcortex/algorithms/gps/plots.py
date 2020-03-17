@@ -23,29 +23,15 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os.path
+def gps_cords(ds, zoom=5):
+    """
+    Plots GPS coordinates
 
-from cerebralcortex.core.config_manager.config_handler import ConfigHandler
+    Args:
+        ds (DataStream): datastream object
+        zoom: min 0 and max 100, zoom map
 
-
-class Configuration(ConfigHandler):
-    def __init__(self, config_dir:str, config_file_name:str="cerebralcortex.yml"):
-        """
-        Constructor
-        Args:
-            config_dir (str): Directory path of cerebralcortex configuration files.
-            config_file_name (str): configuration file name that should be loaded
-        """
-
-        if config_dir[-1]!="/":
-            config_dir+="/"
-
-        self.config_filepath = config_dir+config_file_name
-
-        if not os.path.exists(self.config_filepath):
-            raise Exception(self.config_filepath+" does not exist. Please check configuration directory path and configuration file name.")
-
-        if config_dir is not None:
-            self.load_file(self.config_filepath)
-        else:
-            self.config = None
+    """
+    pdf = ds._data.toPandas()
+    pdf = ds._sort_values(pdf)
+    return ds._basic_plots.plot_gps_cords(pdf, zoom=zoom)

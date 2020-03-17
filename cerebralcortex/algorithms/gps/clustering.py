@@ -29,6 +29,9 @@ from geopy.distance import great_circle
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from shapely.geometry.multipoint import MultiPoint
 from sklearn.cluster import DBSCAN
+from cerebralcortex.core.datatypes.datastream import DataStream
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
+
 from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
 
 def cluster_gps(ds, epsilon_constant = 10, latitude = 0,longitude = 1, gps_accuracy_threashold = 41.0,km_per_radian = 6371.0088, geo_fence_distance = 2,minimum_points_in_cluster = 50):
@@ -107,5 +110,9 @@ def cluster_gps(ds, epsilon_constant = 10, latitude = 0,longitude = 1, gps_accur
         except:
             pass
     
-    data = ds.compute(gps_clusters)
-    return data
+    # TODO: check if datastream object contains grouped type of DataFrame
+    if 'window' in ds._data.columns:
+        raise Exception("DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
+    
+    data = ds._data.apply(gps_clusters)
+    return DataStream(data=data, metadata=Metadata())

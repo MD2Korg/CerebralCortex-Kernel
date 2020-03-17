@@ -1,4 +1,4 @@
-# Copyright (c) 2019, MD2K Center of Excellence
+# Copyright (c) 2020, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -142,145 +142,145 @@ class DataStream(DataFrame):
 
     # !!!!                                  STAT METHODS                           !!!
 
-    def compute_average(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
-        """
-        Window data and compute average of a windowed data of a single or all columns
-
-        Args:
-            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
-            slideDuration (int): slide duration of a window
-            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnNames (list): average will be computed for all the columns if columnName param is not provided (for all windows)
-
-        Returns:
-            DataStream: this will return a new datastream object with blank metadata
-        """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="avg", columnNames=colmnNames)
-
-    def compute_sqrt(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
-        """
-        Window data and compute square root of a windowed data of a single or all columns
-
-        Args:
-            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
-            slideDuration (int): slide duration of a window
-            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnNames (list): square root will be computed for all the columns if columnName param is not provided (for all windows)
-
-        Returns:
-            DataStream: this will return a new datastream object with blank metadata
-        """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="sqrt", columnNames=colmnNames)
-
-    def compute_sum(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
-        """
-        Window data and compute sum of a windowed data of a single or all columns
-
-        Args:
-            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
-            slideDuration (int): slide duration of a window
-            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnNames (list): average will be computed for all the columns if columnName param is not provided (for all windows)
-
-        Returns:
-            DataStream: this will return a new datastream object with blank metadata
-        """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="sum", columnNames=colmnNames)
-
-    def compute_variance(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
-        """
-        Window data and compute variance of a windowed data of a single or all columns
-
-        Args:
-            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
-            slideDuration (int): slide duration of a window
-            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnNames (list): variance will be computed for all the columns if columnName param is not provided (for all windows)
-
-        Returns:
-            DataStream: this will return a new datastream object with blank metadata
-        """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="variance", columnNames=colmnNames)
-
-    def compute_stddev(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
-        """
-        Window data and compute standard deviation of a windowed data of a single or all columns
-
-        Args:
-            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
-            slideDuration (int): slide duration of a window
-            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnNames (list): standard deviation will be computed for all the columns if columnName param is not provided (for all windows)
-
-        Returns:
-            DataStream: this will return a new datastream object with blank metadata
-        """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="stddev", columnNames=colmnNames)
-
-    def compute_min(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
-        """
-        Window data and compute min of a windowed data of a single or all columns
-
-        Args:
-            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
-            slideDuration (int): slide duration of a window
-            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnNames (list): min value will be computed for all the columns if columnName param is not provided (for all windows)
-
-        Returns:
-            DataStream: this will return a new datastream object with blank metadata
-        """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="min", columnNames=colmnNames)
-
-    def compute_max(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
-        """
-        Window data and compute max of a windowed data of a single or all columns
-
-        Args:
-            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
-            slideDuration (int): slide duration of a window
-            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            colmnNames (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
-
-        Returns:
-            DataStream: this will return a new datastream object with blank metadata
-        """
-        return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="max", columnNames=colmnNames)
-
-    def _compute_stats(self, windowDuration: int = None, slideDuration:int=None, startTime=None, methodName: str = None, columnNames: List[str] = []) -> object:
-        """
-        Compute stats on pyspark dataframe
-
-        Args:
-            windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
-            slideDuration (int): slide duration of a window
-            startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-            methodName (str): pyspark stat method name
-            columnNames (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
-            
-            
-        Returns:
-            DataStream: this will return a new datastream object with blank metadata
-        """       
-        exprs = self._get_column_names(columnNames=columnNames, methodName=methodName)
-        if windowDuration:
-            windowDuration = str(windowDuration) + " seconds"
-            win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
-            result = self._data.groupBy(['user','version', win]).agg(exprs)
-        else:
-            result = self._data.groupBy(['user','version']).agg(exprs)
-
-
-        result = result.withColumn("timestamp",result.window.start)
-        # to get local time - agg/window won't return localtimestamp col
-        offset = (self._data.first().timestamp - self._data.first().localtime).total_seconds()
-        result = result.withColumn("localtime", result.window.start+F.expr("INTERVAL "+str(offset)+" SECONDS"))
-        result = self._update_column_names(result)
-        return DataStream(data=result, metadata=Metadata())
+    # def compute_average(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
+    #     """
+    #     Window data and compute average of a windowed data of a single or all columns
+    #
+    #     Args:
+    #         windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
+    #         slideDuration (int): slide duration of a window
+    #         startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+    #         colmnNames (list): average will be computed for all the columns if columnName param is not provided (for all windows)
+    #
+    #     Returns:
+    #         DataStream: this will return a new datastream object with blank metadata
+    #     """
+    #     return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="avg", columnNames=colmnNames)
+    #
+    # def compute_sqrt(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
+    #     """
+    #     Window data and compute square root of a windowed data of a single or all columns
+    #
+    #     Args:
+    #         windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
+    #         slideDuration (int): slide duration of a window
+    #         startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+    #         colmnNames (list): square root will be computed for all the columns if columnName param is not provided (for all windows)
+    #
+    #     Returns:
+    #         DataStream: this will return a new datastream object with blank metadata
+    #     """
+    #     return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="sqrt", columnNames=colmnNames)
+    #
+    # def compute_sum(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
+    #     """
+    #     Window data and compute sum of a windowed data of a single or all columns
+    #
+    #     Args:
+    #         windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
+    #         slideDuration (int): slide duration of a window
+    #         startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+    #         colmnNames (list): average will be computed for all the columns if columnName param is not provided (for all windows)
+    #
+    #     Returns:
+    #         DataStream: this will return a new datastream object with blank metadata
+    #     """
+    #     return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="sum", columnNames=colmnNames)
+    #
+    # def compute_variance(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
+    #     """
+    #     Window data and compute variance of a windowed data of a single or all columns
+    #
+    #     Args:
+    #         windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
+    #         slideDuration (int): slide duration of a window
+    #         startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+    #         colmnNames (list): variance will be computed for all the columns if columnName param is not provided (for all windows)
+    #
+    #     Returns:
+    #         DataStream: this will return a new datastream object with blank metadata
+    #     """
+    #     return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="variance", columnNames=colmnNames)
+    #
+    # def compute_stddev(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
+    #     """
+    #     Window data and compute standard deviation of a windowed data of a single or all columns
+    #
+    #     Args:
+    #         windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
+    #         slideDuration (int): slide duration of a window
+    #         startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+    #         colmnNames (list): standard deviation will be computed for all the columns if columnName param is not provided (for all windows)
+    #
+    #     Returns:
+    #         DataStream: this will return a new datastream object with blank metadata
+    #     """
+    #     return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="stddev", columnNames=colmnNames)
+    #
+    # def compute_min(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
+    #     """
+    #     Window data and compute min of a windowed data of a single or all columns
+    #
+    #     Args:
+    #         windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
+    #         slideDuration (int): slide duration of a window
+    #         startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+    #         colmnNames (list): min value will be computed for all the columns if columnName param is not provided (for all windows)
+    #
+    #     Returns:
+    #         DataStream: this will return a new datastream object with blank metadata
+    #     """
+    #     return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="min", columnNames=colmnNames)
+    #
+    # def compute_max(self, windowDuration: int = None, slideDuration:int=None, startTime=None, colmnNames: list = []) -> object:
+    #     """
+    #     Window data and compute max of a windowed data of a single or all columns
+    #
+    #     Args:
+    #         windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
+    #         slideDuration (int): slide duration of a window
+    #         startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+    #         colmnNames (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
+    #
+    #     Returns:
+    #         DataStream: this will return a new datastream object with blank metadata
+    #     """
+    #     return self._compute_stats(windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime, methodName="max", columnNames=colmnNames)
+    #
+    # def _compute_stats(self, windowDuration: int = None, slideDuration:int=None, startTime=None, methodName: str = None, columnNames: List[str] = []) -> object:
+    #     """
+    #     Compute stats on pyspark dataframe
+    #
+    #     Args:
+    #         windowDuration (int): duration of a window in seconds. If it is not set then stats will be computed for the whole data in a column(s)
+    #         slideDuration (int): slide duration of a window
+    #         startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+    #         methodName (str): pyspark stat method name
+    #         columnNames (str): max  will be computed for all the columns if columnName param is not provided (for all windows)
+    #
+    #
+    #     Returns:
+    #         DataStream: this will return a new datastream object with blank metadata
+    #     """
+    #     exprs = self._get_column_names(columnNames=columnNames, methodName=methodName)
+    #     if windowDuration:
+    #         windowDuration = str(windowDuration) + " seconds"
+    #         win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
+    #         result = self._data.groupBy(['user','version', win]).agg(exprs)
+    #     else:
+    #         result = self._data.groupBy(['user','version']).agg(exprs)
+    #
+    #
+    #     result = result.withColumn("timestamp",result.window.start)
+    #     # to get local time - agg/window won't return localtimestamp col
+    #     offset = (self._data.first().timestamp - self._data.first().localtime).total_seconds()
+    #     result = result.withColumn("localtime", result.window.start+F.expr("INTERVAL "+str(offset)+" SECONDS"))
+    #     result = self._update_column_names(result)
+    #     return DataStream(data=result, metadata=Metadata())
 
     # !!!!                              WINDOWING METHODS                           !!!
 
-    def window(self, windowDuration: int = 60, groupByColumnName: List[str] = [], columnName: List[str] = [],
+    def window(self, windowDuration: int = None, groupByColumnName: List[str] = [],
                slideDuration: int = None, startTime=None, preserve_ts=False):
         """
         Window data into fixed length chunks. If no columnName is provided then the windowing will be performed on all the columns.
@@ -288,7 +288,6 @@ class DataStream(DataFrame):
         Args:
             windowDuration (int): duration of a window in seconds
             groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
-            columnName List[str]: column names on which windowing should be performed. Windowing will be performed on all columns if none is provided
             slideDuration (int): slide duration of a window
             startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
             preserve_ts (bool): setting this to True will return timestamps of corresponding to each windowed value
@@ -298,24 +297,42 @@ class DataStream(DataFrame):
             This windowing method will use collect_list to return values for each window. collect_list is not optimized.
 
         """
-        windowDuration = str(windowDuration) + " seconds"
-        if slideDuration is not None:
+        if slideDuration:
             slideDuration = str(slideDuration) + " seconds"
-        exprs = self._get_column_names(columnNames=columnName, methodName="collect_list", preserve_ts=preserve_ts)
-        win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
+
+        groupbycols = ["user", "version"]
+
+        if windowDuration:
+            windowDuration = str(windowDuration) + " seconds"
+            win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration,
+                           startTime=startTime)
+            groupbycols.append(win)
+
         if len(groupByColumnName) > 0:
-            groupByColumnName.append("user")
-            groupByColumnName.append("version")
-            groupByColumnName.append(win)
-            windowed_data = self._data.groupBy(groupByColumnName).agg(exprs)
-        else:
-            windowed_data = self._data.groupBy(['user', 'version', win]).agg(exprs)
+            groupbycols.extend(groupByColumnName)
 
-        data = windowed_data
-
-        data = self._update_column_names(data)
+        data = self._data.groupBy(groupbycols)
 
         return DataStream(data=data, metadata=Metadata())
+
+        # windowDuration = str(windowDuration) + " seconds"
+        # if slideDuration is not None:
+        #     slideDuration = str(slideDuration) + " seconds"
+        # #exprs = self._get_column_names(columnNames=columnName, methodName="collect_list", preserve_ts=preserve_ts)
+        # win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration, startTime=startTime)
+        # if len(groupByColumnName) > 0:
+        #     groupByColumnName.append("user")
+        #     groupByColumnName.append("version")
+        #     groupByColumnName.append(win)
+        #     windowed_data = self._data.groupBy(groupByColumnName)
+        # else:
+        #     windowed_data = self._data.groupBy(['user', 'version', win])
+        #
+        # data = windowed_data
+        #
+        # #data = self._update_column_names(data)
+        #
+        # return DataStream(data=data, metadata=Metadata())
 
     def _update_column_names(self, data):
         columns = []
@@ -520,11 +537,9 @@ class DataStream(DataFrame):
         pdf = self._data.toPandas()
         pdf = self._sort_values(pdf)
         self._basic_plots.hist(pdf, x_axis_column=x_axis_column)
+
 #TODO: move visualization to their own algo modules
-    def plot_gps_cords(self, zoom=5):
-        pdf = self._data.toPandas()
-        pdf = self._sort_values(pdf)
-        return self._basic_plots.plot_gps_cords(pdf, zoom=zoom)
+
 
     def plot_stress_pie(self, x_axis_column="stresser_main"):
         pdf = self._data.toPandas()

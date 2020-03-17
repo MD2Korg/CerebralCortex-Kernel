@@ -173,6 +173,33 @@ class HDFSStorage:
 
         return file_name
 
+    def write_pandas_to_csv_file(self, df: pd, user_id: str, stream_name: str) -> str:
+        """
+        Convert pandas dataframe into pyarrow parquet format and store
+
+        Args:
+            df (pandas): pandas dataframe
+            user_id (str): user id
+            stream_name (str): name of a stream
+
+        Returns:
+            str: file_name of newly create parquet file
+
+        Raises:
+             Exception: if data cannot be stored
+
+        """
+        base_dir_path = self._get_storage_path(stream_name)
+        file_id = str(uuid4().hex) + ".parquet"
+        data_file_url = os.path.join(base_dir_path, "version=1", "user=" + user_id)
+        file_name = os.path.join(data_file_url, file_id)
+        if not self.obj.fs.exists(data_file_url):
+            self.obj.fs.mkdir(data_file_url)
+        with self.obj.fs.open(file_name, "wb") as fp:
+            pq.write_table(table, fp)
+
+        return file_name
+
     ###########################################################################################################
 
     def is_study(self) -> bool:
