@@ -1297,19 +1297,23 @@ class DataStream(DataFrame):
 
     ## !!!! HELPER METHOD !!!!!! ##
     def _gen_metadata(self):
-        schema = self._data.schema
-        stream_metadata = Metadata()
-        for field in schema.fields:
-            stream_metadata.add_dataDescriptor(
-                DataDescriptor().set_name(str(field.name)).set_type(str(field.dataType))
-            )
+        from pyspark.sql.group import GroupedData
+        if isinstance(self._data, GroupedData):
+            return Metadata()
+        else:
+            schema = self._data.schema
+            stream_metadata = Metadata()
+            for field in schema.fields:
+                stream_metadata.add_dataDescriptor(
+                    DataDescriptor().set_name(str(field.name)).set_type(str(field.dataType))
+                )
 
-        stream_metadata.add_module(
-            ModuleMetadata().set_name("cerebralcortex.core.datatypes.datastream.DataStream").set_attribute("url",
-                                                                                                       "hhtps://md2k.org").set_author(
-                "Nasir Ali", "nasir.ali08@gmail.com"))
+            stream_metadata.add_module(
+                ModuleMetadata().set_name("cerebralcortex.core.datatypes.datastream.DataStream").set_attribute("url",
+                                                                                                           "hhtps://md2k.org").set_author(
+                    "Nasir Ali", "nasir.ali08@gmail.com"))
 
-        return stream_metadata
+            return stream_metadata
 
 
 

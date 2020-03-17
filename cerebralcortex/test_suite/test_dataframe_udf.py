@@ -82,14 +82,15 @@ class TestDataframeUDF(unittest.TestCase):
         Window datastream and perform a udf on top of it
 
         """
-from cerebralcortex.algorithms.gps.ttt import gps_clusters
+#from cerebralcortex.algorithms.gps.ttt import gps_clusters
 
 ds_gps = gen_location_datastream(user_id="bfb2ca0c-e19c-3956-9db2-5459ccadd40c", stream_name="gps--org.md2k.phonesensor--phone")
 ds_gps.show(3)
 
-dd=cluster_gps(ds_gps)
-# dd.show()
+d2=ds_gps.window()
+dd=cluster_gps(d2)
+dd.show()
 
 
-ds_gps.compute(gps_clusters).show(5)
-print(ds_gps)
+# ds_gps.compute(gps_clusters).show(5)
+# print(ds_gps)
