@@ -310,7 +310,7 @@ class Kernel:
 
     ################### USER RELATED METHODS ##################################
 
-    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict)->bool:
+    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict, encrypted_password:bool=False)->bool:
         """
         Create a user in SQL storage if it doesn't exist
 
@@ -320,13 +320,14 @@ class Kernel:
             user_role (str): role of a user
             user_metadata (dict): metadata of a user
             user_settings (dict): user settings, mCerebrum configurations of a user
+            encrypted_password (bool): encrypt password if set to true
         Returns:
             bool: True if user is successfully registered or throws any error in case of failure
         Raises:
             ValueError: if selected username is not available
             Exception: if sql query fails
         """
-        return self.SqlData.create_user( username, user_password, user_role, user_metadata, user_settings)
+        return self.SqlData.create_user( username, user_password, user_role, user_metadata, user_settings, encrypted_password)
 
     def delete_user(self, username:str)->bool:
         """

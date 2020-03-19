@@ -246,6 +246,7 @@ class Metadata():
             raise ValueError("Stream description is not defined.")
         if len(self.data_descriptor)==0:
             raise Exception("Data descriptor length cannot be 0.")
+
         # for dd_obj in self.data_descriptor:
         #     if (dd_obj.attributes is None or len(dd_obj.attributes)==0):
         #         raise ValueError("Add brief description for each column in data desciptor. For example, DataDescriptor().set_attribute('description'', 'sleep time''))")

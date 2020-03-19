@@ -43,7 +43,7 @@ class UserHandler():
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict)->bool:
+    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict, encrypt_password:bool=False)->bool:
         """
         Create a user in SQL storage if it doesn't exist
 
@@ -53,6 +53,7 @@ class UserHandler():
             user_role (str): role of a user
             user_metadata (dict): metadata of a user
             user_settings (dict): user settings, mCerebrum configurations of a user
+            encrypt_password (bool): encrypt password if set to True
         Returns:
             bool: True if user is successfully registered or throws any error in case of failure
         Raises:
@@ -65,9 +66,10 @@ class UserHandler():
 
         user_uuid = str(username)+str(user_role)+str(user_metadata)
         user_uuid = str(uuid.uuid3(uuid.NAMESPACE_DNS, user_uuid))
-        encrypted_password = self.encrypt_user_password(user_password)
+        if encrypt_password:
+            user_password = self.encrypt_user_password(user_password)
         qry = "INSERT IGNORE INTO " + self.userTable + " (user_id, username, password, study_name, user_role, user_metadata,user_settings) VALUES(%s, %s, %s, %s, %s, %s, %s)"
-        vals = str(user_uuid), str(username), str(encrypted_password), str(self.study_name), str(user_role), json.dumps(user_metadata), json.dumps(user_settings)
+        vals = str(user_uuid), str(username), str(user_password), str(self.study_name), str(user_role), json.dumps(user_metadata), json.dumps(user_settings)
 
         try:
             self.execute(qry, vals, commit=True)
@@ -192,7 +194,7 @@ class UserHandler():
         if not username or not password:
             raise ValueError("User name and password cannot be empty/None.")
 
-        if not encrypted_password:
+        if encrypted_password:
             password = self.encrypt_user_password(password)
 
         qry = "select * from user where username=%s and password=%s and study_name=%s"

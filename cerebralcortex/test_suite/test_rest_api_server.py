@@ -72,6 +72,20 @@ class TestCerebralCortex(unittest.TestCase):
                                             "description": "some description",
                                             "data_descriptor": [
                                                 {
+                                                    "name": "timestamp",
+                                                    "type": "datetime",
+                                                    "attributes": {
+                                                        "key": "string",
+                                                        "value": "string"
+                                                    }
+                                                },{
+                                                    "name": "localtime",
+                                                    "type": "datetime",
+                                                    "attributes": {
+                                                        "key": "string",
+                                                        "value": "string"
+                                                    }
+                                                },{
                                                     "name": "col1",
                                                     "type": "string",
                                                     "attributes": {
@@ -103,7 +117,7 @@ class TestCerebralCortex(unittest.TestCase):
                                         })
         self.assertEqual(result.status_code, 200)
 
-        result = client.upload_stream_data(url="http://localhost:8089/api/v3/stream/default/50773d0b-2bf4-3cdc-bd5a-534184e41077", auth_token=self.__class__.auth_token, data_file_path=os.getcwd() + "/sample_data/msgpack/phone_battery_stream.gz")
+        result = client.upload_stream_data(url="http://localhost:8089/api/v3/stream/default/7721a905-0e1c-31bf-82b7-887331919941", auth_token=self.__class__.auth_token, data_file_path=os.getcwd() + "/sample_data/msgpack/phone_battery_stream.gz")
         self.assertEqual(result.status_code, 200)
 
         result = client.get_stream_metadata(url="http://localhost:8089/api/v3/stream/metadata/default/test-stream-name", auth_token=self.__class__.auth_token)
