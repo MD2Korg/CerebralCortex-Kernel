@@ -1,33 +1,27 @@
-import re
-import sys
-from typing import List
 import math
-import pandas as pd
-import numpy as np
+from typing import List
 
-from datetime import timedelta
-from pyspark.sql import DataFrame
+import numpy as np
+import pandas as pd
+
+from cerebralcortex.core.datatypes.datastream import DataStream
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from pyspark.sql import functions as F
-from pyspark.sql.functions import udf
-from pyspark.sql.types import *
-# from pyspark.sql.functions import pandas_udf,PandasUDFType
-from operator import attrgetter
-from pyspark.sql.types import StructType
 from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.group import GroupedData
+from pyspark.sql.types import *
+from pyspark.sql.types import StructType
 from pyspark.sql.window import Window
 
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
-from cerebralcortex.core.plotting.basic_plots import BasicPlots
-from cerebralcortex.core.plotting.stress_plots import StressStreamPlots
-from cerebralcortex.core.datatypes.datastream import DataStream
 
-def complementary_filter(self, freq: int = 16, accelerometer_x: str = "accelerometer_x",
+def complementary_filter(ds, freq: int = 16, accelerometer_x: str = "accelerometer_x",
                          accelerometer_y: str = "accelerometer_y", accelerometer_z: str = "accelerometer_z",
                          gyroscope_x: str = "gyroscope_x", gyroscope_y: str = "gyroscope_y",
                          gyroscope_z: str = "gyroscope_z"):
     """
     Compute complementary filter on gyro and accel data.
     Args:
+        ds (DataStream ): Windowed/grouped dataframe
         freq (int): frequency of accel/gryo. Assumption is that frequency is equal for both gyro and accel.
         accelerometer_x (str): name of the column
         accelerometer_y (str): name of the column
@@ -41,10 +35,10 @@ def complementary_filter(self, freq: int = 16, accelerometer_x: str = "accelerom
     hpf = 0.90;
     lpf = 0.10;
 
-    window = Window.partitionBy(self._data['user']).orderBy(self._data['timestamp'])
+    window = Window.partitionBy(ds._data['user']).orderBy(ds._data['timestamp'])
 
-    data = self._data.withColumn("thetaX_accel",
-                                 ((F.atan2(-F.col(accelerometer_z), F.col(accelerometer_y)) * 180 / M_PI)) * lpf) \
+    data = ds._data.withColumn("thetaX_accel",
+                               ((F.atan2(-F.col(accelerometer_z), F.col(accelerometer_y)) * 180 / M_PI)) * lpf) \
         .withColumn("roll",
                     (F.lag("thetaX_accel").over(window) + F.col(gyroscope_x) * dt) * hpf + F.col("thetaX_accel")).drop(
         "thetaX_accel") \
@@ -61,13 +55,90 @@ def complementary_filter(self, freq: int = 16, accelerometer_x: str = "accelerom
 
     return DataStream(data=data.dropna(), metadata=Metadata())
 
-    # signal-processing
+
+def compute_zero_cross_rate(ds, exclude_col_names: list = [],
+                            feature_names=['zero_cross_rate']):
+    """
+    Compute statistical features.
+
+    Args:
+        exclude_col_names list(str): name of the columns on which features should not be computed
+        feature_names list(str): names of the features. Supported features are ['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
+                     'kurt', 'sqr', 'zero_cross_rate'
+        windowDuration (int): duration of a window in seconds
+        slideDuration (int): slide duration of a window
+        groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
+        startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
+
+
+    Returns:
+        DataStream object with all the existing data columns and FFT features
+    """
+    exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
+
+    data = ds._data.drop(*exclude_col_names)
+
+    df_column_names = data.columns
+
+    basic_schema = StructType([
+        StructField("timestamp", TimestampType()),
+        StructField("localtime", TimestampType()),
+        StructField("user", StringType()),
+        StructField("version", IntegerType()),
+        StructField("start_time", TimestampType()),
+        StructField("end_time", TimestampType())
+    ])
+
+    features_list = []
+    for cn in df_column_names:
+        for sf in feature_names:
+            features_list.append(StructField(cn + "_" + sf, FloatType(), True))
+
+    features_schema = StructType(basic_schema.fields + features_list)
+
+    def calculate_zero_cross_rate(series):
+        """
+        How often the signal changes sign (+/-)
+        """
+        series_mean = np.mean(series)
+        series = [v - series_mean for v in series]
+        zero_cross_count = (np.diff(np.sign(series)) != 0).sum()
+        return zero_cross_count / len(series)
+
+    @pandas_udf(features_schema, PandasUDFType.GROUPED_MAP)
+    def get_features_udf(df):
+        results = []
+        timestamp = df['timestamp'].iloc[0]
+        localtime = df['localtime'].iloc[0]
+        user = df['user'].iloc[0]
+        version = df['version'].iloc[0]
+        start_time = timestamp
+        end_time = df['timestamp'].iloc[-1]
+
+        df.drop(exclude_col_names, axis=1, inplace=True)
+        if "zero_cross_rate" in feature_names:
+            df_zero_cross_rate = df.apply(calculate_zero_cross_rate)
+            df_zero_cross_rate.index += '_zero_cross_rate'
+            results.append(df_zero_cross_rate)
+
+        output = pd.DataFrame(pd.concat(results)).T
+
+        basic_df = pd.DataFrame([[timestamp, localtime, user, int(version), start_time, end_time]],
+                                columns=['timestamp', 'localtime', 'user', 'version', 'start_time', 'end_time'])
+        return basic_df.assign(**output)
+
+    # check if datastream object contains grouped type of DataFrame
+    if not isinstance(ds._data, GroupedData):
+        raise Exception(
+            "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
+
+    data = ds._data.apply(get_features_udf)
+    return DataStream(data=data, metadata=Metadata())
+
+
 def compute_fourier_features(ds, exclude_col_names: list = [],
-                             feature_names=["fft_centroid", 'fft_spread', 'spectral_entropy',
-                                            'spectral_entropy_old', 'fft_flux',
-                                            'spectral_falloff'], windowDuration: int = None,
-                             slideDuration: int = None,
-                             groupByColumnName: List[str] = [], startTime=None):
+                             feature_names=["fft_centroid", 'fft_spread', 'spectral_entropy', 'fft_flux',
+                                            'spectral_falloff']):
     """
     Transforms data from time domain to frequency domain.
 
@@ -242,16 +313,7 @@ def compute_fourier_features(ds, exclude_col_names: list = [],
         df_ff = df.apply(fourier_features_pandas_udf)
         df3 = df_ff.T
         pd.set_option('display.max_colwidth', -1)
-        # split column into multiple columns
-        # df3 = pd.DataFrame(df_ff.values.tolist(), index=df_ff.index)
-        # print("**"*50)
-        # print(type(df), type(df_ff), type(df3))
-        # print(df)
-        # print(df_ff)
-        # print(df_ff.values.tolist())
-        # print(df3)
-        # print("**" * 50)
-        # print("FEATURE-NAMES", feature_names)
+
         df3.columns = feature_names
 
         # multiple rows to one row
@@ -263,5 +325,10 @@ def compute_fourier_features(ds, exclude_col_names: list = [],
         # df.insert(loc=0, columns=, value=basic_cols)
         return basic_df.assign(**output)
 
-    return ds.compute(get_fft_features, windowDuration=windowDuration, slideDuration=slideDuration,
-                      groupByColumnName=groupByColumnName, startTime=startTime)
+    # check if datastream object contains grouped type of DataFrame
+    if not isinstance(ds._data, GroupedData):
+        raise Exception(
+            "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
+
+    data = ds._data.apply(get_fft_features)
+    return DataStream(data=data, metadata=Metadata())

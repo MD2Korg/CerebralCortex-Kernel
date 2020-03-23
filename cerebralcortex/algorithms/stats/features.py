@@ -1,25 +1,15 @@
-import re
-import sys
 from typing import List
-import math
-import pandas as pd
-import numpy as np
 
-from datetime import timedelta
-from pyspark.sql import DataFrame
+import numpy as np
+import pandas as pd
+
+from cerebralcortex.core.datatypes.datastream import DataStream
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from pyspark.sql import functions as F
-from pyspark.sql.functions import udf
+from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import *
 # from pyspark.sql.functions import pandas_udf,PandasUDFType
-from operator import attrgetter
 from pyspark.sql.types import StructType
-from pyspark.sql.functions import pandas_udf, PandasUDFType
-from pyspark.sql.window import Window
-
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
-from cerebralcortex.core.plotting.basic_plots import BasicPlots
-from cerebralcortex.core.plotting.stress_plots import StressStreamPlots
-from cerebralcortex.core.datatypes.datastream import DataStream
 
 
 def magnitude(ds, col_names=[]):
@@ -33,18 +23,19 @@ def magnitude(ds, col_names=[]):
         DataStream
 
     """
-    if len(col_names)<1:
+    if len(col_names) < 1:
         raise Exception("col_names param is missing.")
 
     tmp = ""
     for col_name in col_names:
-        tmp += 'F.col("'+col_name+'")*F.col("'+col_name+'")+'
+        tmp += 'F.col("' + col_name + '")*F.col("' + col_name + '")+'
     tmp = tmp.rstrip("+")
 
     data = ds._data.withColumn("magnitude", F.sqrt(eval(tmp)))
     return DataStream(data=data, metadata=Metadata())
 
-#stat
+
+# stat
 def interpolate(ds, freq=16, method='linear', axis=0, limit=None, inplace=False,
                 limit_direction='forward', limit_area=None,
                 downcast=None):
@@ -76,23 +67,27 @@ def interpolate(ds, freq=16, method='linear', axis=0, limit=None, inplace=False,
 
     """
     schema = ds._data.schema
-    sample_freq = 1000/freq
+    sample_freq = 1000 / freq
+
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     def interpolate_data(pdf):
         pdf.set_index("timestamp", inplace=True)
-        pdf = pdf.resample(str(sample_freq)+"ms").bfill(limit=1).interpolate(method=method, axis=axis, limit=limit,inplace=inplace, limit_direction=limit_direction, limit_area=limit_area, downcast=downcast)
+        pdf = pdf.resample(str(sample_freq) + "ms").bfill(limit=1).interpolate(method=method, axis=axis, limit=limit,
+                                                                               inplace=inplace,
+                                                                               limit_direction=limit_direction,
+                                                                               limit_area=limit_area, downcast=downcast)
         pdf.ffill(inplace=True)
         pdf.reset_index(drop=False, inplace=True)
         pdf.sort_index(axis=1, inplace=True)
         return pdf
 
     data = ds._data.groupby(["user", "version"]).apply(interpolate_data)
-    return DataStream(data=data,metadata=Metadata())
+    return DataStream(data=data, metadata=Metadata())
 
 
 def statistical_features(ds, exclude_col_names: list = [],
                          feature_names=['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
-                                                'kurt', 'sqr', 'zero_cross_rate'], windowDuration: int = None,
+                                        'kurt', 'sqr'], windowDuration: int = None,
                          slideDuration: int = None,
                          groupByColumnName: List[str] = [], startTime=None):
     """
@@ -197,12 +192,6 @@ def statistical_features(ds, exclude_col_names: list = [],
             df_kurt = df.kurt()
             df_kurt.index += '_kurt'
             results.append(df_kurt)
-
-        # zero and sqr are not statistical feature
-        if "zero_cross_rate" in feature_names:
-            df_zero_cross_rate = df.apply(calculate_zero_cross_rate)
-            df_zero_cross_rate.index += '_zero_cross_rate'
-            results.append(df_zero_cross_rate)
 
         if "sqr" in feature_names:
             df_sqr = df.apply(get_sqr)

@@ -23,15 +23,32 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-def plot_gps_clusters(ds, zoom=5):
-    """
-    Plots GPS coordinates
-
-    Args:
-        ds (DataStream): datastream object
-        zoom: min 0 and max 100, zoom map
-
-    """
+def plot_stress_pie(ds, x_axis_column="stresser_main"):
     pdf = ds._data.toPandas()
     pdf = ds._sort_values(pdf)
-    return ds._basic_plots.plot_gps_cords(pdf, zoom=zoom)
+    ds._stress_plots.plot_pie(pdf, x_axis_column)
+
+
+def plot_stress_gantt(ds):
+    pdf = ds._data.toPandas()
+    pdf = ds._sort_values(pdf)
+    ds._stress_plots.plot_gantt(pdf)
+
+
+def plot_stress_sankey(ds, cat_cols=["stresser_main", "stresser_sub"], value_cols='density',
+                       title="Stressers' Sankey Diagram"):
+    pdf = ds._data.toPandas()
+    pdf = ds._sort_values(pdf)
+    ds._stress_plots.plot_sankey(df=pdf, cat_cols=cat_cols, value_cols=value_cols, title=title)
+
+
+def plot_stress_bar(ds, x_axis_column="stresser_main"):
+    pdf = ds._data.toPandas()
+    pdf = ds._sort_values(pdf)
+    ds._stress_plots.plot_bar(pdf, x_axis_column=x_axis_column)
+
+
+def plot_stress_comparison(ds, x_axis_column="stresser_main", usr_id=None, compare_with="all"):
+    pdf = ds._data.toPandas()
+    pdf = ds._sort_values(pdf)
+    ds._stress_plots.plot_comparison(pdf, x_axis_column=x_axis_column, usr_id=usr_id, compare_with=compare_with)

@@ -541,31 +541,7 @@ class DataStream(DataFrame):
 #TODO: move visualization to their own algo modules
 
 
-    def plot_stress_pie(self, x_axis_column="stresser_main"):
-        pdf = self._data.toPandas()
-        pdf = self._sort_values(pdf)
-        self._stress_plots.plot_pie(pdf, x_axis_column)
 
-    def plot_stress_gantt(self):
-        pdf = self._data.toPandas()
-        pdf = self._sort_values(pdf)
-        self._stress_plots.plot_gantt(pdf)
-
-    def plot_stress_sankey(self, cat_cols=["stresser_main", "stresser_sub"], value_cols='density',
-                           title="Stressers' Sankey Diagram"):
-        pdf = self._data.toPandas()
-        pdf = self._sort_values(pdf)
-        self._stress_plots.plot_sankey(df=pdf, cat_cols=cat_cols, value_cols=value_cols, title=title)
-
-    def plot_stress_bar(self, x_axis_column="stresser_main"):
-        pdf = self._data.toPandas()
-        pdf = self._sort_values(pdf)
-        self._stress_plots.plot_bar(pdf, x_axis_column=x_axis_column)
-
-    def plot_stress_comparison(self, x_axis_column="stresser_main", usr_id=None, compare_with="all"):
-        pdf = self._data.toPandas()
-        pdf = self._sort_values(pdf)
-        self._stress_plots.plot_comparison(pdf, x_axis_column=x_axis_column, usr_id=usr_id, compare_with=compare_with)
 
     #############################################################################
     #                           Wrapper for PySpark Methods                     #
