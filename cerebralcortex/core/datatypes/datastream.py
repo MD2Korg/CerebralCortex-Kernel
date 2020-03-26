@@ -311,6 +311,8 @@ class DataStream(DataFrame):
         if len(groupByColumnName) > 0:
             groupbycols.extend(groupByColumnName)
 
+        groupbycols = list(set(groupbycols))
+
         data = self._data.groupBy(groupbycols)
 
         return DataStream(data=data, metadata=Metadata())

@@ -137,7 +137,7 @@ from datetime import timedelta
 #     return DataStream(data=data, metadata=Metadata())
 
 def impute_gps_data(ds, accuracy_threashold=100):
-    schema = ds.schema
+    schema = ds._data.schema
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     def gps_imputer(data):
@@ -168,7 +168,7 @@ def cluster_gps(ds, epsilon_constant = 1000, km_per_radian = 6371.0088, geo_fenc
     features_list = [StructField('centroid_longitude', DoubleType()),
                      StructField('centroid_latitude', DoubleType()),
                      StructField('labels', IntegerType())]
-    schema = StructType(ds.schema.fields + features_list)
+    schema = StructType(ds._data.schema.fields + features_list)
     column_names = [a.name for a in schema.fields]
 
     def get_centermost_point(cluster: object) -> object:
