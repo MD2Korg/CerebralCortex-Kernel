@@ -152,7 +152,7 @@ def impute_gps_data(ds, accuracy_threashold=100):
 
 
 
-def cluster_gps_timebased(ds, minimum_haversine_distance=0.25, minimum_duration=5 * 60, minimum_gpspoints = 10):
+def gps_clustering(ds, epsilon_constant = 1000, km_per_radian = 6371.0088, geo_fence_distance = 50,minimum_points_in_cluster = 200):
     '''
 
     Args:
@@ -164,19 +164,6 @@ def cluster_gps_timebased(ds, minimum_haversine_distance=0.25, minimum_duration=
     Returns:
 
     '''
-
-    epsilon_constant = 1000
-    latitude = 0
-    LONGITUDE = 1
-    ACCURACY = -1
-    GPS_ACCURACY_THRESHOLD = 41.0
-    km_per_radian = 6371.0088
-    geo_fence_distance = 50
-    minimum_points_in_cluster = 200
-    MINIMUM_HAVERSINE_DISTANCE = .25  # kilometers
-    MINIMUM_DURATION = 10 * 60  # seconds
-
-    MAXIMUM_STAYDURATION = 2 * 60
 
     features_list = [StructField('centroid_longitude', DoubleType()),
                      StructField('centroid_latitude', DoubleType()),
@@ -199,7 +186,7 @@ def cluster_gps_timebased(ds, minimum_haversine_distance=0.25, minimum_duration=
 
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-    def gps_clustered(data):
+    def cluster_gps(data):
         if data.shape[0] < 100:
             return pd.DataFrame([], columns=column_names)
 
@@ -231,10 +218,10 @@ def cluster_gps_timebased(ds, minimum_haversine_distance=0.25, minimum_duration=
         return data
 
 
-    data = ds._data.apply(gps_clustered)
+    data = ds._data.apply(cluster_gps)
     return DataStream(data=data, metadata=Metadata())
 
-def gps_timebased_clustering(ds, minimum_gpspoints = 5):
+def timebased_gps_clustering(ds, minimum_gpspoints = 5):
     schema = StructType([StructField('timestamp', TimestampType()),
                          StructField('localtime', TimestampType()),
                          StructField('start_localtime', TimestampType()),
