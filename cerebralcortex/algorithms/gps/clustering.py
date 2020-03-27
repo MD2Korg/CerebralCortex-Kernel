@@ -152,7 +152,12 @@ def impute_gps_data(ds, accuracy_threashold=100):
 
 
 
-def cluster_gps(ds, epsilon_constant = 1000, km_per_radian = 6371.0088, geo_fence_distance = 50, minimum_points_in_cluster = 200):
+def cluster_gps(ds, epsilon_constant = 1000,
+                km_per_radian = 6371.0088,
+                geo_fence_distance = 50,
+                minimum_points_in_cluster = 200,
+                latitude_column_name = 'latitude',
+                longitude_column_name = 'longitude'):
     '''
 
     Args:
@@ -191,7 +196,7 @@ def cluster_gps(ds, epsilon_constant = 1000, km_per_radian = 6371.0088, geo_fenc
             return pd.DataFrame([], columns=column_names)
 
 
-        coords = np.float64(data[['latitude', 'longitude']].values)
+        coords = np.float64(data[[latitude_column_name, longitude_column_name]].values)
 
         epsilon = geo_fence_distance / (
                 epsilon_constant * km_per_radian)
