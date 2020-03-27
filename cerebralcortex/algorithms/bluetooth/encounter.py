@@ -123,6 +123,41 @@ def bluetooth_encounter(data,
 
 
 
+def remove_duplicate_encounters(ds,
+                                owner_name='user',
+                                transmitter_name='participant_identifier',
+                                start_time_name='start_time',
+                                end_time_name='end_time',
+                                centroid_id_name='centroid_id'):
+    """
 
+    :param ds: Input Datastream
+    :param owner_name: Owner of the encounter (data being uploaded from whose phone)
+    :param transmitter_name: Participant of the encounter alongside owner
+    :param start_time_name: Start time of the encounter
+    :param end_time_name: End time of the encounter
+    :param centroid_id_name: Name of the Id column indicating centroid id
+    :return:
+    """
+    schema = ds._data.schema
+    @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+    def remove_duplicates(data):
+        if len(np.intersect1d(data[owner_name].values,data[transmitter_name].values))==0:
+            return data
+        data = data.sort_values('start_time').reset_index(drop=True)
+        not_visited = []
+        for i,row in data.iterrows():
+            if i in not_visited:
+                continue
+            temp_df = data[data[transmitter_name]==row[owner_name]]
+            temp_df = temp_df[temp_df[start_time_name]>row[end_time_name]]
+            temp_df = temp_df[row[end_time_name]>temp_df[start_time_name]]
+            if temp_df.shape[0]==0:
+                continue
+            else:
+                not_visited+=list(temp_df.index.values)
+        return data[~data.index.isin(not_visited)]
+    data = ds._data.groupBy([centroid_id_name,'version']).apply(remove_duplicates)
+    return DataStream(data=data, metadata=Metadata())
 
 
