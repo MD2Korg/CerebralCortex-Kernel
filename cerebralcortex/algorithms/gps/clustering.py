@@ -157,7 +157,8 @@ def cluster_gps(ds, epsilon_constant = 1000,
                 geo_fence_distance = 50,
                 minimum_points_in_cluster = 200,
                 latitude_column_name = 'latitude',
-                longitude_column_name = 'longitude'):
+                longitude_column_name = 'longitude',
+                centroid_id_name = 'centroid_id'):
     '''
 
     Args:
@@ -172,7 +173,7 @@ def cluster_gps(ds, epsilon_constant = 1000,
 
     features_list = [StructField('centroid_longitude', DoubleType()),
                      StructField('centroid_latitude', DoubleType()),
-                     StructField('labels', IntegerType())]
+                     StructField(centroid_id_name, IntegerType())]
     schema = StructType(ds._data.schema.fields + features_list)
     column_names = [a.name for a in schema.fields]
 
@@ -205,7 +206,7 @@ def cluster_gps(ds, epsilon_constant = 1000,
                     algorithm='ball_tree', metric='haversine').fit(
             np.radians(coords))
 
-        data['labels'] = db.labels_
+        data[centroid_id_name] = db.labels_
         cluster_labels = db.labels_
         clusters = pd.Series(
             [coords[cluster_labels == n] for n in np.unique(cluster_labels)])
@@ -220,12 +221,12 @@ def cluster_gps(ds, epsilon_constant = 1000,
             cols.flatten()
             all_dict.append([col, cols[0], cols[1]])
 
-        temp_df = pd.DataFrame(all_dict, columns=['labels', 'centroid_latitude', 'centroid_longitude'])
-        data = pd.merge(data, temp_df, how='left', left_on=['labels'], right_on=['labels'])
+        temp_df = pd.DataFrame(all_dict, columns=[centroid_id_name, 'centroid_latitude', 'centroid_longitude'])
+        data = pd.merge(data, temp_df, how='left', left_on=[centroid_id_name], right_on=[centroid_id_name])
         return data
 
 
-    data = ds._data.apply(gps_clustering)
+    data = ds._data.groupBy('version').apply(gps_clustering)
     return DataStream(data=data, metadata=Metadata())
 
 def stay_time_graph_in_gps_cluster(ds, minimum_gpspoints = 5):
