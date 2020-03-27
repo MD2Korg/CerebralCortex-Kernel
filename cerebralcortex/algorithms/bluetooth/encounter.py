@@ -118,8 +118,10 @@ def bluetooth_encounter(data,
 
     data = data.withColumn('time',F.col('timestamp').cast('double'))
     data_filtered = data._data.filter((data.timestamp>=st) & (data.timestamp<et))
-    data_result = data_filtered.groupBy(['user','participant_identifier']).apply(get_enconters)
+    data_result = data_filtered.groupBy(['user','participant_identifier','version']).apply(get_enconters)
     return DataStream(data=data_result, metadata=Metadata())
+
+
 
 
 
