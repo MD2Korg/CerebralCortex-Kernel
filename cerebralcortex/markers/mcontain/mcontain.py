@@ -27,6 +27,7 @@
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata,DataDescriptor, ModuleMetadata
 from cerebralcortex.algorithms.bluetooth.encounter import bluetooth_encounter,remove_duplicate_encounters
 from cerebralcortex.algorithms.gps.clustering import cluster_gps
+from pyspark.sql import functions as F
 
 def compute_encounters(data,start_time,end_time):
     stream_metadata = Metadata()
@@ -66,7 +67,7 @@ def compute_encounters(data,start_time,end_time):
                                                                                    "Unique id of the centroid in the time window it was computed")) \
         .add_dataDescriptor(
         DataDescriptor().set_name("covid").set_type("integer").set_attribute("description", \
-                                                                             "0 or 1 indicating if this encounter contained a covid user"))
+                                                                             "0, 1 or 2 indicating if this encounter contained a covid user -- 0 - no covid-19 affected, 1 - user is, 2 - participant identifier is "))
     stream_metadata.add_module(
         ModuleMetadata().set_name('Encounter computation after parsing raw bluetooth-gps data, clustering gps locations and removing double counting') \
             .set_attribute("url", "https://mcontain.md2k.org").set_author(
@@ -76,6 +77,10 @@ def compute_encounters(data,start_time,end_time):
     data_result = remove_duplicate_encounters(data_clustered)
     data_result.metadata = stream_metadata
     return data_result
+
+def assign_covid_user(data,covid_users):
+    data = data.withColumn('covid',F.when(F.col('user').isin(covid_users), 1 ).when(F.col('participant_identifier').isin(covid_users), 2).otherwise(0))
+    return data
 
 
 
