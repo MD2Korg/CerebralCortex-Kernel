@@ -155,9 +155,8 @@ def count_encounters_per_cluster(ds):
     schema = StructType([StructField('timestamp', TimestampType()),
                          StructField('localtime', TimestampType()),
                          StructField('version', IntegerType()),
-                         StructField('centroid_id', DoubleType()),
-                         StructField('centroid_latitude', DoubleType()),
-                         StructField('centroid_longitude', DoubleType()),
+                         StructField('latitude', DoubleType()),
+                         StructField('longitude', DoubleType()),
                          StructField('n_users', IntegerType()),
                          StructField('total_encounters', DoubleType()),
                          StructField('avg_encounters', DoubleType()),
@@ -167,7 +166,7 @@ def count_encounters_per_cluster(ds):
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     def count_encounters(data):
         if data.shape[0]==0:
-            return pd.DataFrame([],columns = ['version','centroid_id','centroid_latitude','centroid_longitude','n_users',
+            return pd.DataFrame([],columns = ['version','latitude','longitude','n_users',
                                               'total_encounters','avg_encounters','max_encounters','timestamp','localtime'])
         data = data.sort_values('localtime').reset_index(drop=True)
         centroid_id = data['centroid_id'].iloc[0]
@@ -186,11 +185,12 @@ def count_encounters_per_cluster(ds):
         timestamp = data['timestamp'].iloc[data.shape[0]//2]
         localtime = data['localtime'].iloc[data.shape[0]//2]
         version = data['version'].iloc[0]
-        return pd.DataFrame([[version,centroid_id,centroid_latitude,centroid_longitude,len(unique_users),total_encounters,average_encounter,max_encounter,timestamp,localtime]],
-                            columns = ['version','centroid_id','centroid_latitude','centroid_longitude','n_users',
+        return pd.DataFrame([[version,centroid_latitude,centroid_longitude,len(unique_users),total_encounters,average_encounter,max_encounter,timestamp,localtime]],
+                            columns = ['version','latitude','longitude','n_users',
                                        'total_encounters','avg_encounters','max_encounters','timestamp','localtime'])
     data = ds._data.groupBy(['centroid_id','version']).apply(count_encounters)
     return DataStream(data=data, metadata=Metadata())
+
 
 
 
