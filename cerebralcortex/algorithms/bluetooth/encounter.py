@@ -37,10 +37,11 @@ def bluetooth_encounter(data,
                         st:datetime,
                         et:datetime,
                         distance_threshold=5,
-                        average_count_threshold = 20,
+                        average_count_threshold = 10,
                         n_rows_threshold = 2,
-                        time_threshold=5*60,
-                        epsilon = 1e-3):
+                        time_threshold=10*60,
+                        epsilon = 1e-3,
+                        localtime=True):
     """
 
     :param ds: Input Datastream
@@ -78,7 +79,7 @@ def bluetooth_encounter(data,
                          StructField('latitude', DoubleType()),
                          StructField('mean_distance', DoubleType()),
                          StructField('longitude', DoubleType()),
-                         StructField('average_count', DoubleType())
+                         StructField('average_count', DoubleType()),
                          ])
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
@@ -117,7 +118,10 @@ def bluetooth_encounter(data,
 
 
     data = data.withColumn('time',F.col('timestamp').cast('double'))
-    data_filtered = data._data.filter((data.timestamp>=st) & (data.timestamp<et))
+    if localtime:
+        data_filtered = data._data.filter((data.localtime>=st) & (data.localtime<et))
+    else:
+        data_filtered = data._data.filter((data.timestamp>=st) & (data.timestamp<et))
     data_result = data_filtered.groupBy(['user','participant_identifier','version']).apply(get_enconters)
     return DataStream(data=data_result, metadata=Metadata())
 
@@ -133,6 +137,8 @@ def remove_duplicate_encounters(ds,
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     def remove_duplicates(data):
         if len(np.intersect1d(data[owner_name].values,data[transmitter_name].values))==0:
+            data[start_time_name] = pd.to_datetime(data[start_time_name],unit='s')
+            data[end_time_name] = pd.to_datetime(data[end_time_name],unit='s')
             return data
         data = data.sort_values(start_time_name).reset_index(drop=True)
         not_visited = []
@@ -144,10 +150,13 @@ def remove_duplicate_encounters(ds,
                 continue
             else:
                 not_visited+=list(temp_df.index.values)
-        return data[~data.index.isin(not_visited)]
+        data =  data[~data.index.isin(not_visited)]
+        data[start_time_name] = pd.to_datetime(data[start_time_name],unit='s')
+        data[end_time_name] = pd.to_datetime(data[end_time_name],unit='s')
+        return data
+
     ds = ds._data.withColumn(start_time_name,F.col(start_time_name).cast('double')).withColumn(end_time_name,F.col(end_time_name).cast('double'))
     data = ds.groupBy([centroid_id_name,'version']).apply(remove_duplicates)
-    data = data.withColumn(start_time_name,F.col(start_time_name).cast('timestamp')).withColumn(end_time_name,F.col(end_time_name).cast('timestamp'))
     return DataStream(data=data, metadata=Metadata())
 
 
@@ -160,14 +169,12 @@ def count_encounters_per_cluster(ds):
                          StructField('n_users', IntegerType()),
                          StructField('total_encounters', DoubleType()),
                          StructField('avg_encounters', DoubleType()),
-                         StructField('max_encounters', DoubleType())
-
                          ])
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     def count_encounters(data):
         if data.shape[0]==0:
             return pd.DataFrame([],columns = ['version','latitude','longitude','n_users',
-                                              'total_encounters','avg_encounters','max_encounters','timestamp','localtime'])
+                                              'total_encounters','avg_encounters','timestamp','localtime'])
         data = data.sort_values('localtime').reset_index(drop=True)
         centroid_id = data['centroid_id'].iloc[0]
         centroid_latitude = data['centroid_latitude'].iloc[0]
@@ -175,19 +182,14 @@ def count_encounters_per_cluster(ds):
         unique_users = np.unique(list(data['user'].unique())+list(data['participant_identifier'].unique()))
         data['count'] = 1
         total_encounters = data.groupby('user',as_index=False).sum()['count'].sum() + data.groupby('participant_identifier',as_index=False).sum()['count'].sum()
-        df = data
-        df['user'] = data['participant_identifier']
-        df['participant_identifier'] = data['user']
-        data1 = pd.concat([df,data])
-        max_encounter = data1.groupby(['user']).sum()['count'].max()/2
         average_encounter = (total_encounters)/len(unique_users)
         total_encounters = data.shape[0]
         timestamp = data['timestamp'].iloc[data.shape[0]//2]
         localtime = data['localtime'].iloc[data.shape[0]//2]
         version = data['version'].iloc[0]
-        return pd.DataFrame([[version,centroid_latitude,centroid_longitude,len(unique_users),total_encounters,average_encounter,max_encounter,timestamp,localtime]],
+        return pd.DataFrame([[version,centroid_latitude,centroid_longitude,len(unique_users),total_encounters,average_encounter,timestamp,localtime]],
                             columns = ['version','latitude','longitude','n_users',
-                                       'total_encounters','avg_encounters','max_encounters','timestamp','localtime'])
+                                       'total_encounters','avg_encounters','timestamp','localtime'])
     data = ds._data.groupBy(['centroid_id','version']).apply(count_encounters)
     return DataStream(data=data, metadata=Metadata())
 
