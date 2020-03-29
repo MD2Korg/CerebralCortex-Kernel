@@ -139,7 +139,7 @@ class HDFSStorage:
         try:
             hdfs_url = self._get_storage_path(stream_name, no_spark=True)
             table = pa.Table.from_pandas(data, preserve_index=False)
-            fs = pa.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+            fs = pa.hdfs.connect(self.obj.hdfs_ip, self.obj.hdfs_port)
             pq.write_to_dataset(table, root_path=hdfs_url, partition_cols=["version", "user"], filesystem=fs)
             return True
         except Exception as e:
