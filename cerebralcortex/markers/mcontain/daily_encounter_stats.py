@@ -23,11 +23,40 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata,DataDescriptor, ModuleMetadata
 from cerebralcortex.algorithms.gps.clustering import cluster_gps
 from pyspark.sql import functions as F
 from cerebralcortex.kernel import Kernel, DataStream
 import argparse
+import pandas as pd
+import pytz
+
+def generate_metadata_dailystats():
+    stream_metadata = Metadata()
+    stream_metadata.set_name('mcontain-md2k--daily-stats').set_description('Daily stats for website') \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("start_time").set_type("timestamp").set_attribute("description", \
+                                                                                    "Start time of the day in localtime")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("end_time").set_type("timestamp").set_attribute("description", \
+                                                                                  "End time of the day in localtime")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("number_of_app_users").set_type("double").set_attribute("description", \
+                                                                                  "Total number of app users")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("encounter_per_user").set_type("double").set_attribute("description", \
+                                                                         "Average encounter per user")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("total_covid_encounters").set_type("double").set_attribute("description", \
+                                                                               "Total covid encounters on the day")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("maximum_concurrent_encounters").set_type("double").set_attribute("description", \
+                                                                                "Maximum concurrent encounters"))
+    stream_metadata.add_module(
+        ModuleMetadata().set_name('Daily encounter stats for all the users to be shown in website') \
+            .set_attribute("url", "https://mcontain.md2k.org").set_author(
+            "Md Azim Ullah", "mullah@memphis.edu"))
+    return stream_metadata
 
 
 def make_CC_object(config_dir="/home/jupyter/cc3_conf/",
@@ -80,6 +109,27 @@ if __name__ == "__main__":
     data_all_users = data_all_users._data.filter((F.col('localtime')>=start_time) & (F.col('localtime')<end_time))
 
     encounter_data = CC.get_stream(encounter_stream_name)
+    encounter_data = encounter_data._data.filter((F.col('localtime')>=start_time) & (F.col('localtime')<end_time))
+    encounter_covid_data = encounter_data._data.filter(F.col('covid')>0)
+
+
     number_of_app_users = data_all_users.select('user').distinct().count()
     max_concurrent_encounters = data.toPandas().max()['sum(total_encounters)']
     proximity_encounter_per_user = encounter_data.count()*2/number_of_app_users
+    total_covid_encounters = encounter_covid_data.count()*2
+
+    userid = start_time.strftime("%Y/%m/%d, %H:%M:%S")+'_to_'+ end_time.strftime("%Y/%m/%d, %H:%M:%S") ### user id is generated to be able to save the data
+    localtime = start_time
+    timestamp = start_time.astimezone(pytz.UTC)
+    version = 1
+    df = pd.DataFrame([[userid,version,localtime,timestamp,
+                         start_time,end_time,number_of_app_users,
+                         proximity_encounter_per_user,total_covid_encounters,max_concurrent_encounters]],
+                       columns=['user','version','localtime','timestamp',
+                                'start_time','end_time','number_of_app_users',
+                                'encounter_per_user','total_covid_encounters','maximum_concurrent_encounters'])
+    data = CC.sqlContext.createDataFrame(df)
+    data_daily = DataStream(data=data,metadata=Metadata())
+    save_data(CC,data_daily,centroid_present=False,metadata=generate_metadata_dailystats())
+
+

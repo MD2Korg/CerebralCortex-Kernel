@@ -30,7 +30,6 @@ from cerebralcortex.algorithms.gps.clustering import cluster_gps
 from pyspark.sql import functions as F
 from cerebralcortex.kernel import Kernel
 import argparse
-from datetime import timedelta
 
 def generate_metadata_encounter():
     stream_metadata = Metadata()
@@ -147,7 +146,6 @@ if __name__ == "__main__":
     CC = make_CC_object(config_dir)
     hourly_stats = generate_visualization_hourly(CC,input_stream_name,start_time,end_time)
     userid = start_time.strftime("%Y/%m/%d, %H:%M:%S")+'_to_'+ end_time.strftime("%Y/%m/%d, %H:%M:%S") ### user id is generated to be able to save the data
-    start_time = start_time + timedelta(seconds=1)
     hourly_stats = hourly_stats.withColumn('user',F.lit(userid)).withColumn('start_time',F.lit(end_time)).withColumn('end_time',F.lit(end_time))
     save_data(CC,hourly_stats,centroid_present=False,metadata=generate_metadata_hourly())
     print('Computation done')
