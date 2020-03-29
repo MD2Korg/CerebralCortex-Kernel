@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from pyspark.sql.types import StructField, StructType, DoubleType,StringType, TimestampType, IntegerType
+from pyspark.sql.types import StructField, StructType, DoubleType,StringType, TimestampType, IntegerType, ArrayType
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql import functions as F
 from cerebralcortex.core.datatypes import DataStream
@@ -36,9 +36,9 @@ from datetime import datetime
 def bluetooth_encounter(data,
                         st:datetime,
                         et:datetime,
-                        distance_threshold=5,
+                        distance_threshold=4,
                         average_count_threshold = 10,
-                        n_rows_threshold = 2,
+                        n_rows_threshold = 3,
                         time_threshold=10*60,
                         epsilon = 1e-3,
                         localtime=True):
@@ -54,19 +54,18 @@ def bluetooth_encounter(data,
     :param count_threshold: Threshold on count
     :return: A Sparse representation of the Bluetooth Encounter
     """
-    def get_data(data,i,k,distance_threshold):
-        distances = data['distance_estimate'].values[k:i]
-        rssi = data['RSSI'].values[k:i]
-        weights1 = rssi  + np.abs(np.min(rssi)) + epsilon
-        weights2 = 100*(distances-np.min(distances)) + epsilon
-        weights = 1/(weights1+weights2)
-        mean_distance = np.average(distances,weights=weights)
-        if mean_distance <= distance_threshold:
-            return [data['user'].iloc[k],data['participant_identifier'].iloc[k],data['localtime'].iloc[k],
-                    data['localtime'].iloc[i-1],data['version'].iloc[k],mean_distance,data['timestamp'].iloc[int((i+k)/2)],
-                    data['localtime'].iloc[int((i+k)/2)],np.mean(data['latitude'].values[k:i]),
-                    np.mean(data['longitude'].values[k:i]),data['os'].iloc[k],np.mean(data['count'].values[k:i])]
-        return []
+    def check_(arr,indexing,time_threshold):
+        check = False
+        for m in range(len(indexing)):
+            if m==0:
+                temp_arr = arr[indexing[m]:indexing[m+1]]
+            elif m<len(indexing)-1:
+                temp_arr = arr[(indexing[m]+1):indexing[m+1]]
+            else:
+                temp_arr = arr[(indexing[m]+1):]
+            if len(temp_arr)>n_rows_threshold and temp_arr[-1] - temp_arr[0]>=time_threshold:
+                check = True
+        return check
 
     schema = StructType([StructField('timestamp', TimestampType()),
                          StructField('localtime', TimestampType()),
@@ -77,7 +76,7 @@ def bluetooth_encounter(data,
                          StructField('version', IntegerType()),
                          StructField('os', StringType()),
                          StructField('latitude', DoubleType()),
-                         StructField('mean_distance', DoubleType()),
+                         StructField('distances', ArrayType(DoubleType())),
                          StructField('longitude', DoubleType()),
                          StructField('average_count', DoubleType()),
                          ])
@@ -86,7 +85,7 @@ def bluetooth_encounter(data,
     def get_enconters(data):
         if data.shape[0]<n_rows_threshold:
             return pd.DataFrame([],columns = ['user','participant_identifier','start_time','end_time','version',
-                                              'mean_distance','timestamp','localtime','latitude','longitude','os','average_count'])
+                                              'distances','timestamp','localtime','latitude','longitude','os','average_count'])
         data = data.sort_values('timestamp').reset_index(drop=True)
         data_all = []
         for i,row in data.iterrows():
@@ -94,26 +93,46 @@ def bluetooth_encounter(data,
                 k = int(i)
                 start_time = row['time']
                 count = 0
+                indexing = [0]
+                arr = []
             else:
                 if row['time'] - start_time < time_threshold/2:
                     start_time = row['time']
+                    if row['distance_estimate']-distance_threshold>0:
+                        indexing.append(i-k)
+                    arr.append(row['time'])
                     count+=1
                 else:
-                    if i-k>n_rows_threshold and data['time'].iloc[i]-data['time'].iloc[k]>time_threshold and np.mean(data['count'].values[k:i])>average_count_threshold:
-                        temp = get_data(data,i,k,distance_threshold)
-                        if len(temp)>0:
-                            data_all.append(temp)
+                    if i-k>n_rows_threshold and data['time'].iloc[i]-data['time'].iloc[k]>=time_threshold:
+                        if len(indexing)<=1:
+                            check = True
+                        else:
+                            check = check_(arr,indexing,time_threshold)
+                        if check:
+                            data_all.append([data['user'].iloc[k],data['participant_identifier'].iloc[k],data['localtime'].iloc[k],
+                                             data['localtime'].iloc[i-1],data['version'].iloc[k],data['distance_estimate'].iloc[k:i].values,data['timestamp'].iloc[int((i+k)/2)],
+                                             data['localtime'].iloc[int((i+k)/2)],np.mean(data['latitude'].values[k:i]),
+                                             np.mean(data['longitude'].values[k:i]),data['os'].iloc[k],np.mean(data['count'].values[k:i])])
                     count = 0
                     k = i
                     start_time = row['time']
+                    indexing = [0]
+                    arr = []
         if count>0:
             i = data.shape[0]-1
-            temp = get_data(data,i,k,distance_threshold)
-            if len(temp)>0:
-                data_all.append(temp)
+            if i-k>n_rows_threshold and data['time'].iloc[i]-data['time'].iloc[k]>time_threshold:
+                if len(indexing)<=1:
+                    check = True
+                else:
+                    check = check_(arr,indexing,time_threshold)
+                if check:
+                    data_all.append([data['user'].iloc[k],data['participant_identifier'].iloc[k],data['localtime'].iloc[k],
+                                     data['localtime'].iloc[i-1],data['version'].iloc[k],data['distance_estimate'].iloc[k:i].values,data['timestamp'].iloc[int((i+k)/2)],
+                                     data['localtime'].iloc[int((i+k)/2)],np.mean(data['latitude'].values[k:i]),
+                                     np.mean(data['longitude'].values[k:i]),data['os'].iloc[k],np.mean(data['count'].values[k:i])])
 
         return pd.DataFrame(data_all,columns = ['user','participant_identifier','start_time','end_time','version',
-                                                'mean_distance','timestamp','localtime','latitude','longitude','os','average_count'])
+                                                'distances','timestamp','localtime','latitude','longitude','os','average_count'])
 
 
 
@@ -157,6 +176,7 @@ def remove_duplicate_encounters(ds,
 
     ds = ds._data.withColumn(start_time_name,F.col(start_time_name).cast('double')).withColumn(end_time_name,F.col(end_time_name).cast('double'))
     data = ds.groupBy([centroid_id_name,'version']).apply(remove_duplicates)
+    data = data.withColumn('covid',F.lit(0))
     return DataStream(data=data, metadata=Metadata())
 
 
