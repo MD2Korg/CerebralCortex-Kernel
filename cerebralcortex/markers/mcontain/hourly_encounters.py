@@ -124,7 +124,9 @@ def compute_encounters(data,start_time,end_time):
 
 def generate_visualization_hourly(CC,stream_name,map_stream_name,start_time,end_time):
     data_all = CC.get_stream(stream_name).withColumnRenamed('avg_rssi','RSSI').withColumnRenamed('avg_distance','distance_estimate')
-    data_map_stream = CC.get_stream(map_stream_name).withColumnRenamed('user','participant_identifier')
+    data_map_stream = CC.get_stream(map_stream_name).withColumnRenamed('user','participant_identifier').select(*['participant_identifier',
+                                                                                                                 'major',
+                                                                                                                 'minor'])
     data_all = data_all.join(data_map_stream,on=['major','minor'],how='left').drop(*['major','minor'])
     if 'os' not in data_all.columns:
         data_all = data_all.withColumn('os',F.lit('android'))
