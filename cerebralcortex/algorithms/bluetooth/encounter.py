@@ -37,10 +37,8 @@ def bluetooth_encounter(data,
                         st:datetime,
                         et:datetime,
                         distance_threshold=4,
-                        average_count_threshold = 10,
                         n_rows_threshold = 3,
                         time_threshold=10*60,
-                        epsilon = 1e-3,
                         localtime=True):
     """
 
@@ -211,6 +209,7 @@ def count_encounters_per_cluster(ds):
                             columns = ['version','latitude','longitude','n_users',
                                        'total_encounters','avg_encounters','timestamp','localtime'])
     data = ds._data.groupBy(['centroid_id','version']).apply(count_encounters)
+
     return DataStream(data=data, metadata=Metadata())
 
 
