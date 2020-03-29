@@ -50,20 +50,11 @@ stream_metadata.set_name('mcontain-md2k-encounter--bluetooth-gps').set_descripti
     DataDescriptor().set_name("longitude").set_type("double").set_attribute("description", \
                                                                             "Longitude of encounter location")) \
     .add_dataDescriptor(
-    DataDescriptor().set_name("mean_distance").set_type("double").set_attribute("description", \
+    DataDescriptor().set_name("distances").set_type("double").set_attribute("description", \
                                                                                 "Mean distance between participants in encounter")) \
     .add_dataDescriptor(
     DataDescriptor().set_name("average_count").set_type("double").set_attribute("description", \
                                                                                 "Average count of values received in phone per minute - average across the encounter")) \
-    .add_dataDescriptor(
-    DataDescriptor().set_name("centroid_latitude").set_type("double").set_attribute("description", \
-                                                                                    "Latitude of the centroid in which encounter occurred")) \
-    .add_dataDescriptor(
-    DataDescriptor().set_name("centroid_longitude").set_type("double").set_attribute("description", \
-                                                                                     "Longitude of the centroid in which encounter occurred")) \
-    .add_dataDescriptor(
-    DataDescriptor().set_name("centroid_id").set_type("integer").set_attribute("description", \
-                                                                               "Unique id of the centroid in the time window it was computed")) \
     .add_dataDescriptor(
     DataDescriptor().set_name("covid").set_type("integer").set_attribute("description", \
                                                                          "0, 1 or 2 indicating if this encounter contained a covid user -- 0 - no covid-19 affected, 1 - user is, 2 - participant identifier is "))
@@ -77,24 +68,37 @@ def compute_encounters(data,start_time,end_time):
     data_encounter = bluetooth_encounter(data,start_time,end_time)
     data_clustered = cluster_gps(data_encounter,minimum_points_in_cluster=1,geo_fence_distance=50)
     data_result = remove_duplicate_encounters(data_clustered)
-    data_result = data_result.drop(*['centroid_id',
-                                     'centroid_latitude',
-                                     'centroid_longitude',
-                                     'centroid_area'])
     return data_result
 
 def assign_covid_user(data,covid_users):
     if not isinstance(covid_users,list):
         covid_users = [covid_users]
     data = data.withColumn('covid',F.when(F.col('user').isin(covid_users), 1 ).when(F.col('participant_identifier').isin(covid_users), 2).otherwise(0))
-    return data
+    save_encounter_data(data)
+    return True
 
+def save_encounter_data(data_result):
+    columns = ['centroid_id',
+               'centroid_latitude',
+               'centroid_longitude',
+               'centroid_area']
+    for c in columns:
+        if c in data_result.columns:
+            data_result = data_result.drop(*[c])
+    ###save(data_result)  How do I get CC object?
 
 def generate_visualization_hourly(data,start_time,end_time):
     unique_encounters = compute_encounters(data,start_time=start_time,end_time=end_time) ## we need to save this datastream
-    gps_clustered = cluster_gps(unique_encounters,minimum_points_in_cluster=1,geo_fence_distance=50)
-    hourly_stats = count_encounters_per_cluster(gps_clustered)
+    save_encounter_data(unique_encounters)
+    hourly_stats = count_encounters_per_cluster(unique_encounters)
     return hourly_stats
+
+def generate_daily_stats(data,start_time,end_time):
+    ### function yet to be written
+    data = function(data,start_time,end_time) ## to be saved
+    return data
+
+
 
 
 
