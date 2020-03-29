@@ -124,7 +124,7 @@ def compute_encounters(data,start_time,end_time):
 
 def generate_visualization_hourly(CC,stream_name,start_time,end_time):
     data_all = CC.get_stream(stream_name).withColumnRenamed('avg_rssi','RSSI').withColumnRenamed('avg_distance','distance_estimate')
-    data_all = data_all.withColumn('participant_identifier',F.col('major')+F.col('minor'))
+    data_all = data_all.withColumn('participant_identifier',F.concat(F.col('major'),F.col('minor')))
     data_all = data_all.withColumn('os',F.lit('android')).drop(*['major','minor'])
     unique_encounters = compute_encounters(data_all,start_time=start_time,end_time=end_time) ## we need to save this datastream
     metadata = generate_metadata_encounter()
