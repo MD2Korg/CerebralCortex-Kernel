@@ -92,7 +92,9 @@ def assign_covid_user(data,covid_users):
 
 def generate_visualization_hourly(data,start_time,end_time):
     unique_encounters = compute_encounters(data,start_time=start_time,end_time=end_time) ## we need to save this datastream
-    hourly_stats =
+    gps_clustered = cluster_gps(unique_encounters,minimum_points_in_cluster=1,geo_fence_distance=50)
+    hourly_stats = count_encounters_per_cluster(gps_clustered)
+    return hourly_stats
 
 
 
