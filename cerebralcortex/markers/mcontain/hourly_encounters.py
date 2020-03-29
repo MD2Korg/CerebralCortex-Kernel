@@ -115,7 +115,6 @@ def save_data(CC,data_result,centroid_present=True,metadata=None):
                 data_result = data_result.drop(*[c])
     data_result.metadata = metadata
     CC.save_stream(data_result,overwrite=False)
-    print('Hourly encounters saved from', start_time, 'to', end_time)
     return True
 
 def compute_encounters(data,start_time,end_time):
@@ -129,6 +128,7 @@ def generate_visualization_hourly(CC,stream_name,start_time,end_time):
     unique_encounters = compute_encounters(data_all,start_time=start_time,end_time=end_time) ## we need to save this datastream
     metadata = generate_metadata_encounter()
     save_data(CC,data_result=unique_encounters,centroid_present=True,metadata=metadata)
+    print('Hourly encounters saved from', start_time, 'to', end_time)
     hourly_stats = count_encounters_per_cluster(unique_encounters)
     return hourly_stats
 
@@ -142,12 +142,13 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
     config_dir = str(args["config_dir"]).strip()
     input_stream_name = str(args["input_stream_name"]).strip()
-    start_time = str(args['start_time']).strip()
-    end_time = str(args['end_time']).strip()
+    start_time = args['start_time']
+    end_time = args['end_time']
     CC = make_CC_object(config_dir)
     hourly_stats = generate_visualization_hourly(CC,input_stream_name,start_time,end_time)
     userid = start_time.strftime("%Y/%m/%d, %H:%M:%S")+'_to_'+ end_time.strftime("%Y/%m/%d, %H:%M:%S") ### user id is generated to be able to save the data
     start_time = start_time + timedelta(seconds=1)
-    hourly_stats = hourly_stats.withColumn('user',F.lit(userid)).withColumn('start_time',F.lit(end_time)).withColumn('start_time',F.lit(end_time))
+    hourly_stats = hourly_stats.withColumn('user',F.lit(userid)).withColumn('start_time',F.lit(end_time)).withColumn('end_time',F.lit(end_time))
     save_data(CC,hourly_stats,centroid_present=False,metadata=generate_metadata_hourly())
     print('Computation done')
+
