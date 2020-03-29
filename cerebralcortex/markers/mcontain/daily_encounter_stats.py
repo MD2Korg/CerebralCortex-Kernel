@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
 
     number_of_app_users = data_all_users.select('user').distinct().count()
-    max_concurrent_encounters = data.toPandas().max()['sum(total_encounters)']
+    max_concurrent_encounters = data_max.toPandas().max()['sum(total_encounters)']
     proximity_encounter_per_user = encounter_data.count()*2/number_of_app_users
     total_covid_encounters = encounter_covid_data.count()*2
 
