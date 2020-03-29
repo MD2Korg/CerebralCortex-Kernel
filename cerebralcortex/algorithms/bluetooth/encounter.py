@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from pyspark.sql.types import StructField, StructType, DoubleType,StringType, TimestampType, IntegerType, ArrayType
+from pyspark.sql.types import StructField, StructType, DoubleType,StringType, TimestampType, IntegerType, ArrayType, BooleanType, LongType
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql import functions as F
 from cerebralcortex.core.datatypes import DataStream
@@ -211,6 +211,47 @@ def count_encounters_per_cluster(ds):
     data = ds._data.groupBy(['centroid_id','version']).apply(count_encounters)
 
     return DataStream(data=data, metadata=Metadata())
+
+
+def get_notification_messages(ds, day, day_offset=5):
+    """
+
+    :param ds: Input Datastream
+    :param day: test date as datetime object
+    :param day_offset: number of days to be considered before the test day
+    :return:
+    """
+
+
+    ds = ds.filter(F.udf(lambda x: datetime(x.year, x.month, x.day+day_offset) >= day, BooleanType())(F.col('timestamp')))
+    ds1 = ds.filter('covid==1').select(F.col('participant_identifier').alias('user'), F.col('timestamp'), F.col('localtime'))
+    ds2 = ds.filter('covid==2').select(F.col('user'), F.col('timestamp'), F.col('localtime'))
+    merged_ds = ds1.union(ds2)
+    notif = merged_ds.withColumn('day', F.udf(lambda x: datetime(x.year, x.month, x.day), TimestampType())(F.col('localtime'))) \
+        .withColumn('message', F.udf(lambda x: 'On '+x.strftime('%B %d, %Y')+' you were in close proximity of a COVID-19 positive individual for 10 minutes or longer', StringType())('localtime')) \
+        .withColumn('time_offset', F.col('localtime').cast(LongType())-F.col('timestamp').cast(LongType())).drop('timestamp').drop_duplicates().withColumn('timestamp', F.lit(F.current_timestamp())).drop('localtime') \
+        .withColumn('localtime', (F.col('timestamp').cast(LongType())+F.col('time_offset')).cast(TimestampType())).withColumn('version', F.lit(1)).drop('time_offset')
+    return notif
+
+
+def get_user_encounter_count(ds, user_id, start_time, end_time):
+    """
+
+    :param ds: Input Datastream
+    :param user_id: the user id of the participant whom the encounters are to be calculated
+    :param start_time: start time (datetime object) of the calculation
+    :param end_time: end time of the calculation
+    :return:
+    """
+    ds = ds.filter((ds.localtime >= start_time) & (ds.localtime <= end_time))
+    ds = ds.filter((ds.user == user_id) | (ds.participant_identifier == user_id))
+    cnt = ds.count()
+    ds = ds.limit(1).select(ds.timestamp, ds.localtime, ds.user, ds.version).withColumn('encounter_count', F.lit(cnt))
+    ds = ds.withColumn('time_offset', F.col('localtime').cast(LongType())-F.col('timestamp').cast(LongType()))\
+        .drop('timestamp', 'localtime').drop_duplicates().withColumn('timestamp', F.lit(F.current_timestamp())) \
+        .withColumn('localtime', (F.col('timestamp').cast(LongType())+F.col('time_offset')).cast(TimestampType()))\
+        .drop('time_offset').withColumn('start_time', F.lit(start_time)).withColumn('end_time', F.lit('end_time'))
+    return ds
 
 
 
