@@ -81,7 +81,7 @@ def bluetooth_encounter(data,
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     def get_enconters(data):
-        if data.shape[0]<n_rows_threshold:
+        if data.shape[0]<=n_rows_threshold:
             return pd.DataFrame([],columns = ['user','participant_identifier','start_time','end_time','version',
                                               'distances','timestamp','localtime','latitude','longitude','os','average_count'])
         data = data.sort_values('timestamp').reset_index(drop=True)
@@ -153,6 +153,8 @@ def remove_duplicate_encounters(ds,
     schema = ds._data.schema
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     def remove_duplicates(data):
+        if data.shape[0]<2:
+            return data
         if len(np.intersect1d(data[owner_name].values,data[transmitter_name].values))==0:
             data[start_time_name] = pd.to_datetime(data[start_time_name],unit='s')
             data[end_time_name] = pd.to_datetime(data[end_time_name],unit='s')

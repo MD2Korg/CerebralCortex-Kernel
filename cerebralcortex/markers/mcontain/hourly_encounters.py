@@ -112,7 +112,7 @@ def drop_centroid_columns(data_result, centroid_present=True):
 
 def compute_encounters(data,start_time,end_time):
     data_encounter = bluetooth_encounter(data,start_time,end_time)
-    data_clustered = cluster_gps(data_encounter,minimum_points_in_cluster=1,geo_fence_distance=50)
+    data_clustered = cluster_gps(data_encounter,minimum_points_in_cluster=1,geo_fence_distance=50).dropna()
     data_result = remove_duplicate_encounters(data_clustered)
     return data_result
 

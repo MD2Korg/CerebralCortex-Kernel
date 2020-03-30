@@ -167,7 +167,7 @@ if __name__ == "__main__":
 
     encounter_data = CC.get_stream(encounter_stream_name)
     encounter_data = encounter_data._data.filter((F.col('localtime')>=start_time) & (F.col('localtime')<end_time))
-    encounter_covid_data = encounter_data._data.filter(F.col('covid')>0)
+    encounter_covid_data = encounter_data.filter(F.col('covid')>0)
 
 
     number_of_app_users = data_all_users.select('user').distinct().count()
@@ -197,9 +197,11 @@ if __name__ == "__main__":
     md = generate_metadata_notif()
     ds = DataStream(notification_ds, md)
     CC.save_stream(ds)
-    user_encounter_ds = get_user_encounter_count(encounter_data, start_time, end_time)
-    md = generate_metadata_user_encounter_count()
-    ds = DataStream(user_encounter_ds, md)
-    CC.save_stream(ds,overwrite=False)
+
+    ## Below part gives error, change needed so I am commenting it - Azim
+    # user_encounter_ds = get_user_encounter_count(encounter_data, start_time, end_time)
+    # md = generate_metadata_user_encounter_count()
+    # ds = DataStream(user_encounter_ds, md)
+    # CC.save_stream(ds,overwrite=False)
 
 
