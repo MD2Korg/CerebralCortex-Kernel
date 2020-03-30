@@ -25,11 +25,13 @@
 
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata,DataDescriptor, ModuleMetadata
 from cerebralcortex.algorithms.gps.clustering import cluster_gps
+from cerebralcortex.algorithms.bluetooth.encounter import get_user_encounter_count, get_notification_messages
 from pyspark.sql import functions as F
 from cerebralcortex.kernel import Kernel, DataStream
 import argparse
 import pandas as pd
 import pytz
+from datetime import datetime
 
 def generate_metadata_dailystats():
     stream_metadata = Metadata()
@@ -58,6 +60,62 @@ def generate_metadata_dailystats():
             "Md Azim Ullah", "mullah@memphis.edu"))
     return stream_metadata
 
+def generate_metadata_notif():
+    stream_metadata = Metadata()
+    stream_metadata.set_name('mcontain-md2k--user-notifications').set_description('Notification generated for the Covid-19 encountered users.') \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("user").set_type("string").set_attribute("description", \
+                                                                           "user id")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("timestamp").set_type("timestamp").set_attribute("description", \
+                                                                                   "Unix timestamp when the message was generated")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("localtime").set_type("timestamp").set_attribute("description", \
+                                                                                   "Local timestamp when the message was generated.")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("message").set_type("string").set_attribute("description", \
+                                                                              "Generated notification message")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("day").set_type("timestamp").set_attribute("description", \
+                                                                             "day of the encounter")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("version").set_type("int").set_attribute("description", \
+                                                                           "version"))
+    stream_metadata.add_module(
+        ModuleMetadata().set_name('Generated notification for a user encountered with Covid-19 participant') \
+            .set_attribute("url", "https://mcontain.md2k.org").set_author(
+            "Md Shiplu Hawlader", "shiplu.cse.du@gmail.com").set_version(1))
+    return stream_metadata
+
+def generate_metadata_user_encounter_count():
+    stream_metadata = Metadata()
+    stream_metadata.set_name('mcontain-md2k--user-total-encounter').set_description('Number of encounter in a given time window') \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("start_time").set_type("timestamp").set_attribute("description", \
+                                                                                    "Start time of the time window in localtime")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("end_time").set_type("timestamp").set_attribute("description", \
+                                                                                  "End time of the time window in localtime")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("user").set_type("string").set_attribute("description", \
+                                                                           "user id")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("timestamp").set_type("timestamp").set_attribute("description", \
+                                                                                   "Unix timestamp when the calculation was done")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("localtime").set_type("timestamp").set_attribute("description", \
+                                                                                   "Local timestamp when the calculation was done")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("encounter_count").set_type("int").set_attribute("description", \
+                                                                                   "Total number of encounter for the user in the given time window")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("version").set_type("integer").set_attribute("description", \
+                                                                               "version"))
+    stream_metadata.add_module(
+        ModuleMetadata().set_name('Total number of encounter for a user in a given time window') \
+            .set_attribute("url", "https://mcontain.md2k.org").set_author(
+            "Md Shiplu Hawlader", "shiplu.cse.du@gmail.com").set_version(1))
+    return stream_metadata
 
 def make_CC_object(config_dir="/home/jupyter/cc3_conf/",
                    study_name='mcontain'):
@@ -131,5 +189,15 @@ if __name__ == "__main__":
     data = CC.sqlContext.createDataFrame(df)
     data_daily = DataStream(data=data,metadata=Metadata())
     save_data(CC,data_daily,centroid_present=False,metadata=generate_metadata_dailystats())
+
+    ## written by shiplu
+    notification_ds = get_notification_messages(encounter_data, datetime(start_time.year, start_time.month, start_time.day))
+    md = generate_metadata_notif()
+    ds = DataStream(notification_ds, md)
+    CC.save_stream(ds)
+    user_encounter_ds = get_user_encounter_count(encounter_data, start_time, end_time)
+    md = generate_metadata_user_encounter_count()
+    ds = DataStream(user_encounter_ds, md)
+    CC.save_stream(ds)
 
 
