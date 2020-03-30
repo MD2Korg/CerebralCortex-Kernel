@@ -144,7 +144,7 @@ if __name__ == "__main__":
     end_time = args['end_time']
 
 
-    CC = Kernel(config_dir, study_name='default')
+    CC = Kernel(config_dir, study_name='default') ## need to change the study name
     data_all = CC.get_stream(input_stream_name)
     data_map_stream = CC.get_stream(map_stream_name)
     unique_encounters = generate_visualization_hourly(data_all,data_map_stream,start_time,end_time)
