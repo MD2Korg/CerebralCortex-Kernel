@@ -149,13 +149,14 @@ if __name__ == "__main__":
     data_map_stream = CC.get_stream(map_stream_name)
     unique_encounters = generate_visualization_hourly(data_all,data_map_stream,start_time,end_time)
     unique_encounters = drop_centroid_columns(unique_encounters, centroid_present=True)
+    hourly_stats = count_encounters_per_cluster(unique_encounters)
+    
     metadata = generate_metadata_encounter()
     unique_encounters.metadata = metadata
     CC.save_stream(unique_encounters,overwrite=False)
     print('Hourly encounters saved from', start_time, 'to', end_time)
 
     print('Saving hourly stats now')
-    hourly_stats = count_encounters_per_cluster(unique_encounters)
     userid = start_time.strftime("%Y/%m/%d, %H:%M:%S")+'_to_'+ end_time.strftime("%Y/%m/%d, %H:%M:%S") ### user id is generated to be able to save the data
     hourly_stats = hourly_stats.withColumn('user',F.lit(userid)).withColumn('start_time',F.lit(end_time)).withColumn('end_time',F.lit(end_time))
     hourly_stats.metadata = generate_metadata_hourly()
