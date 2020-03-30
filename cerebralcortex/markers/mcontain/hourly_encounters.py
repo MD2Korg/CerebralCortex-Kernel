@@ -148,9 +148,9 @@ if __name__ == "__main__":
     data_all = CC.get_stream(input_stream_name)
     data_map_stream = CC.get_stream(map_stream_name)
     unique_encounters = generate_visualization_hourly(data_all,data_map_stream,start_time,end_time)
-    unique_encounters = drop_centroid_columns(unique_encounters, centroid_present=True)
     hourly_stats = count_encounters_per_cluster(unique_encounters)
-    
+    unique_encounters = drop_centroid_columns(unique_encounters, centroid_present=True)
+
     metadata = generate_metadata_encounter()
     unique_encounters.metadata = metadata
     CC.save_stream(unique_encounters,overwrite=False)
