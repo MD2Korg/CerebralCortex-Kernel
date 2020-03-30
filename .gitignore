@@ -4,3 +4,5 @@ dist/
 __pycache__
 *.pyc
 *.pypirc
+/.idea/
+CerebralCortex-Kernel.iml
