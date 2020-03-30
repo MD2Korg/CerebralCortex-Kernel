@@ -122,8 +122,14 @@ def compute_encounters(data,start_time,end_time):
     data_result = remove_duplicate_encounters(data_clustered)
     return data_result
 
-def generate_visualization_hourly(CC,stream_name,start_time,end_time):
-    data_all = CC.get_stream(stream_name)
+def generate_visualization_hourly(CC,stream_name,map_stream_name,start_time,end_time):
+    data_all = CC.get_stream(stream_name).withColumnRenamed('avg_rssi','RSSI').withColumnRenamed('avg_distance','distance_estimate')
+    data_map_stream = CC.get_stream(map_stream_name).withColumnRenamed('user','participant_identifier').select(*['participant_identifier',
+                                                                                                                 'major',
+                                                                                                                 'minor']).dropDuplicates()
+    data_all = data_all.join(data_map_stream,on=['major','minor'],how='left').drop(*['major','minor'])
+    if 'os' not in data_all.columns:
+        data_all = data_all.withColumn('os',F.lit('android'))
     unique_encounters = compute_encounters(data_all,start_time=start_time,end_time=end_time) ## we need to save this datastream
     metadata = generate_metadata_encounter()
     save_data(CC,data_result=unique_encounters,centroid_present=True,metadata=metadata)
@@ -135,16 +141,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Hourly encounter calculation")
     parser.add_argument('-c', '--config_dir', help='CC Configuration directory path', required=True)
     parser.add_argument('-a', '--input_stream_name', help='Input Stream Name', required=True)
+    parser.add_argument('-b', '--input_map_stream_name', help='Input Map Stream Name', required=True)
     parser.add_argument('-s', '--start_time', help='Start time refers to start of hour in localtime datetime format', required=True)
     parser.add_argument('-e', '--end_time', help='End time refers to start of hour in localtime datetime format', required=True)
 
     args = vars(parser.parse_args())
     config_dir = str(args["config_dir"]).strip()
     input_stream_name = str(args["input_stream_name"]).strip()
+    map_stream_name = str(args["input_map_stream_name"]).strip()
     start_time = args['start_time']
     end_time = args['end_time']
     CC = make_CC_object(config_dir)
-    hourly_stats = generate_visualization_hourly(CC,input_stream_name,start_time,end_time)
+    hourly_stats = generate_visualization_hourly(CC,input_stream_name,map_stream_name,start_time,end_time)
     userid = start_time.strftime("%Y/%m/%d, %H:%M:%S")+'_to_'+ end_time.strftime("%Y/%m/%d, %H:%M:%S") ### user id is generated to be able to save the data
     hourly_stats = hourly_stats.withColumn('user',F.lit(userid)).withColumn('start_time',F.lit(end_time)).withColumn('end_time',F.lit(end_time))
     save_data(CC,hourly_stats,centroid_present=False,metadata=generate_metadata_hourly())
