@@ -199,9 +199,9 @@ if __name__ == "__main__":
     CC.save_stream(ds)
 
     ## Below part gives error, change needed so I am commenting it - Azim
-    # user_encounter_ds = get_user_encounter_count(encounter_data, start_time, end_time)
-    # md = generate_metadata_user_encounter_count()
-    # ds = DataStream(user_encounter_ds, md)
-    # CC.save_stream(ds,overwrite=False)
+    user_encounter_ds = get_encounter_count_all_user(encounter_data, data_all_users.select('user').distinct(), start_time, end_time)
+    md = generate_metadata_user_encounter_count()
+    ds = DataStream(user_encounter_ds, md)
+    CC.save_stream(ds,overwrite=False)
 
 
