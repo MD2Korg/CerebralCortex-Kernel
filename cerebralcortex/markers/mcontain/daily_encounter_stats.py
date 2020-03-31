@@ -25,7 +25,7 @@
 
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata,DataDescriptor, ModuleMetadata
 from cerebralcortex.algorithms.gps.clustering import cluster_gps
-from cerebralcortex.algorithms.bluetooth.encounter import get_user_encounter_count, get_notification_messages
+from cerebralcortex.algorithms.bluetooth.encounter import get_encounter_count_all_user, get_notification_messages
 from pyspark.sql import functions as F
 from cerebralcortex.kernel import Kernel, DataStream
 import argparse
