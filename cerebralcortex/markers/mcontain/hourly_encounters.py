@@ -30,6 +30,10 @@ from cerebralcortex.algorithms.gps.clustering import cluster_gps
 from pyspark.sql import functions as F
 from cerebralcortex.kernel import Kernel
 import argparse
+from datetime import timedelta
+from dateutil import parser as dateparser
+from cerebralcortex.algorithms.visualization.visualization import create_geojson_features
+
 
 def generate_metadata_hourly():
     stream_metadata = Metadata()
@@ -156,6 +160,9 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--start_time', help='Start time refers to start of hour in string format %Y-%m-%d %H:%m', required=True)
     parser.add_argument('-e', '--end_time', help='End time refers to start of hour in string format %Y-%m-%d %H:%m', required=True)
     parser.add_argument('-l', '--ltime', help='if set to True then computation would be done on localtime or timestamp otherwise', required=True)
+    parser.add_argument('-s', '--sdir', help='Output Directory to save the visualization html', required=True)
+    parser.add_argument('-t', '--threshold', help='Threshold on total_encounters for visualization', required=True)
+
 
     args = vars(parser.parse_args())
     config_dir = str(args["config_dir"]).strip()
@@ -164,6 +171,8 @@ if __name__ == "__main__":
     start_time = args['start_time']
     end_time = args['end_time']
     ltime = args['ltime']
+    sdir = args['sdir']
+    threshold = args['threshold']
 
     CC = Kernel(config_dir, study_name='mcontain') ## need to change the study name
     data_all = CC.get_stream(input_stream_name)
@@ -183,4 +192,24 @@ if __name__ == "__main__":
     hourly_stats.metadata = generate_metadata_hourly()
     CC.save_stream(hourly_stats,overwrite=False)
     print('Computation done')
+
+    datetime_format = '%Y-%m-%d %H:%m'
+    stream_name_stats = generate_metadata_hourly().name
+    hourly_visualization_stats = CC.get_stream(stream_name_stats)
+    hourly_visualization_stats = hourly_visualization_stats.filter(hourly_visualization_stats<F.lit(end_time))
+    start_time = dateparser.parse(end_time) - timedelta(hours=24)
+    start_time = start_time.strftime(datetime_format)
+    hourly_visualization_stats = hourly_visualization_stats.filter(hourly_visualization_stats>F.lit(start_time))
+    visualization_stats = hourly_visualization_stats.toPandas()
+    visualization_stats = visualization_stats[visualization_stats.total_encounters>threshold]
+    html_file = create_geojson_features(visualization_stats,day=end_time.split(' ')[0],
+                                        time_column_name='start_time',
+                                        latitude_columns_name='latitude',
+                                        longitude_column_name='longitude',
+                                        visualize_column_name='total_encounters')
+    if sdir[-1] != '/':
+        sdir+='/'
+    html_file.save(sdir+end_time)
+
+
 
