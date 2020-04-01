@@ -155,7 +155,7 @@ if __name__ == "__main__":
     parser.add_argument('-b', '--input_map_stream_name', help='Input Map Stream Name', required=True)
     parser.add_argument('-s', '--start_time', help='Start time refers to start of hour in string format %Y-%m-%d %H:%m', required=True)
     parser.add_argument('-e', '--end_time', help='End time refers to start of hour in string format %Y-%m-%d %H:%m', required=True)
-    parser.add_argument('-l', '--ltime', help='A boolean indicating what is the format of datetime in start_time and end_time', required=True)
+    parser.add_argument('-l', '--ltime', help='if set to True then computation would be done on localtime or timestamp otherwise', required=True)
 
     args = vars(parser.parse_args())
     config_dir = str(args["config_dir"]).strip()
