@@ -153,8 +153,8 @@ if __name__ == "__main__":
     parser.add_argument('-c', '--config_dir', help='CC Configuration directory path', required=True)
     parser.add_argument('-a', '--input_stream_name', help='Input Stream Name', required=True)
     parser.add_argument('-b', '--input_map_stream_name', help='Input Map Stream Name', required=True)
-    parser.add_argument('-s', '--start_time', help='Start time refers to start of hour in localtime datetime format', required=True)
-    parser.add_argument('-e', '--end_time', help='End time refers to start of hour in localtime datetime format', required=True)
+    parser.add_argument('-s', '--start_time', help='Start time refers to start of hour in string format %Y-%m-%d %H:%m', required=True)
+    parser.add_argument('-e', '--end_time', help='End time refers to start of hour in string format %Y-%m-%d %H:%m', required=True)
     parser.add_argument('-l', '--ltime', help='A boolean indicating what is the format of datetime in start_time and end_time', required=True)
 
     args = vars(parser.parse_args())
@@ -178,8 +178,8 @@ if __name__ == "__main__":
     print('Hourly encounters saved from', start_time, 'to', end_time)
 
     print('Saving hourly stats now')
-    userid = start_time.strftime("%Y/%m/%d, %H:%M:%S")+'_to_'+ end_time.strftime("%Y/%m/%d, %H:%M:%S") ### user id is generated to be able to save the data
-    hourly_stats = hourly_stats.withColumn('user',F.lit(userid)).withColumn('start_time',F.lit(end_time)).withColumn('end_time',F.lit(end_time))
+    userid = start_time +'_to_'+ end_time ### user id is generated to be able to save the data
+    hourly_stats = hourly_stats.withColumn('user',F.lit(userid)).withColumn('start_time',F.lit(end_time).cast('timestamp')).withColumn('end_time',F.lit(end_time).cast('timestamp'))
     hourly_stats.metadata = generate_metadata_hourly()
     CC.save_stream(hourly_stats,overwrite=False)
     print('Computation done')

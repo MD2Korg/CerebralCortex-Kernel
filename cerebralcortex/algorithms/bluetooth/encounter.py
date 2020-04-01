@@ -81,10 +81,7 @@ def bluetooth_encounter(data,
             data = data_filtered
             k = 0
             i = data.shape[0]
-            if ltime:
-                c = 'localtime'
-            else:
-                c = 'timestamp'
+            c = 'localtime'
             data_all.append([data_filtered['user'].iloc[k],data['major'].iloc[k],data['minor'].iloc[k],data[c].iloc[k],
                              data[c].iloc[i-1],data['version'].iloc[k],data['distance_estimate'].iloc[k:i].values,data['timestamp'].iloc[int((i+k)/2)],
                              data['localtime'].iloc[int((i+k)/2)],np.mean(data['latitude'].values[k:i]),
@@ -95,9 +92,9 @@ def bluetooth_encounter(data,
     print(st,et)
     data = data.withColumn('time',F.col('timestamp').cast('double'))
     if ltime:
-        data_filtered = data.filter((data.localtime>=st) & (data.timestamp<et))
+        data_filtered = data.filter((data.localtime>=F.lit(st)) & (data.localtime<F.lit(et)))
     else:
-        data_filtered = data.filter((data.timestamp>=st) & (data.timestamp<et))
+        data_filtered = data.filter((data.timestamp>=F.lit(st)) & (data.timestamp<F.lit(et)))
     # print(data_filtered.count(),'filtered data count')
     data_result = data_filtered.groupBy(['user','major','minor','version']).apply(get_enconters)
     return DataStream(data=data_result, metadata=Metadata())
