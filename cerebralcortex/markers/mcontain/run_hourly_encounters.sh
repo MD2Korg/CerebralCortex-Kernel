@@ -14,7 +14,7 @@ export PYSPARK_PYTHON=/usr/bin/python3.6
 
 # Update path to libhdfs.so if it's different than /usr/local/hadoop/lib/native/libhdfs.so
 # uncooment it if using HDFS as NoSQl storage
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/hadoop/lib/native/libhdfs.so
+export LD_LIBRARY_PATH="/usr/local/hadoop/lib/native/libhdfs.so"
 
 #Spark path, uncomment if spark home is not exported else where.
 #export SPARK_HOME=/home/ali/spark/spark-2.2.1-bin-hadoop2.7/
@@ -32,14 +32,14 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/hadoop/lib/native/libhdfs.so
 CONFIG_DIRECTORY="/cerebralcortex/code/config/cc3_conf/"
 INPUT_STREAM_NAME="beacon--org.md2k.mcontain--phone"
 INPUT_MAP_STREAM_NAME="mcontain_user_mapping"
-START_TIME=date -d '1 hour ago' "+%Y-%m-%d %H:%M:%S"
-END_TIME=date "+%Y-%m-%d %H:%M:%S"
-LOCALTIME=True
+START_TIME='2020-03-31 12:00' #date -d '1 hour ago' "+%Y-%m-%d %H:%M:%S"
+END_TIME='2020-03-31 13:00' #date "+%Y-%m-%d %H:%M:%S"
+LTIME=1
 
 # spark master. This will work on local machine only. In case of cloud, provide spark master node URL:port.
 SPARK_MASTER="local[30]"
 SPARK_UI_PORT=4087
 
-PY_FILES="/home/cnali/code/CerebralCortex-Kernel/dist/cerebralcortex_kernel-3.0.0.post26-py3.6.egg"
+PY_FILES="/home/cnali/code/CerebralCortex-Kernel/dist/cerebralcortex_kernel-3.1.1.post3-py3.6.egg"
 
-spark-submit --master $SPARK_MASTER --conf spark.ui.port=$SPARK_UI_PORT --total-executor-cores 1 --driver-memory 1g --executor-memory 1g --py-files $PY_FILES main.py -c $CONFIG_DIRECTORY -a $INPUT_STREAM_NAME -b $INPUT_MAP_STREAM_NAME -s $START_TIME -e $END_TIME -l $LOCALTIME
+spark-submit --master $SPARK_MASTER --conf spark.ui.port=$SPARK_UI_PORT --total-executor-cores 1 --driver-memory 1g --executor-memory 1g --py-files $PY_FILES hourly_encounters.py -c $CONFIG_DIRECTORY -a $INPUT_STREAM_NAME -b $INPUT_MAP_STREAM_NAME -s "$START_TIME" -e "$END_TIME" -l $LTIME
