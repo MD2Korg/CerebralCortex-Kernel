@@ -342,7 +342,7 @@ if __name__ == "__main__":
     all_encounter_users_count = all_encounter_users.groupBy('user').sum().withColumnRenamed('sum(count)','count').select('user','count')
     all_users_count = data_all_users.select('user').distinct().withColumn('count1',F.lit(0))
     all_users = all_users_count.join(all_encounter_users_count,how='left',on=['user']).na.fill(0).withColumn("encounter_count",F.greatest('count','count1')).select('user',"encounter_count")
-    all_users = get_time_columns(all_users,start_time,utc_offset)
+    all_users = get_time_columns(all_users,start_time,end_time,utc_offset)
     metadata_user_encounter = generate_metadata_user_encounter_count()
     all_users = all_users.withColumn('version',F.lit(0))
     all_users = DataStream(all_users, metadata_user_encounter)
