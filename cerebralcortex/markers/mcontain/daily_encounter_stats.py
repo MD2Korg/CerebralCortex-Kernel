@@ -25,7 +25,7 @@
 
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata,DataDescriptor, ModuleMetadata
 from cerebralcortex.algorithms.gps.clustering import cluster_gps
-from cerebralcortex.algorithms.bluetooth.encounter import get_user_encounter_count, get_notification_messages
+from cerebralcortex.algorithms.bluetooth.encounter import get_encounter_count_all_user, get_notification_messages
 from pyspark.sql import functions as F
 from cerebralcortex.kernel import Kernel, DataStream
 import argparse
@@ -117,29 +117,28 @@ def generate_metadata_user_encounter_count():
             "Md Shiplu Hawlader", "shiplu.cse.du@gmail.com").set_version(1))
     return stream_metadata
 
-def make_CC_object(config_dir="/home/jupyter/cc3_conf/",
-                   study_name='mcontain'):
-    CC = Kernel(config_dir, study_name=study_name)
-    return CC
+# def make_CC_object(config_dir="/home/jupyter/cc3_conf/",
+#                    study_name='mcontain'):
+#     CC = Kernel(config_dir, study_name=study_name)
+#     return CC
 
-def save_data(CC,data_result,centroid_present=True,metadata=None):
-    if centroid_present:
-        columns = ['centroid_id',
-                   'centroid_latitude',
-                   'centroid_longitude',
-                   'centroid_area']
-        for c in columns:
-            if c in data_result.columns:
-                data_result = data_result.drop(*[c])
-    data_result.metadata = metadata
-    CC.save_stream(data_result,overwrite=False)
-    return True
+# def save_data(CC,data_result,centroid_present=True,metadata=None):
+#     if centroid_present:
+#         columns = ['centroid_id',
+#                    'centroid_latitude',
+#                    'centroid_longitude',
+#                    'centroid_area']
+#         for c in columns:
+#             if c in data_result.columns:
+#                 data_result = data_result.drop(*[c])
+#     data_result.metadata = metadata
+#     CC.save_stream(data_result,overwrite=False)
+#     return True
 
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Daily encounter stats calculation")
-
     parser.add_argument('-c', '--config_dir', help='CC Configuration directory path', required=True)
     parser.add_argument('-a', '--input_stream_name_hour', help='Input Stream Name', required=True)
     parser.add_argument('-b', '--input_stream_name_encounter', help='Input Stream Name', required=True)
@@ -149,13 +148,13 @@ if __name__ == "__main__":
 
     args = vars(parser.parse_args())
     config_dir = str(args["config_dir"]).strip()
-    hour_stream_name = str(args["input_stream_name"]).strip()
-    encounter_stream_name = str(args["input_stream_name"]).strip()
-    user_stream_name = str(args["input_stream_name"]).strip()
+    hour_stream_name = str(args["input_stream_name_hour"]).strip()
+    encounter_stream_name = str(args["input_stream_name_encounter"]).strip()
+    user_stream_name = str(args["input_stream_name_user"]).strip()
     start_time = args['start_time']
     end_time = args['end_time']
 
-    CC = make_CC_object(config_dir)
+    CC = Kernel(config_dir, study_name='default')  ## need to change the study name when
     data = CC.get_stream(hour_stream_name)
     metadata = data.metadata
     data_filtered = data._data.filter((F.col('start_time')>=start_time) & (F.col('start_time')<end_time))
@@ -168,17 +167,18 @@ if __name__ == "__main__":
 
     encounter_data = CC.get_stream(encounter_stream_name)
     encounter_data = encounter_data._data.filter((F.col('localtime')>=start_time) & (F.col('localtime')<end_time))
-    encounter_covid_data = encounter_data._data.filter(F.col('covid')>0)
+    encounter_covid_data = encounter_data.filter(F.col('covid')>0)
 
 
     number_of_app_users = data_all_users.select('user').distinct().count()
+    # number_of_app_users = 1000 ## just to test
     max_concurrent_encounters = data_max.toPandas().max()['sum(total_encounters)']
     proximity_encounter_per_user = encounter_data.count()*2/number_of_app_users
     total_covid_encounters = encounter_covid_data.count()*2
 
     userid = start_time.strftime("%Y/%m/%d, %H:%M:%S")+'_to_'+ end_time.strftime("%Y/%m/%d, %H:%M:%S") ### user id is generated to be able to save the data
     localtime = start_time
-    timestamp = start_time.astimezone(pytz.UTC)
+    timestamp = start_time.astimezone(pytz.UTC) ##convert to UTC
     version = 1
     df = pd.DataFrame([[userid,version,localtime,timestamp,
                          start_time,end_time,number_of_app_users,
@@ -188,16 +188,20 @@ if __name__ == "__main__":
                                 'encounter_per_user','total_covid_encounters','maximum_concurrent_encounters'])
     data = CC.sqlContext.createDataFrame(df)
     data_daily = DataStream(data=data,metadata=Metadata())
-    save_data(CC,data_daily,centroid_present=False,metadata=generate_metadata_dailystats())
+    data_daily.metadata = generate_metadata_dailystats()
+    CC.save_stream(data_daily,overwrite=False)
+
 
     ## written by shiplu
     notification_ds = get_notification_messages(encounter_data, datetime(start_time.year, start_time.month, start_time.day))
     md = generate_metadata_notif()
     ds = DataStream(notification_ds, md)
     CC.save_stream(ds)
-    user_encounter_ds = get_user_encounter_count(encounter_data, start_time, end_time)
+
+    ## Below part gives error, change needed so I am commenting it - Azim
+    user_encounter_ds = get_encounter_count_all_user(encounter_data, data_all_users.select('user').distinct(), start_time, end_time)
     md = generate_metadata_user_encounter_count()
     ds = DataStream(user_encounter_ds, md)
-    CC.save_stream(ds)
+    CC.save_stream(ds,overwrite=False)
 
 
