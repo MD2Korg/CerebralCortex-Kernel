@@ -255,13 +255,13 @@ def color(intensity,
     '''
     sets color intensity based on number of encounters for icon markers
     '''
-    col = ''
+    col = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png'
     if low_threshold<= intensity< medium_threshold:
-        col = 'marker-icon-green.png'
+        col = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png'
     elif medium_threshold<=intensity<high_threshold:
-        col = 'marker-icon-yellow.png'
+        col = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png'
     elif intensity>=high_threshold:
-        col = 'marker-icon-red.png'
+        col = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png'
     return col
 
 

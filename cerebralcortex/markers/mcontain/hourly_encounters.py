@@ -188,7 +188,7 @@ if __name__ == "__main__":
 
     print('Saving hourly stats now')
     userid = start_time +'_to_'+ end_time ### user id is generated to be able to save the data
-    hourly_stats = hourly_stats.withColumn('user',F.lit(userid)).withColumn('start_time',F.lit(end_time).cast('timestamp')).withColumn('end_time',F.lit(end_time).cast('timestamp'))
+    hourly_stats = hourly_stats.withColumn('user',F.lit(userid)).withColumn('start_time',F.lit(start_time).cast('timestamp')).withColumn('end_time',F.lit(end_time).cast('timestamp'))
     hourly_stats.metadata = generate_metadata_hourly()
     CC.save_stream(hourly_stats,overwrite=False)
     print('Computation done')
@@ -196,20 +196,21 @@ if __name__ == "__main__":
     datetime_format = '%Y-%m-%d %H:%m'
     stream_name_stats = generate_metadata_hourly().name
     hourly_visualization_stats = CC.get_stream(stream_name_stats)
-    hourly_visualization_stats = hourly_visualization_stats.filter(hourly_visualization_stats<F.lit(end_time))
+    hourly_visualization_stats = hourly_visualization_stats.filter(hourly_visualization_stats.start_time<F.lit(end_time))
     start_time = dateparser.parse(end_time) - timedelta(hours=24)
     start_time = start_time.strftime(datetime_format)
-    hourly_visualization_stats = hourly_visualization_stats.filter(hourly_visualization_stats>F.lit(start_time))
+    hourly_visualization_stats = hourly_visualization_stats.filter(hourly_visualization_stats.start_time>F.lit(start_time))
     visualization_stats = hourly_visualization_stats.toPandas()
-    visualization_stats = visualization_stats[visualization_stats.total_encounters>threshold]
-    html_file = create_geojson_features(visualization_stats,day=end_time.split(' ')[0],
-                                        time_column_name='start_time',
-                                        latitude_columns_name='latitude',
-                                        longitude_column_name='longitude',
-                                        visualize_column_name='total_encounters')
-    if sdir[-1] != '/':
-        sdir+='/'
-    html_file.save(sdir+end_time)
+    visualization_stats = visualization_stats[visualization_stats.total_encounters>=threshold]
+    if visualization_stats.shape[0]>0:
+        html_file = create_geojson_features(visualization_stats,day=end_time.split(' ')[0],
+                                            time_column_name='start_time',
+                                            latitude_columns_name='latitude',
+                                            longitude_column_name='longitude',
+                                            visualize_column_name='total_encounters')
+        if sdir[-1] != '/':
+            sdir+='/'
+        html_file.save(sdir+end_time)
 
 
 
