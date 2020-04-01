@@ -25,7 +25,7 @@
 
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata,DataDescriptor, ModuleMetadata
 from cerebralcortex.algorithms.gps.clustering import cluster_gps
-from cerebralcortex.algorithms.bluetooth.encounter import get_user_encounter_count, get_notification_messages
+from cerebralcortex.algorithms.bluetooth.encounter import get_encounter_count_all_user, get_notification_messages
 from pyspark.sql import functions as F
 from cerebralcortex.kernel import Kernel, DataStream
 import argparse
@@ -199,9 +199,9 @@ if __name__ == "__main__":
     CC.save_stream(ds)
 
     ## Below part gives error, change needed so I am commenting it - Azim
-    # user_encounter_ds = get_user_encounter_count(encounter_data, start_time, end_time)
-    # md = generate_metadata_user_encounter_count()
-    # ds = DataStream(user_encounter_ds, md)
-    # CC.save_stream(ds,overwrite=False)
+    user_encounter_ds = get_encounter_count_all_user(encounter_data, data_all_users.select('user').distinct(), start_time, end_time)
+    md = generate_metadata_user_encounter_count()
+    ds = DataStream(user_encounter_ds, md)
+    CC.save_stream(ds,overwrite=False)
 
 

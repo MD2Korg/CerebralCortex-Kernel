@@ -30,7 +30,8 @@ from pyspark.sql import functions as F
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 import pandas as pd, numpy as np
-from datetime import datetime
+from datetime import datetime, date, timedelta
+import pytz
 
 
 
@@ -209,7 +210,7 @@ def get_notification_messages(ds, day, day_offset=5):
     ds = ds.filter(F.udf(lambda x: datetime(x.year, x.month, x.day+day_offset) >= day, BooleanType())(F.col('timestamp')))
     ds1 = ds.filter('covid==1').select(F.col('participant_identifier').alias('user'), F.col('timestamp'), F.col('localtime'))
     ds2 = ds.filter('covid==2').select(F.col('user'), F.col('timestamp'), F.col('localtime'))
-    merged_ds = ds1.union(ds2)
+    merged_ds = ds1.unionByName(ds2)
     notif = merged_ds.withColumn('day', F.udf(lambda x: datetime(x.year, x.month, x.day), TimestampType())(F.col('localtime'))) \
         .withColumn('message', F.udf(lambda x: 'On '+x.strftime('%B %d, %Y')+' you were in close proximity of a COVID-19 positive individual for 10 minutes or longer', StringType())('localtime')) \
         .withColumn('time_offset', F.col('localtime').cast(LongType())-F.col('timestamp').cast(LongType())).drop('timestamp').drop_duplicates().withColumn('timestamp', F.lit(F.current_timestamp())).drop('localtime') \
@@ -217,26 +218,37 @@ def get_notification_messages(ds, day, day_offset=5):
     return notif
 
 
-def get_user_encounter_count(ds, user_id, start_time, end_time):
-    """
+def get_encounter_count_all_user(data_ds, user_list_ds, start_time, end_time):
+    data_ds = data_ds.filter((data_ds.localtime>=start_time)&(data_ds.localtime<=end_time))
+    pdf = user_list_ds.toPandas()
+    cnt_ds = None
+    for idx, row in pdf.iterrows():
+        user_id = row['user']
+        ds = data_ds.filter((data_ds.user==user_id)|(data_ds.participant_identifier==user_id))
+        cnt = ds.count()
+        if cnt != 0:
+            ds = ds.limit(1).select(ds.timestamp, ds.localtime, ds.user, ds.version).withColumn('encounter_count', F.lit(cnt))
+            ds = ds.withColumn('time_offset', F.col('localtime').cast(DoubleType())-F.col('timestamp').cast(DoubleType())).drop('timestamp', 'localtime').drop_duplicates().withColumn('timestamp', F.lit(F.current_timestamp())) \
+                .withColumn('localtime', (F.col('timestamp').cast(DoubleType())+F.col('time_offset')).cast(TimestampType())).drop('time_offset').withColumn('start_time', F.lit(start_time)).withColumn('end_time', F.lit(end_time))
+            if cnt_ds is None:
+                cnt_ds = ds
+            else:
+                cnt_ds = cnt_ds.unionByName(ds)
 
-    :param ds: Input Datastream
-    :param user_id: the user id of the participant whom the encounters are to be calculated
-    :param start_time: start time (datetime object) of the calculation
-    :param end_time: end time of the calculation
-    :return:
-    """
-    ds = ds.filter((ds.localtime >= start_time) & (ds.localtime <= end_time))
-    ds = ds.filter((ds.user == user_id) | (ds.participant_identifier == user_id))
-    cnt = ds.count()
-    ds = ds.limit(1).select(ds.timestamp, ds.localtime, ds.user, ds.version).withColumn('encounter_count', F.lit(cnt))
-    ds = ds.withColumn('time_offset', F.col('localtime').cast(LongType())-F.col('timestamp').cast(LongType()))\
-        .drop('timestamp', 'localtime').drop_duplicates().withColumn('timestamp', F.lit(F.current_timestamp())) \
-        .withColumn('localtime', (F.col('timestamp').cast(LongType())+F.col('time_offset')).cast(TimestampType()))\
-        .drop('time_offset').withColumn('start_time', F.lit(start_time)).withColumn('end_time', F.lit('end_time'))
-    return ds
+    if cnt_ds is None:
+        tz = pytz.timezone('US/Central')
+        tz_utc = pytz.timezone('UTC')
+        tz_d = datetime.now(tz).replace(tzinfo=None)
+        u_d = datetime.now(tz_utc).replace(tzinfo=None)
+        time_offset = (u_d - tz_d).seconds
+        no_cnt_ds = user_list_ds.select('user')
+    else:
+        time_offset = cnt_ds.limit(1).select((F.col('timestamp').cast(DoubleType())-F.col('localtime').cast(DoubleType())).alias('time_diff')).collect()[0].asDict()['time_diff']
+        no_cnt_ds = user_list_ds.select('user').subtract(cnt_ds.select('user'))
 
-
-
-
-
+    no_cnt_ds = no_cnt_ds.withColumn('start_time', F.lit(start_time)).withColumn('end_time', F.lit(end_time)).withColumn('localtime', F.lit(start_time)) \
+        .withColumn('timestamp', (F.col('localtime').cast(DoubleType())+F.lit(time_offset)).cast(TimestampType())).withColumn('version', F.lit(1)) \
+        .withColumn('encounter_count', F.lit(0))
+    if cnt_ds is None:
+        return no_cnt_ds
+    return cnt_ds.unionByName(no_cnt_ds)
