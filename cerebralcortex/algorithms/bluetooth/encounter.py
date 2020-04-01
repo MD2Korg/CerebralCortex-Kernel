@@ -34,13 +34,14 @@ from datetime import datetime, date, timedelta
 import pytz
 
 
+
 def bluetooth_encounter(data,
                         st:datetime,
                         et:datetime,
-                        distance_threshold=4,
-                        n_rows_threshold = 3,
+                        distance_threshold=12,
+                        n_rows_threshold = 8,
                         time_threshold=10*60,
-                        localtime=True):
+                        ltime=False):
     """
 
     :param ds: Input Datastream
@@ -53,23 +54,68 @@ def bluetooth_encounter(data,
     :param count_threshold: Threshold on count
     :return: A Sparse representation of the Bluetooth Encounter
     """
-    def check_(arr,indexing,time_threshold):
-        check = False
-        for m in range(len(indexing)):
-            if m==0:
-                temp_arr = arr[indexing[m]:indexing[m+1]]
-            elif m<len(indexing)-1:
-                temp_arr = arr[(indexing[m]+1):indexing[m+1]]
-            else:
-                temp_arr = arr[(indexing[m]+1):]
-            if len(temp_arr)>n_rows_threshold and temp_arr[-1] - temp_arr[0]>=time_threshold:
-                check = True
-        return check
-
     schema = StructType([StructField('timestamp', TimestampType()),
                          StructField('localtime', TimestampType()),
                          StructField('start_time', TimestampType()),
                          StructField('end_time', TimestampType()),
+                         StructField('user', StringType()),
+                         StructField('version', IntegerType()),
+                         StructField('latitude', DoubleType()),
+                         StructField('distances', ArrayType(DoubleType())),
+                         StructField('longitude', DoubleType()),
+                         StructField('average_count', DoubleType()),
+                         StructField('major',LongType()),
+                         StructField('minor',LongType())])
+
+    @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+    def get_enconters(data):
+        if data.shape[0]<n_rows_threshold:
+            return pd.DataFrame([],columns = ['user','major','minor','start_time','end_time','version',
+                                              'distances','timestamp','localtime','latitude','longitude','average_count'])
+        data = data.sort_values('time').reset_index(drop=True)
+        data_filtered = data[data.distance_estimate<distance_threshold]
+        if data_filtered.shape[0]<n_rows_threshold or data_filtered['time'].iloc[data_filtered.shape[0]-1] - data_filtered['time'].iloc[0]<time_threshold:
+            return pd.DataFrame([],columns = ['user','major','minor','start_time','end_time','version',
+                                              'distances','timestamp','localtime','latitude','longitude','average_count'])
+        else:
+            data_all = []
+            data = data_filtered
+            k = 0
+            i = data.shape[0]
+            if ltime:
+                c = 'localtime'
+            else:
+                c = 'timestamp'
+            data_all.append([data_filtered['user'].iloc[k],data['major'].iloc[k],data['minor'].iloc[k],data[c].iloc[k],
+                             data[c].iloc[i-1],data['version'].iloc[k],data['distance_estimate'].iloc[k:i].values,data['timestamp'].iloc[int((i+k)/2)],
+                             data['localtime'].iloc[int((i+k)/2)],np.mean(data['latitude'].values[k:i]),
+                             np.mean(data['longitude'].values[k:i]),np.mean(data['count'].values[k:i])])
+            return pd.DataFrame(data_all,columns = ['user','major','minor','start_time','end_time','version',
+                                                    'distances','timestamp','localtime','latitude','longitude','average_count'])
+
+    print(st,et)
+    data = data.withColumn('time',F.col('timestamp').cast('double'))
+    if ltime:
+        data_filtered = data.filter((data.localtime>=st) & (data.timestamp<et))
+    else:
+        data_filtered = data.filter((data.timestamp>=st) & (data.timestamp<et))
+    # print(data_filtered.count(),'filtered data count')
+    data_result = data_filtered.groupBy(['user','major','minor','version']).apply(get_enconters)
+    return DataStream(data=data_result, metadata=Metadata())
+
+def remove_duplicate_encounters(ds,
+                                owner_name='user',
+                                transmitter_name='participant_identifier',
+                                start_time_name='start_time',
+                                end_time_name='end_time',
+                                centroid_id_name='centroid_id',
+                                distance_threshold=12):
+
+
+    schema = StructType([StructField('timestamp', TimestampType()),
+                         StructField('localtime', TimestampType()),
+                         StructField('start_time', DoubleType()),
+                         StructField('end_time', DoubleType()),
                          StructField('user', StringType()),
                          StructField('participant_identifier', StringType()),
                          StructField('version', IntegerType()),
@@ -78,110 +124,45 @@ def bluetooth_encounter(data,
                          StructField('distances', ArrayType(DoubleType())),
                          StructField('longitude', DoubleType()),
                          StructField('average_count', DoubleType()),
+                         StructField('centroid_longitude', DoubleType()),
+                         StructField('centroid_latitude', DoubleType()),
+                         StructField('centroid_id', IntegerType()),
+                         StructField('centroid_area', DoubleType()),
+                         StructField('distance_mean', DoubleType()),
+                         StructField('distance_std', DoubleType()),
+                         StructField('distance_count', DoubleType())
                          ])
-
-    @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-    def get_enconters(data):
-        if data.shape[0]<=n_rows_threshold:
-            return pd.DataFrame([],columns = ['user','participant_identifier','start_time','end_time','version',
-                                              'distances','timestamp','localtime','latitude','longitude','os','average_count'])
-        data = data.sort_values('timestamp').reset_index(drop=True)
-        data_all = []
-        for i,row in data.iterrows():
-            if i==0:
-                k = int(i)
-                start_time = row['time']
-                count = 0
-                indexing = [0]
-                arr = []
-            else:
-                if row['time'] - start_time < time_threshold/2:
-                    start_time = row['time']
-                    if row['distance_estimate']-distance_threshold>0:
-                        indexing.append(i-k)
-                    arr.append(row['time'])
-                    count+=1
-                else:
-                    if i-k>n_rows_threshold and data['time'].iloc[i]-data['time'].iloc[k]>=time_threshold:
-                        if len(indexing)<=1:
-                            check = True
-                        else:
-                            check = check_(arr,indexing,time_threshold)
-                        if check:
-                            data_all.append([data['user'].iloc[k],data['participant_identifier'].iloc[k],data['localtime'].iloc[k],
-                                             data['localtime'].iloc[i-1],data['version'].iloc[k],data['distance_estimate'].iloc[k:i].values,data['timestamp'].iloc[int((i+k)/2)],
-                                             data['localtime'].iloc[int((i+k)/2)],np.mean(data['latitude'].values[k:i]),
-                                             np.mean(data['longitude'].values[k:i]),data['os'].iloc[k],np.mean(data['count'].values[k:i])])
-                    count = 0
-                    k = i
-                    start_time = row['time']
-                    indexing = [0]
-                    arr = []
-        if count>0:
-            i = data.shape[0]-1
-            if i-k>n_rows_threshold and data['time'].iloc[i]-data['time'].iloc[k]>time_threshold:
-                if len(indexing)<=1:
-                    check = True
-                else:
-                    check = check_(arr,indexing,time_threshold)
-                if check:
-                    data_all.append([data['user'].iloc[k],data['participant_identifier'].iloc[k],data['localtime'].iloc[k],
-                                     data['localtime'].iloc[i-1],data['version'].iloc[k],data['distance_estimate'].iloc[k:i].values,data['timestamp'].iloc[int((i+k)/2)],
-                                     data['localtime'].iloc[int((i+k)/2)],np.mean(data['latitude'].values[k:i]),
-                                     np.mean(data['longitude'].values[k:i]),data['os'].iloc[k],np.mean(data['count'].values[k:i])])
-
-        return pd.DataFrame(data_all,columns = ['user','participant_identifier','start_time','end_time','version',
-                                                'distances','timestamp','localtime','latitude','longitude','os','average_count'])
-
-
-
-    data = data.withColumn('time',F.col('timestamp').cast('double'))
-    if localtime:
-        data_filtered = data._data.filter((data.localtime>=st) & (data.localtime<et))
-    else:
-        data_filtered = data._data.filter((data.timestamp>=st) & (data.timestamp<et))
-    data_result = data_filtered.groupBy(['user','participant_identifier','version']).apply(get_enconters)
-    return DataStream(data=data_result, metadata=Metadata())
-
-
-
-def remove_duplicate_encounters(ds,
-                                owner_name='user',
-                                transmitter_name='participant_identifier',
-                                start_time_name='start_time',
-                                end_time_name='end_time',
-                                centroid_id_name='centroid_id'):
-    schema = ds._data.schema
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     def remove_duplicates(data):
+        data['distance_mean'] = data['distances'].apply(lambda a:np.mean(a))
+        data['distance_std'] = data['distances'].apply(lambda a:np.std(a))
+        data['distance_count'] = data['distances'].apply(lambda a:len(np.array(a)[np.array(a)<distance_threshold]))
         if data.shape[0]<2:
             return data
         if len(np.intersect1d(data[owner_name].values,data[transmitter_name].values))==0:
-            data[start_time_name] = pd.to_datetime(data[start_time_name],unit='s')
-            data[end_time_name] = pd.to_datetime(data[end_time_name],unit='s')
             return data
-        data = data.sort_values(start_time_name).reset_index(drop=True)
+        data = data.sort_values('distance_mean').reset_index(drop=True)
         not_visited = []
         for i,row in data.iterrows():
             if i in not_visited:
                 continue
-            temp_df = data[data.participant_identifier.isin([row[owner_name]]) & data.user.isin([row[transmitter_name]]) & (~((data.start_time>=row[end_time_name]) | (data.end_time<row[start_time_name])))]
+            temp_df = data[data.participant_identifier.isin([row[owner_name],row[transmitter_name]]) & data.user.isin([row[owner_name],row[transmitter_name]])]
             if temp_df.shape[0]==0:
                 continue
             else:
-                not_visited+=list(temp_df.index.values)
+                indexes = [u for u in list(temp_df.index.values) if u!=i]
+                not_visited+=indexes
         data =  data[~data.index.isin(not_visited)]
-        data[start_time_name] = pd.to_datetime(data[start_time_name],unit='s')
-        data[end_time_name] = pd.to_datetime(data[end_time_name],unit='s')
         return data
 
-    ds = ds._data.withColumn(start_time_name,F.col(start_time_name).cast('double')).withColumn(end_time_name,F.col(end_time_name).cast('double'))
+    ds = ds.withColumn(start_time_name,F.col(start_time_name).cast('double')).withColumn(end_time_name,F.col(end_time_name).cast('double'))
     data = ds.groupBy([centroid_id_name,'version']).apply(remove_duplicates)
+    data = data.withColumn(start_time_name,F.col(start_time_name).cast('timestamp')).withColumn(end_time_name,F.col(end_time_name).cast('timestamp'))
     data = data.withColumn('covid',F.lit(0))
     return DataStream(data=data, metadata=Metadata())
 
 
-def count_encounters_per_cluster(ds):
+def count_encounters_per_cluster(ds,multiplier=10):
     schema = StructType([StructField('timestamp', TimestampType()),
                          StructField('localtime', TimestampType()),
                          StructField('version', IntegerType()),
@@ -190,6 +171,7 @@ def count_encounters_per_cluster(ds):
                          StructField('n_users', IntegerType()),
                          StructField('total_encounters', DoubleType()),
                          StructField('avg_encounters', DoubleType()),
+                         StructField('normalized_total_encounters', DoubleType())
                          ])
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     def count_encounters(data):
@@ -205,11 +187,13 @@ def count_encounters_per_cluster(ds):
         total_encounters = data.groupby('user',as_index=False).sum()['count'].sum() + data.groupby('participant_identifier',as_index=False).sum()['count'].sum()
         average_encounter = (total_encounters)/len(unique_users)
         total_encounters = data.shape[0]
+        normalized_total_encounters = total_encounters*multiplier/data['centroid_area'].iloc[0]
         timestamp = data['timestamp'].iloc[data.shape[0]//2]
         localtime = data['localtime'].iloc[data.shape[0]//2]
         version = data['version'].iloc[0]
-        return pd.DataFrame([[version,centroid_latitude,centroid_longitude,len(unique_users),total_encounters,average_encounter,timestamp,localtime]],
-                            columns = ['version','latitude','longitude','n_users',
+        return pd.DataFrame([[normalized_total_encounters,version,centroid_latitude,centroid_longitude,len(unique_users),
+                              total_encounters,average_encounter,timestamp,localtime]],
+                            columns = ['normalized_total_encounters','version','latitude','longitude','n_users',
                                        'total_encounters','avg_encounters','timestamp','localtime'])
     data = ds._data.groupBy(['centroid_id','version']).apply(count_encounters)
 
