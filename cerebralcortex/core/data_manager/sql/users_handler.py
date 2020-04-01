@@ -174,14 +174,14 @@ class UserHandler():
         else:
             return {}
 
-    def login_user(self, username: str, password: str, encrypted_password:bool=False) -> dict:
+    def login_user(self, username: str, password: str, encrypt_password:bool=False) -> dict:
         """
         Authenticate a user based on username and password and return an auth token
 
         Args:
             username (str):  username of a user
             password (str): password of a user
-            encrypted_password (str): is password encrypted or not. mCerebrum sends encrypted passwords
+            encrypt_password (str): is password encrypted or not. mCerebrum sends encrypted passwords
         Raises:
             ValueError: User name and password cannot be empty/None.
         Returns:
@@ -194,7 +194,7 @@ class UserHandler():
         if not username or not password:
             raise ValueError("User name and password cannot be empty/None.")
 
-        if encrypted_password:
+        if encrypt_password:
             password = self.encrypt_user_password(password)
 
         qry = "select * from user where username=%s and password=%s and study_name=%s"

@@ -310,7 +310,7 @@ class Kernel:
 
     ################### USER RELATED METHODS ##################################
 
-    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict, encrypted_password:bool=False)->bool:
+    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict, encrypt_password:bool=False)->bool:
         """
         Create a user in SQL storage if it doesn't exist
 
@@ -320,14 +320,14 @@ class Kernel:
             user_role (str): role of a user
             user_metadata (dict): metadata of a user
             user_settings (dict): user settings, mCerebrum configurations of a user
-            encrypted_password (bool): encrypt password if set to true
+            encrypt_password (bool): encrypt password if set to true
         Returns:
             bool: True if user is successfully registered or throws any error in case of failure
         Raises:
             ValueError: if selected username is not available
             Exception: if sql query fails
         """
-        return self.SqlData.create_user( username, user_password, user_role, user_metadata, user_settings, encrypted_password)
+        return self.SqlData.create_user(username, user_password, user_role, user_metadata, user_settings, encrypt_password)
 
     def delete_user(self, username:str)->bool:
         """
@@ -452,14 +452,14 @@ class Kernel:
         """
         return self.SqlData.get_user_settings(username, auth_token)
 
-    def connect(self, username: str, password: str, encrypted_password:bool=False) -> dict:
+    def connect(self, username: str, password: str, encrypt_password:bool=False) -> dict:
         """
         Authenticate a user based on username and password and return an auth token
 
         Args:
             username (str):  username of a user
             password (str): password of a user
-            encrypted_password (str): is password encrypted or not. mCerebrum sends encrypted passwords
+            encrypt_password (str): is password encrypted or not. mCerebrum sends encrypted passwords
         Raises:
             ValueError: User name and password cannot be empty/None.
         Returns:
@@ -469,7 +469,7 @@ class Kernel:
             >>> CC.connect("nasir_ali", "2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234", True)
             >>> True
         """
-        return self.SqlData.login_user(username, password, encrypted_password)
+        return self.SqlData.login_user(username, password, encrypt_password)
 
     def is_auth_token_valid(self, username: str, auth_token: str, checktime:bool=False) -> bool:
         """
