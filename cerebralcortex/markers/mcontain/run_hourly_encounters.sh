@@ -35,6 +35,8 @@ INPUT_MAP_STREAM_NAME="mcontain_user_mapping"
 START_TIME='2020-03-31 12:00' #date -d '1 hour ago' "+%Y-%m-%d %H:%M:%S"
 END_TIME='2020-03-31 13:00' #date "+%Y-%m-%d %H:%M:%S"
 LTIME=1
+THRESHOLD = 5
+SDIR = 'PUT YOUR PATH HERE'
 
 # spark master. This will work on local machine only. In case of cloud, provide spark master node URL:port.
 SPARK_MASTER="local[30]"
@@ -42,4 +44,4 @@ SPARK_UI_PORT=4087
 
 PY_FILES="/home/cnali/code/CerebralCortex-Kernel/dist/cerebralcortex_kernel-3.1.1.post3-py3.6.egg"
 
-spark-submit --master $SPARK_MASTER --conf spark.ui.port=$SPARK_UI_PORT --total-executor-cores 1 --driver-memory 1g --executor-memory 1g --py-files $PY_FILES hourly_encounters.py -c $CONFIG_DIRECTORY -a $INPUT_STREAM_NAME -b $INPUT_MAP_STREAM_NAME -s "$START_TIME" -e "$END_TIME" -l $LTIME
+spark-submit --master $SPARK_MASTER --conf spark.ui.port=$SPARK_UI_PORT --total-executor-cores 1 --driver-memory 1g --executor-memory 1g --py-files $PY_FILES hourly_encounters.py -c $CONFIG_DIRECTORY -a $INPUT_STREAM_NAME -b $INPUT_MAP_STREAM_NAME -s "$START_TIME" -e "$END_TIME" -l $LTIME -s $SDIR -t THRESHOLD

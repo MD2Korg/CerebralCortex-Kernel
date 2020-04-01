@@ -1,5 +1,5 @@
 # Copyright (c) 2019, MD2K Center of Excellence
-# - Nasir Ali <nasir.ali08@gmail.com>
+# - Nasir Ali <nasir.ali08@gmail.com>, Md Azim Ullah <mullah@memphis.edu>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
