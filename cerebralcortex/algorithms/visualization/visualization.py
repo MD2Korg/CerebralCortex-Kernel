@@ -28,12 +28,12 @@
 
 
 import json
-
+import time
 from branca.element import CssLink, Figure, JavascriptLink, MacroElement
 
 from folium.folium import Map
 from folium.utilities import iter_points, none_max, none_min, parse_options
-
+import pandas as pd
 from jinja2 import Template
 import folium
 
@@ -264,6 +264,11 @@ def color(intensity,
         col = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png'
     return col
 
+def get_utcoffset():
+    ts = time.time()
+    utc_offset = (datetime.utcfromtimestamp(ts) -
+                  datetime.fromtimestamp(ts)).total_seconds()/3600
+    return utc_offset
 
 def create_geojson_features(df,
                             day,
@@ -277,12 +282,13 @@ def create_geojson_features(df,
     '''
     creates geojson features for timestamped geojson
     '''
+    df[time_column_name] = pd.to_datetime(df[time_column_name])
     lat = df[latitude_columns_name].mean()
     lon = df[longitude_column_name].mean()
-
+    offset = np.abs(get_utcoffset())
     features = []
     for lat, lan, intensity, time in zip(df[latitude_columns_name], df[longitude_column_name], df[visualize_column_name], df[time_column_name]):
-        time = str(time)
+        time = time.timestamp()*1000 + offset*3600*1000
         feature = {
             'type': 'Feature',
             'geometry': {
@@ -299,6 +305,8 @@ def create_geojson_features(df,
         features.append(feature)
     html_file = hourly_plotter(features, day, lat, lon)
     return html_file
+
+
 
 def hourly_plotter(features,
                    day,
@@ -320,7 +328,7 @@ def hourly_plotter(features,
         , auto_play=False
         , loop=False
         , max_speed=1
-        , date_options='MM-DD-YYYY hh:mm'
+        , date_options='MM/DD/YY h:00 A'
         , time_slider_drag_update=True
         , speed_slider=False
         , loop_button=False).add_to(m)
@@ -328,7 +336,7 @@ def hourly_plotter(features,
     html_element = '''
                     <div style="position: absolute; 
                                 top: 10px; right: 2px; height: 150px; 
-                                z-index:9999;font-size:20px; font-weight:bold;
+                                z-index:9999;font-size:14px; font-weight:bold;
                                 ">{}<br>
                     </div>
 
@@ -340,10 +348,6 @@ def hourly_plotter(features,
                                   Medium <i class="fa fa-map-marker fa-2x" style="color:#FFD326"></i><br>
                                   Low <i class="fa fa-map-marker fa-2x" style="color:#2AAD27"></i>
                     </div>
-
-
-
-                    '''.format("Last updated\n"+str(day))
+                    '''.format("Last updated<br>"+str(day))
     m.get_root().html.add_child(folium.Element(html_element))
     return m
-
