@@ -315,12 +315,12 @@ def hourly_plotter(features,
         {'type': 'FeatureCollection',
          'features': features}
         , period='PT1H'
-        , duration='PT1H'
+        , duration='PT59M'
         , add_last_point=True
         , auto_play=False
         , loop=False
         , max_speed=1
-        , date_options='HH:mm:ss'
+        , date_options='MM-DD-YYYY hh:mm'
         , time_slider_drag_update=True
         , speed_slider=False
         , loop_button=False).add_to(m)
@@ -343,7 +343,7 @@ def hourly_plotter(features,
 
 
 
-                    '''.format(str(day))
+                    '''.format("Last updated - "+str(day))
     m.get_root().html.add_child(folium.Element(html_element))
     return m
 
