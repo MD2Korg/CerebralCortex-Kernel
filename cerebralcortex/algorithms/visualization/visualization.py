@@ -296,12 +296,10 @@ def create_geojson_features(df,
                 'type': 'Point',
                 'coordinates': [lan, lat]
             },
-            'properties': {'time': time, 'icon': 'marker', 'iconstyle': {'iconUrl': color(intensity=intensity,
-                                                                                          low_threshold=low_threshold,
-                                                                                          medium_threshold=medium_threshold,
-                                                                                          high_threshold=high_threshold)}
-
-                           }
+            'properties': {'time':time,'icon':'marker',
+                           'iconstyle':{'iconUrl':color(intensity=intensity,low_threshold=low_threshold,
+                                                        medium_threshold=medium_threshold,high_threshold=high_threshold),
+                                                        'iconAnchor':[12.5,41]}}
         }
         features.append(feature)
     html_file = hourly_plotter(features, day, lat, lon)
