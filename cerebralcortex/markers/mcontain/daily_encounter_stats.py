@@ -210,6 +210,12 @@ def drop_centroid_columns(data_result, centroid_present=True):
     return data_result
 
 
+def assign_covid_user(data,covid_users):
+    if not isinstance(covid_users,list):
+        covid_users = [covid_users]
+    data = data.withColumn('covid',F.when(F.col('user').isin(covid_users), 1 ).when(F.col('participant_identifier').isin(covid_users), 2).otherwise(0))
+    return data
+
 def remove_duplicate_encounters_day(data):
     schema = StructType([StructField('timestamp', TimestampType()),
                          StructField('localtime', TimestampType()),
