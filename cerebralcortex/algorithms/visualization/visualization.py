@@ -343,7 +343,7 @@ def hourly_plotter(features,
 
 
 
-                    '''.format("Last updated - "+str(day))
+                    '''.format("Last updated\n"+str(day))
     m.get_root().html.add_child(folium.Element(html_element))
     return m
 
