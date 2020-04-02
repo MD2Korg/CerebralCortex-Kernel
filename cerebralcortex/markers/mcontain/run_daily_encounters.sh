@@ -30,12 +30,10 @@ export LD_LIBRARY_PATH="/usr/local/hadoop/lib/native/libhdfs.so"
 
 # directory path where all the CC configurations are stored
 CONFIG_DIRECTORY="/cerebralcortex/code/config/cc3_conf/"
-INPUT_STREAM_NAME="beacon--org.md2k.mcontain--phone"
-INPUT_MAP_STREAM_NAME="mcontain_user_mapping"
-START_TIME='202003311200' #date -d '1 hour ago' "+%Y-%m-%d %H:%M:%S"
-LTIME = 1
-THRESHOLD = 5
-SDIR = 'PUT YOUR PATH HERE' #directory to save the html file
+INPUT_STREAM_NAME_HOUR="mcontain-md2k--visualization-stats--time-window"
+INPUT_STREAM_NAME_ENCOUNTER="mcontain-md2k-encounter--bluetooth-gps"
+INPUT_STREAM_NAME_USER="heartbeat--org.md2k.mcontain--phone"
+START_TIME='202003310000' #date -d '1 hour ago' "+%Y-%m-%d %H:%M:%S"
 
 # spark master. This will work on local machine only. In case of cloud, provide spark master node URL:port.
 SPARK_MASTER="local[30]"
@@ -43,4 +41,4 @@ SPARK_UI_PORT=4087
 
 PY_FILES="/home/cnali/code/CerebralCortex-Kernel/dist/cerebralcortex_kernel-3.1.1.post3-py3.6.egg"
 
-spark-submit --master $SPARK_MASTER --conf spark.ui.port=$SPARK_UI_PORT --total-executor-cores 1 --driver-memory 1g --executor-memory 1g --py-files $PY_FILES hourly_encounters.py -c $CONFIG_DIRECTORY -a $INPUT_STREAM_NAME -b $INPUT_MAP_STREAM_NAME -s "$START_TIME" -l $LTIME -s $SDIR -t THRESHOLD
+spark-submit --master $SPARK_MASTER --conf spark.ui.port=$SPARK_UI_PORT --total-executor-cores 1 --driver-memory 1g --executor-memory 1g --py-files $PY_FILES daily_encounter_stats.py -c $CONFIG_DIRECTORY -a $INPUT_STREAM_NAME_HOUR -b $INPUT_STREAM_NAME_ENCOUNTER -e $INPUT_STREAM_NAME_USER -s "$START_TIME"

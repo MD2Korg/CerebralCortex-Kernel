@@ -155,13 +155,12 @@ def generate_visualization_hourly(data_all,data_map_stream,start_time,end_time,l
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Hourly encounter calculation")
     parser.add_argument('-c', '--config_dir', help='CC Configuration directory path', required=True)
-    parser.add_argument('-a', '--input_stream_name', help='Input Stream Name', required=True)
-    parser.add_argument('-b', '--input_map_stream_name', help='Input Map Stream Name', required=True)
-    parser.add_argument('-s', '--start_time', help='Start time refers to start of hour in string format %Y-%m-%d %H:%m', required=True)
-    parser.add_argument('-e', '--end_time', help='End time refers to start of hour in string format %Y-%m-%d %H:%m', required=True)
-    parser.add_argument('-l', '--ltime', help='if set to True then computation would be done on localtime or timestamp otherwise', required=True)
+    parser.add_argument('-a', '--input_stream_name', help='Input Stream Name', required=False,default="beacon--org.md2k.mcontain--phone")
+    parser.add_argument('-b', '--input_map_stream_name', help='Input Map Stream Name', required=False,default="mcontain_user_mapping")
+    parser.add_argument('-s', '--start_time', help='Start time refers to start of hour in string format YYYYMMDDHHmm', required=True)
+    parser.add_argument('-l', '--ltime', help='if set to True then computation would be done on localtime or timestamp otherwise', required=False,default=1)
     parser.add_argument('-s', '--sdir', help='Output Directory to save the visualization html', required=True)
-    parser.add_argument('-t', '--threshold', help='Threshold on total_encounters for visualization', required=True)
+    parser.add_argument('-t', '--threshold', help='Threshold on total_encounters for visualization', required=False,default=5)
 
 
     args = vars(parser.parse_args())
@@ -169,10 +168,17 @@ if __name__ == "__main__":
     input_stream_name = str(args["input_stream_name"]).strip()
     map_stream_name = str(args["input_map_stream_name"]).strip()
     start_time = args['start_time']
-    end_time = args['end_time']
     ltime = args['ltime']
     sdir = args['sdir']
     threshold = args['threshold']
+
+    datetime_format = '%Y-%m-%d %H:%m' ###pysaprk datetime format
+    st = dateparser.parse(start_time) ## parse the input string to datetime
+    start_time = st.strftime(datetime_format) ## get the pyspark format
+    end_time = st + timedelta(hours=1) ## get the end time boundary
+    end_time = end_time.strftime(datetime_format) ## get the pyspark format
+
+
 
     CC = Kernel(config_dir, study_name='mcontain') ## need to change the study name
     data_all = CC.get_stream(input_stream_name)
@@ -193,7 +199,6 @@ if __name__ == "__main__":
     CC.save_stream(hourly_stats,overwrite=False)
     print('Computation done')
 
-    datetime_format = '%Y-%m-%d %H:%m'
     stream_name_stats = generate_metadata_hourly().name
     hourly_visualization_stats = CC.get_stream(stream_name_stats)
     hourly_visualization_stats = hourly_visualization_stats.filter(hourly_visualization_stats.start_time<F.lit(end_time))
@@ -210,7 +215,7 @@ if __name__ == "__main__":
                                             visualize_column_name='total_encounters')
         if sdir[-1] != '/':
             sdir+='/'
-        html_file.save(sdir+end_time)
+        html_file.save(sdir+dateparser.parse(end_time).strftime('%Y%m%d%H'))
 
 
 

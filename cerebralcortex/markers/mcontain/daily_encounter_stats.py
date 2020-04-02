@@ -57,6 +57,7 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 import pandas as pd, numpy as np
 import time
 from datetime import datetime,timedelta
+from dateutil import parser as dateparser
 
 def generate_metadata_dailystats():
     stream_metadata = Metadata()
@@ -270,14 +271,12 @@ def get_time_columns(encounter_final_data,start_time,end_time,utc_offset):
     return encounter_final_data
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description="Daily encounter stats calculation")
     parser.add_argument('-c', '--config_dir', help='CC Configuration directory path', required=True)
-    parser.add_argument('-a', '--input_stream_name_hour', help='Input Stream Name', required=True)
-    parser.add_argument('-b', '--input_stream_name_encounter', help='Input Stream Name', required=True)
-    parser.add_argument('-e', '--input_stream_name_user', help='Input Stream Name', required=True)
-    parser.add_argument('-s', '--start_time', help='Start time refers to start of day in string format', required=True)
-    parser.add_argument('-e', '--end_time', help='End time refers to end of day in localtime datetime format', required=True)
+    parser.add_argument('-a', '--input_stream_name_hour', help='Input Stream Name', required=False,default='mcontain-md2k--visualization-stats--time-window')
+    parser.add_argument('-b', '--input_stream_name_encounter', help='Input Stream Name', required=False,default='mcontain-md2k-encounter--bluetooth-gps')
+    parser.add_argument('-e', '--input_stream_name_user', help='Input Stream Name', required=False,default='heartbeat--org.md2k.mcontain--phone')
+    parser.add_argument('-s', '--start_time', help='Start time refers to start of day in string format YYYYMMDDHHmm', required=True)
 
     args = vars(parser.parse_args())
     config_dir = str(args["config_dir"]).strip()
@@ -285,7 +284,11 @@ if __name__ == "__main__":
     encounter_stream_name = str(args["input_stream_name_encounter"]).strip()
     user_stream_name = str(args["input_stream_name_user"]).strip()
     start_time = args['start_time']
-    end_time = args['end_time']
+    datetime_format = '%Y-%m-%d %H:%m' ###pysaprk datetime format
+    st = dateparser.parse(start_time) ## parse the input string to datetime
+    start_time = st.strftime(datetime_format) ## get the pyspark format
+    end_time = st + timedelta(hours=24) ## get the end time boundary of day
+    end_time = end_time.strftime(datetime_format) ## get the pyspark format
     utc_offset = get_utcoffset()
     userid = start_time+'_to_'+ end_time ### user id is generated to be able to save the data
 
@@ -351,8 +354,7 @@ if __name__ == "__main__":
 
 
     ## written by shiplu
-    st = data_daily.select('localtime').take(1)[0]['localtime']
-    et = st + timedelta(hours=24)
+    st = dateparser.parse(start_time)
     notification_ds = get_notification_messages(encounter_final_data, datetime(st.year, st.month, st.day))
     md = generate_metadata_notif()
     ds = DataStream(notification_ds, md)
