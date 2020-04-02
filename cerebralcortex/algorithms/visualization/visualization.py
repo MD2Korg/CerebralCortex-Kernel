@@ -24,13 +24,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-
-
-
 import json
 import time
 from branca.element import CssLink, Figure, JavascriptLink, MacroElement
-
+import numpy as np
 from folium.folium import Map
 from folium.utilities import iter_points, none_max, none_min, parse_options
 import pandas as pd
@@ -256,7 +253,7 @@ def color(intensity,
     '''
     sets color intensity based on number of encounters for icon markers
     '''
-    col = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png'
+    col = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png'
     if low_threshold<= intensity< medium_threshold:
         col = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png'
     elif medium_threshold<=intensity<high_threshold:
@@ -270,7 +267,7 @@ def get_utcoffset():
     utc_offset = (datetime.utcfromtimestamp(ts) -
                   datetime.fromtimestamp(ts)).total_seconds()/3600
     return utc_offset
-import numpy as np
+
 def create_geojson_features(df,
                             day,
                             time_column_name='start_time',
