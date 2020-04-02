@@ -36,6 +36,7 @@ from folium.utilities import iter_points, none_max, none_min, parse_options
 import pandas as pd
 from jinja2 import Template
 import folium
+from datetime import datetime
 
 
 class TimestampedGeoJson(MacroElement):
@@ -269,7 +270,7 @@ def get_utcoffset():
     utc_offset = (datetime.utcfromtimestamp(ts) -
                   datetime.fromtimestamp(ts)).total_seconds()/3600
     return utc_offset
-
+import numpy as np
 def create_geojson_features(df,
                             day,
                             time_column_name='start_time',
