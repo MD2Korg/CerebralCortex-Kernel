@@ -171,7 +171,7 @@ if __name__ == "__main__":
     ltime = args['ltime']
     sdir = args['sdir']
     threshold = args['threshold']
-    
+
     datetime_format = '%Y-%m-%d %H:%m' ###pysaprk datetime format
     st = dateparser.parse(start_time) ## parse the input string to datetime
     start_time = st.strftime(datetime_format) ## get the pyspark format
