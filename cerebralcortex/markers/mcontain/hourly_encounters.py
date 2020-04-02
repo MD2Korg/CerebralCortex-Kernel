@@ -129,10 +129,10 @@ def drop_centroid_columns(data_result, centroid_present=True):
 def compute_encounters(data,data_map_stream,start_time,end_time,ltime=False):
     data_encounter = bluetooth_encounter(data,start_time,end_time,ltime=ltime)
     data_encounter = data_encounter.join(data_map_stream,on=['major','minor'],how='left').drop(*['major','minor']).dropna()
-    print(data_encounter.count(),'encounters computed')
+    # print(data_encounter.count(),'encounters computed')
     data_clustered = cluster_gps(data_encounter,minimum_points_in_cluster=1,geo_fence_distance=50)
     # data_clustered.drop(*['distances','centroid_longitude','centroid_latitude','centroid_id','centroid_area']).show(20,False)
-    print(data_encounter.count(),'clusters computed')
+    # print(data_encounter.count(),'clusters computed')
     data_result = remove_duplicate_encounters(data_clustered)
     # data_result.drop(*['distances','centroid_longitude','centroid_latitude','centroid_id','centroid_area']).show(20,False)
     return data_result
