@@ -281,8 +281,8 @@ def create_geojson_features(df,
     creates geojson features for timestamped geojson
     '''
     df[time_column_name] = pd.to_datetime(df[time_column_name])
-    lat = df[latitude_columns_name].mean()
-    lon = df[longitude_column_name].mean()
+    lat = 35.162240
+    lon = -89.926420
     offset = np.abs(get_utcoffset())
     features = []
     for lat, lan, intensity, time in zip(df[latitude_columns_name], df[longitude_column_name], df[visualize_column_name], df[time_column_name]):
