@@ -330,7 +330,7 @@ def hourly_plotter(features,
         , loop_button=False).add_to(m)
 
     html_element = '''
-                    <div style="position: absolute; 
+                    <div style="position: absolute; text-align: right;
                                 top: 10px; right: 10px;
                                 z-index:9999;font-size:14px; font-weight:bold;
                                 ">{}<br>
