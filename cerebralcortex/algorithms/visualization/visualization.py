@@ -340,8 +340,8 @@ def hourly_plotter(features,
                                 bottom: 15px; right: 10px; 
                                 z-index:9999; font-size:14px;font-weight:500;
                                 "> 
-                                  6 - 27 <i class="fa fa-map-marker fa-2x" style="color:#CB2B3E"></i> <br>
-                                  28 & Up <i class="fa fa-map-marker fa-2x" style="color:#FFD326"></i><br>
+                                  28 & Up <i class="fa fa-map-marker fa-2x" style="color:#CB2B3E"></i> <br>
+                                  6 - 27 <i class="fa fa-map-marker fa-2x" style="color:#FFD326"></i><br>
                                   
                     </div>
                     '''.format("Last updated<br>"+str(day))
