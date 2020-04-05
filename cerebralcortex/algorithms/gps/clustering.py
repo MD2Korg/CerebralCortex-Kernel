@@ -197,8 +197,14 @@ def cluster_gps(ds, epsilon_constant = 1000,
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     def gps_clustering(data):
-        if data.shape[0] < minimum_points_in_cluster*2:
+        if data.shape[0] < minimum_points_in_cluster:
             return pd.DataFrame([], columns=column_names)
+        elif data.shape[0] < 2:
+            data['centroid_area'] = 1
+            data['centroid_id'] = 0
+            data['centroid_latitude'] = data[latitude_column_name].values[0]
+            data['centroid_longitude'] = data[longitude_column_name].values[0]
+            return data
 
 
         coords = np.float64(data[[latitude_column_name, longitude_column_name]].values)

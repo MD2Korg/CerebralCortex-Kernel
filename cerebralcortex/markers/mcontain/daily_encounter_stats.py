@@ -227,10 +227,6 @@ def remove_duplicate_encounters_day(data):
                          StructField('longitude', DoubleType()),
                          StructField('durations',DoubleType()),
                          StructField('covid', IntegerType()),
-                         StructField('centroid_longitude', DoubleType()),
-                         StructField('centroid_latitude', DoubleType()),
-                         StructField('centroid_id', IntegerType()),
-                         StructField('centroid_area', DoubleType())
                          ])
     columns = [a.name for a in schema]
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
@@ -245,7 +241,6 @@ def remove_duplicate_encounters_day(data):
             save_this = temp_df[:1].reset_index(drop=True)
             save_this['latitude'].iloc[0] = temp_df['latitude'].median()
             save_this['longitude'].iloc[0] = temp_df['longitude'].median()
-            save_this['covid'].iloc[0] = temp_df['covid'].max()
             save_this['durations'] = 1
             save_this['durations'].iloc[0] = np.sum([row['end_time']-row['start_time'] for i,row in temp_df.iterrows()])/3600
             save_this.drop(columns=['start_time',
@@ -257,9 +252,24 @@ def remove_duplicate_encounters_day(data):
                                     'distance_count'],axis=1,inplace=True)
             df_final = pd.concat([df_final,save_this])
         return df_final
-    data_gps = cluster_gps(data)
-    data_gps = data_gps.withColumn('start_time',F.col('start_time').cast('double')).withColumn('end_time',F.col('end_time').cast('double'))
-    data_final = data_gps.groupBy(['version','centroid_id']).apply(compute_daily_encounter_stream)
+    columns = [a.name for a in schema]
+    @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+    def compute_daily_encounter_stream_v2(data):
+        data = data.sort_values('durations').reset_index(drop=True)
+        df_final = pd.DataFrame([],columns=columns)
+        for i,row in data.iterrows():
+            temp_temp = df_final[df_final.participant_identifier.isin([row['user'],row['participant_identifier']]) & df_final.user.isin([row['user'],row['participant_identifier']])]
+            if temp_temp.shape[0]>0:
+                continue
+            temp_df = data[data.participant_identifier.isin([row['user'],row['participant_identifier']]) & data.user.isin([row['user'],row['participant_identifier']])]
+            save_this = temp_df[:1].reset_index(drop=True)
+            save_this['latitude'].iloc[0] = temp_df['latitude'].median()
+            save_this['longitude'].iloc[0] = temp_df['longitude'].median()
+            df_final = pd.concat([df_final,save_this])
+        return df_final
+    data_gps = data.withColumn('start_time',F.col('start_time').cast('double')).withColumn('end_time',F.col('end_time').cast('double'))
+    data_final = data_gps.groupBy(['version','user']).apply(compute_daily_encounter_stream)
+    data_final = data_final.groupBy(['version']).apply(compute_daily_encounter_stream_v2)
     return DataStream(data=data_final,metadata=Metadata())
 
 
