@@ -194,7 +194,7 @@ class UserHandler():
         if not username or not password:
             raise ValueError("User name and password cannot be empty/None.")
 
-        if not encrypt_password:
+        if encrypt_password:
             password = self.encrypt_user_password(password)
 
         qry = "select * from user where username=%s and password=%s and study_name=%s"
