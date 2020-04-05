@@ -135,7 +135,7 @@ def impute_gps_data(ds, accuracy_threashold=100):
 
 def cluster_gps(ds, epsilon_constant = 1000,
                 km_per_radian = 6371.0088,
-                geo_fence_distance = 50,
+                geo_fence_distance = 30,
                 minimum_points_in_cluster = 1,
                 latitude_column_name = 'latitude',
                 longitude_column_name = 'longitude'):
@@ -181,7 +181,7 @@ def cluster_gps(ds, epsilon_constant = 1000,
         :rtype: object
         """
         try:
-            if cluster.shape[0]>4:
+            if cluster.shape[0]>=3:
                 points_project = reproject(cluster[:,0],cluster[:,1])
                 hull = ConvexHull(points_project)
                 area = hull.area
