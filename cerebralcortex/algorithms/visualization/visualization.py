@@ -340,9 +340,9 @@ def hourly_plotter(features,
                                 bottom: 15px; right: 10px; 
                                 z-index:9999; font-size:14px;font-weight:500;
                                 "> 
-                                  High <i class="fa fa-map-marker fa-2x" style="color:#CB2B3E"></i> <br>
-                                  Medium <i class="fa fa-map-marker fa-2x" style="color:#FFD326"></i><br>
-                                  Low <i class="fa fa-map-marker fa-2x" style="color:#2AAD27"></i>
+                                  28 & Up <i class="fa fa-map-marker fa-2x" style="color:#CB2B3E"></i> <br>
+                                  6 - 27 <i class="fa fa-map-marker fa-2x" style="color:#FFD326"></i><br>
+                                  
                     </div>
                     '''.format("Last updated<br>"+str(day))
     m.get_root().html.add_child(folium.Element(html_element))
