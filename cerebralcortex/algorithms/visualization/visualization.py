@@ -262,6 +262,22 @@ def color(intensity,
         col = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png'
     return col
 
+def color_daily(intensity,
+          low_threshold=0,
+          medium_threshold=6,
+          high_threshold=28):
+    '''
+    sets color intensity based on number of encounters for icon markers
+    '''
+    col = 'mContain_hourly_output/images/map/marker-icon-yellow.png'
+    if low_threshold<= intensity< medium_threshold:
+        col = 'mContain_hourly_output/images/map/marker-icon-green.png'
+    elif medium_threshold<=intensity<high_threshold:
+        col = 'mContain_hourly_output/images/map/marker-icon-yellow.png'
+    elif intensity>=high_threshold:
+        col = 'mContain_hourly_output/images/map/marker-icon-red.png'
+    return col
+
 def get_utcoffset():
     ts = time.time()
     utc_offset = (datetime.utcfromtimestamp(ts) -
@@ -345,5 +361,48 @@ def hourly_plotter(features,
                                   
                     </div>
                     '''.format("Last updated<br>"+str(day))
+    m.get_root().html.add_child(folium.Element(html_element))
+    return m
+
+def daily_plotter(df,
+                  day,
+                  time_column_name='start_time',
+                  latitude_columns_name='latitude',
+                  longitude_column_name='longitude',
+                  visualize_column_name='total_encounters',
+                  low_threshold=0,
+                  medium_threshold=6,
+                  high_threshold=28):
+    lat = 35.162240
+    lon = -89.926420
+    latitude = lat
+    longitude = lon
+    m = folium.Map([latitude, longitude], zoom_start=10)
+    for lat, lan, intensity in zip(df[latitude_columns_name], df[longitude_column_name], df[visualize_column_name]):
+        folium.Marker(location=[lat, lan], icon=folium.features.CustomIcon(icon_image=color_daily(intensity=intensity,
+                                                                                            low_threshold=low_threshold,
+                                                                                            medium_threshold=medium_threshold,
+                                                                                            high_threshold=high_threshold)),icon_anchor=[12.5,
+                                                                                                                                         41]).add_to(m)
+        html_element = '''
+                    <div style="position: absolute; text-align: right;
+                                top: 10px; right: 10px; height: 150px; 
+                                z-index:9999;font-size:14px; font-weight:bold;
+                                ">{}<br>
+
+                    </div>
+
+                    <div style="position: absolute; text-align: right; 
+                                bottom: 15px; right: 10px; 
+                                z-index:9999; font-size:14px;font-weight:500;
+                                "> 
+                                  28 & Up <i class="fa fa-map-marker fa-2x" style="color:#CB2B3E"></i> <br>
+                                  6 - 27 <i class="fa fa-map-marker fa-2x" style="color:#FFD326"></i><br>
+                    </div>
+
+
+
+                    '''.format("Last updated<br>"+str(day))
+
     m.get_root().html.add_child(folium.Element(html_element))
     return m
