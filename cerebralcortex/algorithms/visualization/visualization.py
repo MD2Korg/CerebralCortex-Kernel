@@ -269,13 +269,13 @@ def color_daily(intensity,
     '''
     sets color intensity based on number of encounters for icon markers
     '''
-    col = 'mContain_hourly_output/images/map/marker-icon-yellow.png'
+    col = 'images/map/marker-icon-yellow.png'
     if low_threshold<= intensity< medium_threshold:
-        col = 'mContain_hourly_output/images/map/marker-icon-green.png'
+        col = 'images/map/marker-icon-green.png'
     elif medium_threshold<=intensity<high_threshold:
-        col = 'mContain_hourly_output/images/map/marker-icon-yellow.png'
+        col = 'images/map/marker-icon-yellow.png'
     elif intensity>=high_threshold:
-        col = 'mContain_hourly_output/images/map/marker-icon-red.png'
+        col = 'images/map/marker-icon-red.png'
     return col
 
 def get_utcoffset():
