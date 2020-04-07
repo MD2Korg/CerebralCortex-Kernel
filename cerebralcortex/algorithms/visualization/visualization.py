@@ -329,7 +329,7 @@ def hourly_plotter(features,
     '''
     latitude = lat
     longitude = lon
-    m = folium.Map([latitude, longitude], zoom_start=11)
+    m = folium.Map([latitude, longitude], zoom_start=11,tiles='https://odin.md2k.org/mcontain_map/tile/{z}/{x}/{y}.png')
 
     TimestampedGeoJson(
         {'type': 'FeatureCollection',
@@ -377,7 +377,7 @@ def daily_plotter(df,
     lon = -89.926420
     latitude = lat
     longitude = lon
-    m = folium.Map([latitude, longitude], zoom_start=10)
+    m = folium.Map([latitude, longitude], zoom_start=10,tiles='https://odin.md2k.org/mcontain_map/tile/{z}/{x}/{y}.png')
     for lat, lan, intensity in zip(df[latitude_columns_name], df[longitude_column_name], df[visualize_column_name]):
         folium.Marker(location=[lat, lan], icon=folium.features.CustomIcon(icon_image=color_daily(intensity=intensity,
                                                                                             low_threshold=low_threshold,
