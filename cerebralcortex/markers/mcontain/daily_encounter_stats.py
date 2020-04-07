@@ -319,7 +319,7 @@ def get_notifications(encounter_final_data_with_gps,day,multiplier=10,column_nam
         return data[column_names]
     encounter_final_data_with_gps = encounter_final_data_with_gps.filter(F.col('centroid_area')>1)
     encounter_final_data_with_gps = encounter_final_data_with_gps.withColumn('hour',F.hour('start_time'))
-    encounter_personal_data = encounter_final_data_with_gps.groupBy(['centroid_id','version','start_time']).apply(compute_cluster_metrics)
+    encounter_personal_data = encounter_final_data_with_gps.groupBy(['centroid_id','version','hour']).apply(compute_cluster_metrics)
     drop_columns = ['os','latitude','distances',
                     'longitude','average_count',
                     'distance_mean','distance_std',
@@ -355,7 +355,7 @@ def get_notifications(encounter_final_data_with_gps,day,multiplier=10,column_nam
                                StructField('centroid_area',DoubleType()),
                                StructField('durations',DoubleType()),
                                StructField('message',StringType()),
-                               StructField('unique_users',IntegerType())
+                               StructField('unique_users',IntegerType()),
                                ]))
     day = '2020-04-04'
     column_names = [a.name for a in schema.fields]
