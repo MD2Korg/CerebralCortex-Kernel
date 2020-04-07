@@ -315,6 +315,7 @@ def get_notifications(encounter_final_data_with_gps,day,multiplier=10,column_nam
         data['unique_users'] = unique_users.shape[0]
         data['avg_encounters'] = average_encounter
         data['total_encounters'] = total_encounters
+        data['normalized_total_encounters'] = total_encounters*multiplier/data['centroid_area'].iloc[0]
         return data[column_names]
     encounter_final_data_with_gps = encounter_final_data_with_gps.filter(F.col('centroid_area')>1)
     encounter_final_data_with_gps = encounter_final_data_with_gps.withColumn('hour',F.hour('start_time'))
