@@ -355,7 +355,7 @@ def get_notifications(encounter_final_data_with_gps,day,multiplier=10,column_nam
                                StructField('centroid_area',DoubleType()),
                                StructField('durations',DoubleType()),
                                StructField('message',StringType()),
-                               StructField('unique_users',IntegerType()),
+                               StructField('unique_users',IntegerType())
                                ]))
     day = '2020-04-04'
     column_names = [a.name for a in schema.fields]
