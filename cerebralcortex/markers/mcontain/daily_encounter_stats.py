@@ -353,7 +353,8 @@ def get_notifications(encounter_final_data_with_gps,day,multiplier=10,column_nam
                                StructField('centroid_id',IntegerType()),
                                StructField('centroid_area',DoubleType()),
                                StructField('durations',DoubleType()),
-                               StructField('message',StringType())
+                               StructField('message',StringType()),
+                               StructField('unique_users',IntegerType())
                                ]))
     day = '2020-04-04'
     column_names = [a.name for a in schema.fields]
@@ -409,9 +410,9 @@ def generate_metadata_notification_daily():
         DataDescriptor().set_name("avg_encounters").set_type("double").set_attribute("description", \
                                                                                      "average encounter per participant(participants who had at least one encounter)"))
     stream_metadata.add_module(
-    ModuleMetadata().set_name('Notification messages to be shown to each user') \
-        .set_attribute("url", "https://mcontain.md2k.org").set_author(
-        "Md Azim Ullah", "mullah@memphis.edu"))
+        ModuleMetadata().set_name('Notification messages to be shown to each user') \
+            .set_attribute("url", "https://mcontain.md2k.org").set_author(
+            "Md Azim Ullah", "mullah@memphis.edu"))
     return stream_metadata
 
 
