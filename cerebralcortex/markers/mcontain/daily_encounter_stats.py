@@ -227,6 +227,11 @@ def remove_duplicate_encounters_day(data):
                          StructField('longitude', DoubleType()),
                          StructField('durations',DoubleType()),
                          StructField('covid', IntegerType()),
+                         StructField('centroid_id', IntegerType()),
+                         StructField('centroid_latitude', DoubleType()),
+                         StructField('centroid_longitude', DoubleType()),
+                         StructField('centroid_area', DoubleType())
+
                          ])
     columns = [a.name for a in schema]
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
@@ -272,6 +277,142 @@ def remove_duplicate_encounters_day(data):
     data_final = data_gps.groupBy(['version','user']).apply(compute_daily_encounter_stream)
     data_final = data_final.groupBy(['version']).apply(compute_daily_encounter_stream_v2)
     return DataStream(data=data_final,metadata=Metadata())
+
+def get_notifications(encounter_final_data_with_gps,day,multiplier=10,column_name = 'total_encounters',metric_threshold=1):
+    schema  = StructType(list([StructField('timestamp',TimestampType()),
+                               StructField('localtime',TimestampType()),
+                               StructField('start_time',TimestampType()),
+                               StructField('end_time',TimestampType()),
+                               StructField('participant_identifier',StringType()),
+                               StructField('os',StringType()),
+                               StructField('latitude',DoubleType()),
+                               StructField('distances',ArrayType(DoubleType())),
+                               StructField('longitude',DoubleType()),
+                               StructField('average_count',DoubleType()),
+                               StructField('distance_mean',DoubleType()),
+                               StructField('distance_std',DoubleType()),
+                               StructField('distance_count',DoubleType()),
+                               StructField('covid',IntegerType()),
+                               StructField('version',IntegerType()),
+                               StructField('avg_encounters',DoubleType()),
+                               StructField('unique_users',IntegerType()),
+                               StructField('total_encounters',DoubleType()),
+                               StructField('normalized_total_encounters',DoubleType()),
+                               StructField('user',StringType()),
+                               StructField('centroid_longitude',DoubleType()),
+                               StructField('centroid_latitude',DoubleType()),
+                               StructField('centroid_id',IntegerType()),
+                               StructField('centroid_area',DoubleType())]))
+    column_names = [a.name for a in schema.fields]
+    @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+    def compute_cluster_metrics(data):
+        if data.shape[0]==0:
+            return pd.DataFrame([],columns=column_names)
+        data = data.sort_values('start_time').reset_index(drop=True)
+        unique_users = np.unique(list(data['user'].unique())+list(data['participant_identifier'].unique()))
+        total_encounters = data.shape[0]
+        average_encounter = (total_encounters*2)/len(unique_users)
+        data['unique_users'] = unique_users.shape[0]
+        data['avg_encounters'] = average_encounter
+        data['total_encounters'] = total_encounters
+        data['normalized_total_encounters'] = total_encounters*multiplier/data['centroid_area'].iloc[0]
+        return data
+    encounter_final_data_with_gps = encounter_final_data_with_gps.filter(F.col('centroid_area')>1)
+    encounter_personal_data = encounter_final_data_with_gps.groupBy(['centroid_id','version','start_time']).apply(compute_cluster_metrics)
+    drop_columns = ['os','latitude','distances',
+                    'longitude','average_count',
+                    'distance_mean','distance_std',
+                    'distance_count','covid']
+    encounter_personal_data_filtered = encounter_personal_data.filter(F.col(column_name)>=metric_threshold).drop(*drop_columns)
+
+    encounter_personal_data_filtered_p1 = encounter_personal_data_filtered.withColumn('user_temp',
+                                                                                      F.col('user')).withColumn('user',
+                                                                                                                F.col('participant_identifier')).withColumn('participant_identifier',
+                                                                                                                                                            F.col('user_temp')).drop('user_temp')
+
+    encounter_all_data = encounter_personal_data_filtered.unionByName(encounter_personal_data_filtered_p1)
+
+    encounter_all_data_with_durations = encounter_all_data.withColumn('durations',(F.col('end_time').cast('double')-F.col('start_time').cast('double')).cast('double')/3600)
+
+    encounter_all_data_with_durations = encounter_all_data_with_durations.withColumn('hour',F.hour('start_time'))
+
+    columns = ['version','user','hour','centroid_id']
+    encounter_all_data_with_durations_all = encounter_all_data_with_durations.groupBy(columns).max()
+    columns1 = ['centroid_latitude','centroid_longitude','centroid_area','durations','total_encounters','normalized_total_encounters','unique_users','avg_encounters']
+    for c in columns1:
+        encounter_all_data_with_durations_all = encounter_all_data_with_durations_all.withColumn(c,F.col('max('+c+')'))
+    encounter_all_data_with_durations_all = encounter_all_data_with_durations_all.select(*(columns+columns1))
+
+    schema  = StructType(list([StructField('version',IntegerType()),
+                               StructField('avg_encounters',DoubleType()),
+                               StructField('total_encounters',DoubleType()),
+                               StructField('normalized_total_encounters',DoubleType()),
+                               StructField('user',StringType()),
+                               StructField('centroid_longitude',DoubleType()),
+                               StructField('centroid_latitude',DoubleType()),
+                               StructField('centroid_id',IntegerType()),
+                               StructField('centroid_area',DoubleType()),
+                               StructField('durations',DoubleType()),
+                               StructField('message',StringType())
+                               ]))
+    day = '2020-04-04'
+    column_names = [a.name for a in schema.fields]
+    @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+    def get_final_durations(data):
+        if data.shape[0]==0:
+            return pd.DataFrame([],columns=column_names)
+        data['message'] = 1
+        data1 = data[:1].reset_index(drop=True)
+        data1['durations'].iloc[0] = np.double('{:.2f}'.format(data['durations'].sum()))
+        data1['message'].iloc[0] = 'On '+day+ ' you were in a crowded hotspot for {:.2f} hours'.format(data1['durations'].iloc[0])
+        return data1[column_names]
+    final_data = encounter_all_data_with_durations_all.groupBy(['version','user','centroid_id']).apply(get_final_durations)
+    return DataStream(data=final_data,metadata=Metadata())
+
+def generate_metadata_notification_daily():
+    stream_metadata = Metadata()
+    stream_metadata.set_name('mcontain-md2k--crowd--notification--daily').set_description('Computes notifications for each user who dwelled in a crowded hotspot') \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("start_time").set_type("timestamp").set_attribute("description", \
+                                                                                    "Start time of the time window localtime")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("end_time").set_type("timestamp").set_attribute("description", \
+                                                                                  "End time of the time window in localtime")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("centroid_latitude").set_type("double").set_attribute("description", \
+                                                                                        "Latitude of centroid location, a gps cluster output grouping encounters in similar location together")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("centroid_longitude").set_type("double").set_attribute("description", \
+                                                                                         "Longitude of centroid location, a gps cluster output grouping encounters in similar location together")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("centroid_id").set_type("integer").set_attribute("description", \
+                                                                                   "Unique id of centroid for that day")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("centroid_area").set_type("double").set_attribute("description", \
+                                                                                    "area of centroid")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("durations").set_type("double").set_attribute("description", \
+                                                                                "duration of stay in the centroid in hours")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("message").set_type("string").set_attribute("description", \
+                                                                              "Message to be shown to the user")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("unique_users").set_type("integer").set_attribute("description", \
+                                                                                    "Number of unique users in that cluster centroid")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("total_encounters").set_type("double").set_attribute("description", \
+                                                                                       "Total encounters happening in the time window in this specific location")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("normalized_total_encounters").set_type("double").set_attribute("description", \
+                                                                                                  "Total encounters normalized by the centroid area. (encounters per 10 square meter)")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("avg_encounters").set_type("double").set_attribute("description", \
+                                                                                     "average encounter per participant(participants who had at least one encounter)"))
+    stream_metadata.add_module(
+    ModuleMetadata().set_name('Notification messages to be shown to each user') \
+        .set_attribute("url", "https://mcontain.md2k.org").set_author(
+        "Md Azim Ullah", "mullah@memphis.edu"))
+    return stream_metadata
 
 
 def get_utcoffset():
