@@ -265,6 +265,7 @@ def remove_duplicate_encounters_day(data):
             save_this = temp_df[:1].reset_index(drop=True)
             save_this['latitude'].iloc[0] = temp_df['latitude'].median()
             save_this['longitude'].iloc[0] = temp_df['longitude'].median()
+            save_this['durations'].iloc[0] = temp_df['durations'].sum()
             df_final = pd.concat([df_final,save_this])
         return df_final
     data_gps = data.withColumn('start_time',F.col('start_time').cast('double')).withColumn('end_time',F.col('end_time').cast('double'))
