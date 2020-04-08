@@ -351,10 +351,8 @@ def get_notifications(encounter_final_data_with_gps,day,multiplier=10,column_nam
                                StructField('user',StringType()),
                                StructField('centroid_longitude',DoubleType()),
                                StructField('centroid_latitude',DoubleType()),
-                               StructField('centroid_id',IntegerType()),
                                StructField('centroid_area',DoubleType()),
                                StructField('durations',DoubleType()),
-                               StructField('message',StringType()),
                                StructField('unique_users',IntegerType())
                                ]))
     day = '2020-04-04'
@@ -363,10 +361,8 @@ def get_notifications(encounter_final_data_with_gps,day,multiplier=10,column_nam
     def get_final_durations(data):
         if data.shape[0]==0:
             return pd.DataFrame([],columns=column_names)
-        data['message'] = 1
         data1 = data[:1].reset_index(drop=True)
         data1['durations'].iloc[0] = np.double('{:.2f}'.format(data['durations'].sum()))
-        data1['message'].iloc[0] = 'On '+day+ ' you were in a crowded hotspot for {:.2f} hours'.format(data1['durations'].iloc[0])
         return data1[column_names]
     final_data = encounter_all_data_with_durations_all.groupBy(['version','user','centroid_id']).apply(get_final_durations)
     return DataStream(data=final_data,metadata=Metadata())
@@ -387,17 +383,11 @@ def generate_metadata_notification_daily():
         DataDescriptor().set_name("centroid_longitude").set_type("double").set_attribute("description", \
                                                                                          "Longitude of centroid location, a gps cluster output grouping encounters in similar location together")) \
         .add_dataDescriptor(
-        DataDescriptor().set_name("centroid_id").set_type("integer").set_attribute("description", \
-                                                                                   "Unique id of centroid for that day")) \
-        .add_dataDescriptor(
         DataDescriptor().set_name("centroid_area").set_type("double").set_attribute("description", \
                                                                                     "area of centroid")) \
         .add_dataDescriptor(
         DataDescriptor().set_name("durations").set_type("double").set_attribute("description", \
                                                                                 "duration of stay in the centroid in hours")) \
-        .add_dataDescriptor(
-        DataDescriptor().set_name("message").set_type("string").set_attribute("description", \
-                                                                              "Message to be shown to the user")) \
         .add_dataDescriptor(
         DataDescriptor().set_name("unique_users").set_type("integer").set_attribute("description", \
                                                                                     "Number of unique users in that cluster centroid")) \
