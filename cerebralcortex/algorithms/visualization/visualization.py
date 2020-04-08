@@ -263,9 +263,9 @@ def color(intensity,
     return col
 
 def color_daily(intensity,
-          low_threshold=0,
-          medium_threshold=6,
-          high_threshold=28):
+                low_threshold=0,
+                medium_threshold=6,
+                high_threshold=28):
     '''
     sets color intensity based on number of encounters for icon markers
     '''
@@ -312,7 +312,7 @@ def create_geojson_features(df,
             'properties': {'time':time,'icon':'marker',
                            'iconstyle':{'iconUrl':color(intensity=intensity,low_threshold=low_threshold,
                                                         medium_threshold=medium_threshold,high_threshold=high_threshold),
-                                                        'iconAnchor':[12.5,41]}}
+                                        'iconAnchor':[12.5,41]}}
         }
         features.append(feature)
     html_file = hourly_plotter(features, day, lat, lon)
@@ -329,7 +329,7 @@ def hourly_plotter(features,
     '''
     latitude = lat
     longitude = lon
-    m = folium.Map([latitude, longitude], zoom_start=11,tiles='https://odin.md2k.org/mcontain_map/tile/{z}/{x}/{y}.png')
+    m = folium.Map([latitude, longitude], zoom_start=10,tiles='https://odin.md2k.org/mcontain_map/tile/{z}/{x}/{y}.png',attr="toner-bcg")
 
     TimestampedGeoJson(
         {'type': 'FeatureCollection',
@@ -377,13 +377,13 @@ def daily_plotter(df,
     lon = -89.926420
     latitude = lat
     longitude = lon
-    m = folium.Map([latitude, longitude], zoom_start=10,tiles='https://odin.md2k.org/mcontain_map/tile/{z}/{x}/{y}.png')
+    m = folium.Map([latitude, longitude], zoom_start=10,tiles='https://odin.md2k.org/mcontain_map/tile/{z}/{x}/{y}.png',attr="toner-bcg")
     for lat, lan, intensity in zip(df[latitude_columns_name], df[longitude_column_name], df[visualize_column_name]):
         folium.Marker(location=[lat, lan], icon=folium.features.CustomIcon(icon_image=color_daily(intensity=intensity,
-                                                                                            low_threshold=low_threshold,
-                                                                                            medium_threshold=medium_threshold,
-                                                                                            high_threshold=high_threshold)),icon_anchor=[12.5,
-                                                                                                                                         41]).add_to(m)
+                                                                                                  low_threshold=low_threshold,
+                                                                                                  medium_threshold=medium_threshold,
+                                                                                                  high_threshold=high_threshold)),icon_anchor=[12.5,
+                                                                                                                                               41]).add_to(m)
         html_element = '''
                     <div style="position: absolute; text-align: right;
                                 top: 10px; right: 10px; height: 150px; 
