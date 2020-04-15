@@ -1,4 +1,4 @@
-# Copyright (c) 2019, MD2K Center of Excellence
+# Copyright (c) 2020, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -313,7 +313,6 @@ class Kernel:
     def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict, encrypt_password:bool=False)->bool:
         """
         Create a user in SQL storage if it doesn't exist
-
         Args:
             username (str): Only alphanumeric usernames are allowed with the max length of 25 chars.
             user_password (str): no size limit on password

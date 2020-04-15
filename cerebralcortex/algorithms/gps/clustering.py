@@ -1,5 +1,5 @@
 # Copyright (c) 2019, MD2K Center of Excellence
-# - Nasir Ali <nasir.ali08@gmail.com>
+# - Nasir Ali <nasir.ali08@gmail.com>, Md Azim Ullah <mullah@memphis.edu>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -135,7 +135,7 @@ def impute_gps_data(ds, accuracy_threashold=100):
 
 def cluster_gps(ds, epsilon_constant = 1000,
                 km_per_radian = 6371.0088,
-                geo_fence_distance = 50,
+                geo_fence_distance = 30,
                 minimum_points_in_cluster = 1,
                 latitude_column_name = 'latitude',
                 longitude_column_name = 'longitude'):
@@ -181,7 +181,7 @@ def cluster_gps(ds, epsilon_constant = 1000,
         :rtype: object
         """
         try:
-            if cluster.shape[0]>4:
+            if cluster.shape[0]>=3:
                 points_project = reproject(cluster[:,0],cluster[:,1])
                 hull = ConvexHull(points_project)
                 area = hull.area
@@ -197,8 +197,14 @@ def cluster_gps(ds, epsilon_constant = 1000,
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     def gps_clustering(data):
-        if data.shape[0] < minimum_points_in_cluster*2:
+        if data.shape[0] < minimum_points_in_cluster:
             return pd.DataFrame([], columns=column_names)
+        elif data.shape[0] < 2:
+            data['centroid_area'] = 1
+            data['centroid_id'] = 0
+            data['centroid_latitude'] = data[latitude_column_name].values[0]
+            data['centroid_longitude'] = data[longitude_column_name].values[0]
+            return data
 
 
         coords = np.float64(data[[latitude_column_name, longitude_column_name]].values)

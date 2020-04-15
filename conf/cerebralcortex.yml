@@ -15,7 +15,8 @@ nosql_storage: filesystem
 
 filesystem:
   # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
-  filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/CC_APISERVER_DATA/processed/"
+
+  filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/mcontain/"
 
 hdfs:
   host: localhost

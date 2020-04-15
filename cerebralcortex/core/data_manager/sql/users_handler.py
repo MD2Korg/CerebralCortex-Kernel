@@ -46,7 +46,6 @@ class UserHandler():
     def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict, encrypt_password:bool=False)->bool:
         """
         Create a user in SQL storage if it doesn't exist
-
         Args:
             username (str): Only alphanumeric usernames are allowed with the max length of 25 chars.
             user_password (str): no size limit on password
@@ -76,6 +75,7 @@ class UserHandler():
             return True
         except Exception as e:
             raise Exception(e)
+
 
     def delete_user(self, username:str):
         """

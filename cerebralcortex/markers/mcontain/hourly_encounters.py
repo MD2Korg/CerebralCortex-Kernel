@@ -30,6 +30,10 @@ from cerebralcortex.algorithms.gps.clustering import cluster_gps
 from pyspark.sql import functions as F
 from cerebralcortex.kernel import Kernel
 import argparse
+from datetime import timedelta
+from dateutil import parser as dateparser
+from cerebralcortex.algorithms.visualization.visualization import create_geojson_features
+
 
 def generate_metadata_hourly():
     stream_metadata = Metadata()
@@ -125,10 +129,10 @@ def drop_centroid_columns(data_result, centroid_present=True):
 def compute_encounters(data,data_map_stream,start_time,end_time,ltime=False):
     data_encounter = bluetooth_encounter(data,start_time,end_time,ltime=ltime)
     data_encounter = data_encounter.join(data_map_stream,on=['major','minor'],how='left').drop(*['major','minor']).dropna()
-    print(data_encounter.count(),'encounters computed')
+    # print(data_encounter.count(),'encounters computed')
     data_clustered = cluster_gps(data_encounter,minimum_points_in_cluster=1,geo_fence_distance=50)
     # data_clustered.drop(*['distances','centroid_longitude','centroid_latitude','centroid_id','centroid_area']).show(20,False)
-    print(data_encounter.count(),'clusters computed')
+    # print(data_encounter.count(),'clusters computed')
     data_result = remove_duplicate_encounters(data_clustered)
     # data_result.drop(*['distances','centroid_longitude','centroid_latitude','centroid_id','centroid_area']).show(20,False)
     return data_result
@@ -146,41 +150,3 @@ def generate_visualization_hourly(data_all,data_map_stream,start_time,end_time,l
 
     unique_encounters = compute_encounters(data_all,data_map_stream,start_time=start_time,end_time=end_time,ltime=ltime) ## we need to save this datastream
     return unique_encounters
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Hourly encounter calculation")
-    parser.add_argument('-c', '--config_dir', help='CC Configuration directory path', required=True)
-    parser.add_argument('-a', '--input_stream_name', help='Input Stream Name', required=True)
-    parser.add_argument('-b', '--input_map_stream_name', help='Input Map Stream Name', required=True)
-    parser.add_argument('-s', '--start_time', help='Start time refers to start of hour in string format %Y-%m-%d %H:%m', required=True)
-    parser.add_argument('-e', '--end_time', help='End time refers to start of hour in string format %Y-%m-%d %H:%m', required=True)
-    parser.add_argument('-l', '--ltime', help='A boolean indicating what is the format of datetime in start_time and end_time', required=True)
-
-    args = vars(parser.parse_args())
-    config_dir = str(args["config_dir"]).strip()
-    input_stream_name = str(args["input_stream_name"]).strip()
-    map_stream_name = str(args["input_map_stream_name"]).strip()
-    start_time = args['start_time']
-    end_time = args['end_time']
-    ltime = args['ltime']
-
-    CC = Kernel(config_dir, study_name='mcontain') ## need to change the study name
-    data_all = CC.get_stream(input_stream_name)
-    data_map_stream = CC.get_stream(map_stream_name)
-    unique_encounters = generate_visualization_hourly(data_all,data_map_stream,start_time,end_time,ltime=ltime)
-    hourly_stats = count_encounters_per_cluster(unique_encounters)
-    unique_encounters = drop_centroid_columns(unique_encounters, centroid_present=True)
-
-    metadata = generate_metadata_encounter()
-    unique_encounters.metadata = metadata
-    CC.save_stream(unique_encounters,overwrite=False)
-    print('Hourly encounters saved from', start_time, 'to', end_time)
-
-    print('Saving hourly stats now')
-    userid = start_time +'_to_'+ end_time ### user id is generated to be able to save the data
-    hourly_stats = hourly_stats.withColumn('user',F.lit(userid)).withColumn('start_time',F.lit(end_time).cast('timestamp')).withColumn('end_time',F.lit(end_time).cast('timestamp'))
-    hourly_stats.metadata = generate_metadata_hourly()
-    CC.save_stream(hourly_stats,overwrite=False)
-    print('Computation done')
-
