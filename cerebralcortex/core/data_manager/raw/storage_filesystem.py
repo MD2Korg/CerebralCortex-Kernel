@@ -28,6 +28,7 @@ from pyspark.sql.functions import lit
 import pandas as pd
 import pyarrow as pa
 import os
+from csv import reader
 from uuid import uuid4
 import uuid
 from typing import List
@@ -146,7 +147,7 @@ class FileSystemStorage:
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
 
-    def write_pandas_to_parquet_file(self, df: pd, user_id: str, stream_name: str) -> str:
+    def write_pandas_to_parquet_file(self, df: pd, user_id: str, stream_name: str, stream_version:str) -> str:
         """
         Convert pandas dataframe into pyarrow parquet format and store
 
@@ -158,14 +159,11 @@ class FileSystemStorage:
         Returns:
             str: file_name of newly create parquet file
 
-        Raises:
-             Exception: if selected nosql database is not implemented
-
         """
         base_dir_path = self._get_storage_path(stream_name)
         table = pa.Table.from_pandas(df, preserve_index=False)
         file_id = str(uuid4().hex) + ".parquet"
-        data_file_url = os.path.join(base_dir_path, "version=1", "user=" + user_id)
+        data_file_url = os.path.join(base_dir_path, "version="+str(stream_version), "user=" + user_id)
         file_name = os.path.join(data_file_url, file_id)
         if not os.path.exists(data_file_url):
             os.makedirs(data_file_url)

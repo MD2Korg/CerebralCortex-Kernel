@@ -128,6 +128,7 @@ class Kernel:
         """
         return self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB, overwrite=overwrite)
 
+    
     def get_stream(self, stream_name: str, version: str = "all", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
         """
         Retrieve a data-stream with it's metadata.
@@ -326,7 +327,6 @@ class Kernel:
             Exception: if sql query fails
         """
         return self.SqlData.create_user(username, user_password, user_role, user_metadata, user_settings, encrypt_password)
-
 
     def delete_user(self, username:str)->bool:
         """

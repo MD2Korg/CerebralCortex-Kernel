@@ -23,29 +23,32 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os.path
+def plot_stress_pie(ds, x_axis_column="stresser_main"):
+    pdf = ds._data.toPandas()
+    pdf = ds._sort_values(pdf)
+    ds._stress_plots.plot_pie(pdf, x_axis_column)
 
-from cerebralcortex.core.config_manager.config_handler import ConfigHandler
+
+def plot_stress_gantt(ds):
+    pdf = ds._data.toPandas()
+    pdf = ds._sort_values(pdf)
+    ds._stress_plots.plot_gantt(pdf)
 
 
-class Configuration(ConfigHandler):
-    def __init__(self, config_dir:str, config_file_name:str="cerebralcortex.yml"):
-        """
-        Constructor
-        Args:
-            config_dir (str): Directory path of cerebralcortex configuration files.
-            config_file_name (str): configuration file name that should be loaded
-        """
+def plot_stress_sankey(ds, cat_cols=["stresser_main", "stresser_sub"], value_cols='density',
+                       title="Stressers' Sankey Diagram"):
+    pdf = ds._data.toPandas()
+    pdf = ds._sort_values(pdf)
+    ds._stress_plots.plot_sankey(df=pdf, cat_cols=cat_cols, value_cols=value_cols, title=title)
 
-        if config_dir[-1]!="/":
-            config_dir+="/"
 
-        self.config_filepath = config_dir+config_file_name
+def plot_stress_bar(ds, x_axis_column="stresser_main"):
+    pdf = ds._data.toPandas()
+    pdf = ds._sort_values(pdf)
+    ds._stress_plots.plot_bar(pdf, x_axis_column=x_axis_column)
 
-        if not os.path.exists(self.config_filepath):
-            raise Exception(self.config_filepath+" does not exist. Please check configuration directory path and configuration file name.")
 
-        if config_dir is not None:
-            self.load_file(self.config_filepath)
-        else:
-            self.config = None
+def plot_stress_comparison(ds, x_axis_column="stresser_main", usr_id=None, compare_with="all"):
+    pdf = ds._data.toPandas()
+    pdf = ds._sort_values(pdf)
+    ds._stress_plots.plot_comparison(pdf, x_axis_column=x_axis_column, usr_id=usr_id, compare_with=compare_with)
