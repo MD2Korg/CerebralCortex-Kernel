@@ -22,89 +22,61 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import pandas as pd
-import datetime as datetime
 import numpy as np
-import matplotlib.pyplot as plt
-from statsmodels.nonparametric.smoothers_lowess import lowess
-from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, ArrayType, IntegerType
+import pandas as pd
+
+from cerebralcortex.core.datatypes import DataStream
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, ModuleMetadata
 from pyspark.sql.functions import pandas_udf, PandasUDFType
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
+from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
 
 
 def glucose_var(ds):
     '''
     Compute CGM Glucose Variability Metrics:
 
-    This algorithm computes 20+ clinically validated glucose variability metrics from continuous glucose monitor data.
-    Please see dbdp.org for more documentation on these functions.
+    This algorithm computes 23 clinically validated glucose variability metrics from continuous glucose monitor data.
 
-        * glucose_var() - input is datastream of CGM data; returns datastream of glucose variability metrics + metadata
-        * import_data() - formats datastream as pandas dataframe for use with other functions
-        * interdaycv() - computes the interday coefficient of variation on pandas dataframe glucose column
-        * interdaysd() - computes the interday standard deviation of pandas dataframe glucose column
-        * intradaycv() - computes the intradaycv, returns the mean, median, and sd of intraday cv glucose column in pandas dataframe
-        * intradaysd() - computes the intradaysd, returns the mean, median, and sd of intraday sd glucose column in pandas dataframe
-        * TIR() - computes time in the range of (default=1 sd from the mean) glucose column in pandas dataframe
-        * TOR() - computes time outside the range of (default=1 sd from the mean) glucose column in pandas dataframe
-        * POR() - computes percent time outside the range of (default=1 sd from the mean) glucose column in pandas dataframe
-        * MAGE() - computes the mean amplitude of glucose excursions (default = 1 sd from the mean)
-        * MAGN() - computes the mean amplitude of normal glucose (default = 1 sd from the mean)
-        * J_index() - computes the J index, a parameter of the mean and standard deviation of glucose
-        * LBGI_HBGI() - computes the LBGI, HBGI, rh, and rl of glucose
-        * LBGI() - computes LBGI of glucose
-        * HBGI() - computes HBGI of glucose
-        * ADRR() - computes ADRR of glucose (requires function LBGI_HBGI to calculate rh and rl parameters
-        * uniquevalfilter() - supporting function for MODD and CONGA24 calculations
-        * MODD() - computes mean of daily differences of glucose
-        * CONGA24() - computes CONGA over 24 hour interval
-        * GMI() - computes glucose management index
-        * eA1c() - computes ADA estimated A1c from glucose
-        * summary() - computes interday mean glucose, median glucose, minimum and maximum glucose, and first and third quartile of glucose
-        * get_all_metrics() - compiles all above metrics into a dataframe with return_schema
     Input:
-        ds (DataStream): datastream object
+        ds (DataStream): input is datastream of CGM data; returns datastream of glucose variability metrics + metadata
     Returns:
         DataStream with glucose variability metrics
     '''
 
-
-    schema = ds.data.schema
-
-    features_list = [StructField('Timestamp (YYYY-MM-DDThh:mm:ss)', TimestampType()),
-                     StructField('Glucose Value (mg/dL)', IntegerType())]
-
-    data_names = [a.name for a in features_list]
-    columns = []
-    for c in data_names:
-        if c in columns:
-            ds = ds.drop(*[c])
-    schema = StructType(ds._data.schema.fields + features_list)
-    column_names = [a.name for a in schema.fields]
-
-    # TODO: not sure what is the use of this method.
-    # @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-    # def import_data(data):
-    #     df['Time'] = data['Timestamp (YYYY-MM-DDThh:mm:ss)']
-    #     df['Glucose'] = pd.to_numeric(data['Glucose Value (mg/dL)'])
-    #     df.drop(df.index[:12], inplace=True)
-    #     df['Time'] = pd.to_datetime(df['Time'], format='%Y-%m-%dT%H:%M:%S')
-    #     df['Day'] = df['Time'].dt.date
-    #     df = df.reset_index()
-    #     return df
-
-
     def interdayCV(df):
+        """
+        computes the interday coefficient of variation on pandas dataframe glucose column
+
+        Args:
+            df (pandas.DataFrame):
+
+        Returns:
+
+        """
         cvx = (np.std(df['Glucose']) / (np.mean(df['Glucose']))) * 100
         return cvx
 
-
     def interdaySD(df):
+        """
+        computes the interday standard deviation of pandas dataframe glucose column
+        Args:
+             df (pandas.DataFrame):
+
+        Returns:
+
+        """
         interdaysd = np.std(df['Glucose'])
         return interdaysd
 
-
     def intradayCV(df):
+        """
+        computes the intradaycv, returns the mean, median, and sd of intraday cv glucose column in pandas dataframe
+        Args:
+             df (pandas.DataFrame):
+
+        Returns:
+
+        """
         intradaycv = []
         for i in pd.unique(df['Day']):
             intradaycv.append(interdayCV(df[df['Day'] == i]))
@@ -115,8 +87,15 @@ def glucose_var(ds):
 
         return intradaycv_mean, intradaycv_median, intradaycv_sd
 
-
     def intradaySD(df):
+        """
+        computes the intradaysd, returns the mean, median, and sd of intraday sd glucose column in pandas dataframe
+        Args:
+             df (pandas.DataFrame):
+
+        Returns:
+
+        """
         intradaysd = []
 
         for i in pd.unique(df['Day']):
@@ -127,49 +106,106 @@ def glucose_var(ds):
         intradaysd_sd = np.std(intradaysd)
         return intradaysd_mean, intradaysd_median, intradaysd_sd
 
-
     def TIR(df, sd=1, sr=5):
+        """
+        computes time in the range of (default=1 sd from the mean) glucose column in pandas dataframe
+        Args:
+             df (pandas.DataFrame):
+            sd:
+            sr:
+
+        Returns:
+
+        """
         up = np.mean(df['Glucose']) + sd * np.std(df['Glucose'])
         dw = np.mean(df['Glucose']) - sd * np.std(df['Glucose'])
         TIR = len(df[(df['Glucose'] <= up) & (df['Glucose'] >= dw)]) * sr
         return TIR
 
-
     def TOR(df, sd=1, sr=5):
+        """
+        computes time outside the range of (default=1 sd from the mean) glucose column in pandas dataframe
+        Args:
+             df (pandas.DataFrame):
+            sd:
+            sr:
+
+        Returns:
+
+        """
         up = np.mean(df['Glucose']) + sd * np.std(df['Glucose'])
         dw = np.mean(df['Glucose']) - sd * np.std(df['Glucose'])
         TOR = len(df[(df['Glucose'] >= up) | (df['Glucose'] <= dw)]) * sr
         return TOR
 
-
     def POR(df, sd=1, sr=5):
+        """
+        computes percent time outside the range of (default=1 sd from the mean) glucose column in pandas dataframe
+        Args:
+             df (pandas.DataFrame):
+            sd:
+            sr:
+
+        Returns:
+
+        """
         up = np.mean(df['Glucose']) + sd * np.std(df['Glucose'])
         dw = np.mean(df['Glucose']) - sd * np.std(df['Glucose'])
         TOR = len(df[(df['Glucose'] >= up) | (df['Glucose'] <= dw)]) * sr
         POR = (TOR / (len(df) * sr)) * 100
         return POR
 
-
     def MAGE(df, sd=1):
+        """
+        computes the mean amplitude of glucose excursions (default = 1 sd from the mean)
+        Args:
+             df (pandas.DataFrame):
+            sd:
+
+        Returns:
+
+        """
         up = np.mean(df['Glucose']) + sd * np.std(df['Glucose'])
         dw = np.mean(df['Glucose']) - sd * np.std(df['Glucose'])
-        MAGE = np.mean(df[(df['Glucose'] >= up) | (df['Glucose'] <= dw)])
+        MAGE = np.mean((df['Glucose'] >= up) | (df['Glucose'] <= dw))
         return MAGE
 
-
     def MAGN(df, sd=1):
+        """
+        computes the mean amplitude of normal glucose (default = 1 sd from the mean)
+        Args:
+             df (pandas.DataFrame):
+            sd:
+
+        Returns:
+
+        """
         up = np.mean(df['Glucose']) + sd * np.std(df['Glucose'])
         dw = np.mean(df['Glucose']) - sd * np.std(df['Glucose'])
-        MAGN = np.mean(df[(df['Glucose'] <= up) & (df['Glucose'] >= dw)])
+        MAGN = np.mean((df['Glucose'] <= up) & (df['Glucose'] >= dw))
         return MAGN
 
-
     def J_index(df):
+        """
+        computes the J index, a parameter of the mean and standard deviation of glucose
+        Args:
+             df (pandas.DataFrame):
+
+        Returns:
+
+        """
         J = 0.001 * ((np.mean(df['Glucose']) + np.std(df['Glucose'])) ** 2)
         return J
 
-
     def LBGI_HBGI(df):
+        """
+        computes the LBGI, HBGI, rh, and rl of glucose
+        Args:
+             df (pandas.DataFrame):
+
+        Returns:
+
+        """
         f = ((np.log(df['Glucose']) ** 1.084) - 5.381)
         rl = []
         for i in f:
@@ -191,8 +227,15 @@ def glucose_var(ds):
 
         return LBGI, HBGI, rh, rl
 
-
     def LBGI(df):
+        """
+        computes LBGI of glucose
+        Args:
+             df (pandas.DataFrame):
+
+        Returns:
+
+        """
         f = ((np.log(df['Glucose']) ** 1.084) - 5.381)
         rl = []
         for i in f:
@@ -204,8 +247,15 @@ def glucose_var(ds):
         LBGI = np.mean(rl)
         return LBGI
 
-
     def HBGI(df):
+        """
+        computes HBGI of glucose
+        Args:
+             df (pandas.DataFrame):
+
+        Returns:
+
+        """
         f = ((np.log(df['Glucose']) ** 1.084) - 5.381)
         rh = []
         for i in f:
@@ -217,8 +267,15 @@ def glucose_var(ds):
         HBGI = np.mean(rh)
         return HBGI
 
-
     def ADRR(df):
+        """
+        computes ADRR of glucose (requires function LBGI_HBGI to calculate rh and rl parameters
+        Args:
+             df (pandas.DataFrame):
+
+        Returns:
+
+        """
         ADRRl = []
         for i in pd.unique(df['Day']):
             LBGI, HBGI, rh, rl = LBGI_HBGI(df[df['Day'] == i])
@@ -229,16 +286,31 @@ def glucose_var(ds):
         ADRRx = np.mean(ADRRl)
         return ADRRx
 
-
     def uniquevalfilter(df, value):
+        """
+        supporting function for MODD and CONGA24 calculations
+        Args:
+             df (pandas.DataFrame):
+            value:
+
+        Returns:
+
+        """
         xdf = df[df['Minfrommid'] == value]
         n = len(xdf)
         diff = abs(xdf['Glucose'].diff())
         MODD_n = np.nanmean(diff)
         return MODD_n
 
-
     def MODD(df):
+        """
+        computes mean of daily differences of glucose
+        Args:
+             df (pandas.DataFrame):
+
+        Returns:
+
+        """
         df['Timefrommidnight'] = df['Time'].dt.time
         lists = []
         for i in range(0, len(df['Timefrommidnight'])):
@@ -261,8 +333,15 @@ def glucose_var(ds):
         MODD = np.nanmean(MODD_n)
         return MODD
 
-
     def CONGA24(df):
+        """
+        computes CONGA over 24 hour interval
+        Args:
+             df (pandas.DataFrame):
+
+        Returns:
+
+        """
         df['Timefrommidnight'] = df['Time'].dt.time
         lists = []
         for i in range(0, len(df['Timefrommidnight'])):
@@ -285,35 +364,58 @@ def glucose_var(ds):
         CONGA24 = np.nanstd(MODD_n)
         return CONGA24
 
-
     def GMI(df):
+        """
+        computes glucose management index
+        Args:
+             df (pandas.DataFrame):
+
+        Returns:
+
+        """
         GMI = 3.31 + (0.02392 * np.mean(df['Glucose']))
         return GMI
 
-
     def eA1c(df):
+        """
+        computes ADA estimated A1c from glucose
+        Args:
+             df (pandas.DataFrame):
+
+        Returns:
+
+        """
         eA1c = (46.7 + np.mean(df['Glucose'])) / 28.7
         return eA1c
 
-
     def summary(df):
+        """
+        computes interday mean glucose, median glucose, minimum and maximum glucose, and first and third quartile of glucose
+        Args:
+             df (pandas.DataFrame):
+
+        Returns:
+
+        """
         meanG = np.nanmean(df['Glucose'])
         medianG = np.nanmedian(df['Glucose'])
         minG = np.nanmin(df['Glucose'])
         maxG = np.nanmax(df['Glucose'])
         Q1G = np.nanpercentile(df['Glucose'], 25)
         Q3G = np.nanpercentile(df['Glucose'], 75)
-
         return meanG, medianG, minG, maxG, Q1G, Q3G
 
-
     return_schema = StructType([
-        StructField("meanG", IntegerType()),
-        StructField("medianG", IntegerType()),
-        StructField("minG", IntegerType()),
-        StructField("maxG", IntegerType()),
-        StructField("Q1G", IntegerType()),
-        StructField("Q3G", IntegerType()),
+        StructField("timestamp", TimestampType()),
+        StructField("localtime", TimestampType()),
+        StructField("user", StringType()),
+        StructField("version", IntegerType()),
+        StructField("meanG", FloatType()),
+        StructField("medianG", FloatType()),
+        StructField("minG", FloatType()),
+        StructField("maxG", FloatType()),
+        StructField("Q1G", FloatType()),
+        StructField("Q3G", FloatType()),
         StructField("GMI", IntegerType()),
         StructField("eA1c", IntegerType()),
         StructField("CONGA24", IntegerType()),
@@ -321,7 +423,7 @@ def glucose_var(ds):
         StructField("ADRR", IntegerType()),
         StructField("HBGI", IntegerType()),
         StructField("LBGI", IntegerType()),
-        StructField("J-index", IntegerType()),
+        StructField("J_index", IntegerType()),
         StructField("MAGE", IntegerType()),
         StructField("MAGN", IntegerType()),
         StructField("POR", IntegerType()),
@@ -333,11 +435,27 @@ def glucose_var(ds):
         StructField("intradayCV", IntegerType())
     ])
 
+    def update_metadata(stream_metadata) -> Metadata:
+        """
+        Create Metadata object with some sample metadata of phone battery data
+        Returns:
+            Metadata: metadata of phone battery stream
+        """
+        stream_metadata.set_name("cgm_glucose_variability_metrics").set_description(
+            "This algorithm computes 23 clinically validated glucose variability metrics from continuous glucose monitor data. Datastream input is CGM data containing timestamp and glucose. Datastream output is 23 glucose variability metrics.") \
+            .add_module(
+            ModuleMetadata().set_name(
+                "cerebralcortex.algorithms.glucose.glucose_variability_metrics.glucose_var").set_version(
+                "1.0.0").set_author(
+                "Digital Biomarker Discovery Pipeline (DBDP)", "brinnae.bent@duke.edu"))
+        stream_metadata.is_valid()
+        return stream_metadata
 
     @pandas_udf(return_schema, PandasUDFType.GROUPED_MAP)
     def get_all_metrics(data):
         '''
         Compute CGM Metrics
+
         Input:
             Pandas data frame of raw continuous gluose monitor data
         Returns:
@@ -345,9 +463,9 @@ def glucose_var(ds):
         '''
 
         df = pd.DataFrame()
-        output = pd.DataFrame()
-        df['Time'] = data['Timestamp (YYYY-MM-DDThh:mm:ss)']
-        df['Glucose'] = pd.to_numeric(data['Glucose Value (mg/dL)'])
+        output = []
+        df['Time'] = data['timestamp']
+        df['Glucose'] = pd.to_numeric(data['glucose_value'])
         df.drop(df.index[:12], inplace=True)
         df['Time'] = pd.to_datetime(df['Time'], format='%Y-%m-%dT%H:%M:%S')
         df['Day'] = df['Time'].dt.date
@@ -357,31 +475,41 @@ def glucose_var(ds):
         intradaysd, intradaySDmedian, intradaySDSD = intradaySD(df)
         intradaycv, intradayCVmedian, intradayCVSD = intradayCV(df)
 
-        output['meanG'] = meanG
-        output['medianG'] = medianG
-        output['minG'] = minG
-        output['maxG'] = maxG
-        output['Q1G'] = Q1G
-        output['Q3G'] = Q3G
-        output['GMI'] = GMI(df)
-        output['eA1c'] = eA1c(df)
-        output['CONGA24'] = CONGA24(df)
-        output['MODD'] = MODD(df)
-        output['ADRR'] = ADRR(df)
-        output['HBGI'] = HBGI(df)
-        output['LBGI'] = LBGI(df)
-        output['J-index'] = J_index(df)
-        output['MAGE'] = MAGE(df)
-        output['MAGN'] = MAGN(df)
-        output['POR'] = POR(df)
-        output['TOR'] = TOR(df)
-        output['TIR'] = TIR(df)
-        output['interdaySD'] = interdaySD(df)
-        output['interdayCV'] = interdayCV(df)
-        output['intradaySD'] = intradaysd
-        output['intradayCV'] = intradaycv
-        return output
+        output.append(data.timestamp.iloc[0])
+        output.append(data.localtime.iloc[0])
+        output.append(data.user.iloc[0])
+        output.append(1)
 
+        output.append(meanG)
+        output.append(medianG)
+        output.append(minG)
+        output.append(maxG)
+        output.append(Q1G)
+        output.append(Q3G)
+        output.append(GMI(df))
+        output.append(eA1c(df))
+        output.append(CONGA24(df))
+        output.append(MODD(df))
+        output.append(ADRR(df))
+        output.append(HBGI(df))
+        output.append(LBGI(df))
+        output.append(J_index(df))
+        output.append(MAGE(df))
+        output.append(MAGN(df))
+        output.append(POR(df))
+        output.append(TOR(df))
+        output.append(TIR(df))
+        output.append(interdaySD(df))
+        output.append(interdayCV(df))
+        output.append(intradaysd)
+        output.append(intradaycv)
+        column_names = [a.name for a in return_schema]
+        pdf = pd.DataFrame([output], columns=column_names)
+        return pdf
 
-    data = ds._data.apply(get_all_metrics)
-    return DataStream(data=data, metadata=Metadata())
+    data = ds._data.groupby(["user", "version"]).apply(get_all_metrics)
+
+    results = DataStream(data=data, metadata=Metadata())
+    metadta = update_metadata(results.metadata)
+    results.metadata = metadta
+    return results
