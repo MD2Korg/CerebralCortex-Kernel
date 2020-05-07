@@ -41,6 +41,32 @@ def glucose_var(ds):
         ds (DataStream): input is datastream of CGM data; returns datastream of glucose variability metrics + metadata
     Returns:
         DataStream with glucose variability metrics
+        Glucose Variability Metrics include: 
+        Interday Mean Glucose
+        Interday Median Glucose
+        Interday Maximum Glucose
+        Interday Minimum Glucose
+        Interday Standard Deviation of Glucose
+        Interday Coefficient of Variation of Glucose
+        Intraday Standard Deviation of Glucose (mean, median, standard deviation)
+        Intraday Coefficient of Variation of Glucose (mean, median, standard deviation)
+        TIR (Time in Range of default 1 SD)
+        TOR (Time outside Range of default 1 SD)
+        POR (Percent outside Range of default 1 SD)
+        MAGE (Mean Amplitude of Glucose Excursions, default 1 SD)
+        MAGN (Mean Amplitude of Normal Glucose, default 1 SD)
+        J-index
+        LBGI (Low Blood Glucose Index)
+        HBGI (High Blood Glucose Index)
+        MODD (Mean of Daily Differences)
+        CONGA24 (Continuous overall net glycemic action over 24 hours)
+        ADRR (Average Daily Risk Range)
+        GMI (Glucose Management Indicator)
+        eA1c (estimated A1c according to American Diabetes Association)
+        Q1G (intraday first quartile glucose)
+        Q3G (intraday third quartile glucose)
+        ** for more information on these glucose metrics see dbdp.org**
+        
     '''
 
     def interdayCV(df):
@@ -51,6 +77,7 @@ def glucose_var(ds):
             df (pandas.DataFrame):
 
         Returns:
+            cvx (IntegerType): interday coefficient of variation of glucose
 
         """
         cvx = (np.std(df['Glucose']) / (np.mean(df['Glucose']))) * 100
@@ -63,6 +90,7 @@ def glucose_var(ds):
              df (pandas.DataFrame):
 
         Returns:
+            interdaysd (IntegerType): interday standard deviation of glucose
 
         """
         interdaysd = np.std(df['Glucose'])
@@ -75,6 +103,9 @@ def glucose_var(ds):
              df (pandas.DataFrame):
 
         Returns:
+            intradaycv_mean (IntegerType): Mean, Median, and SD of intraday coefficient of variation of glucose
+            intradaycv_median (IntegerType): Median of intraday coefficient of variation of glucose
+            intradaycv_sd (IntegerType): SD of intraday coefficient of variation of glucose
 
         """
         intradaycv = []
@@ -94,6 +125,9 @@ def glucose_var(ds):
              df (pandas.DataFrame):
 
         Returns:
+            intradaysd_mean (IntegerType): Mean, Median, and SD of intraday standard deviation of glucose
+            intradaysd_median (IntegerType): Median of intraday standard deviation of glucose
+            intradaysd_sd (IntegerType): SD of intraday standard deviation of glucose
 
         """
         intradaysd = []
@@ -111,10 +145,12 @@ def glucose_var(ds):
         computes time in the range of (default=1 sd from the mean) glucose column in pandas dataframe
         Args:
              df (pandas.DataFrame):
-            sd:
-            sr:
+             sd (IntegerType): standard deviation from mean for range calculation (default = 1 SD)
+             sr (IntegerType): Number of minutes between measurements on CGM (default: 5 minutes, standard sampling rate of devices)
 
         Returns:
+            TIR (IntegerType): Time in Range set by sd
+            
 
         """
         up = np.mean(df['Glucose']) + sd * np.std(df['Glucose'])
@@ -127,10 +163,11 @@ def glucose_var(ds):
         computes time outside the range of (default=1 sd from the mean) glucose column in pandas dataframe
         Args:
              df (pandas.DataFrame):
-            sd:
-            sr:
+             sd (IntegerType): standard deviation from mean for range calculation (default = 1 SD)
+             sr (IntegerType): Number of minutes between measurements on CGM (default: 5 minutes, standard sampling rate of devices)
 
         Returns:
+            TOR (IntegerType): Time outside of range set by sd
 
         """
         up = np.mean(df['Glucose']) + sd * np.std(df['Glucose'])
@@ -143,10 +180,11 @@ def glucose_var(ds):
         computes percent time outside the range of (default=1 sd from the mean) glucose column in pandas dataframe
         Args:
              df (pandas.DataFrame):
-            sd:
-            sr:
+             sd (IntegerType): standard deviation from mean for range calculation (default = 1 SD)
+             sr (IntegerType): Number of minutes between measurements on CGM (default: 5 minutes, standard sampling rate of devices)
 
         Returns:
+            POR (IntegerType): percent of time spent outside range set by sd
 
         """
         up = np.mean(df['Glucose']) + sd * np.std(df['Glucose'])
@@ -160,9 +198,10 @@ def glucose_var(ds):
         computes the mean amplitude of glucose excursions (default = 1 sd from the mean)
         Args:
              df (pandas.DataFrame):
-            sd:
+             sd (IntegerType): standard deviation from mean to set as a glucose excursion (default = 1 SD)
 
         Returns:
+           MAGE (IntegerType): Mean Amplitude of glucose excursions
 
         """
         up = np.mean(df['Glucose']) + sd * np.std(df['Glucose'])
@@ -175,9 +214,10 @@ def glucose_var(ds):
         computes the mean amplitude of normal glucose (default = 1 sd from the mean)
         Args:
              df (pandas.DataFrame):
-            sd:
+             sd (IntegerType): standard deviation from mean to set as a glucose excursion (default = 1 SD)
 
         Returns:
+           MAGN (IntegerType):  Mean Amplitude of Normal Glucose
 
         """
         up = np.mean(df['Glucose']) + sd * np.std(df['Glucose'])
@@ -192,6 +232,7 @@ def glucose_var(ds):
              df (pandas.DataFrame):
 
         Returns:
+            J (IntegerType): The J-index, a metric of GV that is a parameter of the mean and standard deviation of glucose
 
         """
         J = 0.001 * ((np.mean(df['Glucose']) + np.std(df['Glucose'])) ** 2)
@@ -199,11 +240,16 @@ def glucose_var(ds):
 
     def LBGI_HBGI(df):
         """
+        This is an intermediary function. This is needed for below functions. Please do not use this function on its own.
         computes the LBGI, HBGI, rh, and rl of glucose
         Args:
              df (pandas.DataFrame):
 
         Returns:
+            LBGI (IntegerType): Do not use
+            HBGI (IntegerType): Do not use
+            rh (IntegerType): rh of glucose, supporting calculation for LBGI, HBGI, ADRR functions
+            rl (IntegerType): rl of glucose, supporting calculation for LBGI, HBGI, ADRR functions
 
         """
         f = ((np.log(df['Glucose']) ** 1.084) - 5.381)
@@ -234,6 +280,7 @@ def glucose_var(ds):
              df (pandas.DataFrame):
 
         Returns:
+            LBGI (IntegerType): Low Blood Glucose Index (metric of hypoglycemic risk)
 
         """
         f = ((np.log(df['Glucose']) ** 1.084) - 5.381)
@@ -254,6 +301,7 @@ def glucose_var(ds):
              df (pandas.DataFrame):
 
         Returns:
+            HBGI (IntegerType): High Blood Glucose Index (metric of hyperglycemia risk)
 
         """
         f = ((np.log(df['Glucose']) ** 1.084) - 5.381)
@@ -269,11 +317,12 @@ def glucose_var(ds):
 
     def ADRR(df):
         """
-        computes ADRR of glucose (requires function LBGI_HBGI to calculate rh and rl parameters
+        computes ADRR of glucose (requires function LBGI_HBGI to calculate rh and rl parameters)
         Args:
              df (pandas.DataFrame):
 
         Returns:
+            ADRRx (IntegerType): Average Daily Risk Range (an assesment of total daily glucose variations within a specific risk space, given by rh and rl)
 
         """
         ADRRl = []
@@ -291,9 +340,10 @@ def glucose_var(ds):
         supporting function for MODD and CONGA24 calculations
         Args:
              df (pandas.DataFrame):
-            value:
+            value (IntegerType): a specific timepoint from the data frame given by MODD or CONGA24 function 
 
         Returns:
+            MODD_n (IntegerType): supporting calculation for MODD and CONGA24
 
         """
         xdf = df[df['Minfrommid'] == value]
@@ -309,6 +359,7 @@ def glucose_var(ds):
              df (pandas.DataFrame):
 
         Returns:
+           MODD (IntegerType): Mean of Daily Differences, a measure of cyrccadian rhythmicity of glucose variability 
 
         """
         df['Timefrommidnight'] = df['Time'].dt.time
@@ -340,6 +391,7 @@ def glucose_var(ds):
              df (pandas.DataFrame):
 
         Returns:
+           CONGA24 (IntegerType): continuous overall net glycemic action over 24 hours
 
         """
         df['Timefrommidnight'] = df['Time'].dt.time
@@ -371,6 +423,7 @@ def glucose_var(ds):
              df (pandas.DataFrame):
 
         Returns:
+            GMI (IntegerType): glucose management index
 
         """
         GMI = 3.31 + (0.02392 * np.mean(df['Glucose']))
@@ -383,6 +436,7 @@ def glucose_var(ds):
              df (pandas.DataFrame):
 
         Returns:
+           eA1c (IntegerType): the estimated A1c according to American Diabetes Association algorithm
 
         """
         eA1c = (46.7 + np.mean(df['Glucose'])) / 28.7
@@ -395,6 +449,12 @@ def glucose_var(ds):
              df (pandas.DataFrame):
 
         Returns:
+            meanG (FloatType): mean glucose
+            medianG (FloatType): median glucose
+            minG (FloatType): minimum glucose
+            maxG (FloatType): maximum glucose
+            Q1G (FloatType): first quartile glucose
+            Q3G (FloatType): third quartile glucose
 
         """
         meanG = np.nanmean(df['Glucose'])
