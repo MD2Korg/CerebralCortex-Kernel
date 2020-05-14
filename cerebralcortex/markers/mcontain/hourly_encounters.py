@@ -139,7 +139,6 @@ def compute_encounters(data,data_map_stream,start_time,end_time,ltime=False):
 
 def generate_visualization_hourly(data_all,data_map_stream,start_time,end_time,ltime=False):
     data_all = data_all.withColumnRenamed('avg_rssi','RSSI').withColumnRenamed('avg_distance','distance_estimate')
-
     data_all = data_all.withColumn('distance_estimate',F.col('distance_estimate').cast('double'))
     data_all = data_all.withColumn('minor',F.col('minor').cast('long')).withColumn('major',F.col('major').cast('long'))
     if 'participant_identifier' in data_map_stream.columns:
