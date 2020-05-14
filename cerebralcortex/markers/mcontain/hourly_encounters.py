@@ -36,6 +36,7 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 import pandas as pd
 import numpy as np
 from datetime import datetime, date, timedelta
+import time
 
 # Copyright (c) 2019, MD2K Center of Excellence
 # - Md Azim Ullah <mullah@memphis.edu>
