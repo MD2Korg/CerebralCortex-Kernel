@@ -150,7 +150,7 @@ schema = StructType([
 ])
 
 @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-def ecg_quality(key,data):
+def decode(key,data):
     try:
         if data.shape[0]<2:
             return pd.DataFrame([],columns=['timestamp','localtime',
@@ -251,7 +251,7 @@ def get_metadata():
 def motionsenseHRV_decode(raw_data_with_diff):
     raw_data_with_diff = raw_data_with_diff.withColumn('local_time',raw_data_with_diff.localtime.cast('double'))
     raw_data_with_diff = raw_data_with_diff.withColumn('time',raw_data_with_diff.timestamp.cast('double'))
-    raw_data_with_diff_list = raw_data_with_diff.compute(ecg_quality,windowDuration=300,startTime='0 seconds')
+    raw_data_with_diff_list = raw_data_with_diff.compute(decode,windowDuration=300,startTime='0 seconds')
     raw_data_with_diff_list = raw_data_with_diff_list.withColumn('localtime',raw_data_with_diff_list.localtime.cast('timestamp'))
     raw_data_with_diff_list = raw_data_with_diff_list.withColumn('timestamp',raw_data_with_diff_list.timestamp.cast('timestamp'))
     raw_data_with_diff_list.metadata = get_metadata()
