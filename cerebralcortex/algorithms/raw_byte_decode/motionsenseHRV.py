@@ -133,85 +133,6 @@ def convert_to_array(vals):
         return np.nan
     return np.float64(np.array(struct.unpack('20B',vals))-2**7)
 
-schema = StructType([
-    StructField("version", IntegerType()),
-    StructField("user", StringType()),
-    StructField("localtime", DoubleType()),
-    StructField("timestamp", DoubleType()),
-    StructField("red", FloatType()),
-    StructField("infrared", FloatType()),
-    StructField("green", FloatType()),
-    StructField("aclx", FloatType()),
-    StructField("acly", FloatType()),
-    StructField("aclz", FloatType()),
-    StructField("gyrox", FloatType()),
-    StructField("gyroy", FloatType()),
-    StructField("gyroz", FloatType())
-])
-
-@pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-def decode(key,data):
-    try:
-        if data.shape[0]<2:
-            return pd.DataFrame([],columns=['timestamp','localtime',
-                                            'red','infrared','green',
-                                            'aclx','acly','aclz',
-                                            'gyrox','gyroy','gyroz','user','version'])
-    except:
-        return pd.DataFrame([],columns=['timestamp','localtime',
-                                        'red','infrared','green',
-                                        'aclx','acly','aclz',
-                                        'gyrox','gyroy','gyroz','user','version'])
-    data['packet'] = data['packet'].apply(convert_to_array)
-    data = data.dropna()
-    ts = data['time'].values
-    local_ts = data['local_time'].values
-    sample = np.zeros((len(ts), 22))
-    sample[:,0] = ts*1000
-    sample[:,1] = local_ts*1000
-    temp = data['packet'].values
-    for i in range(len(ts)):
-        sample[i,2:] = temp[i]
-    sample = sample[sample[:,0].argsort(),:]
-    ts_temp = np.array([0] + list(np.diff(sample[:,0])))
-    ind = np.where(ts_temp > 500)[0]
-    initial = 0
-    sample_final = [0] * 12
-    for k in ind:
-        sample_temp = Preprc(raw_data=sample[initial:k, :])
-        initial = k
-        if not list(sample_temp):
-            continue
-        sample_final = np.vstack((sample_final, sample_temp.values))
-    sample_temp = Preprc(raw_data=sample[initial:, :])
-    if np.shape(sample_temp)[0] > 0:
-        sample_final = np.vstack((sample_final, sample_temp.values))
-    if np.shape(sample_final)[0]<20:
-        return pd.DataFrame([],columns=['timestamp','localtime',
-                                        'red','infrared','green',
-                                        'aclx','acly','aclz',
-                                        'gyrox','gyroy','gyroz','user','version'])
-    try:
-        ind_led = np.array([10,11,7,8,9,1,2,3,4,5,6])
-        decoded_data = sample_final[1:,ind_led]
-        decoded_data[:,5:8] = decoded_data[:,5:8]*2/16384
-        decoded_data[:,8:] = 500.0 * decoded_data[:,8:] / 32768
-        decoded_data[:,:2] = decoded_data[:,:2]/1000
-        userid = data['user'].loc[0]
-        versionid = data['version'].loc[0]
-        data1 = pd.DataFrame(decoded_data,columns=['timestamp','localtime',
-                                                   'red','infrared','green',
-                                                   'aclx','acly','aclz',
-                                                   'gyrox','gyroy','gyroz'])
-        data1['user'] = userid
-        data1['version'] = versionid
-        return data1
-    except:
-        return pd.DataFrame([],columns=['timestamp','localtime',
-                                        'red','infrared','green',
-                                        'aclx','acly','aclz',
-                                        'gyrox','gyroy','gyroz','user','version'])
-
 
 def get_metadata():
     stream_name = 'fill in your stream name'
@@ -249,6 +170,87 @@ def get_metadata():
     return stream_metadata
 
 def motionsenseHRV_decode(raw_data_with_diff):
+
+    schema = StructType([
+        StructField("version", IntegerType()),
+        StructField("user", StringType()),
+        StructField("localtime", DoubleType()),
+        StructField("timestamp", DoubleType()),
+        StructField("red", FloatType()),
+        StructField("infrared", FloatType()),
+        StructField("green", FloatType()),
+        StructField("aclx", FloatType()),
+        StructField("acly", FloatType()),
+        StructField("aclz", FloatType()),
+        StructField("gyrox", FloatType()),
+        StructField("gyroy", FloatType()),
+        StructField("gyroz", FloatType())
+    ])
+
+    @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+    def decode(key,data):
+        try:
+            if data.shape[0]<2:
+                return pd.DataFrame([],columns=['timestamp','localtime',
+                                                'red','infrared','green',
+                                                'aclx','acly','aclz',
+                                                'gyrox','gyroy','gyroz','user','version'])
+        except:
+            return pd.DataFrame([],columns=['timestamp','localtime',
+                                            'red','infrared','green',
+                                            'aclx','acly','aclz',
+                                            'gyrox','gyroy','gyroz','user','version'])
+        data['packet'] = data['packet'].apply(convert_to_array)
+        data = data.dropna()
+        ts = data['time'].values
+        local_ts = data['local_time'].values
+        sample = np.zeros((len(ts), 22))
+        sample[:,0] = ts*1000
+        sample[:,1] = local_ts*1000
+        temp = data['packet'].values
+        for i in range(len(ts)):
+            sample[i,2:] = temp[i]
+        sample = sample[sample[:,0].argsort(),:]
+        ts_temp = np.array([0] + list(np.diff(sample[:,0])))
+        ind = np.where(ts_temp > 500)[0]
+        initial = 0
+        sample_final = [0] * 12
+        for k in ind:
+            sample_temp = Preprc(raw_data=sample[initial:k, :])
+            initial = k
+            if not list(sample_temp):
+                continue
+            sample_final = np.vstack((sample_final, sample_temp.values))
+        sample_temp = Preprc(raw_data=sample[initial:, :])
+        if np.shape(sample_temp)[0] > 0:
+            sample_final = np.vstack((sample_final, sample_temp.values))
+        if np.shape(sample_final)[0]<20:
+            return pd.DataFrame([],columns=['timestamp','localtime',
+                                            'red','infrared','green',
+                                            'aclx','acly','aclz',
+                                            'gyrox','gyroy','gyroz','user','version'])
+        try:
+            ind_led = np.array([10,11,7,8,9,1,2,3,4,5,6])
+            decoded_data = sample_final[1:,ind_led]
+            decoded_data[:,5:8] = decoded_data[:,5:8]*2/16384
+            decoded_data[:,8:] = 500.0 * decoded_data[:,8:] / 32768
+            decoded_data[:,:2] = decoded_data[:,:2]/1000
+            userid = data['user'].loc[0]
+            versionid = data['version'].loc[0]
+            data1 = pd.DataFrame(decoded_data,columns=['timestamp','localtime',
+                                                       'red','infrared','green',
+                                                       'aclx','acly','aclz',
+                                                       'gyrox','gyroy','gyroz'])
+            data1['user'] = userid
+            data1['version'] = versionid
+            return data1
+        except:
+            return pd.DataFrame([],columns=['timestamp','localtime',
+                                            'red','infrared','green',
+                                            'aclx','acly','aclz',
+                                            'gyrox','gyroy','gyroz','user','version'])
+
+
     raw_data_with_diff = raw_data_with_diff.withColumn('local_time',raw_data_with_diff.localtime.cast('double'))
     raw_data_with_diff = raw_data_with_diff.withColumn('time',raw_data_with_diff.timestamp.cast('double'))
     raw_data_with_diff_list = raw_data_with_diff.compute(decode,windowDuration=300,startTime='0 seconds')
