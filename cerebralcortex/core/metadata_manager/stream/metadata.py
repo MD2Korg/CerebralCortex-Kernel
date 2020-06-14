@@ -45,109 +45,6 @@ class Metadata():
         self.data_descriptor = []
         self.modules = []
 
-    # @property
-    # def name(self)->str:
-    #     """
-    #     get stream name
-    #
-    #     Returns:
-    #         str: name
-    #
-    #     """
-    #     return self.name
-    #
-    # @name.setter
-    # def name(self, value:str):
-    #     """
-    #     set stream name
-    #
-    #     Args:
-    #         value (str): name
-    #     """
-    #     self.name = value
-    #
-    # @property
-    # def version(self)->int:
-    #     """
-    #     get stream version
-    #
-    #     Returns:
-    #         int: version
-    #
-    #     """
-    #     return self.version
-    #
-    # @version.setter
-    # def version(self, value:int):
-    #     """
-    #     set stream version
-    #
-    #     Args:
-    #         value (int): version
-    #     """
-    #     self.version = int(value)
-    #
-    # @property
-    # def metadata_hash(self)->str:
-    #     """
-    #     get metadata hash
-    #
-    #     Returns:
-    #         str: metadata hash
-    #
-    #     """
-    #     return self.metadata_hash
-    #
-    # @metadata_hash.setter
-    # def metadata_hash(self, value: str):
-    #     """
-    #     set metadata hash
-    #
-    #     Args:
-    #         value (str): metadata hash
-    #     """
-    #     self.metadata_hash = value
-    #
-    # @property
-    # def data_descriptor(self)->DataDescriptor:
-    #     """
-    #     get stream data descriptor
-    #
-    #     Returns:
-    #         DataDescriptor: object of data descriptor
-    #     """
-    #     return self.dataDescriptor
-    #
-    # @data_descriptor.setter
-    # def data_descriptor(self, value: DataDescriptor):
-    #     """
-    #     Set stream data descriptor
-    #
-    #     Args:
-    #         value (DataDescriptor): object of data descriptor
-    #     """
-    #     self.dataDescriptor= value
-    #
-    # @property
-    # def modules(self)->str:
-    #     """
-    #     get stream module metadata
-    #
-    #     Returns:
-    #         ModuleMetadata: object of ModuleMetadata
-    #     """
-    #     return self.modules
-    #
-    # @modules.setter
-    # def modules(self, value:ModuleMetadata):
-    #     """
-    #     set stream module metadata
-    #
-    #     Args:
-    #         value (ModuleMetadata):  object of ModuleMetadata
-    #     """
-    #     self.modules = value
-
     def set_name(self, value:str):
         """
         set name of a stream
@@ -195,12 +92,15 @@ class Metadata():
         Add input streams that were used to derive a new stream
 
         Args:
-            input_stream (str): name of input stream
+            input_stream (str): name of input stream OR list of input_stream names
 
         Returns:
             self
         """
-        self.input_streams.append(input_stream)
+        if isinstance(input_stream,list):
+            self.input_streams = input_stream
+        else:
+            self.input_streams.append(input_stream)
         return self
 
     def add_annotation(self, annotation:str):
@@ -208,12 +108,15 @@ class Metadata():
         Add annotation stream name
 
         Args:
-            annotation (str): name of annotation stream
+            annotation (str): name of annotation  or list of strings
 
         Returns:
             self
         """
-        self.annotations.append(annotation)
+        if isinstance(annotation, list):
+            self.annotations = annotation
+        else:
+            self.annotations.append(annotation)
         return self
 
     def add_module(self, mod: ModuleMetadata):

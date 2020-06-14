@@ -30,7 +30,7 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, Modul
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
 from pyspark.sql.group import GroupedData
-
+from cerebralcortex.algorithms.util import update_metadata
 
 def glucose_var(ds):
     """
@@ -498,22 +498,6 @@ def glucose_var(ds):
         StructField("intradayCV", IntegerType())
     ])
 
-    def update_metadata(stream_metadata) -> Metadata:
-        """
-        Create Metadata object with some sample metadata of phone battery data
-        Returns:
-            Metadata: metadata of phone battery stream
-        """
-        stream_metadata.set_name("cgm_glucose_variability_metrics").set_description(
-            "This algorithm computes 23 clinically validated glucose variability metrics from continuous glucose monitor data. Datastream input is CGM data containing timestamp and glucose. Datastream output is 23 glucose variability metrics.") \
-            .add_module(
-            ModuleMetadata().set_name(
-                "cerebralcortex.algorithms.glucose.glucose_variability_metrics.glucose_var").set_version(
-                "1.0.0").set_author(
-                "Digital Biomarker Discovery Pipeline (DBDP)", "brinnae.bent@duke.edu"))
-        stream_metadata.is_valid()
-        return stream_metadata
-
     @pandas_udf(return_schema, PandasUDFType.GROUPED_MAP)
     def get_all_metrics(data):
         '''
@@ -578,6 +562,11 @@ def glucose_var(ds):
     data = ds._data.apply(get_all_metrics)
 
     results = DataStream(data=data, metadata=Metadata())
-    metadta = update_metadata(results.metadata)
+    metadta = update_metadata(stream_metadata=results.metadata,
+                    stream_name="cgm_glucose_variability_metrics",
+                    stream_desc="This algorithm computes 23 clinically validated glucose variability metrics from continuous glucose monitor data. Datastream input is CGM data containing timestamp and glucose. Datastream output is 23 glucose variability metrics.",
+                    module_name="cerebralcortex.algorithms.glucose.glucose_variability_metrics.glucose_var",
+                    module_version="1.0.0",
+                    authors=[{"Digital Biomarker Discovery Pipeline (DBDP)":"brinnae.bent@duke.edu"}])
     results.metadata = metadta
     return results

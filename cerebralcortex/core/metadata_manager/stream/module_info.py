@@ -82,6 +82,20 @@ class ModuleMetadata:
         self.authors.append(tmp)
         return self
 
+    def set_authors(self, authors):
+        """
+        set author key/value pair. For example, key=name, value=md2k
+
+        Args:
+            authors (list[dict]): List of authors names and emails ids in dict. For example, authors = [{"ali":"ali@gmail.com"}, {"nasir":"nasir@gmail.com"}]
+
+        Returns:
+            self:
+        """
+
+        self.authors = authors
+        return self
+
     def set_attribute(self, key:str, value:str):
         """
         Attributes field is option in metadata object. Arbitrary number or attributes could be attached to a DataDescriptor

@@ -1033,7 +1033,7 @@ class DataStream(DataFrame):
 
             stream_metadata.add_module(
                 ModuleMetadata().set_name("cerebralcortex.core.datatypes.datastream.DataStream").set_attribute("url",
-                                                                                                           "hhtps://md2k.org").set_author(
+                                                                                                           "https://md2k.org").set_author(
                     "Nasir Ali", "nasir.ali08@gmail.com"))
 
             return stream_metadata

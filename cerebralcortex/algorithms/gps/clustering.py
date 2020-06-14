@@ -32,7 +32,9 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataD
 import pandas as pd, numpy as np
 from scipy.spatial import ConvexHull
 from pyspark.sql.group import GroupedData
+from cerebralcortex.algorithms.util import update_metadata
 
+from pennprov.api.decorators import MProvAgg
 
 def impute_gps_data(ds, accuracy_threashold:int=100):
     """
@@ -61,7 +63,15 @@ def impute_gps_data(ds, accuracy_threashold:int=100):
             "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
 
     data = ds._data.apply(gps_imputer)
-    return DataStream(data=data, metadata=Metadata())
+    results = DataStream(data=data, metadata=Metadata())
+    metadta = update_metadata(stream_metadata=results.metadata,
+                              stream_name="gps--org.md2k.imputed",
+                              stream_desc="impute GPS data",
+                              module_name="cerebralcortex.algorithms.gps.clustering.impute_gps_data",
+                              module_version="1.0.0",
+                              authors=[{"Azim": "aungkonazim@gmail.com"}])
+    results.metadata = metadta
+    return results
 
 
 
@@ -87,17 +97,13 @@ def cluster_gps(ds: DataStream, epsilon_constant:int = 1000,
     Returns:
         DataStream object
     """
-    columns = ds.columns
     centroid_id_name = 'centroid_id'
     features_list = [StructField('centroid_longitude', DoubleType()),
                      StructField('centroid_latitude', DoubleType()),
                      StructField('centroid_id', IntegerType()),
                      StructField('centroid_area', DoubleType())]
-    centroid_names = [a.name for a in features_list]
-    for c in centroid_names:
-        if c in columns:
-            ds = ds.drop(*[c])
-    schema = StructType(ds._data.schema.fields + features_list)
+
+    schema = StructType(ds._data._df.schema.fields + features_list)
     column_names = [a.name for a in schema.fields]
 
     def reproject(latitude, longitude):
@@ -137,6 +143,7 @@ def cluster_gps(ds: DataStream, epsilon_constant:int = 1000,
         return list(centermost_point) + [area]
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+    @MProvAgg('gps--org.md2k.phonesensor--phone', 'gps_clustering', 'gps--org.md2k.clusters', ['user', 'timestamp'], ['user', 'timestamp'])
     def gps_clustering(data):
         if data.shape[0] < minimum_points_in_cluster:
             return pd.DataFrame([], columns=column_names)
@@ -146,7 +153,6 @@ def cluster_gps(ds: DataStream, epsilon_constant:int = 1000,
             data['centroid_latitude'] = data[latitude_column_name].values[0]
             data['centroid_longitude'] = data[longitude_column_name].values[0]
             return data
-
 
         coords = np.float64(data[[latitude_column_name, longitude_column_name]].values)
 
@@ -181,4 +187,12 @@ def cluster_gps(ds: DataStream, epsilon_constant:int = 1000,
             "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
 
     data = ds._data.apply(gps_clustering)
-    return DataStream(data=data, metadata=Metadata())
+    results = DataStream(data=data, metadata=Metadata())
+    metadta = update_metadata(stream_metadata=results.metadata,
+                              stream_name="gps--org.md2k.clusters",
+                              stream_desc="GPS clusters computed using DBSCAN algorithm.",
+                              module_name="cerebralcortex.algorithms.gps.clustering.cluster_gps",
+                              module_version="1.0.0",
+                              authors=[{"Azim": "aungkonazim@gmail.com"}])
+    results.metadata = metadta
+    return results
