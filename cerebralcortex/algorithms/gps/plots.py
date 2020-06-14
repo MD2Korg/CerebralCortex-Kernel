@@ -23,6 +23,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from ipyleaflet import Map, Marker, MarkerCluster
+
+
 def plot_gps_clusters(ds, zoom=5):
     """
     Plots GPS coordinates
@@ -34,4 +37,17 @@ def plot_gps_clusters(ds, zoom=5):
     """
     pdf = ds._data.toPandas()
     pdf = ds._sort_values(pdf)
-    return ds._basic_plots.plot_gps_cords(pdf, zoom=zoom)
+
+    marker_list = []
+    center = None
+    for index, row in pdf.iterrows():
+        if center is None:
+            center = [row["latitude"], row["longitude"]]
+        marker_list.append(Marker(location=(row["latitude"], row["longitude"])))
+
+    m = Map(center=(center), zoom=zoom)
+    marker_cluster = MarkerCluster(
+        markers=(marker_list)
+    )
+    m.add_layer(marker_cluster);
+    return m

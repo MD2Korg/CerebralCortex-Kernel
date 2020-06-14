@@ -29,16 +29,19 @@ from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, ModuleMetadata
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
+from pyspark.sql.group import GroupedData
 
 
 def glucose_var(ds):
-    '''
+    """
+
     Compute CGM Glucose Variability Metrics:
 
     This algorithm computes 23 clinically validated glucose variability metrics from continuous glucose monitor data.
 
     Input:
-        ds (DataStream): input is datastream of CGM data; returns datastream of glucose variability metrics + metadata
+        ds (DataStream): Windowed/grouped DataStream of CGM data
+
     Returns:
         DataStream with glucose variability metrics
         Glucose Variability Metrics include: 
@@ -67,7 +70,7 @@ def glucose_var(ds):
         Q3G (intraday third quartile glucose)
         ** for more information on these glucose metrics see dbdp.org**
         
-    '''
+    """
 
     def interdayCV(df):
         """
@@ -567,7 +570,12 @@ def glucose_var(ds):
         pdf = pd.DataFrame([output], columns=column_names)
         return pdf
 
-    data = ds._data.groupby(["user", "version"]).apply(get_all_metrics)
+    # check if datastream object contains grouped type of DataFrame
+    if not isinstance(ds._data, GroupedData):
+        raise Exception(
+            "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
+
+    data = ds._data.apply(get_all_metrics)
 
     results = DataStream(data=data, metadata=Metadata())
     metadta = update_metadata(results.metadata)

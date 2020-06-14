@@ -47,7 +47,7 @@ def generate_features(CC, user_id, candidate_stream_name, output_stream_name):
     ds_candidates = CC.get_stream(candidate_stream_name, user_id=user_id)
 
     ## compute features
-    ds_fouriar_features = ds_candidates.compute_fourier_features(
+    ds_fouriar_features = ds_candidates.compute_FFT_features(
         exclude_col_names=['group', 'candidate', "accel_magnitude", "gyro_magnitude"], groupByColumnName=["group"])
 
     ds_statistical_features = ds_candidates.compute_statistical_features(

@@ -1,4 +1,4 @@
-# Copyright (c) 2019, MD2K Center of Excellence
+# Copyright (c) 2020, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -27,13 +27,17 @@ import json
 
 import pandas as pd
 
+from cerebralcortex.core.datatypes import DataStream
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.group import GroupedData
 from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
 
 
 def ema_incentive(ds):
     """
     Parse stream name 'incentive--org.md2k.ema_scheduler--phone'. Convert json column to multiple columns.
+
     Args:
         ds: Windowed/grouped DataStream object
 
@@ -69,9 +73,24 @@ def ema_incentive(ds):
 
         return pd.DataFrame(all_vals,columns=['timestamp','localtime', 'user', 'version','incentive','total_incentive','ema_id','data_quality'])
 
-    return ds.compute(parse_ema_incentive)
+    # check if datastream object contains grouped type of DataFrame
+    if not isinstance(ds._data, GroupedData):
+        raise Exception(
+            "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
+
+    data = ds._data.apply(parse_ema_incentive)
+    return DataStream(data=data, metadata=Metadata())
 
 def ema_logs(ds):
+    """
+    Convert json column to multiple columns.
+
+    Args:
+        ds (DataStream): Windowed/grouped DataStream object
+
+    Returns:
+
+    """
     schema = StructType([
         StructField("timestamp", TimestampType()),
         StructField("localtime", TimestampType()),
@@ -105,9 +124,10 @@ def ema_logs(ds):
         return pd.DataFrame(all_vals, columns=['timestamp', 'localtime', 'user', 'version', 'status', 'ema_id',
                                                'schedule_timestamp', 'operation'])
 
-    return ds.compute(parse_ema_logs)
-#status = schedule
-#response = schedule
+    # check if datastream object contains grouped type of DataFrame
+    if not isinstance(ds._data, GroupedData):
+        raise Exception(
+            "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
 
-def ema_qa(ds, col_name):
-    pass
+    data = ds._data.apply(parse_ema_logs)
+    return DataStream(data=data, metadata=Metadata())

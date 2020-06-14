@@ -31,92 +31,20 @@ from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
 import pandas as pd, numpy as np
 from scipy.spatial import ConvexHull
+from pyspark.sql.group import GroupedData
 
 
-# def cluster_gps(ds, epsilon_constant=10, latitude=0, longitude=1, gps_accuracy_threashold=41.0, km_per_radian=6371.0088,
-#                 geo_fence_distance=2, minimum_points_in_cluster=50):
-#     def get_centermost_point(cluster: object) -> object:
-#         """
-#
-#         :param cluster:
-#         :return:
-#         :rtype: object
-#         """
-#         centroid = (
-#             MultiPoint(cluster).centroid.x, MultiPoint(cluster).centroid.y)
-#         centermost_point = min(cluster, key=lambda point: great_circle(point,
-#                                                                        centroid).m)
-#         return tuple(centermost_point)
-#
-#     schema = StructType([
-#         StructField("timestamp", TimestampType()),
-#         StructField("localtime", TimestampType()),
-#         StructField("user", StringType()),
-#         StructField("version", IntegerType()),
-#
-#         StructField("latitude", FloatType()),
-#         StructField("longitude", FloatType())
-#     ])
-#
-#     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-#     def gps_clusters(data: object) -> object:
-#         """
-#         Computes the clusters
-#
-#         :rtype: object
-#         :param list data: list of interpolated gps data
-#         :param float geo_fence_distance: Maximum distance between points in a
-#         cluster
-#         :param int min_points_in_cluster: Minimum number of points in a cluster
-#         :return: list of cluster-centroids coordinates
-#         """
-#         # geo_fence_distance = geo_fence_distance
-#         min_points_in_cluster = minimum_points_in_cluster
-#
-#         data = data[data.accuracy < gps_accuracy_threashold]
-#         try:
-#             timestamp = data.timestamp.iloc[0]
-#             localtime = data.localtime.iloc[0]
-#             user = data.user.iloc[0]
-#             version = data.version.iloc[0]
-#             dataframe = pd.DataFrame(
-#                 {'latitude': data.latitude, 'longitude': data.longitude})
-#             coords = dataframe.as_matrix(columns=['latitude', 'longitude'])
-#
-#             epsilon = geo_fence_distance / (
-#                     epsilon_constant * km_per_radian)
-#             db = DBSCAN(eps=epsilon, min_samples=min_points_in_cluster,
-#                         algorithm='ball_tree', metric='haversine').fit(
-#                 np.radians(coords))
-#             cluster_labels = db.labels_
-#             num_clusters = len(set(cluster_labels))
-#             clusters = pd.Series(
-#                 [coords[cluster_labels == n] for n in range(-1, num_clusters)])
-#             clusters = clusters.apply(lambda y: np.nan if len(y) == 0 else y)
-#             clusters.dropna(how='any', inplace=True)
-#             centermost_points = clusters.map(get_centermost_point)
-#             centermost_points = np.array(centermost_points)
-#             all_centroid = []
-#             for cols in centermost_points:
-#                 cols = np.array(cols)
-#                 cols.flatten()
-#                 cs = ([timestamp, localtime, user, version, cols[latitude], cols[longitude]])
-#                 all_centroid.append(cs)
-#             df = pd.DataFrame(all_centroid,
-#                               columns=["timestamp", "localtime", "user", "version", 'latitude', 'longitude'])
-#             return df
-#         except:
-#             pass
-#
-#     # check if datastream object contains grouped type of DataFrame
-#     if not isinstance(ds._data, GroupedData):
-#         raise Exception(
-#             "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
-#
-#     data = ds._data.apply(gps_clusters)
-#     return DataStream(data=data, metadata=Metadata())
+def impute_gps_data(ds, accuracy_threashold:int=100):
+    """
+    Inpute GPS data
 
-def impute_gps_data(ds, accuracy_threashold=100):
+    Args:
+        ds (DataStream): Windowed/grouped DataStream object
+        accuracy_threashold (int):
+
+    Returns:
+        DataStream object
+    """
     schema = ds._data.schema
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
@@ -127,29 +55,38 @@ def impute_gps_data(ds, accuracy_threashold=100):
         data = data.fillna(method='ffill').dropna()
         return data
 
+    # check if datastream object contains grouped type of DataFrame
+    if not isinstance(ds._data, GroupedData):
+        raise Exception(
+            "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
+
     data = ds._data.apply(gps_imputer)
     return DataStream(data=data, metadata=Metadata())
 
 
 
 
-def cluster_gps(ds, epsilon_constant = 1000,
-                km_per_radian = 6371.0088,
-                geo_fence_distance = 30,
-                minimum_points_in_cluster = 1,
-                latitude_column_name = 'latitude',
-                longitude_column_name = 'longitude'):
-    '''
+def cluster_gps(ds: DataStream, epsilon_constant:int = 1000,
+                km_per_radian:int = 6371.0088,
+                geo_fence_distance:int = 30,
+                minimum_points_in_cluster:int = 1,
+                latitude_column_name:str = 'latitude',
+                longitude_column_name:str = 'longitude'):
+    """
+    Cluster GPS data - Algorithm used to cluster GPS data is based on DBScan
 
     Args:
-        ds (DataStream): datastream object
-        minimum_haversine_distance: in KM
-        minimum_duration: in seconds
-        minimum_gpspoints:
+        ds (DataStream): Windowed/grouped DataStream object
+        epsilon_constant (int):
+        km_per_radian (int):
+        geo_fence_distance (int):
+        minimum_points_in_cluster (int):
+        latitude_column_name (str):
+        longitude_column_name (str):
 
     Returns:
-
-    '''
+        DataStream object
+    """
     columns = ds.columns
     centroid_id_name = 'centroid_id'
     features_list = [StructField('centroid_longitude', DoubleType()),
@@ -176,9 +113,13 @@ def cluster_gps(ds, epsilon_constant = 1000,
 
     def get_centermost_point(cluster: np.ndarray) -> object:
         """
-        :param cluster:
-        :return:
-        :rtype: object
+        Get center most point of a cluster
+
+        Args:
+            cluster (np.ndarray):
+
+        Returns:
+
         """
         try:
             if cluster.shape[0]>=3:
@@ -234,6 +175,10 @@ def cluster_gps(ds, epsilon_constant = 1000,
         data = pd.merge(data, temp_df, how='left', left_on=[centroid_id_name], right_on=[centroid_id_name])
         return data
 
+    # check if datastream object contains grouped type of DataFrame
+    if not isinstance(ds._data, GroupedData):
+        raise Exception(
+            "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
 
-    data = ds._data.groupBy('version').apply(gps_clustering)
+    data = ds._data.apply(gps_clustering)
     return DataStream(data=data, metadata=Metadata())

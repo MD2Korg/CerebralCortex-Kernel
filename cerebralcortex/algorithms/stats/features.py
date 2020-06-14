@@ -1,4 +1,27 @@
-from typing import List
+# Copyright (c) 2020, MD2K Center of Excellence
+# - Nasir Ali <nasir.ali08@gmail.com>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import numpy as np
 import pandas as pd
@@ -8,15 +31,16 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from pyspark.sql import functions as F
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import *
-# from pyspark.sql.functions import pandas_udf,PandasUDFType
 from pyspark.sql.types import StructType
+from pyspark.sql.group import GroupedData
 
 
 def magnitude(ds, col_names=[]):
     """
     Compute magnitude of columns
+
     Args:
-        ds (DataStream):
+        ds (DataStream): Windowed/grouped DataStream object
         col_names (list[str]): column names
 
     Returns:
@@ -24,7 +48,7 @@ def magnitude(ds, col_names=[]):
 
     """
     if len(col_names) < 1:
-        raise Exception("col_names param is missing.")
+        raise Exception("col_names param cannot be empty list.")
 
     tmp = ""
     for col_name in col_names:
@@ -43,6 +67,7 @@ def interpolate(ds, freq=16, method='linear', axis=0, limit=None, inplace=False,
     Interpolate values according to different methods. This method internally uses pandas interpolation.
 
     Args:
+        ds (DataStream): Windowed/grouped DataStream object
         freq (int): Frequency of the signal
         method (str): default ‘linear’
             - ‘linear’: Ignore the index and treat the values as equally spaced. This is the only method supported on MultiIndexes.
@@ -87,21 +112,15 @@ def interpolate(ds, freq=16, method='linear', axis=0, limit=None, inplace=False,
 
 def statistical_features(ds, exclude_col_names: list = [],
                          feature_names=['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
-                                        'kurt', 'sqr'], windowDuration: int = None,
-                         slideDuration: int = None,
-                         groupByColumnName: List[str] = [], startTime=None):
+                                        'kurt', 'sqr']):
     """
     Compute statistical features.
 
     Args:
+        ds (DataStream): Windowed/grouped DataStream object
         exclude_col_names list(str): name of the columns on which features should not be computed
         feature_names list(str): names of the features. Supported features are ['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
                      'kurt', 'sqr', 'zero_cross_rate'
-        windowDuration (int): duration of a window in seconds
-        slideDuration (int): slide duration of a window
-        groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
-        startTime (datetime): The startTime is the offset with respect to 1970-01-01 00:00:00 UTC with which to start window intervals. For example, in order to have hourly tumbling windows that start 15 minutes past the hour, e.g. 12:15-13:15, 13:15-14:15... provide startTime as 15 minutes. First time of data will be used as startTime if none is provided
-
 
     Returns:
         DataStream object with all the existing data columns and FFT features
@@ -204,6 +223,11 @@ def statistical_features(ds, exclude_col_names: list = [],
                                 columns=['timestamp', 'localtime', 'user', 'version', 'start_time', 'end_time'])
         return basic_df.assign(**output)
 
-    data = ds.compute(get_stats_features_udf, windowDuration=windowDuration, slideDuration=slideDuration,
-                      groupByColumnName=groupByColumnName, startTime=startTime)
-    return DataStream(data=data._data, metadata=Metadata())
+    # check if datastream object contains grouped type of DataFrame
+    if not isinstance(ds._data, GroupedData):
+        raise Exception(
+            "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
+
+    data = ds._data.apply(get_stats_features_udf)
+    return DataStream(data=data, metadata=Metadata())
+

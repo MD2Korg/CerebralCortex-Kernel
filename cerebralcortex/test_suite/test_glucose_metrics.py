@@ -38,6 +38,7 @@ from cerebralcortex.test_suite.test_object_storage import TestObjectStorage
 from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
 from cerebralcortex.test_suite.test_stream import DataStreamTest
 
+
 class TestDataframeUDF(unittest.TestCase):
 
     def test_00(self):
@@ -52,10 +53,10 @@ class TestDataframeUDF(unittest.TestCase):
         spark = self.CC.sparkSession
 
         df = spark.read.load("./sample_data/data/study=dbdp/stream=cgm_glucose_variability_metrics/")
+        df.show()
+        ds = DataStream(data=df, metadata=Metadata())
 
-        self.ds = DataStream(data=df, metadata=Metadata())
-
-        results = glucose_var(self.ds)
+        results = glucose_var(ds)
         results.show()
 
 

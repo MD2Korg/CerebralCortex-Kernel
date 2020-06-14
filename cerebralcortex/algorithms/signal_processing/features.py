@@ -1,3 +1,28 @@
+# Copyright (c) 2020, MD2K Center of Excellence
+# - Nasir Ali <nasir.ali08@gmail.com>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 import math
 from typing import List
 
@@ -20,8 +45,9 @@ def complementary_filter(ds, freq: int = 16, accelerometer_x: str = "acceleromet
                          gyroscope_z: str = "gyroscope_z"):
     """
     Compute complementary filter on gyro and accel data.
+
     Args:
-        ds (DataStream ): Windowed/grouped dataframe
+        ds (DataStream ): Non-Windowed/grouped dataframe
         freq (int): frequency of accel/gryo. Assumption is that frequency is equal for both gyro and accel.
         accelerometer_x (str): name of the column
         accelerometer_y (str): name of the column
@@ -34,6 +60,7 @@ def complementary_filter(ds, freq: int = 16, accelerometer_x: str = "acceleromet
     M_PI = math.pi;
     hpf = 0.90;
     lpf = 0.10;
+
 
     window = Window.partitionBy(ds._data['user']).orderBy(ds._data['timestamp'])
 
@@ -62,6 +89,7 @@ def compute_zero_cross_rate(ds, exclude_col_names: list = [],
     Compute statistical features.
 
     Args:
+        ds (DataStream ): Windowed/grouped dataframe
         exclude_col_names list(str): name of the columns on which features should not be computed
         feature_names list(str): names of the features. Supported features are ['mean', 'median', 'stddev', 'variance', 'max', 'min', 'skew',
                      'kurt', 'sqr', 'zero_cross_rate'
@@ -72,7 +100,7 @@ def compute_zero_cross_rate(ds, exclude_col_names: list = [],
 
 
     Returns:
-        DataStream object with all the existing data columns and FFT features
+        DataStream object
     """
     exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
 
@@ -136,8 +164,8 @@ def compute_zero_cross_rate(ds, exclude_col_names: list = [],
     return DataStream(data=data, metadata=Metadata())
 
 
-def compute_fourier_features(ds, exclude_col_names: list = [],
-                             feature_names=["fft_centroid", 'fft_spread', 'spectral_entropy', 'fft_flux',
+def compute_FFT_features(ds, exclude_col_names: list = [],
+                         feature_names=["fft_centroid", 'fft_spread', 'spectral_entropy', 'fft_flux',
                                             'spectral_falloff']):
     """
     Transforms data from time domain to frequency domain.

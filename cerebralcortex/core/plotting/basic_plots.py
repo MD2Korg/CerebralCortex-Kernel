@@ -67,18 +67,5 @@ class BasicPlots():
         else:
             pdf.iplot(kind='histogram', filename='basic histogram')
 
-    def plot_gps_cords(self, pdf, zoom=5):
-        marker_list = []
-        center = None
-        for index, row in pdf.iterrows():
-            if center is None:
-                center = [row["latitude"], row["longitude"]]
-            marker_list.append(Marker(location=(row["latitude"], row["longitude"])))
 
-        m = Map(center=(center), zoom=zoom)
-        marker_cluster = MarkerCluster(
-            markers=(marker_list)
-        )
-        m.add_layer(marker_cluster);
-        return m
 

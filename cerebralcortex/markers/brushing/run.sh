@@ -15,7 +15,7 @@ export PYTHONPATH="${PYTHONPATH}:/home/ali/IdeaProjects/CerebralCortex-2.0/"
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/hadoop/lib/native/libhdfs.so
 
 #Spark path, uncomment if spark home is not exported else where.
-export SPARK_HOME=/home/ali/spark/spark-3.0.0-preview2-bin-hadoop2.7/
+#export SPARK_HOME=/home/ali/spark/spark-3.0.0-preview2-bin-hadoop2.7/
 
 #set spark home, uncomment if spark home is not exported else where.
 export PATH=$SPARK_HOME/bin:$PATH
