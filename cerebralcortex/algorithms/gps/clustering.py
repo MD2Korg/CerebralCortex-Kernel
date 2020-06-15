@@ -143,7 +143,7 @@ def cluster_gps(ds: DataStream, epsilon_constant:int = 1000,
         return list(centermost_point) + [area]
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-    @MProvAgg('gps--org.md2k.phonesensor--phone', 'gps_clustering', 'gps--org.md2k.clusters', ['user', 'timestamp'], ['user', 'timestamp'])
+    #@MProvAgg('gps--org.md2k.phonesensor--phone', 'gps_clustering', 'gps--org.md2k.clusters', ['user', 'timestamp'], ['user', 'timestamp'])
     def gps_clustering(data):
         if data.shape[0] < minimum_points_in_cluster:
             return pd.DataFrame([], columns=column_names)
