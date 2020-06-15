@@ -894,7 +894,7 @@ class DataStream(DataFrame):
             >>> # To do a summary for specific columns first select them:
             >>> ds.select("col1", "col2").summary("count").show()
         """
-        self._data.summary(statistics).show(truncate=False)
+        self._data.summary(*statistics).show(truncate=False)
 
     def take(self,num):
         """

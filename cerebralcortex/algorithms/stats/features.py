@@ -127,7 +127,7 @@ def statistical_features(ds, exclude_col_names: list = [],
     """
     exclude_col_names.extend(["timestamp", "localtime", "user", "version"])
 
-    data = ds._data.drop(*exclude_col_names)
+    data = ds._data._df.drop(*exclude_col_names)
 
     df_column_names = data.columns
 
