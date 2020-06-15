@@ -156,16 +156,16 @@ class DataStream(DataFrame):
 
         groupbycols = ["user", "version"]
 
+        if len(groupByColumnName) > 0:
+            groupbycols.extend(groupByColumnName)
+
+        groupbycols = list(set(groupbycols))
+
         if windowDuration:
             windowDuration = str(windowDuration) + " seconds"
             win = F.window("timestamp", windowDuration=windowDuration, slideDuration=slideDuration,
                            startTime=startTime)
             groupbycols.append(win)
-
-        if len(groupByColumnName) > 0:
-            groupbycols.extend(groupByColumnName)
-
-        groupbycols = list(set(groupbycols))
 
         data = self._data.groupBy(groupbycols)
 

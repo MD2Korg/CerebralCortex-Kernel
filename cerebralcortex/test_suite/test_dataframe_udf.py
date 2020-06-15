@@ -89,7 +89,7 @@ os.environ["MPROV_PASSWORD"] = "habitat1"
 ds_gps = gen_location_datastream(user_id="bfb2ca0c-e19c-3956-9db2-5459ccadd40c", stream_name="gps--org.md2k.phonesensor--phone")
 #ds_gps.show(3)
 
-d2=ds_gps.window()
+d2=ds_gps.window(windowDuration=60)
 dd=cluster_gps(d2)
 dd.show()
 

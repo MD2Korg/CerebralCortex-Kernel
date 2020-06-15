@@ -28,7 +28,7 @@ import unittest
 
 from cerebralcortex.algorithms.gps.clustering import cluster_gps
 from cerebralcortex.test_suite.util.data_helper import gen_location_datastream
-
+from cerebralcortex.algorithms.gps.plots import plot_gps_clusters
 
 class TestDataframeUDF(unittest.TestCase):
 
