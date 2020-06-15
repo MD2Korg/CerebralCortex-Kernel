@@ -16,7 +16,7 @@ nosql_storage: filesystem
 filesystem:
   # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
 
-  filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/mcontain/"
+  filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/dbdp/"
 
 hdfs:
   host: localhost
@@ -29,16 +29,6 @@ hdfs:
 
 object_storage:
   object_storage_path: "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/test_suite/sample_data/objects/"
-
-#minio: # AWS-S3 UPDATE
-#  host: s3.amazonaws.com # for amazon pass s3.amazonaws.com and for minio simpley pass url of minio server
-#  port: 9000
-#  access_key: ''
-#  secret_key: ''
-#  input_bucket_name: 'cerebralcortex-mperf' # required for aws-s3
-#  output_bucket_name: 'cerebralcortex-mperf-output' # required for aws-s3
-#  dir_prefix: 'cerebralcortex/data/'
-#  secure: False #ssl
 
 #########################################################################
 #                          Relational Storage                           #
@@ -67,16 +57,6 @@ influxdb:
   db_user: ""
   db_pass: ""
 
-#########################################################################
-########################### Messaging Service ###########################
-#########################################################################
-messaging_service: none
-
-kafka:
-  host: 127.0.0.1
-  port: 9092
-  ping_kafka: 5
-  consumer_group_id: "md2k"
 #########################################################################
 #                          Data Provenance Storage                      #
 #########################################################################

@@ -87,7 +87,6 @@ class Kernel:
         self.SqlData = SqlData(self)
         self.RawData = RawData(self)
         self.ObjectData = ObjectData(self)
-        self.MessagingQueue = None
         self.TimeSeriesData = None
 
 
@@ -99,10 +98,6 @@ class Kernel:
 
         if self.config["visualization_storage"] != "none":
             self.TimeSeriesData = TimeSeriesData(self)
-
-        if self.config["messaging_service"] != "none":
-            from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
-            self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
 
     ###########################################################################
     #                     RAW DATA MANAGER METHODS                            #
@@ -682,36 +677,6 @@ class Kernel:
         """
         return self.ObjectData.is_object(bucket_name, object_name)
 
-
-    ###########################################################################
-    #                      Kafka consumer producer                            #
-    ###########################################################################
-
-    def kafka_produce_message(self, msg: dict):
-        """
-        Publish a message on kafka message queue
-
-        Args:
-            msg (dict): message that needs to published on kafka
-        Returns:
-            bool: True if successful. In case of failure, it returns an Exception message.
-        Raises:
-            ValueError: topic and message parameters cannot be empty or None.
-            Exception: Error publishing message. Topic: topic_name - error-message
-
-        """
-        self.MessagingQueue.produce_message(msg)
-
-    def kafka_subscribe_to_topic(self):
-        """
-        Subscribe to kafka topic as a consumer
-
-        Yields:
-             dict: kafka message
-        Raises:
-            ValueError: Topic parameter is missing.
-        """
-        return self.MessagingQueue.subscribe_to_topic()
 
     ################### CACHE RELATED METHODS ##################################
 
