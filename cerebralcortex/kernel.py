@@ -44,15 +44,15 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 class Kernel:
 
-    def __init__(self, configs_dir_path: str, study_name:str, new_study:bool=False, auto_offset_reset: str = "largest", enable_spark:bool=True, enable_spark_ui=False):
+    def __init__(self, configs_dir_path: str="", cc_configs:dict=None, study_name:str="default", new_study:bool=False, enable_spark:bool=True, enable_spark_ui=False):
         """
         CerebralCortex constructor
 
         Args:
             configs_dir_path (str): Directory path of cerebralcortex configurations.
+            cc_configs (dict or str): if sets to cc_configs="default" all defaults configs would be loaded. Or you can provide a dict of all available cc_configs as a param
             study_name (str): name of the study. If there is no study, you can pass study name as study_name="default"
             new_study (bool): create a new study with study_name if it does not exist
-            auto_offset_reset (str): Kafka offset. Acceptable parameters are smallest or largest (default=largest)
             enable_spark (bool): enable spark
             enable_spark_ui (bool): enable spark ui
         Raises:
@@ -60,8 +60,12 @@ class Kernel:
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
         """
-        if configs_dir_path is None or configs_dir_path == "":
-            raise ValueError("config_file path cannot be None or blank.")
+        if not configs_dir_path and not cc_configs:
+            raise ValueError("Please provide configs_dir_path or cc_configs.")
+        elif configs_dir_path and cc_configs:
+            raise ValueError("Provide only configs_dir_path OR cc_configs.")
+
+
 
         if enable_spark:
             self.sparkContext = get_or_create_sc(enable_spark_ui=enable_spark_ui)
@@ -79,7 +83,7 @@ class Kernel:
 
         self.config_filepath = configs_dir_path
         self.study_name = study_name
-        self.config = Configuration(configs_dir_path).config
+        self.config = Configuration(configs_dir_path, cc_configs).config
 
         self.debug = self.config["cc"]["debug"]
         self.logging = CCLogging(self)
