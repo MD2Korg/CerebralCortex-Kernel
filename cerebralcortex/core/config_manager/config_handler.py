@@ -26,7 +26,6 @@
 import yaml
 import os
 
-
 class ConfigHandler:
 
     def load_file(self, filepath: str):
@@ -52,9 +51,6 @@ class ConfigHandler:
 
         # if "data_ingestion" in self.config and self.config["data_ingestion"]["data_dir_path"]!="" and self.config["data_ingestion"]["data_dir_path"][-1] !="/":
         #     self.config["data_ingestion"]["data_dir_path"]+="/"
-
-        if "data_dir" in self.config and self.config["data_dir"]!="" and self.config["data_dir"][-1] !="/":
-            self.config["data_dir"]+="/"
 
         if "log_files_path" in self.config and self.config["cc"]["log_files_path"]!="" and self.config["cc"]["log_files_path"][-1]!="":
             self.config["cc"]["log_files_path"] +="/"

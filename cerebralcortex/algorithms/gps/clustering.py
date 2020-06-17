@@ -82,6 +82,7 @@ def cluster_gps(ds: DataStream, epsilon_constant:int = 1000,
                 minimum_points_in_cluster:int = 1,
                 latitude_column_name:str = 'latitude',
                 longitude_column_name:str = 'longitude'):
+
     """
     Cluster GPS data - Algorithm used to cluster GPS data is based on DBScan
 
