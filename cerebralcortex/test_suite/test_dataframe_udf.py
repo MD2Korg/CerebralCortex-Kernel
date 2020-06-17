@@ -82,9 +82,14 @@ class TestDataframeUDF(unittest.TestCase):
         Window datastream and perform a udf on top of it
 
         """
+from pennprov.connection.mprov_connection import MProvConnection
+conn = MProvConnection('sample', 'sample', host='http://localhost:8088')
+conn.set_graph("nasir-graph")
+conn.create_or_reset_graph()
+
 #from cerebralcortex.algorithms.gps.ttt import gps_clusters
-os.environ["MPROV_USER"] = "neo4j"
-os.environ["MPROV_PASSWORD"] = "habitat1"
+os.environ["MPROV_USER"] = "sample"
+os.environ["MPROV_PASSWORD"] = "sample"
 
 ds_gps = gen_location_datastream(user_id="bfb2ca0c-e19c-3956-9db2-5459ccadd40c", stream_name="gps--org.md2k.phonesensor--phone")
 #ds_gps.show(3)
