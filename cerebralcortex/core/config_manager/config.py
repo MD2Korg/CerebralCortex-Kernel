@@ -48,12 +48,14 @@ class Configuration(ConfigHandler):
             if config_dir[-1]!="/":
                 config_dir+="/"
 
-                self.config_filepath = config_dir+config_file_name
+            self.config_filepath = config_dir+config_file_name
 
-                if not os.path.exists(self.config_filepath):
-                    raise Exception(self.config_filepath+" does not exist. Please check configuration directory path and configuration file name.")
+            if not os.path.exists(self.config_filepath):
+                raise Exception(self.config_filepath+" does not exist. Please check configuration directory path and configuration file name.")
 
-                if config_dir is not None:
-                    self.load_file(self.config_filepath)
-                else:
-                    self.config = None
+            if config_dir is not None:
+                self.load_file(self.config_filepath)
+            else:
+                self.config = None
+        else:
+            raise Exception("Cannot load configuration files.")

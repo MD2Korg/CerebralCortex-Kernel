@@ -22,3 +22,4 @@ cufflinks==0.16
 ipyleaflet
 scipy
 statsmodels==0.11.1
+sqlalchemy

@@ -84,13 +84,30 @@ class TestDataframeUDF(unittest.TestCase):
         """
 from pennprov.connection.mprov_connection import MProvConnection
 conn = MProvConnection('sample', 'sample', host='http://localhost:8088')
-conn.set_graph("nasir-graph")
-conn.create_or_reset_graph()
+# conn.set_graph("nasir-graph")
+# conn.create_or_reset_graph()
+#
+# #from cerebralcortex.algorithms.gps.ttt import gps_clusters
+# os.environ["MPROV_USER"] = "sample"
+# os.environ["MPROV_PASSWORD"] = "sample"
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
+def get_stream_metadata(stream_name):
 
-#from cerebralcortex.algorithms.gps.ttt import gps_clusters
-os.environ["MPROV_USER"] = "sample"
-os.environ["MPROV_PASSWORD"] = "sample"
+	metadata = Metadata().set_name(stream_name).set_description("mobile phone accelerometer sensor data.") \
+	.add_dataDescriptor(
+	DataDescriptor().set_name("accelerometer_x").set_type("float").set_attribute("description", "acceleration minus gx on the x-axis")) \
+	.add_dataDescriptor(
+	DataDescriptor().set_name("accelerometer_y").set_type("float").set_attribute("description", "acceleration minus gy on the y-axis")) \
+	.add_dataDescriptor(
+	DataDescriptor().set_name("accelerometer_z").set_type("float").set_attribute("description", "acceleration minus gz on the z-axis")) \
+	.add_module(
+	ModuleMetadata().set_name("cerebralcortex.streaming_operation.main").set_version("2.0.7").set_attribute("description", "data is collected using mcerebrum.").set_author(
+	    "test_user", "test_user@test_email.com"))
 
+	stream_metadata = metadata.to_json()
+
+	return stream_metadata
+mt = get_stream_metadata("namona")
 ds_gps = gen_location_datastream(user_id="bfb2ca0c-e19c-3956-9db2-5459ccadd40c", stream_name="gps--org.md2k.phonesensor--phone")
 #ds_gps.show(3)
 

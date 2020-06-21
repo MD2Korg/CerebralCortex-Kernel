@@ -531,41 +531,6 @@ class Kernel:
         """
         return self.SqlData.encrypt_user_password(user_password)
 
-    ################### KAFKA RELATED METHODS ##################################
-
-    def store_or_update_Kafka_offset(self, topic_partition: str, offset_start: str, offset_until: str)->bool:
-        """
-        Store or Update kafka topic offsets. Offsets are used to track what messages have been processed.
-
-        Args:
-            topic (str): name of the kafka topic
-            topic_partition (str): partition number
-            offset_start (str): starting of offset
-            offset_until (str): last processed offset
-        Raises:
-            ValueError: All params are required.
-            Exception: Cannot add/update kafka offsets because ERROR-MESSAGE
-        Returns:
-            bool: returns True if offsets are add/updated or throws an exception.
-
-        """
-        self.SqlData.store_or_update_Kafka_offset(topic_partition, offset_start, offset_until)
-
-    def get_kafka_offsets(self) -> List[dict]:
-        """
-        Get last stored kafka offsets
-
-        Returns:
-            list[dict]: list of kafka offsets. This method will return empty list if topic does not exist and/or no offset is stored for the topic.
-        Raises:
-            ValueError: Topic name cannot be empty/None
-        Examples:
-            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
-            >>> CC.get_kafka_offsets("live-data")
-            >>> [{"id","topic", "topic_partition", "offset_start", "offset_until", "offset_update_time"}]
-        """
-        return self.SqlData.get_kafka_offsets()
-
     ###########################################################################
     #                      OBJECTS DATA MANAGER METHODS                       #
     ###########################################################################

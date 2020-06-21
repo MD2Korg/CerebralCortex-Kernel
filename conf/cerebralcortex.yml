@@ -6,7 +6,7 @@ cc:
   throw_exception: True #if this is set to True then application will get exceptions
   auth_token_expire_time: 40000 #seconds
   auth_encryption_key: "md@k&#8"
-  log_files_path: "/home/ali/IdeaProjects/CerebralCortex-Platform/mount_points/apiserver/data/"
+  log_files_path: "/Users/ali/IdeaProjects/CerebralCortex-Platform/mount_points/apiserver/data/"
 
 #########################################################################
 #                        NoSQL Storage                                  #
@@ -16,7 +16,7 @@ nosql_storage: filesystem
 filesystem:
   # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
 
-  filesystem_path: "/home/ali/IdeaProjects/MD2K_DATA/dbdp/"
+  filesystem_path: "/Users/ali/IdeaProjects/MD2K_DATA/dbdp/"
 
 hdfs:
   host: localhost
@@ -28,7 +28,7 @@ hdfs:
 #########################################################################
 
 object_storage:
-  object_storage_path: "/home/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/test_suite/sample_data/objects/"
+  object_storage_path: "/Users/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/test_suite/sample_data/objects/"
 
 #########################################################################
 #                          Relational Storage                           #
@@ -60,12 +60,4 @@ influxdb:
 #########################################################################
 #                          Data Provenance Storage                      #
 #########################################################################
-provenance: none
-
-mprove:
-#  host: 127.0.0.1 # change if MySQL is installed remotely
-#  port: 8088 # Change if MySQL is not using default port
-#  username: 'sample' # Change
-#  pass: 'default' # Change
-#  namespace: 'http://mprov.md2k.org'
-#  graph_name: 'mProv-graph'
+mprov: False
