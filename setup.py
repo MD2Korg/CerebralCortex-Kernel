@@ -1,14 +1,35 @@
 from os import path
-try: # for pip >= 10
-    from pip._internal.req import parse_requirements
-except ImportError: # for pip <= 9.0.3
-    from pip.req import parse_requirements
 from setuptools import setup, find_packages
 
 here = path.abspath(path.dirname(__file__))
 
-install_reqs = parse_requirements("./requirements.txt", session='hack')
-reqs = [str(ir.req) for ir in install_reqs]
+reqs = [
+    'wheel==0.29.0',
+    'pytz==2017.2',
+    'mysql-connector-python==8.0.15',
+    'PyYAML==4.2b1',
+    'minio==2.2.4',
+    'influxdb==5.2.1',
+    'pyarrow==0.15.1',
+    'pympler==0.5',
+    'hdfs3==0.3.0',
+    'pyspark==3.0.0',
+    'msgpack==0.6.1',
+    'PyJWT==1.7.1',
+    'pandas==0.24.2',
+    'texttable',
+    'numpy==1.16.1',
+    'geopy==1.18.1',
+    'Shapely==1.6.4.post2',
+    'scikit-learn==0.22.2.post1',
+    'plotly==3.10.0',
+    'matplotlib',
+    'cufflinks==0.16',
+    'ipyleaflet',
+    'scipy',
+    'statsmodels==0.11.1',
+    'sqlalchemy'
+]
 
 # Get the long description from the README file
 with open(path.join(here, 'README.md')) as f:
