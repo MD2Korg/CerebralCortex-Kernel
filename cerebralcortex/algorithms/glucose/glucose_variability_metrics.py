@@ -26,11 +26,11 @@ import numpy as np
 import pandas as pd
 
 from cerebralcortex.core.datatypes import DataStream
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, ModuleMetadata
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
 from pyspark.sql.group import GroupedData
-from cerebralcortex.algorithms.util import update_metadata
+from cerebralcortex.algorithms.utils.util import update_metadata
 
 def glucose_var(ds):
     """

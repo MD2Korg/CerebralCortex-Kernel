@@ -22,19 +22,20 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 from geopy.distance import great_circle
 from shapely.geometry.multipoint import MultiPoint
 from sklearn.cluster import DBSCAN
-from pyspark.sql.types import StructField, StructType, DoubleType,StringType, TimestampType, IntegerType
+from pyspark.sql.types import StructField, StructType, DoubleType, IntegerType
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from cerebralcortex.core.datatypes import DataStream
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 import pandas as pd, numpy as np
 from scipy.spatial import ConvexHull
 from pyspark.sql.group import GroupedData
-from cerebralcortex.algorithms.util import update_metadata
+from cerebralcortex.algorithms.utils.util import update_metadata
+from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
 
-from pennprov.api.decorators import MProvAgg
 
 def impute_gps_data(ds, accuracy_threashold:int=100):
     """
@@ -144,7 +145,7 @@ def cluster_gps(ds: DataStream, epsilon_constant:int = 1000,
         return list(centermost_point) + [area]
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-    @MProvAgg('gps--org.md2k.phonesensor--phone', 'gps_clustering', 'gps--org.md2k.clusters', ['user', 'timestamp'], ['user', 'timestamp'])
+    @CC_MProvAgg( 'gps--org.md2k.phonesensor--phone', 'gps_clustering', 'gps--org.md2k.clusters', ['user', 'timestamp'], ['user', 'timestamp'])
     def gps_clustering(data):
         if data.shape[0] < minimum_points_in_cluster:
             return pd.DataFrame([], columns=column_names)

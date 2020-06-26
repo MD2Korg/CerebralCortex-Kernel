@@ -1,4 +1,4 @@
-# Copyright (c) 2019, MD2K Center of Excellence
+# Copyright (c) 2020, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -23,48 +23,31 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
+from pennprov.connection.mprov_connection_cache import MProvConnectionCache
+from pennprov.api.decorators import MProvAgg
+from functools import wraps
 
-def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal", enable_spark_ui=False):
+
+def MProvAgg_empty():
     """
-    get or create spark context
-
-    Args:
-        type (str): type (sparkContext, SparkSessionBuilder, sparkSession, sqlContext). (default="sparkContext")
-        name (str): spark app name (default="CerebralCortex-Kernal")
-
-    Returns:
-
+    This is an empty decorator. This will be applied if mprov server setting is OFF
     """
-    from pyspark.sql import SQLContext
-    from pyspark.sql import SparkSession
-
-    ss = SparkSession.builder
-    if name:
-        ss.appName(name)
-
-    ss.config("spark.streaming.backpressure.enabled", True)
-    ss.config("spark.streaming.backpressure.initialRate", 1)
-    ss.config("spark.streaming.kafka.maxRatePerPartition", 2)
-    ss.config("spark.sql.session.timeZone", "UTC")
-
-    if enable_spark_ui==False:
-        ss.config("spark.ui.enabled", True)
-
-    sparkSession = ss.getOrCreate()
-
-    sc = sparkSession.sparkContext
-    sc.setLogLevel("ERROR")
+    def inner_function(func):
+        @wraps(func)
+        def wrapper(arg):
+            return func(arg)
+        return wrapper
+    return inner_function
 
 
-
-    if type=="SparkSessionBuilder":
-        return sc
-    elif type=="sparkContext":
-        return sc
-    elif type=="sparkSession":
-        return sparkSession
-    elif type=="sqlContext":
-        sqlContext = ss
-        return sqlContext
+def CC_MProvAgg(in_stream_name,op,out_stream_name,in_stream_key=['index'],out_stream_key=['index'],map=None, graph_name=None):
+    mprov = os.getenv("ENABLE_MPROV")
+    if mprov:
+        connection_key = MProvConnectionCache.Key(user=os.getenv("MPROV_USER"), password=os.getenv("MPROV_PASSWORD"),
+                                                  host=os.getenv("MPROV_HOST"), graph=graph_name)
+        mprov_conn = MProvConnectionCache.get_connection(connection_key)
+        mprov_conn.create_or_reset_graph()
+        return MProvAgg(in_stream_name=in_stream_name, op=op, out_stream_name=out_stream_name, in_stream_key=in_stream_key, out_stream_key=out_stream_key, map=map, connection_key=connection_key)
     else:
-        raise ValueError("Unknown type.")
+        return MProvAgg_empty()

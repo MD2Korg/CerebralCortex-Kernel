@@ -38,7 +38,7 @@ class ConfigHandler:
         """
 
         with open(filepath, 'r') as ymlfile:
-            self.config = yaml.load(ymlfile)
+            self.config = yaml.safe_load(ymlfile)
 
         if "hdfs" in self.config and self.config["hdfs"]["raw_files_dir"]!="" and self.config["hdfs"]["raw_files_dir"][-1] !="/":
             self.config["hdfs"]["raw_files_dir"]+="/"

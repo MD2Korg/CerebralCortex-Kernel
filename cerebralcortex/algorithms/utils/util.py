@@ -60,3 +60,4 @@ def update_metadata(stream_metadata, stream_name, stream_desc, module_name, modu
 
     stream_metadata.is_valid()
     return stream_metadata
+

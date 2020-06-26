@@ -50,7 +50,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         pathlib.Path("./sample_data/").mkdir(parents=True, exist_ok=True)
 
         self.study_name = "default"
-        self.CC = Kernel(config_filepath, auto_offset_reset="smallest", study_name=self.study_name, new_study=True)
+        self.CC = Kernel(config_filepath, study_name=self.study_name, new_study=True)
         self.cc_conf = self.CC.config
 
         # TEST-PARAMS

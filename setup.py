@@ -7,7 +7,7 @@ reqs = [
     'wheel==0.29.0',
     'pytz==2017.2',
     'mysql-connector-python==8.0.15',
-    'PyYAML==4.2b1',
+    'PyYAML>=5.3.1',
     'minio==2.2.4',
     'influxdb==5.2.1',
     'pyarrow==0.15.1',
@@ -16,7 +16,7 @@ reqs = [
     'pyspark==3.0.0',
     'msgpack==0.6.1',
     'PyJWT==1.7.1',
-    'pandas==0.24.2',
+    'pandas==1.0.5',
     'texttable',
     'numpy==1.16.1',
     'geopy==1.18.1',
@@ -38,7 +38,7 @@ with open(path.join(here, 'README.md')) as f:
 setup(
     name="cerebralcortex-kernel",
 
-    version='3.2.0r3',
+    version='3.2.1r3',
 
     description='Backend data analytics platform for MD2K software',
     long_description=long_description,

@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import uuid
+import os
 import warnings
 from datetime import datetime
 from typing import List
@@ -44,7 +45,7 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 class Kernel:
 
-    def __init__(self, configs_dir_path: str="", cc_configs:dict=None, study_name:str="default", new_study:bool=False, enable_spark:bool=True, enable_spark_ui=False):
+    def __init__(self, configs_dir_path: str="", cc_configs:dict=None, study_name:str="default", new_study:bool=False, enable_spark:bool=True, enable_spark_ui=False, mprov=False):
         """
         CerebralCortex constructor
 
@@ -55,6 +56,7 @@ class Kernel:
             new_study (bool): create a new study with study_name if it does not exist
             enable_spark (bool): enable spark
             enable_spark_ui (bool): enable spark ui
+            mprov (bool): if set to true then running algorithms will store provenance information in pennprov server. setup pennprov server (https://bitbucket.org/penndb/pennprov/src/master/) if you set this to True
         Raises:
             ValueError: If configuration_filepath is None or empty.
         Examples:
@@ -65,7 +67,9 @@ class Kernel:
         elif configs_dir_path and cc_configs:
             raise ValueError("Provide only configs_dir_path OR cc_configs.")
 
-
+        self.config_filepath = configs_dir_path
+        self.study_name = study_name
+        self.config = Configuration(configs_dir_path, cc_configs).config
 
         if enable_spark:
             self.sparkContext = get_or_create_sc(enable_spark_ui=enable_spark_ui)
@@ -76,14 +80,21 @@ class Kernel:
             self.sqlContext = None
             self.sparkSession = None
 
+        if mprov:
+            if self.config["mprov"]=="pennprov":
+                os.environ["MPROV_HOST"] = self.config["pennprov"]["host"]
+                os.environ["MPROV_USER"] = self.config["pennprov"]["user"]
+                os.environ["MPROV_PASSWORD"] = self.config["pennprov"]["password"]
+                os.environ["ENABLE_MPROV"] = "True"
+            elif self.config["mprov"]=="none":
+                os.environ["ENABLE_MPROV"] = "False"
+            else:
+                raise ValueError("Please check cerebralcortex.yml file. mprov is not properly configured.")
+
         self.new_study = new_study
 
         if not study_name:
             raise Exception("Study name cannot be None.")
-
-        self.config_filepath = configs_dir_path
-        self.study_name = study_name
-        self.config = Configuration(configs_dir_path, cc_configs).config
 
         self.debug = self.config["cc"]["debug"]
         self.logging = CCLogging(self)

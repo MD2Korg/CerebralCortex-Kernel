@@ -60,4 +60,9 @@ influxdb:
 #########################################################################
 #                          Data Provenance Storage                      #
 #########################################################################
-mprov: False
+mprov: none
+
+pennprov:
+  host: http://127.0.0.1:8088
+  user: demo
+  password: demo

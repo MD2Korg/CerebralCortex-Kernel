@@ -141,8 +141,8 @@ class FileSystemStorage:
     def write_pandas_dataframe(self, stream_name, data):
         try:
             hdfs_url = self._get_storage_path(stream_name)
-            table = pa.Table.from_pandas(data)
-            pq.write_to_dataset(table, root_path=hdfs_url, partition_cols=["version", "user"], preserve_index=False)
+            table = pa.Table.from_pandas(data, preserve_index=False)
+            pq.write_to_dataset(table, root_path=hdfs_url, partition_cols=["version", "user"])
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
