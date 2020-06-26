@@ -43,7 +43,7 @@ visualization_storage: none
 #########################################################################
 #                          Data Provenance Storage                      #
 #########################################################################
-mprov: pennprov
+mprov: none
 
 pennprov:
   host: http://127.0.0.1:8088

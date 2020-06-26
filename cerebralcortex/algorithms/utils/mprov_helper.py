@@ -47,7 +47,8 @@ def CC_MProvAgg(in_stream_name,op,out_stream_name,in_stream_key=['index'],out_st
         connection_key = MProvConnectionCache.Key(user=os.getenv("MPROV_USER"), password=os.getenv("MPROV_PASSWORD"),
                                                   host=os.getenv("MPROV_HOST"), graph=graph_name)
         mprov_conn = MProvConnectionCache.get_connection(connection_key)
-        mprov_conn.create_or_reset_graph()
+        if mprov_conn:
+            mprov_conn.create_or_reset_graph()
         return MProvAgg(in_stream_name=in_stream_name, op=op, out_stream_name=out_stream_name, in_stream_key=in_stream_key, out_stream_key=out_stream_key, map=map, connection_key=connection_key)
     else:
         return MProvAgg_empty()

@@ -40,6 +40,9 @@ setup(
 
     version='3.2.1r4',
 
+    package_data={'': ['default.yml']},
+    include_package_data=True,
+
     description='Backend data analytics platform for MD2K software',
     long_description=long_description,
 
@@ -85,5 +88,5 @@ setup(
         ]
     },
 
-    #data_files=[('/etc/rsyslog.d', ['cerebralcortex/core/resources/20-cerebralcortex.conf']), ('/etc/logrotate.d', ['cerebralcortex/core/resources/cerebralcortex']),]
+    data_files=[('/etc/rsyslog.d', ['cerebralcortex/core/resources/20-cerebralcortex.conf']), ('/etc/logrotate.d', ['cerebralcortex/core/resources/cerebralcortex']),]
 )
