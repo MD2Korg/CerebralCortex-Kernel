@@ -1,4 +1,4 @@
-# Copyright (c) 2019, MD2K Center of Excellence
+# Copyright (c) 2020, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -26,7 +26,6 @@
 import yaml
 import os
 
-
 class ConfigHandler:
 
     def load_file(self, filepath: str):
@@ -39,7 +38,7 @@ class ConfigHandler:
         """
 
         with open(filepath, 'r') as ymlfile:
-            self.config = yaml.load(ymlfile)
+            self.config = yaml.safe_load(ymlfile)
 
         if "hdfs" in self.config and self.config["hdfs"]["raw_files_dir"]!="" and self.config["hdfs"]["raw_files_dir"][-1] !="/":
             self.config["hdfs"]["raw_files_dir"]+="/"
@@ -52,9 +51,6 @@ class ConfigHandler:
 
         # if "data_ingestion" in self.config and self.config["data_ingestion"]["data_dir_path"]!="" and self.config["data_ingestion"]["data_dir_path"][-1] !="/":
         #     self.config["data_ingestion"]["data_dir_path"]+="/"
-
-        if "data_dir" in self.config and self.config["data_dir"]!="" and self.config["data_dir"][-1] !="/":
-            self.config["data_dir"]+="/"
 
         if "log_files_path" in self.config and self.config["cc"]["log_files_path"]!="" and self.config["cc"]["log_files_path"][-1]!="":
             self.config["cc"]["log_files_path"] +="/"

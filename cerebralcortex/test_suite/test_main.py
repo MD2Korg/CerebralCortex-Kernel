@@ -50,7 +50,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         pathlib.Path("./sample_data/").mkdir(parents=True, exist_ok=True)
 
         self.study_name = "default"
-        self.CC = Kernel(config_filepath, auto_offset_reset="smallest", study_name=self.study_name, new_study=True)
+        self.CC = Kernel(config_filepath, study_name=self.study_name, new_study=True)
         self.cc_conf = self.CC.config
 
         # TEST-PARAMS
@@ -59,7 +59,7 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         self.stream_version = 1
         self.metadata_hash = "96816db3-ce79-37a8-bfe2-034db8c56a6d"
         self.username = "test_user"
-        self.user_id = "bfb2ca0c-e19c-3956-9db2-5459ccadd40c"
+        self.user_id = "bca0c-e19c-3956-9db2-5459ccadd40cfb2"
         self.user_password = "test_password"
         self.user_password_encrypted = "10a6e6cc8311a3e2bcc09bf6c199adecd5dd59408c343e926b129c4914f3cb01"
         self.user_role = "test_role"

@@ -34,7 +34,7 @@ import pandas as pd
 from datetime import datetime
 import plotly.figure_factory as ff
 
-
+import cerebralcortex.core.plotting.stress_plots
 class StressStreamPlots():
     def plot_pie(self, pdf, group_by_column=None):
         pdf=pdf.groupby(str(group_by_column), as_index=False).agg('count')

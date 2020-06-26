@@ -1,4 +1,4 @@
-# Copyright (c) 2019, MD2K Center of Excellence
+# Copyright (c) 2020, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import uuid
+import os
 import warnings
 from datetime import datetime
 from typing import List
@@ -44,24 +45,31 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 class Kernel:
 
-    def __init__(self, configs_dir_path: str, study_name:str, new_study:bool=False, auto_offset_reset: str = "largest", enable_spark:bool=True, enable_spark_ui=False):
+    def __init__(self, configs_dir_path: str="", cc_configs:dict=None, study_name:str="default", new_study:bool=False, enable_spark:bool=True, enable_spark_ui=False, mprov=False):
         """
         CerebralCortex constructor
 
         Args:
             configs_dir_path (str): Directory path of cerebralcortex configurations.
+            cc_configs (dict or str): if sets to cc_configs="default" all defaults configs would be loaded. Or you can provide a dict of all available cc_configs as a param
             study_name (str): name of the study. If there is no study, you can pass study name as study_name="default"
             new_study (bool): create a new study with study_name if it does not exist
-            auto_offset_reset (str): Kafka offset. Acceptable parameters are smallest or largest (default=largest)
             enable_spark (bool): enable spark
             enable_spark_ui (bool): enable spark ui
+            mprov (bool): if set to true then running algorithms will store provenance information in pennprov server. setup pennprov server (https://bitbucket.org/penndb/pennprov/src/master/) if you set this to True
         Raises:
             ValueError: If configuration_filepath is None or empty.
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
         """
-        if configs_dir_path is None or configs_dir_path == "":
-            raise ValueError("config_file path cannot be None or blank.")
+        if not configs_dir_path and not cc_configs:
+            raise ValueError("Please provide configs_dir_path or cc_configs.")
+        elif configs_dir_path and cc_configs:
+            raise ValueError("Provide only configs_dir_path OR cc_configs.")
+
+        self.config_filepath = configs_dir_path
+        self.study_name = study_name
+        self.config = Configuration(configs_dir_path, cc_configs).config
 
         if enable_spark:
             self.sparkContext = get_or_create_sc(enable_spark_ui=enable_spark_ui)
@@ -72,14 +80,21 @@ class Kernel:
             self.sqlContext = None
             self.sparkSession = None
 
+        if mprov:
+            if self.config["mprov"]=="pennprov":
+                os.environ["MPROV_HOST"] = self.config["pennprov"]["host"]
+                os.environ["MPROV_USER"] = self.config["pennprov"]["user"]
+                os.environ["MPROV_PASSWORD"] = self.config["pennprov"]["password"]
+                os.environ["ENABLE_MPROV"] = "True"
+            elif self.config["mprov"]=="none":
+                os.environ["ENABLE_MPROV"] = "False"
+            else:
+                raise ValueError("Please check cerebralcortex.yml file. mprov is not properly configured.")
+
         self.new_study = new_study
 
         if not study_name:
             raise Exception("Study name cannot be None.")
-
-        self.config_filepath = configs_dir_path
-        self.study_name = study_name
-        self.config = Configuration(configs_dir_path).config
 
         self.debug = self.config["cc"]["debug"]
         self.logging = CCLogging(self)
@@ -87,7 +102,6 @@ class Kernel:
         self.SqlData = SqlData(self)
         self.RawData = RawData(self)
         self.ObjectData = ObjectData(self)
-        self.MessagingQueue = None
         self.TimeSeriesData = None
 
 
@@ -99,10 +113,6 @@ class Kernel:
 
         if self.config["visualization_storage"] != "none":
             self.TimeSeriesData = TimeSeriesData(self)
-
-        if self.config["messaging_service"] != "none":
-            from cerebralcortex.core.messaging_manager.messaging_queue import MessagingQueue
-            self.MessagingQueue = MessagingQueue(self, auto_offset_reset)
 
     ###########################################################################
     #                     RAW DATA MANAGER METHODS                            #
@@ -128,6 +138,7 @@ class Kernel:
         """
         return self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB, overwrite=overwrite)
 
+    
     def get_stream(self, stream_name: str, version: str = "all", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
         """
         Retrieve a data-stream with it's metadata.
@@ -309,23 +320,23 @@ class Kernel:
 
     ################### USER RELATED METHODS ##################################
 
-    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict)->bool:
+    def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict, encrypt_password:bool=False)->bool:
         """
         Create a user in SQL storage if it doesn't exist
-
         Args:
             username (str): Only alphanumeric usernames are allowed with the max length of 25 chars.
             user_password (str): no size limit on password
             user_role (str): role of a user
             user_metadata (dict): metadata of a user
             user_settings (dict): user settings, mCerebrum configurations of a user
+            encrypt_password (bool): encrypt password if set to true
         Returns:
             bool: True if user is successfully registered or throws any error in case of failure
         Raises:
             ValueError: if selected username is not available
             Exception: if sql query fails
         """
-        return self.SqlData.create_user( username, user_password, user_role, user_metadata, user_settings)
+        return self.SqlData.create_user(username, user_password, user_role, user_metadata, user_settings, encrypt_password)
 
     def delete_user(self, username:str)->bool:
         """
@@ -450,14 +461,14 @@ class Kernel:
         """
         return self.SqlData.get_user_settings(username, auth_token)
 
-    def connect(self, username: str, password: str, encrypted_password:bool=False) -> dict:
+    def connect(self, username: str, password: str, encrypt_password:bool=False) -> dict:
         """
         Authenticate a user based on username and password and return an auth token
 
         Args:
             username (str):  username of a user
             password (str): password of a user
-            encrypted_password (str): is password encrypted or not. mCerebrum sends encrypted passwords
+            encrypt_password (str): is password encrypted or not. mCerebrum sends encrypted passwords
         Raises:
             ValueError: User name and password cannot be empty/None.
         Returns:
@@ -467,7 +478,7 @@ class Kernel:
             >>> CC.connect("nasir_ali", "2ksdfhoi2r2ljndf823hlkf8234hohwef0234hlkjwer98u234", True)
             >>> True
         """
-        return self.SqlData.login_user(username, password, encrypted_password)
+        return self.SqlData.login_user(username, password, encrypt_password)
 
     def is_auth_token_valid(self, username: str, auth_token: str, checktime:bool=False) -> bool:
         """
@@ -530,41 +541,6 @@ class Kernel:
             str: encrypted password
         """
         return self.SqlData.encrypt_user_password(user_password)
-
-    ################### KAFKA RELATED METHODS ##################################
-
-    def store_or_update_Kafka_offset(self, topic_partition: str, offset_start: str, offset_until: str)->bool:
-        """
-        Store or Update kafka topic offsets. Offsets are used to track what messages have been processed.
-
-        Args:
-            topic (str): name of the kafka topic
-            topic_partition (str): partition number
-            offset_start (str): starting of offset
-            offset_until (str): last processed offset
-        Raises:
-            ValueError: All params are required.
-            Exception: Cannot add/update kafka offsets because ERROR-MESSAGE
-        Returns:
-            bool: returns True if offsets are add/updated or throws an exception.
-
-        """
-        self.SqlData.store_or_update_Kafka_offset(topic_partition, offset_start, offset_until)
-
-    def get_kafka_offsets(self) -> List[dict]:
-        """
-        Get last stored kafka offsets
-
-        Returns:
-            list[dict]: list of kafka offsets. This method will return empty list if topic does not exist and/or no offset is stored for the topic.
-        Raises:
-            ValueError: Topic name cannot be empty/None
-        Examples:
-            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
-            >>> CC.get_kafka_offsets("live-data")
-            >>> [{"id","topic", "topic_partition", "offset_start", "offset_until", "offset_update_time"}]
-        """
-        return self.SqlData.get_kafka_offsets()
 
     ###########################################################################
     #                      OBJECTS DATA MANAGER METHODS                       #
@@ -681,36 +657,6 @@ class Kernel:
         """
         return self.ObjectData.is_object(bucket_name, object_name)
 
-
-    ###########################################################################
-    #                      Kafka consumer producer                            #
-    ###########################################################################
-
-    def kafka_produce_message(self, msg: dict):
-        """
-        Publish a message on kafka message queue
-
-        Args:
-            msg (dict): message that needs to published on kafka
-        Returns:
-            bool: True if successful. In case of failure, it returns an Exception message.
-        Raises:
-            ValueError: topic and message parameters cannot be empty or None.
-            Exception: Error publishing message. Topic: topic_name - error-message
-
-        """
-        self.MessagingQueue.produce_message(msg)
-
-    def kafka_subscribe_to_topic(self):
-        """
-        Subscribe to kafka topic as a consumer
-
-        Yields:
-             dict: kafka message
-        Raises:
-            ValueError: Topic parameter is missing.
-        """
-        return self.MessagingQueue.subscribe_to_topic()
 
     ################### CACHE RELATED METHODS ##################################
 

@@ -216,3 +216,5 @@ def rr_interval_feature_extraction(data: object) -> object:
 
     return df
 
+def compute_rr_interval_features():
+    pass

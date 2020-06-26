@@ -29,6 +29,106 @@ from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 
 
 class SqlStorageTest:
+    ###### STREAM RELATED TEST CASES #####
+    def test_get_stream_metadata_by_name(self):
+        pass
+
+    def test_list_streams(self):
+        pass
+
+    def test_search_stream(self):
+        pass
+
+    def test_get_stream_versions(self):
+        pass
+
+    def test_get_stream_metadata_hash(self):
+        pass
+
+    def test_get_stream_name(self):
+        pass
+
+    def test_get_stream_metadata_by_hash(self):
+        pass
+
+    def test_is_stream(self):
+        pass
+
+    def test_is_study(self):
+        pass
+
+    def test_save_stream_metadata(self):
+        pass
+
+    def test__is_metadata_changed(self):
+        pass
+
+    ########## USER RELATED TEST CASES #######
+    def test_create_user(self):
+        pass
+
+    def test_delete_user(self):
+        pass
+
+    def test_get_user_metadata(self):
+        pass
+
+    def test_get_user_settings(self):
+        pass
+
+    def test_login_user(self):
+        pass
+
+    def test_is_auth_token_valid(self):
+        pass
+
+    def test_list_users(self):
+        pass
+    def test_get_user_name(self):
+        pass
+
+    def test_is_user(self):
+        pass
+
+    def test_get_user_id(self):
+        pass
+
+    def test_update_auth_token(self):
+        pass
+
+    #### METADATA RELATED #####
+    def test_get_corrected_metadata(self):
+        pass
+
+    ##### CACHE RELATED #####
+    def test_set_cache_value(self):
+        pass
+
+    #### DATA INGESTION RELATED ####
+    def test_add_ingestion_log(self):
+        pass
+    def test_update_ingestion_log(self):
+        pass
+
+    def test_add_scanned_files(self):
+        pass
+
+    def test_get_processed_files_list(self):
+        pass
+
+    def test_get_files_list(self):
+        pass
+
+    def test_is_file_processed(self):
+        pass
+
+    def test_get_ingestion_stats(self):
+        pass
+
+    def test_update_ingestion_log_status(self):
+        pass
+    def test_update_ingestion_log_status_ignore(self):
+        pass
 
     def test_01_is_stream(self):
         result = self.CC.is_stream(self.stream_name)

@@ -56,7 +56,8 @@ def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal", enable_s
     sc.setLogLevel("ERROR")
 
 
-    sqlContext = SQLContext(sc)
+    #sqlContext = SQLContext(sc)
+
     if type=="SparkSessionBuilder":
         return sc
     elif type=="sparkContext":
@@ -64,6 +65,6 @@ def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal", enable_s
     elif type=="sparkSession":
         return sparkSession
     elif type=="sqlContext":
-        return sqlContext
+        return sparkSession
     else:
         raise ValueError("Unknown type.")

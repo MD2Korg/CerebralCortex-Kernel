@@ -139,13 +139,13 @@ class HDFSStorage:
         try:
             hdfs_url = self._get_storage_path(stream_name, no_spark=True)
             table = pa.Table.from_pandas(data, preserve_index=False)
-            fs = pa.hdfs.connect(self.hdfs_ip, self.hdfs_port)
+            fs = pa.hdfs.connect(self.obj.hdfs_ip, self.obj.hdfs_port)
             pq.write_to_dataset(table, root_path=hdfs_url, partition_cols=["version", "user"], filesystem=fs)
             return True
         except Exception as e:
             raise Exception("Cannot store dataframe: "+str(e))
 
-    def write_pandas_to_parquet_file(self, df: pd, user_id: str, stream_name: str) -> str:
+    def write_pandas_to_parquet_file(self, df: pd, user_id: str, stream_name: str, stream_version:str) -> str:
         """
         Convert pandas dataframe into pyarrow parquet format and store
 
@@ -164,7 +164,7 @@ class HDFSStorage:
         base_dir_path = self._get_storage_path(stream_name)
         table = pa.Table.from_pandas(df, preserve_index=False)
         file_id = str(uuid4().hex) + ".parquet"
-        data_file_url = os.path.join(base_dir_path, "version=1", "user=" + user_id)
+        data_file_url = os.path.join(base_dir_path, "version="+str(stream_version), "user=" + user_id)
         file_name = os.path.join(data_file_url, file_id)
         if not self.obj.fs.exists(data_file_url):
             self.obj.fs.mkdir(data_file_url)
