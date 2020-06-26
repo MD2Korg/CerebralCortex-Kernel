@@ -35,58 +35,49 @@ reqs = [
 with open(path.join(here, 'README.md')) as f:
     long_description = f.read()
 
-setup(
-    name="cerebralcortex-kernel",
+
 
     version='3.2.1r4',
 
     package_data={'': ['default.yml']},
     include_package_data=True,
 
-    description='Backend data analytics platform for MD2K software',
-    long_description=long_description,
+        version='3.1.1r3',
 
-    author='MD2K.org',
-    author_email='dev@md2k.org',
+        description='Backend data analytics platform for MD2K software',
+        long_description=long_description,
 
-    license='BSD2',
-    url = 'https://github.com/MD2Korg/CerebralCortex-Kernel/',
+        author='MD2K.org',
+        author_email='dev@md2k.org',
 
-    classifiers=[
+        license='BSD2',
+        url = 'https://github.com/MD2Korg/CerebralCortex-Kernel/',
 
-        'Development Status :: 5 - Production/Stable',
+        classifiers=[
 
-        'Intended Audience :: Healthcare Industry',
-        'Intended Audience :: Science/Research',
+            'Development Status :: 5 - Production/Stable',
 
-        'License :: OSI Approved :: BSD License',
+            'Intended Audience :: Healthcare Industry',
+            'Intended Audience :: Science/Research',
 
-        'Natural Language :: English',
+            'License :: OSI Approved :: BSD License',
 
-        'Programming Language :: Python :: 3',
+            'Natural Language :: English',
 
-        'Topic :: Scientific/Engineering :: Information Analysis',
-        'Topic :: System :: Distributed Computing'
-    ],
+            'Programming Language :: Python :: 3',
 
-    keywords='mHealth machine-learning data-analysis',
+            'Topic :: Scientific/Engineering :: Information Analysis',
+            'Topic :: System :: Distributed Computing'
+        ],
 
-    # You can just specify the packages manually here if your project is
-    # simple. Or you can use find_packages().
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+        keywords='mHealth machine-learning data-analysis',
 
-    # List run-time dependencies here.  These will be installed by pip when
-    # your project is installed. For an analysis of "install_requires" vs pip's
-    # requirements files see:
-    # https://packaging.python.org/en/latest/requirements.html
-    install_requires=reqs,
+        # You can just specify the packages manually here if your project is
+        # simple. Or you can use find_packages().
+        packages=find_packages(exclude=['contrib', 'docs', 'tests']),
 
-
-    entry_points={
-        'console_scripts': [
-            'main=main:main'
-        ]
-    },
-
-    data_files=[('/etc/rsyslog.d', ['cerebralcortex/core/resources/20-cerebralcortex.conf']), ('/etc/logrotate.d', ['cerebralcortex/core/resources/cerebralcortex']),]
-)
+        # List run-time dependencies here.  These will be installed by pip when
+        # your project is installed. For an analysis of "install_requires" vs pip's
+        # requirements files see:
+        # https://packaging.python.org/en/latest/requirements.html
+        install_requires=reqs,
