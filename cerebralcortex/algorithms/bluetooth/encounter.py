@@ -41,7 +41,7 @@ def bluetooth_encounter(data,
                         distance_threshold=12,
                         n_rows_threshold = 8,
                         time_threshold=10*60,
-                        ltime=False):
+                        ltime=True):
     """
 
     :param ds: Input Datastream
@@ -74,12 +74,13 @@ def bluetooth_encounter(data,
                                               'distances','timestamp','localtime','latitude','longitude','average_count'])
         data = data.sort_values('time').reset_index(drop=True)
         data_filtered = data[data.distance_estimate<distance_threshold]
-        if data_filtered.shape[0]<n_rows_threshold or data_filtered['time'].iloc[data_filtered.shape[0]-1] - data_filtered['time'].iloc[0]<time_threshold:
+        #         data_filtered = data
+        if data_filtered.shape[0]<n_rows_threshold or data_filtered['time'].max() - data_filtered['time'].min()<time_threshold:
             return pd.DataFrame([],columns = ['user','major','minor','start_time','end_time','version',
                                               'distances','timestamp','localtime','latitude','longitude','average_count'])
         else:
             data_all = []
-            data = data_filtered
+            #             data = data_filtered
             k = 0
             i = data.shape[0]
             c = 'localtime'
@@ -90,14 +91,21 @@ def bluetooth_encounter(data,
             return pd.DataFrame(data_all,columns = ['user','major','minor','start_time','end_time','version',
                                                     'distances','timestamp','localtime','latitude','longitude','average_count'])
 
-    print(st,et)
+    #     print(st,et)
     data = data.withColumn('time',F.col('timestamp').cast('double'))
+    #     data.show(100,False)
+    #     print('--'*40)
     if ltime:
         data_filtered = data.filter((data.localtime>=F.lit(st)) & (data.localtime<F.lit(et)))
     else:
         data_filtered = data.filter((data.timestamp>=F.lit(st)) & (data.timestamp<F.lit(et)))
-    # print(data_filtered.count(),'filtered data count')
+    #     data.show(100,False)
+    #     print(data_filtered.count(),'filtered data count')
+    data_filtered = data_filtered.filter(data_filtered.longitude!=200)
     data_result = data_filtered.groupBy(['user','major','minor','version']).apply(get_enconters)
+    #     data_filtered.sort('timestamp').show(1000,False)
+    print(data_result.count(),'encounter count')
+    #     data_result.show(5,False)
     return DataStream(data=data_result, metadata=Metadata())
 
 def remove_duplicate_encounters(ds,
