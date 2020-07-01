@@ -287,17 +287,20 @@ class Metadata():
             str: hash id of metadata
 
         """
-        name = self.name
-        data_descriptor = ""
-        modules = ""
-        for dd in self.data_descriptor:
-            data_descriptor += str(dd.name)+str(dd.type)
-        for mm in self.modules:
-            modules += str(mm.name) + str(mm.version) + str(mm.authors)
-        hash_string = str(name)+"None"+str(data_descriptor)+str(modules)
-        hash_string = hash_string.strip().lower().replace(" ", "")
+        try:
+            name = self.name
+            data_descriptor = ""
+            modules = ""
+            for dd in self.data_descriptor:
+                data_descriptor += str(dd.name)+str(dd.type)
+            for mm in self.modules:
+                modules += str(mm.name) + str(mm.version) + str(mm.authors)
+            hash_string = str(name)+"None"+str(data_descriptor)+str(modules)
+            hash_string = hash_string.strip().lower().replace(" ", "")
 
-        return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
+            return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
+        except:
+            print("Cannot get Hash for ", self.name)
 
     def get_hash_by_json(self, metadata:dict=None)->str:
         """
