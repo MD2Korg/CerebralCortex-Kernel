@@ -152,7 +152,7 @@ class DataIngestionHandler():
                 result.append(row["file_path"])
             return result
 
-    def get_files_list(self, stream_name:str=None, user_id=None, success_type=None) -> list:
+    def get_files_list(self, stream_name:str=None, user_id=None, success_type=None, groupby=None) -> list:
         """
         Get a list of all the processed/un-processed files
 
@@ -160,6 +160,7 @@ class DataIngestionHandler():
             list: list of all processed files list
         """
         result = []
+        groupby_clause = ""
         if not stream_name and not user_id:
             where_clause = " where success=%(success)s "
             vals = {"success":success_type}
@@ -174,12 +175,17 @@ class DataIngestionHandler():
             where_clause += " and user_id=%s"
             vals = vals + (user_id,)
 
+        if groupby:
+            groupby_clause = " group by "+str(groupby)
+
         if success_type==None:
-            qry = "select * from " + self.ingestionLogsTable
+            qry = "select * from " + self.ingestionLogsTable + groupby_clause
             rows = self.execute(qry)
         else:
-            qry = "select * from " + self.ingestionLogsTable + where_clause
+            qry = "select * from " + self.ingestionLogsTable + where_clause + groupby_clause
             rows = self.execute(qry, vals)
+
+
 
         if len(rows) == 0:
             return result

@@ -27,7 +27,7 @@ import json
 
 class MetadataHandler:
 
-    def get_corrected_metadata(self) -> dict:
+    def get_corrected_metadata(self, stream_name:None) -> dict:
         """
         Retrieves corrected metadata
 
@@ -42,7 +42,10 @@ class MetadataHandler:
         """
         results = []
 
-        qry = "select * from " + self.correctedMetadata + " group by stream_name"
+        if stream_name:
+            qry = "select * from " + self.correctedMetadata + "where stream_name='"+stream_name+"' group by stream_name"
+        else:
+            qry = "select * from " + self.correctedMetadata + " group by stream_name"
 
         try:
             rows = self.execute(qry)
