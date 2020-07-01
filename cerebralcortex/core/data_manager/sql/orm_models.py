@@ -47,15 +47,15 @@ class Ingestion_Logs(Base):
     success = Column('success', Integer)
     added_date = Column('added_date', Date)
 
-engine = db.create_engine('mysql+mysqlconnector://root:pass@localhost:3306')
-engine.execute("CREATE DATABASE IF NOT EXISTS cerebralcortex")
-engine.execute("USE cerebralcortex")
+engine = db.create_engine('sqlite:///sqlalchemy_example.db')
+# engine.execute("CREATE DATABASE IF NOT EXISTS cerebralcortex")
+# engine.execute("USE cerebralcortex")
 Base.metadata.create_all(engine)
 
 Session = db.orm.sessionmaker()
 Session.configure(bind=engine)
 session = Session()
-session.add()
+
 connection = engine.connect()
 metadata = db.MetaData()
 print(metadata)

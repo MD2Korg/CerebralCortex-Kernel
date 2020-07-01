@@ -8,6 +8,7 @@ reqs = [
     'pytz==2017.2',
     'mysql-connector-python==8.0.15',
     'PyYAML>=5.3.1',
+    'SQLAlchemy-Utils==0.36.6',
     'minio==2.2.4',
     'influxdb==5.2.1',
     'pyarrow==0.15.1',
@@ -28,7 +29,7 @@ reqs = [
     'ipyleaflet',
     'scipy',
     'statsmodels==0.11.1',
-    'sqlalchemy'
+    'sqlalchemy==1.3.17'
 ]
 
 # Get the long description from the README file

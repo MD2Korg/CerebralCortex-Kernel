@@ -24,19 +24,31 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sqlalchemy as db
-from sqlalchemy import Column, String, Integer, Date, Boolean, Numeric, JSON, Text
+from sqlalchemy import Column, String, Integer, Date, Boolean, Numeric, JSON, Text, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
-Base = declarative_base()
+from cerebralcortex.core.data_manager.sql.orm import Base
+
+class Study(Base):
+    __tablename__ = 'stream'
+    row_id=Column('row_id',Integer, primary_key=True, autoincrement=True)
+    name=Column('name', String(100), unique=True, index=True)
+    study_metadata=Column('study_metadata', JSON)
+    creation_date = Column('creation_date', Date)
+
+    __table_args__ = (UniqueConstraint('name','study_name', name='stream_study'),)
 
 class Stream(Base):
     __tablename__ = 'stream'
     row_id=Column('row_id',Integer, primary_key=True, autoincrement=True)
+
     name=Column('name', String(100))
     version=Column('version', Boolean)
     metadata_hash=Column('metadata_hash', String(100), unique=True, index=True)
     stream_metadata=Column('stream_metadata', JSON)
     creation_date = Column('creation_date', Date)
+
+    __table_args__ = (UniqueConstraint('name','study_name', name='stream_study'),)
 
     def __init__(self, name, version, metadata_hash, stream_metadata):
         self.name = name
@@ -65,6 +77,7 @@ class User(Base):
     user_metadata=Column('user_metadata', JSON)
     user_settings = Column('user_settings', JSON)
     active = Column('active', Boolean)
+    has_data = Column('has_data', Boolean)
     creation_date = Column('creation_date', Date)
 
     def __init__(self, user_id, username, password, study_name, token, token_issued, token_expiry, user_role="participant", user_metadata={}, user_settings={}, active=1):

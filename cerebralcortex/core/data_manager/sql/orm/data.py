@@ -25,11 +25,10 @@
 
 from typing import List
 import sqlalchemy as db
-from sqlalchemy import Column, String, Integer, Date, Boolean, Numeric, JSON, Text
-from sqlalchemy.ext.declarative import declarative_base
+from cerebralcortex.core.data_manager.sql.orm import Base
+from sqlalchemy_utils import create_database, database_exists
 
-import mysql.connector
-import mysql.connector.pooling
+
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 
 from cerebralcortex.core.data_manager.sql.orm.cache_handler import CacheHandler
@@ -61,8 +60,6 @@ class SqlData(CacheHandler):
         self.logtypes = LogTypes()
         self.sql_store = self.config["relational_storage"]
 
-        self.base = declarative_base()
-
         if self.sql_store =="mysql":
 
             self.hostIP = self.config['mysql']['host']
@@ -71,16 +68,22 @@ class SqlData(CacheHandler):
             self.dbUser = self.config['mysql']['db_user']
             self.dbPassword = self.config['mysql']['db_pass']
 
-            engine = db.create_engine('mysql+mysqlconnector://{0}:{1}@{2}:{3}'.format(self.dbUser, self.dbPassword, self.hostIP, self.hostPort))
+            url = 'mysql+mysqlconnector://{0}:{1}@{2}:{3}/{4}'.format(self.dbUser, self.dbPassword, self.hostIP, self.hostPort, self.database)
+
         elif self.sql_store == "sqlite":
-            pass
+            database_file_path = self.config["sqlite"]["file_path"]
+            if database_file_path[:-1]!="/":
+                database_file_path = database_file_path+"/"
+            url = 'sqlite:///{0}sqlalchemy_example.db'.format(database_file_path)
         else:
             raise Exception(self.sql_store + ": SQL storage is not supported. Please install and configure MySQL or sqlite.")
 
-        engine.execute("CREATE DATABASE IF NOT EXISTS {}".format(self.database))
-        engine.execute("USE {}".format(self.database))
+        engine = db.create_engine(url)
 
-        self.base.metadata.create_all(engine)
+        if not database_exists(url):
+            create_database(url)
+
+        Base.metadata.create_all(engine)
 
         Session = db.orm.sessionmaker()
         Session.configure(bind=engine)
