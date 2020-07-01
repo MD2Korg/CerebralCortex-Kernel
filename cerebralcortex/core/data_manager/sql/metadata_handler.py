@@ -43,7 +43,7 @@ class MetadataHandler:
         results = []
 
         if stream_name:
-            qry = "select * from " + self.correctedMetadata + "where stream_name='"+stream_name+"' group by stream_name"
+            qry = "select * from " + self.correctedMetadata + " where stream_name='"+stream_name+"' group by stream_name"
         else:
             qry = "select * from " + self.correctedMetadata + " group by stream_name"
 
