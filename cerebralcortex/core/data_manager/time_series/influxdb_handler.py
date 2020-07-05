@@ -62,7 +62,7 @@ class InfluxdbHandler():
         datapoints = datastream.data
         stream_identifier = datastream.identifier
         stream_owner_id = datastream.owner
-        stream_owner_name = self.sql_data.get_user_name(stream_owner_id)
+        stream_owner_name = self.sql_data.get_username(stream_owner_id)
         stream_name = datastream.name
 
         if datastream.data_descriptor:

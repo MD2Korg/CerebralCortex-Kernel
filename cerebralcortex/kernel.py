@@ -399,7 +399,7 @@ class Kernel:
             ValueError: User ID is a required field.
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
-            >>> CC.get_user_name("76cc444c-4fb8-776e-2872-9472b4e66b16")
+            >>> CC.get_username("76cc444c-4fb8-776e-2872-9472b4e66b16")
             >>> 'nasir_ali'
         """
         return self.SqlData.get_user_name(user_id)

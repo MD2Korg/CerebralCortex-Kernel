@@ -231,7 +231,7 @@ class FileSystemStorage:
         else:
             raise Exception(stream_name+" does not exist")
 
-    def list_streams(self)->List[str]:
+    def list_streams(self) -> List[str]:
         """
         Get all the available stream names with metadata
 
@@ -243,7 +243,27 @@ class FileSystemStorage:
             >>> CC.list_streams()
         """
         stream_path = self._get_storage_path()
-        return [d.replace("stream=","").replace("study="+self.obj.study_name, "").replace(self.obj.filesystem_path,"") for d in os.listdir(stream_path) if os.path.isdir(os.path.join(stream_path, d))]
+        return [
+            d.replace("stream=", "").replace("study=" + self.obj.study_name, "").replace(self.obj.filesystem_path, "")
+            for d in os.listdir(stream_path) if os.path.isdir(os.path.join(stream_path, d))]
+
+    def list_users(self, stream_name)->List[str]:
+        """
+        Get all the available stream names with metadata
+
+        Returns:
+            List[Metadata]: list of available streams metadata
+
+        Examples:
+            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC.list_streams()
+        """
+        stream_path = self._get_storage_path()
+        if stream_path[-1:]!="/":
+            stream_path = stream_path+"/version=1/"
+
+        stream_path = stream_path+"stream="+str(stream_name)
+        return [d.replace("user=","").replace("study="+self.obj.study_name, "").replace(self.obj.filesystem_path,"") for d in os.listdir(stream_path) if os.path.isdir(os.path.join(stream_path, d))]
 
     def search_stream(self, stream_name)->List[str]:
         """

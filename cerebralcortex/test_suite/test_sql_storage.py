@@ -154,7 +154,7 @@ class SqlStorageTest:
         self.assertEqual(self.user_id, user_id)
 
     def test_06_get_user_name(self):
-        username = self.CC.get_user_name(self.user_id)
+        username = self.CC.get_username(self.user_id)
         self.assertEqual(self.username, username)
 
     def test_07_get_all_users(self):

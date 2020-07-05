@@ -35,6 +35,7 @@ from typing import List
 
 import jwt
 from pytz import timezone
+from cerebralcortex.core.data_manager.sql.orm.orm_models import User
 
 
 class UserHandler():
@@ -67,11 +68,13 @@ class UserHandler():
         user_uuid = str(uuid.uuid3(uuid.NAMESPACE_DNS, user_uuid))
         if encrypt_password:
             user_password = self.encrypt_user_password(user_password)
-        qry = "INSERT IGNORE INTO " + self.userTable + " (user_id, username, password, study_name, user_role, user_metadata,user_settings) VALUES(%s, %s, %s, %s, %s, %s, %s)"
-        vals = str(user_uuid), str(username), str(user_password), str(self.study_name), str(user_role), json.dumps(user_metadata), json.dumps(user_settings)
+
+        user = User(user_id=user_uuid, username=username, password=user_password, study_name=self.study_name,
+                    token="", token_issued=datetime.now(), token_expiry=datetime.now())
 
         try:
-            self.execute(qry, vals, commit=True)
+            self.session.merge(user)
+            self.session.commit()
             return True
         except Exception as e:
             raise Exception(e)
@@ -91,10 +94,10 @@ class UserHandler():
         """
         if not username:
             raise ValueError("username cannot be empty/None.")
-        qry = "delete from "+self.userTable+ " where username=%s and study_name=%s"
-        vals = str(username), str(self.study_name)
+
+        User.query.filter_by(User.username==username).delete()
         try:
-            self.execute(qry, vals, commit=True)
+            self.session.commit()
         except Exception as e:
             raise Exception(e)
 
@@ -121,18 +124,14 @@ class UserHandler():
             raise ValueError("User ID/name cannot be empty.")
 
         if user_id and not username:
-            qry = "select user_metadata from user where user_id=%s and study_name=%s"
-            vals = str(user_id), self.study_name
+            user = self.session.query(User).filter(User.user_id == user_id & User.study_name==self.study_name).first()
         elif not user_id and username:
-            qry = "select user_metadata from user where username=%s and study_name=%s"
-            vals = str(username), self.study_name
+            user = self.session.query(User).filter(User.username == username & User.study_name == self.study_name).first()
         else:
-            qry = "select user_metadata from user where user_id=%s and username=%s and study_name=%s"
-            vals = str(user_id), str(username), self.study_name
+            user = self.session.query(User).filter(User.user_id == user_id & User.username == username & User.study_name == self.study_name).first()
 
-        rows = self.execute(qry, vals)
-        if len(rows) > 0:
-            return rows[0]
+        if user:
+            return user.user_metadata
         else:
             return {}
 
@@ -159,18 +158,14 @@ class UserHandler():
             raise ValueError("User ID or auth token cannot be empty.")
 
         if username and not auth_token:
-            qry = "select user_id, username, user_settings from user where username=%s and study_name=%s"
-            vals = str(username), self.study_name
+            user = self.session.query(User.user_id, User.username, User.user_settings).filter(User.username == username & User.study_name == self.study_name).first()
         elif not username and auth_token:
-            qry = "select user_id, username, user_settings from user where token=%s and study_name=%s"
-            vals = str(auth_token), self.study_name
+            user = self.session.query(User.user_id, User.username, User.user_settings).filter(User.token == auth_token & User.study_name == self.study_name).first()
         else:
-            qry = "select user_id, username, user_settings from user where username=%s and token=%s and study_name=%s"
-            vals = str(username), str(auth_token), self.study_name
+            user = self.session.query(User.user_id, User.username, User.user_settings).filter(User.username == username & User.token == auth_token & User.study_name == self.study_name).first()
 
-        rows = self.execute(qry, vals)
-        if len(rows) > 0:
-            return rows[0]
+        if user:
+            return user
         else:
             return {}
 
@@ -197,10 +192,8 @@ class UserHandler():
         if encrypt_password:
             password = self.encrypt_user_password(password)
 
-        qry = "select * from user where username=%s and password=%s and study_name=%s"
-        vals = username, password, self.study_name
-
-        rows = self.execute(qry, vals)
+        user = self.session.query(User).filter(
+            User.username == username & User.password==password & User.study_name == self.study_name).first()
 
         token_issue_time = datetime.now()
         expires = timedelta(seconds=int(self.config["cc"]['auth_token_expire_time']))
@@ -208,21 +201,21 @@ class UserHandler():
 
         token = jwt.encode({'username': username, "token_expire_at":str(token_expiry), "token_issued_at":str(token_issue_time)}, self.config["cc"]["auth_encryption_key"], algorithm='HS256')
         token = token.decode("utf-8")
-        if len(rows) == 0:
+
+        if not user:
             return {"status":False, "auth_token": "", "msg":" Incorrect username and/or password."}
         elif not self.update_auth_token(username, token, token_issue_time, token_expiry):
             return {"status":False, "auth_token": "", "msg": "cannot update auth token."}
         else:
             return {"status":True, "auth_token": token, "msg": "login successful."}
 
-    def is_auth_token_valid(self, username: str, auth_token: str, checktime:bool=False) -> bool:
+    def is_auth_token_valid(self, username: str, auth_token: str) -> bool:
         """
         Validate whether a token is valid or expired based on the token expiry datetime stored in SQL
 
         Args:
             username (str): username of a user
             auth_token (str): token generated by API-Server
-            checktime (bool): setting this to False will only check if the token is available in system. Setting this to true will check if the token is expired based on the token expiry date.
         Raises:
             ValueError: Auth token and auth-token expiry time cannot be null/empty.
         Returns:
@@ -231,17 +224,13 @@ class UserHandler():
         if not auth_token:
             raise ValueError("Auth token cannot be null/empty.")
 
-        qry = "select * from user where token=%s and username=%s and study_name=%s"
-        vals = auth_token, username, self.study_name
+        user = self.session.query(User).filter(
+            User.username == username & User.token == auth_token & User.study_name == self.study_name).first()
 
-        rows = self.execute(qry, vals)
-
-        if len(rows) == 0:
+        if not user:
             return False
-        elif not checktime:
-            return True
         else:
-            token_expiry_time = rows[0]["token_expiry"]
+            token_expiry_time = user.token_expiry
             localtz = timezone(self.time_zone)
             token_expiry_time = localtz.localize(token_expiry_time)
 
@@ -266,19 +255,14 @@ class UserHandler():
             >>> [{"76cc444c-4fb8-776e-2872-9472b4e66b16": "nasir_ali"}] # [{user_id, user_name}]
         """
 
-        results = []
-        qry = 'SELECT user_id, username FROM ' + self.userTable +" where study_name=%(study_name)s"
-        vals = {"study_name": self.study_name}
-        rows = self.execute(qry, vals)
+        user = self.session.query(User.user_id, User.username).filter(User.study_name == self.study_name).all()
 
-        if len(rows) == 0:
+        if len(user) == 0:
             return []
         else:
-            for row in rows:
-                results.append(row)
-            return results
+            return user
 
-    def get_user_name(self, user_id: str) -> str:
+    def get_username(self, user_id: str) -> str:
         """
         Get the user name linked to a user id.
 
@@ -296,50 +280,12 @@ class UserHandler():
         if not user_id:
             raise ValueError("User ID is a required field.")
 
-        qry = "select username from " + self.userTable + " where user_id = %s and study_name=%s"
-        vals = str(user_id), self.study_name
+        user = self.session.query(User.username).filter(User.user_id==user_id & User.study_name == self.study_name).first()
 
-        rows = self.execute(qry, vals)
-
-        if len(rows) == 0:
-            return ""
+        if not user:
+            raise Exception(str(user_id)+" does not exist.")
         else:
-            return rows[0]["username"]
-
-    def is_user(self, user_id: uuid = None, user_name: uuid = None) -> bool:
-        """
-        Checks whether a user exists in the system. One of both parameters could be set to verify whether user exist.
-
-        Args:
-            user_id (str): id (uuid) of a user
-            user_name (str): username of a user
-        Returns:
-            bool: True if a user exists in the system or False otherwise.
-        Raises:
-            ValueError: Both user_id and user_name cannot be None or empty.
-        Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
-            >>> CC.is_user(user_id="76cc444c-4fb8-776e-2872-9472b4e66b16")
-            >>> True
-        """
-        if user_id and user_name:
-            qry = "select username from " + self.userTable + " where user_id = %s and username=%s and study_name=%s"
-            vals = str(user_id), user_name, self.study_name
-        elif user_id and not user_name:
-            qry = "select username from " + self.userTable + " where user_id = %s and study_name=%s"
-            vals = str(user_id), self.study_name
-        elif not user_id and user_name:
-            qry = "select username from " + self.userTable + " where username = %s and study_name=%s"
-            vals = str(user_name), self.study_name
-        else:
-            raise ValueError("Both user_id and user_name cannot be None or empty.")
-
-        rows = self.execute(qry, vals)
-
-        if len(rows) > 0:
-            return True
-        else:
-            return False
+            return user.username
 
     def get_user_id(self, user_name: str) -> str:
         """
@@ -359,15 +305,45 @@ class UserHandler():
         if not user_name:
             raise ValueError("User name is a required field.")
 
-        qry = "select user_id from " + self.userTable + " where username = %s and study_name=%s"
-        vals = str(user_name), self.study_name
+        user = self.session.query(User.user_id).filter(User.username==user_name & User.study_name == self.study_name).first()
 
-        rows = self.execute(qry, vals)
-
-        if len(rows) == 0:
-            return ""
+        if not user:
+            raise Exception(str(user_name)+ " does not exist.")
         else:
-            return rows[0]["user_id"]
+            return user.user_id
+
+    def is_user(self, user_id: uuid = None, user_name: uuid = None) -> bool:
+        """
+        Checks whether a user exists in the system. One of both parameters could be set to verify whether user exist.
+
+        Args:
+            user_id (str): id (uuid) of a user
+            user_name (str): username of a user
+        Returns:
+            bool: True if a user exists in the system or False otherwise.
+        Raises:
+            ValueError: Both user_id and user_name cannot be None or empty.
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC.is_user(user_id="76cc444c-4fb8-776e-2872-9472b4e66b16")
+            >>> True
+        """
+        if user_id and user_name:
+            user = self.session.query(User.username).filter(
+                User.user_id == user_id & User.username==user_name & User.study_name == self.study_name).first()
+        elif user_id and not user_name:
+            user = self.session.query(User.username).filter(
+                User.user_id == user_id & User.study_name == self.study_name).first()
+        elif not user_id and user_name:
+            user = self.session.query(User.username).filter(
+                User.username == user_name & User.study_name == self.study_name).first()
+        else:
+            raise ValueError("Both user_id and user_name cannot be None or empty.")
+
+        if user:
+            return True
+        else:
+            return False
 
     def update_auth_token(self, username: str, auth_token: str, auth_token_issued_time: datetime,
                           auth_token_expiry_time: datetime) -> bool:
@@ -388,11 +364,11 @@ class UserHandler():
         if not auth_token and not auth_token_expiry_time and not auth_token_issued_time:
             raise ValueError("Auth token and auth-token issue/expiry time cannot be None/empty.")
 
-        qry = "UPDATE " + self.userTable + " set token=%s, token_issued=%s, token_expiry=%s where username=%s and study_name=%s"
-        vals = auth_token, auth_token_issued_time, auth_token_expiry_time, username, self.study_name
-
         try:
-            self.execute(qry, vals, commit=True)
+            self.session.query(User).filter(
+                User.username == username & User.study_name == self.study_name).update({User.token: auth_token,
+                                                                                        User.token_issued: auth_token_issued_time,
+                                                                                        User.token_expiry: auth_token_expiry_time})
             return True
         except:
             return False

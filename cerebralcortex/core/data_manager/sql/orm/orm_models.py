@@ -29,26 +29,18 @@ from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from cerebralcortex.core.data_manager.sql.orm import Base
 
-class Study(Base):
-    __tablename__ = 'stream'
-    row_id=Column('row_id',Integer, primary_key=True, autoincrement=True)
-    name=Column('name', String(100), unique=True, index=True)
-    study_metadata=Column('study_metadata', JSON)
-    creation_date = Column('creation_date', Date)
-
-    __table_args__ = (UniqueConstraint('name','study_name', name='stream_study'),)
 
 class Stream(Base):
     __tablename__ = 'stream'
     row_id=Column('row_id',Integer, primary_key=True, autoincrement=True)
-
     name=Column('name', String(100))
     version=Column('version', Boolean)
+    study_name = Column('study_name', Integer)
     metadata_hash=Column('metadata_hash', String(100), unique=True, index=True)
     stream_metadata=Column('stream_metadata', JSON)
     creation_date = Column('creation_date', Date)
 
-    __table_args__ = (UniqueConstraint('name','study_name', name='stream_study'),)
+    __table_args__ = (UniqueConstraint('name','study_name', name='unique_stream_study_key'),)
 
     def __init__(self, name, version, metadata_hash, stream_metadata):
         self.name = name
