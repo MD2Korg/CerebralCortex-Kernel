@@ -22,10 +22,19 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import traceback
-
+from cerebralcortex.core.data_manager.sql.orm_models import CC_Cache
 
 class CacheHandler:
+
+    def __init__(self, obj):
+        """
+        Constructor
+
+        Args:
+            obj (object): Object of Data class
+        """
+        self.obj = obj
+
     def set_cache_value(self, key: str, value: str) -> bool:
         """
         Creates a new cache entry in the cache. Values are overwritten for existing keys.
@@ -41,10 +50,10 @@ class CacheHandler:
         if not key or not len(key):
             raise ValueError("Key cannot be empty.")
 
-        qry = 'INSERT INTO cc_cache(cache_key,cache_value) VALUES(%s,%s) ON DUPLICATE KEY UPDATE cache_value = %s;'
-        data = (key, value, value)
         try:
-            self.execute(qry, data, commit=True)
+            cache = CC_Cache(cache_key=key, cache_value=value)
+            self.session.merge(cache)
+            self.session.commit()
             return True
         except Exception as e:
             raise Exception(str(e))
@@ -56,21 +65,16 @@ class CacheHandler:
         Args:
             key: key in the cache
         Returns:
-            str: The value in the cache
+            list(CC_Cache): list of CC_Cache objects
         Raises:
             ValueError: if key is None or empty
         """
         if not key and not len(key):
             raise ValueError("Key cannot be empty.")
 
-        qry = "select cache_value from cc_cache where cache_key=%(key)s"
-        vals = {"key": str(key)}
-
         try:
-            rows = self.execute(qry, vals)
-            if len(rows) == 0:
-                return None
-            else:
-                return rows[0]["cache_value"]
+
+            cache_values = self.session.query(CC_Cache).filter(CC_Cache.cache_key==key).all()
+            return cache_values
         except Exception as e:
             raise Exception(str(e))

@@ -26,11 +26,83 @@
 import json
 import uuid
 from typing import List
-
+from cerebralcortex.core.data_manager.sql.orm_models import Stream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 class StreamHandler:
+
+    ###################################################################
+    ################## STORE DATA METHODS #############################
+    ###################################################################
+
+    def save_stream_metadata(self, metadata_obj) -> dict:
+        """
+        Update a record if stream already exists or insert a new record otherwise.
+
+        Args:
+            metadata_obj (Metadata): stream metadata
+        Returns:
+            dict: {"status": True/False,"verion":version}
+        Raises:
+             Exception: if fail to insert/update record in MySQL. Exceptions are logged in a log file
+        """
+        isQueryReady = 0
+
+        if isinstance(metadata_obj, Metadata):
+            metadata_hash = metadata_obj.get_hash()
+            metadata_obj = metadata_obj.to_json()
+
+        else:
+            metadata_hash = Metadata().get_hash_by_json(metadata_obj)
+
+        stream_name = metadata_obj.get("name")
+
+        is_metadata_changed = self._is_metadata_changed(stream_name, metadata_hash)
+        status = is_metadata_changed.get("status")
+        version = is_metadata_changed.get("version")
+
+        if (status == "exist"):
+            return {"status": True, "version": version, "record_type": "exist"}
+
+        if (status == "new"):
+            stream  = Stream(name=stream_name.lower(), version=version, study_name=self.study_name, metadata_hash=str(metadata_hash), stream_metadata=metadata_obj)
+            isQueryReady = 1
+
+        # if nothing is changed then isQueryReady would be 0 and no database transaction would be performed
+        if isQueryReady == 1:
+            try:
+                self.session.add(stream)
+                self.session.commit()
+                return {"status": True, "version": version, "record_type": "new"}
+            except Exception as e:
+                raise Exception(e)
+
+    def _is_metadata_changed(self, stream_name, metadata_hash) -> dict:
+        """
+        Checks whether metadata_hash already exist in the system .
+
+        Args:
+            stream_name (str): name of a stream
+            metadata_hash (str): hashed form of stream metadata
+        Raises:
+             Exception: if MySQL query fails
+
+        Returns:
+            dict: {"version": "version_number", "status":"new" OR "exist"}
+
+        """
+        rows = self.session.query(Stream).filter(Stream.metadata_hash==metadata_hash).first()
+
+        if rows:
+            return {"version": int(rows.version), "status": "exist"}
+        else:
+            stream_versions = self.get_stream_versions(stream_name)
+            if bool(stream_versions):
+                version = max(stream_versions) + 1
+                return {"version": version, "status": "new"}
+            else:
+                return {"version": 1, "status": "new"}
 
     ###################################################################
     ################## GET DATA METHODS ###############################
@@ -58,17 +130,12 @@ class StreamHandler:
 
         result = []
         if version=="all":
-            qry = "SELECT * from " + self.datastreamTable +  ' where name=%(name)s'
-            vals = {'name': str(stream_name)}
+            rows = self.session.query(Stream.name, Stream.stream_metadata).filter(Stream.name==stream_name).all()
         else:
-            qry = "SELECT * from " + self.datastreamTable +  ' where name=%s and version=%s'
-            vals = stream_name,version
+            rows = self.session.query(Stream.name, Stream.stream_metadata).filter((Stream.name == stream_name) & (Stream.version==version)).all()
 
-        rows = self.execute(qry, vals)
-        if rows is not None and bool(rows):
-            for row in rows:
-                result.append(Metadata().from_json_sql(row))
-            return result
+        if rows:
+            return rows
         else:
             return []
 
@@ -77,20 +144,16 @@ class StreamHandler:
         Get all the available stream names with metadata
 
         Returns:
-            List[Metadata]: list of available streams metadata
+            List[Metadata]: list of available streams metadata [{name:"", metadata:""}...]
 
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> CC.list_streams()
         """
-        qry = "SELECT name from " + self.datastreamTable + " group by name, version"
+        rows = self.session.query(Stream.name, Stream.stream_metadata).filter(Stream.study_name == self.study_name).all()
 
-        rows = self.execute(qry)
-        results = []
         if rows:
-            for row in rows:
-                results.extend(self.get_stream_metadata_by_name(stream_name=row["name"]))
-            return results
+            return rows
         else:
             return []
 
@@ -107,15 +170,10 @@ class StreamHandler:
             >>> CC.search_stream("battery")
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
+        rows = self.session.query(Stream.name).filter(Stream.name.ilike('%'+stream_name+'%')).all()
 
-        qry = "SELECT name from " + self.datastreamTable + " where name like %(name)s group by name, version"
-        vals = {"name": "%"+str(stream_name).lower()+"%"}
-        rows = self.execute(qry, vals)
-        results = []
         if rows:
-            for row in rows:
-                results.append(row["name"])
-            return results
+            return rows
         else:
             return []
 
@@ -137,18 +195,10 @@ class StreamHandler:
         if not stream_name:
             raise ValueError("Stream_name is a required field.")
 
-        versions = []
+        rows = self.session.query(Stream.version).filter((Stream.name==stream_name) & (Stream.study_name==self.study_name)).all()
 
-        qry = "select version from " + self.datastreamTable + " where name = %(name)s order by version ASC"
-        vals = {"name":str(stream_name)}
-
-        rows = self.execute(qry, vals)
-
-        if len(rows) > 0:
-            for row in rows:
-                version = int(row["version"])
-                versions.append(version)
-            return versions
+        if rows:
+            return rows
         else:
             []
 
@@ -167,16 +217,11 @@ class StreamHandler:
         """
         if not stream_name:
             raise ValueError("stream_name are required field.")
-        metadata_hashes = []
-        qry = "select metadata_hash from " + self.datastreamTable + " where name = %(name)s"
-        vals = {"name":str(stream_name)}
 
-        rows = self.execute(qry, vals)
+        rows = self.session.query(Stream.metadata_hash).filter(Stream.name == stream_name & Stream.study_name==self.study_name).all()
 
-        if len(rows) > 0:
-            for row in rows:
-                metadata_hashes.append(row["metadata_hash"])
-            return metadata_hashes
+        if rows:
+            return rows
         else:
             return []
 
@@ -196,17 +241,13 @@ class StreamHandler:
 
         if not metadata_hash:
             raise ValueError("metadata_hash is a required field.")
-        metadata_hash = str(metadata_hash)
 
-        qry = "select name from " + self.datastreamTable + " where metadata_hash = %(metadata_hash)s"
-        vals = {'metadata_hash': metadata_hash}
+        rows = self.session.query(Stream.name).filter(Stream.metadata_hash == metadata_hash & Stream.study_name==self.study_name).first()
 
-        rows = self.execute(qry, vals)
-
-        if len(rows) == 0:
-            return ""
+        if rows:
+            return rows.name
         else:
-            return rows[0]["name"]
+            raise Exception(str(metadata_hash)+ " does not exist.")
 
     def get_stream_metadata_by_hash(self, metadata_hash: uuid) -> str:
         """
@@ -224,17 +265,14 @@ class StreamHandler:
 
         if not metadata_hash:
             raise ValueError("metadata_hash is a required field.")
-        metadata_hash = str(metadata_hash)
 
-        qry = "select * from " + self.datastreamTable + " where metadata_hash = %(metadata_hash)s"
-        vals = {'metadata_hash': metadata_hash}
+        rows = self.session.query(Stream.name, Stream.stream_metadata).filter(
+            Stream.metadata_hash == metadata_hash & Stream.study_name == self.study_name).first()
 
-        rows = self.execute(qry, vals)
-
-        if len(rows) == 0:
-            return {}
+        if rows:
+            return rows
         else:
-            return rows[0]
+            raise Exception(str(metadata_hash)+ " does not exist.")
 
     def is_stream(self, stream_name: str) -> bool:
         """
@@ -249,109 +287,11 @@ class StreamHandler:
             >>> CC.is_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> True
         """
-        qry = "SELECT * from " + self.datastreamTable + " where name = %(name)s"
-        vals = {'name': str(stream_name)}
-        rows = self.execute(qry, vals)
+
+        rows = self.session.query(Stream.name).filter(
+            Stream.name == stream_name & Stream.study_name == self.study_name).first()
 
         if rows:
             return True
         else:
             return False
-
-    def is_study(self) -> bool:
-        """
-        Returns true if provided study name exists.
-
-        Returns:
-            bool: True if stream_name exist False otherwise
-        Examples:
-            >>> CC = CerebralCortex("/directory/path/of/configs/")
-            >>> CC.is_study("demo-study")
-            >>> True
-        """
-        qry = "SELECT * from " + self.userTable + " where study_name= %(study_name)s"
-        vals = {'study_name': str(self.study_name)}
-        rows = self.execute(qry, vals)
-
-        if rows:
-            return True
-        else:
-            return False
-
-
-    ###################################################################
-    ################## STORE DATA METHODS #############################
-    ###################################################################
-
-    def save_stream_metadata(self, metadata_obj)->dict:
-        """
-        Update a record if stream already exists or insert a new record otherwise.
-
-        Args:
-            metadata_obj (Metadata): stream metadata
-        Returns:
-            dict: {"status": True/False,"verion":version}
-        Raises:
-             Exception: if fail to insert/update record in MySQL. Exceptions are logged in a log file
-        """
-        isQueryReady = 0
-
-
-        if isinstance(metadata_obj, Metadata):
-            metadata_hash = metadata_obj.get_hash()
-            metadata_obj = metadata_obj.to_json()
-
-        else:
-            metadata_hash = Metadata().get_hash_by_json(metadata_obj)
-
-        stream_name = metadata_obj.get("name")
-
-        is_metadata_changed = self._is_metadata_changed(stream_name, metadata_hash)
-        status = is_metadata_changed.get("status")
-        version = is_metadata_changed.get("version")
-
-        #metadata_obj = metadata_obj
-        if (status=="exist"):
-            return {"status": True,"version":version, "record_type":"exist"}
-
-        if (status == "new"):
-            qry = "INSERT IGNORE INTO " + self.datastreamTable + " (name, version, metadata_hash, metadata) VALUES(%s, %s, %s, %s)"
-            vals = str(stream_name).lower(), str(version), str(metadata_hash), json.dumps(metadata_obj).lower()
-            isQueryReady = 1
-
-            # if nothing is changed then isQueryReady would be 0 and no database transaction would be performed
-        if isQueryReady == 1:
-            try:
-                self.execute(qry, vals, commit=True)
-                return {"status": True,"version":version, "record_type":"new"}
-            except Exception as e:
-                raise Exception(e)
-
-    def _is_metadata_changed(self, stream_name, metadata_hash) -> dict:
-        """
-        Checks whether metadata_hash already exist in the system .
-
-        Args:
-            stream_name (str): name of a stream
-            metadata_hash (str): hashed form of stream metadata
-        Raises:
-             Exception: if MySQL query fails
-
-        Returns:
-            dict: {"version": "version_number", "status":"new" OR "exist"}
-
-        """
-
-        qry = "select version from " + self.datastreamTable + " where metadata_hash = %(metadata_hash)s"
-        vals = {"metadata_hash":metadata_hash}
-        rows = self.execute(qry, vals)
-        current_version = []
-        if len(rows) > 0:
-            return {"version": int(rows[0]["version"]), "status":"exist"}
-        else:
-            stream_versions = self.get_stream_versions(stream_name)
-            if bool(stream_versions):
-                version = max(stream_versions)+1
-                return {"version": version, "status":"new"}
-            else:
-                return {"version": 1, "status":"new"}

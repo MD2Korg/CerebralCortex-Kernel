@@ -34,7 +34,7 @@ from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
 from cerebralcortex.test_suite.test_stream import DataStreamTest
 
 
-class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, TestObjectStorage):
+class TestCerebralCortex(unittest.TestCase, SqlStorageTest):
 
     def setUp(self):
         """
