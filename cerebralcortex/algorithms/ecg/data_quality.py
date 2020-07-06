@@ -1,4 +1,4 @@
-# Copyright (c) 2017, MD2K Center of Excellence
+# Copyright (c) 2020, MD2K Center of Excellence
 # All rights reserved.
 # Md Azim Ullah (mullah@memphis.edu)
 # Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@ import pandas as pd
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
     ModuleMetadata
-def get_quality(data,
+def get_quality_autosense(data,
                 outlier_threshold_high = 4000,
                 outlier_threshold_low = 20,
                 slope_threshold = 100,
@@ -99,7 +99,7 @@ def get_metadata(stream_name = 'org.md2k.autosense.ecg.quality'):
             "Md Azim Ullah", "mullah@memphis.edu"))
     return stream_metadata
 
-def ecg_quality(ecg):
+def ecg_quality(ecg,Fs=64,sensor_name='autosense'):
     schema = StructType([
         StructField("timestamp", TimestampType()),
         StructField("localtime", TimestampType()),
@@ -113,7 +113,8 @@ def ecg_quality(ecg):
         data['quality'] = ''
         if data.shape[0]>0:
             data = data.sort_values('timestamp')
-            data['quality'] = get_quality(list(data['ecg']))
+            if sensor_name in ['autosense']:
+                data['quality'] = get_quality_autosense(list(data['ecg']),Fs=Fs)
         return data
     ecg_quality_stream = ecg.compute(data_quality,windowDuration=3,startTime='0 seconds')
     data = ecg_quality_stream._data
