@@ -132,7 +132,7 @@ class StreamHandler:
         if version=="all":
             rows = self.session.query(Stream.name, Stream.stream_metadata).filter(Stream.name==stream_name).all()
         else:
-            rows = self.session.query(Stream.name, Stream.stream_metadata).filter((Stream.name == stream_name) & (Stream.version==version)).all()
+            rows = self.session.query(Stream.name, Stream.stream_metadata).filter((Stream.name == stream_name) & (Stream.version==version) & (Stream.study_name==self.study_name)).all()
 
         if rows:
             return rows
