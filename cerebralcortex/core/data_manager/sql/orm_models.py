@@ -35,7 +35,7 @@ class Stream(Base):
     row_id=Column('row_id',Integer, primary_key=True, autoincrement=True)
     name=Column('name', String(100))
     version=Column('version', Integer)
-    study_name = Column('study_name', Integer)
+    study_name = Column('study_name', String(100))
     metadata_hash=Column('metadata_hash', String(100), unique=True, index=True)
     stream_metadata=Column('stream_metadata', JSON)
     creation_date = Column('creation_date', Date)
@@ -59,10 +59,10 @@ class Stream(Base):
 class User(Base):
     __tablename__ = 'user'
     row_id=Column('row_id',Integer, primary_key=True, autoincrement=True)
-    user_id = Column('user_id', Integer, unique=True, index=True)
+    user_id = Column('user_id', String(100), unique=True, index=True)
     username=Column('username', String(100), unique=True, index=True)
     password=Column('password', String(100))
-    study_name=Column('study_name', Integer)
+    study_name=Column('study_name', String(100))
     token = Column('token', Text)
     token_issued = Column('token_issued', Date)
     token_expiry = Column('token_expiry', Date)

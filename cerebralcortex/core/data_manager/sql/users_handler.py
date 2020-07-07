@@ -69,34 +69,13 @@ class UserHandler():
             user_password = self.encrypt_user_password(user_password)
 
         user = User(user_id=user_uuid, username=username, password=user_password, study_name=self.study_name,
-                    token="", token_issued=datetime.now(), token_expiry=datetime.now())
+                    token="", token_issued=datetime.now(), token_expiry=datetime.now(), user_role=user_role,
+                    user_settings=user_settings, user_metadata=user_metadata)
 
         try:
             self.session.merge(user)
             self.session.commit()
             return True
-        except Exception as e:
-            raise Exception(e)
-
-
-    def delete_user(self, username:str):
-        """
-        Delete a user record in SQL table
-
-        Args:
-            username: username of a user that needs to be deleted
-        Returns:
-            bool: if user is successfully removed
-        Raises:
-            ValueError: if username param is empty or None
-            Exception: if sql query fails
-        """
-        if not username:
-            raise ValueError("username cannot be empty/None.")
-
-        User.query.filter_by(User.username==username).delete()
-        try:
-            self.session.commit()
         except Exception as e:
             raise Exception(e)
 
@@ -123,11 +102,11 @@ class UserHandler():
             raise ValueError("User ID/name cannot be empty.")
 
         if user_id and not username:
-            user = self.session.query(User).filter(User.user_id == user_id & User.study_name==self.study_name).first()
+            user = self.session.query(User).filter((User.user_id == user_id) & (User.study_name==self.study_name)).first()
         elif not user_id and username:
-            user = self.session.query(User).filter(User.username == username & User.study_name == self.study_name).first()
+            user = self.session.query(User).filter((User.username == username) & (User.study_name == self.study_name)).first()
         else:
-            user = self.session.query(User).filter(User.user_id == user_id & User.username == username & User.study_name == self.study_name).first()
+            user = self.session.query(User).filter((User.user_id == user_id) & (User.username == username) & (User.study_name == self.study_name)).first()
 
         if user:
             return user.user_metadata
@@ -157,14 +136,14 @@ class UserHandler():
             raise ValueError("User ID or auth token cannot be empty.")
 
         if username and not auth_token:
-            user = self.session.query(User.user_id, User.username, User.user_settings).filter(User.username == username & User.study_name == self.study_name).first()
+            user = self.session.query(User.user_settings).filter((User.username == username) & (User.study_name == self.study_name)).first()
         elif not username and auth_token:
-            user = self.session.query(User.user_id, User.username, User.user_settings).filter(User.token == auth_token & User.study_name == self.study_name).first()
+            user = self.session.query(User.user_settings).filter((User.token == auth_token) & (User.study_name == self.study_name)).first()
         else:
-            user = self.session.query(User.user_id, User.username, User.user_settings).filter(User.username == username & User.token == auth_token & User.study_name == self.study_name).first()
+            user = self.session.query(User.user_settings).filter((User.username == username) & (User.token == auth_token) & (User.study_name == self.study_name)).first()
 
         if user:
-            return user
+            return user.user_settings
         else:
             return {}
 
@@ -192,7 +171,7 @@ class UserHandler():
             password = self.encrypt_user_password(password)
 
         user = self.session.query(User).filter(
-            User.username == username & User.password==password & User.study_name == self.study_name).first()
+            (User.username == username) & (User.password==password) & (User.study_name == self.study_name)).first()
 
         token_issue_time = datetime.now()
         expires = timedelta(seconds=int(self.config["cc"]['auth_token_expire_time']))
@@ -224,7 +203,7 @@ class UserHandler():
             raise ValueError("Auth token cannot be null/empty.")
 
         user = self.session.query(User).filter(
-            User.username == username & User.token == auth_token & User.study_name == self.study_name).first()
+            (User.username == username) & (User.token == auth_token) & (User.study_name == self.study_name)).first()
 
         if not user:
             return False
@@ -279,7 +258,7 @@ class UserHandler():
         if not user_id:
             raise ValueError("User ID is a required field.")
 
-        user = self.session.query(User.username).filter(User.user_id==user_id & User.study_name == self.study_name).first()
+        user = self.session.query(User.username).filter((User.user_id==user_id) & (User.study_name == self.study_name)).first()
 
         if not user:
             raise Exception(str(user_id)+" does not exist.")
@@ -304,7 +283,7 @@ class UserHandler():
         if not user_name:
             raise ValueError("User name is a required field.")
 
-        user = self.session.query(User.user_id).filter(User.username==user_name & User.study_name == self.study_name).first()
+        user = self.session.query(User.user_id).filter((User.username==user_name) & (User.study_name == self.study_name)).first()
 
         if not user:
             raise Exception(str(user_name)+ " does not exist.")
@@ -329,13 +308,13 @@ class UserHandler():
         """
         if user_id and user_name:
             user = self.session.query(User.username).filter(
-                User.user_id == user_id & User.username==user_name & User.study_name == self.study_name).first()
+                (User.user_id == user_id) & (User.username==user_name) & (User.study_name == self.study_name)).first()
         elif user_id and not user_name:
             user = self.session.query(User.username).filter(
-                User.user_id == user_id & User.study_name == self.study_name).first()
+                (User.user_id == user_id) & (User.study_name == self.study_name)).first()
         elif not user_id and user_name:
             user = self.session.query(User.username).filter(
-                User.username == user_name & User.study_name == self.study_name).first()
+                (User.username == user_name) & (User.study_name == self.study_name)).first()
         else:
             raise ValueError("Both user_id and user_name cannot be None or empty.")
 
@@ -365,7 +344,7 @@ class UserHandler():
 
         try:
             self.session.query(User).filter(
-                User.username == username & User.study_name == self.study_name).update({User.token: auth_token,
+                (User.username == username) & (User.study_name == self.study_name)).update({User.token: auth_token,
                                                                                         User.token_issued: auth_token_issued_time,
                                                                                         User.token_expiry: auth_token_expiry_time})
             return True

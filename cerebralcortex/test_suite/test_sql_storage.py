@@ -30,6 +30,7 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataD
 from datetime import datetime, timedelta
 import random
 from cerebralcortex.core.datatypes import DataStream
+from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_data, gen_phone_battery_metadata
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
 from cerebralcortex.core.util.spark_helper import get_or_create_sc
 from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
@@ -37,87 +38,91 @@ from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 
 class SqlStorageTest:
     ###### STREAM RELATED TEST CASES #####
-    def test_save_stream_metadata(self):
-        stream_metadata = Metadata()
-        stream_metadata.set_name(self.stream_name).set_description("GPS sample data stream.") \
-            .add_dataDescriptor(
-            DataDescriptor().set_name("latitude").set_type("float").set_attribute("description", "gps latitude")) \
-            .add_module(
-            ModuleMetadata().set_name("examples.some.test.module").set_attribute("attribute_key",
-                                                                                                   "attribute_value").set_author(
-                "Nasir Ali", "nasir.ali08@gmail.com"))
-        stream_metadata.is_valid()
+    def test_save_stream_metadata_00(self):
+        stream_metadata = gen_phone_battery_metadata()
 
         result = self.CC.SqlData.save_stream_metadata(stream_metadata)
         self.assertEqual(result.get("status", False), True)
 
 
-    def test_get_stream_metadata_by_name(self):
+    def test_get_stream_metadata_by_name_01(self):
         result = self.CC.SqlData.get_stream_metadata_by_name(self.stream_name)
         self.assertTrue(len(result)>0)
 
-    def test_list_streams(self):
+    def test_list_streams_02(self):
         result = self.CC.SqlData.list_streams()
         self.assertTrue(len(result)>0)
 
-    def test_search_stream(self):
+    def test_search_stream_03(self):
         result = self.CC.SqlData.search_stream("battery")
         self.assertTrue(len(result) > 0)
 
-    def test_get_stream_versions(self):
+    def test_get_stream_versions_04(self):
         result = self.CC.SqlData.get_stream_versions(self.stream_name)
         self.assertTrue(len(result) > 0)
 
-    def test_get_stream_metadata_hash(self):
-        pass
+    def test_get_stream_metadata_hash_05(self):
+        result = self.CC.SqlData.get_stream_metadata_hash(self.stream_name)
+        self.assertEqual(result[0].metadata_hash,self.metadata_hash)
 
-    def test_get_stream_name(self):
-        pass
+    def test_get_stream_name_06(self):
+        result = self.CC.SqlData.get_stream_name(self.metadata_hash)
+        self.assertEqual(result,self.stream_name)
 
-    def test_get_stream_metadata_by_hash(self):
-        pass
+    def test_get_stream_metadata_by_hash_07(self):
+        result = self.CC.SqlData.get_stream_metadata_by_hash(self.metadata_hash)
+        self.assertEqual(result.name, self.stream_name)
 
-    def test_is_stream(self):
-        pass
+    def test_is_stream_08(self):
+        result = self.CC.SqlData.is_stream(self.stream_name)
+        self.assertEqual(result, True)
 
-    def test_is_study(self):
-        pass
-
-    def test__is_metadata_changed(self):
-        pass
+    def test_is_metadata_changed_09(self):
+        result = self.CC.SqlData._is_metadata_changed(self.stream_name, self.metadata_hash)
+        self.assertEqual(result.get("status"), "exist")
 
     ########## USER RELATED TEST CASES #######
     def test_create_user(self):
-        pass
-
-    def test_delete_user(self):
-        pass
+        result = self.CC.SqlData.create_user(username=self.username, user_password=self.user_password, user_role=self.user_role,
+                                             user_metadata=self.user_metadata, user_settings=self.user_settings)
+        self.assertEqual(result, True)
 
     def test_get_user_metadata(self):
-        pass
+        result = self.CC.SqlData.get_user_metadata(username=self.username)
+        self.assertEqual(result, self.user_metadata)
 
     def test_get_user_settings(self):
-        pass
+        result = self.CC.SqlData.get_user_settings(username=self.username)
+        self.assertEqual(result, self.user_settings)
 
     def test_login_user(self):
-        pass
+        result = self.CC.SqlData.login_user(self.username, self.user_password, encrypt_password=False)
+        self.assertEqual(result.get("status"), True)
 
-    def test_is_auth_token_valid(self):
-        pass
+    # def test_is_auth_token_valid(self):
+    #     result = self.CC.SqlData.is_auth_token_valid(self.username, "")
+    #     self.assertEqual(result, self.user_metadata)
 
     def test_list_users(self):
-        pass
-    def test_get_user_name(self):
-        pass
+        result = self.CC.SqlData.list_users()
+        self.assertTrue(len(result)>0)
+
+    def test_get_username(self):
+        result = self.CC.SqlData.get_username(self.user_id)
+        self.assertEqual(result, self.username)
 
     def test_is_user(self):
-        pass
+        result = self.CC.SqlData.is_user(user_name=self.username)
+        self.assertEqual(result, True)
 
     def test_get_user_id(self):
-        pass
+        result = self.CC.SqlData.get_user_id(self.username)
+        self.assertEqual(result, self.user_id)
 
-    def test_update_auth_token(self):
-        pass
+    # def test_update_auth_token(self):
+    #     result = self.CC.SqlData.update_auth_token(self.username)
+    #     self.assertEqual(result, self.user_metadata)
+
 
 
     # def test_01_is_stream(self):

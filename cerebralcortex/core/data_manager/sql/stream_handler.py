@@ -218,7 +218,7 @@ class StreamHandler:
         if not stream_name:
             raise ValueError("stream_name are required field.")
 
-        rows = self.session.query(Stream.metadata_hash).filter(Stream.name == stream_name & Stream.study_name==self.study_name).all()
+        rows = self.session.query(Stream.metadata_hash).filter((Stream.name == stream_name) & (Stream.study_name==self.study_name)).all()
 
         if rows:
             return rows
@@ -242,7 +242,7 @@ class StreamHandler:
         if not metadata_hash:
             raise ValueError("metadata_hash is a required field.")
 
-        rows = self.session.query(Stream.name).filter(Stream.metadata_hash == metadata_hash & Stream.study_name==self.study_name).first()
+        rows = self.session.query(Stream.name).filter((Stream.metadata_hash == metadata_hash) & (Stream.study_name==self.study_name)).first()
 
         if rows:
             return rows.name
@@ -267,7 +267,7 @@ class StreamHandler:
             raise ValueError("metadata_hash is a required field.")
 
         rows = self.session.query(Stream.name, Stream.stream_metadata).filter(
-            Stream.metadata_hash == metadata_hash & Stream.study_name == self.study_name).first()
+            (Stream.metadata_hash == metadata_hash) & (Stream.study_name == self.study_name)).first()
 
         if rows:
             return rows
@@ -289,7 +289,7 @@ class StreamHandler:
         """
 
         rows = self.session.query(Stream.name).filter(
-            Stream.name == stream_name & Stream.study_name == self.study_name).first()
+            (Stream.name == stream_name) & (Stream.study_name == self.study_name)).first()
 
         if rows:
             return True
