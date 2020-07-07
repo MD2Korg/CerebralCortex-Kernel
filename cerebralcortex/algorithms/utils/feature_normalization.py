@@ -53,6 +53,7 @@ def weighted_avg_and_std(values, weights):
     return average, math.sqrt(variance)
 
 def normalize_features(data,
+                       index_of_first_order_feature =2,
                        lower_percentile=20,
                        higher_percentile=99,
                        minimum_minutes_in_day=60,
@@ -76,10 +77,10 @@ def normalize_features(data,
             return pd.DataFrame([],columns=a.columns)
         quals1 = np.array([1]*a.shape[0])
         feature_matrix = np.array(list(a[input_feature_array_name])).reshape(-1,no_features)
-        ss = np.repeat(feature_matrix[:,2],np.int64(np.round(100*quals1)))
+        ss = np.repeat(feature_matrix[:,index_of_first_order_feature],np.int64(np.round(100*quals1)))
         rr_70th = np.percentile(ss,lower_percentile)
         rr_95th = np.percentile(ss,higher_percentile)
-        index = np.where((feature_matrix[:,2]>rr_70th)&(feature_matrix[:,2]<rr_95th))[0]
+        index = np.where((feature_matrix[:,index_of_first_order_feature]>rr_70th)&(feature_matrix[:,index_of_first_order_feature]<rr_95th))[0]
         for i in range(feature_matrix.shape[1]):
             m,s = weighted_avg_and_std(feature_matrix[index,i], quals1[index])
             s+=epsilon
