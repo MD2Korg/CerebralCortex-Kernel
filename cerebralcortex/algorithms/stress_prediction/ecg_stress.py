@@ -35,17 +35,10 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataD
     ModuleMetadata
 import pickle
 
-def compute_stress_probability(ecg_data,
-                               sensor_name='autosense',
-                               Fs=64,
+
+def compute_stress_probability(stress_features_normalized,
                                model_path='.',
-                               feature_index=np.array([0,1,6,7,8,9,10])):
-    ecg_data_with_quality = ecg_quality(ecg_data,sensor_name=sensor_name,Fs=Fs)
-    ecg_rr = get_rr_interval(ecg_data_with_quality,Fs=Fs)
-    stress_features = get_hrv_features(ecg_rr)
-    columns = ['var','iqr','mean','median','80th','20th','heartrate','vlf','lf','hf','lfhf']
-    stress_features = stress_features.withColumn('features',F.array([F.col(i) for i in columns]))
-    stress_features_normalized = normalize_features(stress_features,input_feature_array_name='features')
+                               feature_index=None):
     stress_features_normalized = stress_features_normalized.withColumn('start',F.col('window').start)
     stress_features_normalized = stress_features_normalized.withColumn('end',F.col('window').end).drop('window')
     stress_features_normalized = stress_features_normalized.withColumn('stress_probability',F.lit(1).cast('double'))
@@ -59,7 +52,8 @@ def compute_stress_probability(ecg_data,
             for i in range(data.shape[0]):
                 features.append(np.array(data['features_normalized'].values[i]))
             features = np.nan_to_num(np.array(features))
-            features = features[:,feature_index]
+            if feature_index is None:
+                features = features[:,feature_index]
             probs = ecg_model.predict_proba(features)[:,1]
             data['stress_probability'] = probs
             return data
