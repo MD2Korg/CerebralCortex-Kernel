@@ -52,7 +52,7 @@ def compute_stress_probability(stress_features_normalized,
             for i in range(data.shape[0]):
                 features.append(np.array(data['features_normalized'].values[i]))
             features = np.nan_to_num(np.array(features))
-            if feature_index is None:
+            if feature_index is not None:
                 features = features[:,feature_index]
             probs = ecg_model.predict_proba(features)[:,1]
             data['stress_probability'] = probs
