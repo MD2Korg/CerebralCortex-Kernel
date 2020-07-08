@@ -58,7 +58,7 @@ def get_metadata(stream_name = 'org.md2k.autosense.ecg.stress.probability'):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="ECG Stress Calculation")
-    parser.add_argument('-c', '--config_dir', help='CC Configuration directory path', required=False,default="/home/jupyter/cc3_conf/")
+    parser.add_argument('-c', '--config_dir', help='CC Configuration directory path', required=False,default="/Users/ali/IdeaProjects/CerebralCortex-2.0/conf/")
     parser.add_argument('-a', '--ecg_stream_name', help='Input ECG Stream Name', required=False,default="ecg--org.md2k.autosense--autosense_chest--chest")
     parser.add_argument('-s', '--study_name', help='Study Name', required=False,default="rice")
     parser.add_argument('-f', '--frequency', help='ECG Sampling Frequency', required=False,default="64")
@@ -86,4 +86,6 @@ if __name__ == "__main__":
     stress_features_normalized = normalize_features(stress_features,input_feature_array_name='features')
     ecg_stress_probability = compute_stress_probability(stress_features_normalized,model_path=model_path)
     ecg_stress_probability.metadata = get_metadata(stream_name=output_stream_name)
-    CC.save_stream(ecg_stress_probability,overwrite=True)
+
+    ecg_stress_probability.show()
+    #CC.save_stream(ecg_stress_probability,overwrite=True)
