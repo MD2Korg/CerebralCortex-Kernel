@@ -62,7 +62,7 @@ if __name__ == "__main__":
     parser.add_argument('-a', '--ecg_stream_name', help='Input ECG Stream Name', required=False,default="ecg--org.md2k.autosense--autosense_chest--chest")
     parser.add_argument('-s', '--study_name', help='Study Name', required=False,default="rice")
     parser.add_argument('-f', '--frequency', help='ECG Sampling Frequency', required=False,default="64")
-    parser.add_argument('-p', '--path', help='Stress Model Path', required=False,default='./model/stress_ecg_final.p')
+    parser.add_argument('-p', '--path', help='Stress Model Path', required=False,default='/Users/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/markers/ecg_stress/model/stress_ecg_final.p')
     parser.add_argument('-n', '--sensor_name', help='Sensor Type', required=False,default='autosense')
     parser.add_argument('-o', '--output_stream_name', help='Final Stress Stream Name', required=False,default='org.md2k.autosense.ecg.stress.probability')
 

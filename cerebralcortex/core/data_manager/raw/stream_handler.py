@@ -31,6 +31,8 @@ import pandas as pd
 from pyspark.sql.functions import lit
 
 from cerebralcortex.core.datatypes import DataStream
+from cerebralcortex.algorithms.utils.mprov_helper import write_metadata_to_mprov
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 class DataSet(Enum):
@@ -157,7 +159,9 @@ class StreamHandler():
                     result = self.sql_data.save_stream_metadata(metadata)
                     
                     if result["status"]==True:
-                        version = result["version"]
+                        write_metadata_to_mprov(metadata=metadata)
+
+                        version = result.get("version")
 
                         if isinstance(data, pd.DataFrame):
                             data["version"] = version

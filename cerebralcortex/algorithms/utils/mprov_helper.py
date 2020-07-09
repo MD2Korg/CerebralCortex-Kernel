@@ -24,6 +24,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
+from datetime import timezone, datetime
+from cerebralcortex.core.metadata_manager.stream.metadata import ModuleMetadata
 from pennprov.connection.mprov_connection_cache import MProvConnectionCache
 from pennprov.api.decorators import MProvAgg
 from functools import wraps
@@ -41,14 +43,56 @@ def MProvAgg_empty():
     return inner_function
 
 
-def CC_MProvAgg(in_stream_name,op,out_stream_name,in_stream_key=['index'],out_stream_key=['index'],map=None, graph_name=None):
+def CC_get_prov_connection(graph_name=None):
     mprov = os.getenv("ENABLE_MPROV")
+    if graph_name is None:
+        graph_name = "mprov-graph"
     if mprov=="True":
         connection_key = MProvConnectionCache.Key(user=os.getenv("MPROV_USER"), password=os.getenv("MPROV_PASSWORD"),
                                                   host=os.getenv("MPROV_HOST"), graph=graph_name)
         mprov_conn = MProvConnectionCache.get_connection(connection_key)
         if mprov_conn:
-            mprov_conn.create_or_reset_graph()
-        return MProvAgg(in_stream_name=in_stream_name, op=op, out_stream_name=out_stream_name, in_stream_key=in_stream_key, out_stream_key=out_stream_key, map=map, connection_key=connection_key)
+            mprov_conn.get_low_level_api().create_provenance_graph(graph_name)
+            return {"connection":mprov_conn, "connection_key":connection_key}
+    return None
+
+def CC_MProvAgg(in_stream_name,op,out_stream_name,in_stream_key=['index'],out_stream_key=['index'],map=None, graph_name=None):
+    mprov_conn = CC_get_prov_connection(graph_name)
+    if mprov_conn:
+        return MProvAgg(in_stream_name=in_stream_name, op=op, out_stream_name=out_stream_name, in_stream_key=in_stream_key, out_stream_key=out_stream_key, connection_key=mprov_conn.get("connection_key"))
     else:
         return MProvAgg_empty()
+
+def write_metadata_to_mprov(metadata):
+    mprov = os.getenv("ENABLE_MPROV")
+    if mprov=="True":
+        mprov_conn = CC_get_prov_connection().get("connection")
+        _prov_stream_node = None
+        if mprov_conn is None:
+            return
+
+        # Initialize the stream node
+        if _prov_stream_node is None:
+            _prov_stream_node = mprov_conn.create_collection(metadata.name, 0)
+
+        annot = {'description': metadata.description, 'annotations': str(metadata.annotations),
+                 'schema': str(metadata.to_json().get("data_descriptor"))}
+
+        mprov_conn.store_annotations(_prov_stream_node, annot)
+
+        # Ensure there's a node for each input stream
+        in_stream_nodes = []
+        for in_stream in metadata.input_streams:
+            in_stream_nodes.append(mprov_conn.create_collection(in_stream, 0))
+
+        # Capture the derivation
+        for in_stream in in_stream_nodes:
+            mprov_conn.store_derived_from(_prov_stream_node, in_stream)
+
+        now = datetime.now(timezone.utc)
+        for module in metadata.modules:
+            assert isinstance(module, ModuleMetadata)
+            act = mprov_conn.store_activity(module.name, now, now, 0)
+            for in_stream in in_stream_nodes:
+                mprov_conn.store_used(act, in_stream)
+                mprov_conn.store_generated_by(_prov_stream_node, act)
