@@ -23,12 +23,7 @@ hdfs:
   port: 9001
   raw_files_dir: "/user/ali/cc33/"
 
-#########################################################################
-#                        OBJECT Storage                                 #
-#########################################################################
 
-object_storage:
-  object_storage_path: "/Users/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/test_suite/sample_data/objects/"
 
 #########################################################################
 #                          Relational Storage                           #
@@ -43,10 +38,7 @@ mysql:
   port: 3306 # Change if MySQL is not using default port
   db_user: root # Change
   db_pass: pass # Change
-
-  # Note: do not change following parameters if you don't know what you are doing
   database: cerebralcortex
-  connection_pool_size: 1
 
 #########################################################################
 ###################### Visualization Data Storage #######################

@@ -16,3 +16,10 @@ routes: # Don't change if you don't know what you are doing
   user: "user"
   stream: "stream"
   object: "bucket"
+
+#########################################################################
+#                        OBJECT Storage                                 #
+#########################################################################
+
+object_storage:
+  object_storage_path: "/Users/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/test_suite/sample_data/objects/"

@@ -93,30 +93,3 @@ class User(Base):
             self.row_id, self.user_id, self.username, self.password, self.study_name, self.token, self.token_issued, self.token_expiry,
             self.user_role, self.user_metadata, self.user_settings, self.active, self.creation_date
         )
-
-class CC_Cache(Base):
-    __tablename__ = "cc_cache"
-    cache_key = Column("cache_key", String(100), primary_key=True)
-    cache_value = Column("cache_value", Text)
-
-
-    def __repr__(self):
-        return "cache_key='{0}', cache_value='{1}'\n".format(
-            self.cache_key, self.cache_value)
-
-#
-# class Ingestion_Logs(Base):
-#     __tablename__ = "ingestion_logs"
-#     row_id = Column('row_id', Integer, primary_key=True, autoincrement=True)
-#     user_id = Column('user_id', String(100), index=True)
-#     stream_name = Column('stream_name', String(100), index=True)
-#     stream_metadata = Column('stream_metadata', JSON)
-#     platform_metadata = Column('platform_metadata', JSON)
-#     file_path = Column('file_path', String(100))
-#     fault_type = Column('fault_type', String(100))
-#     fault_description = Column('fault_description', String(200))
-#     success = Column('success', Integer)
-#     added_date = Column('added_date', Date)
-#
-#     def __init__(self, user_id, stream_name, stream_metadata, platform_metadata, file_path):
-#         self.user_id

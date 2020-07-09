@@ -30,14 +30,11 @@ from sqlalchemy_utils import create_database, database_exists
 
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 
-from cerebralcortex.core.data_manager.sql.cache_handler import CacheHandler
 from cerebralcortex.core.data_manager.sql.stream_handler import StreamHandler
-from cerebralcortex.core.data_manager.sql.metadata_handler import MetadataHandler
 from cerebralcortex.core.data_manager.sql.users_handler import UserHandler
-from cerebralcortex.core.data_manager.sql.data_ingestion_handler import DataIngestionHandler
 
 
-class SqlData(CacheHandler, StreamHandler, UserHandler):
+class SqlData(StreamHandler, UserHandler):
     def __init__(self, CC):
         """
         Constructor
@@ -87,81 +84,3 @@ class SqlData(CacheHandler, StreamHandler, UserHandler):
         Session = db.orm.sessionmaker()
         Session.configure(bind=engine)
         self.session = Session()
-
-
-    # def create_pool(self, pool_name: str = "CC_Pool", pool_size: int = 1):
-    #     """
-    #     Create a connection pool, after created, the request of connecting
-    #     MySQL could get a connection from this pool instead of request to
-    #     create a connection.
-    #
-    #     Args:
-    #         pool_name (str): the name of pool, (default="CC_Pool")
-    #         pool_size (int): size of MySQL connections pool (default=1)
-    #     Returns:
-    #         object: MySQL connections pool
-    #     """
-    #     dbconfig = {
-    #         "host": self.hostIP,
-    #         "port": self.hostPort,
-    #         "user": self.dbUser,
-    #         "password": self.dbPassword,
-    #         "database": self.database,
-    #     }
-    #
-    #     pool = mysql.connector.pooling.MySQLConnectionPool(
-    #         pool_name=pool_name,
-    #         pool_size=pool_size,
-    #         pool_reset_session=True,
-    #         **dbconfig)
-    #     return pool
-    #
-    # def close(self, conn, cursor):
-    #     """
-    #     close connection of mysql.
-    #
-    #     Args:
-    #         conn (object): MySQL connection object
-    #         cursor (object): MySQL cursor object
-    #     Raises:
-    #         Exception: if connection is closed
-    #     """
-    #     try:
-    #         cursor.close()
-    #         conn.close()
-    #     except Exception as exp:
-    #         raise Exception(exp)
-    #
-    # def execute(self, sql, args=None, commit=False, executemany=False)->List[dict]:
-    #     """
-    #     Execute a sql, it could be with args and with out args. The usage is
-    #     similar with execute() function in module pymysql.
-    #
-    #     Args:
-    #         sql (str): sql clause
-    #         args (tuple): args need by sql clause
-    #         commit (bool): whether to commit
-    #         executemany (bool): execute batch
-    #     Returns:
-    #         list[dict]: returns a list of dicts if commit is set to False
-    #     Raises:
-    #         Exception: if MySQL query fails
-    #     """
-    #     # get connection form connection pool instead of create one.
-    #     conn = self.pool.get_connection()
-    #     cursor = conn.cursor(dictionary=True)
-    #     if args:
-    #         if executemany:
-    #             cursor.executemany(sql, args)
-    #         else:
-    #             cursor.execute(sql, args)
-    #     else:
-    #         cursor.execute(sql)
-    #     if commit is True:
-    #         conn.commit()
-    #         self.close(conn, cursor)
-    #         return None
-    #     else:
-    #         res = cursor.fetchall()
-    #         self.close(conn, cursor)
-    #         return res
