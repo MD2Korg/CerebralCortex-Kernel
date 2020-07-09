@@ -48,6 +48,8 @@ class ObjectData(FileSystemStorage):
         
         if self.filesystem_path[-1]!="/":
             self.filesystem_path += "/"
+
+        self.filesystem_path += "objects_storage/"
         
         self.filesystem_path = self.filesystem_path+"study="+self.study_name+"/"
 

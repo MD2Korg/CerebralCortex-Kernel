@@ -66,33 +66,35 @@ def CC_MProvAgg(in_stream_name,op,out_stream_name,in_stream_key=['index'],out_st
 def write_metadata_to_mprov(metadata):
     mprov = os.getenv("ENABLE_MPROV")
     if mprov=="True":
-        mprov_conn = CC_get_prov_connection().get("connection")
-        _prov_stream_node = None
-        if mprov_conn is None:
-            return
+        mprov_connection = CC_get_prov_connection()
+        if mprov_connection:
+            mprov_conn = mprov_connection.get("connection")
+            _prov_stream_node = None
+            if mprov_conn is None:
+                return
 
-        # Initialize the stream node
-        if _prov_stream_node is None:
-            _prov_stream_node = mprov_conn.create_collection(metadata.name, 0)
+            # Initialize the stream node
+            if _prov_stream_node is None:
+                _prov_stream_node = mprov_conn.create_collection(metadata.name, 0)
 
-        annot = {'description': metadata.description, 'annotations': str(metadata.annotations),
-                 'schema': str(metadata.to_json().get("data_descriptor"))}
+            annot = {'description': metadata.description, 'annotations': str(metadata.annotations),
+                     'schema': str(metadata.to_json().get("data_descriptor"))}
 
-        mprov_conn.store_annotations(_prov_stream_node, annot)
+            mprov_conn.store_annotations(_prov_stream_node, annot)
 
-        # Ensure there's a node for each input stream
-        in_stream_nodes = []
-        for in_stream in metadata.input_streams:
-            in_stream_nodes.append(mprov_conn.create_collection(in_stream, 0))
+            # Ensure there's a node for each input stream
+            in_stream_nodes = []
+            for in_stream in metadata.input_streams:
+                in_stream_nodes.append(mprov_conn.create_collection(in_stream, 0))
 
-        # Capture the derivation
-        for in_stream in in_stream_nodes:
-            mprov_conn.store_derived_from(_prov_stream_node, in_stream)
-
-        now = datetime.now(timezone.utc)
-        for module in metadata.modules:
-            assert isinstance(module, ModuleMetadata)
-            act = mprov_conn.store_activity(module.name, now, now, 0)
+            # Capture the derivation
             for in_stream in in_stream_nodes:
-                mprov_conn.store_used(act, in_stream)
-                mprov_conn.store_generated_by(_prov_stream_node, act)
+                mprov_conn.store_derived_from(_prov_stream_node, in_stream)
+
+            now = datetime.now(timezone.utc)
+            for module in metadata.modules:
+                assert isinstance(module, ModuleMetadata)
+                act = mprov_conn.store_activity(module.name, now, now, 0)
+                for in_stream in in_stream_nodes:
+                    mprov_conn.store_used(act, in_stream)
+                    mprov_conn.store_generated_by(_prov_stream_node, act)

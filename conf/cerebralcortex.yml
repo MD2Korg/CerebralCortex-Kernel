@@ -33,7 +33,10 @@ object_storage:
 #########################################################################
 #                          Relational Storage                           #
 #########################################################################
-relational_storage: mysql
+relational_storage: sqlite
+
+sqlite:
+  file_path: "/Users/ali/IdeaProjects/MD2K_DATA/sqlite/"
 
 mysql:
   host: 127.0.0.1 # change if MySQL is installed remotely
@@ -44,9 +47,6 @@ mysql:
   # Note: do not change following parameters if you don't know what you are doing
   database: cerebralcortex
   connection_pool_size: 1
-
-sqlite:
-  file_path: "/user/ali/cc33/"
 
 #########################################################################
 ###################### Visualization Data Storage #######################
