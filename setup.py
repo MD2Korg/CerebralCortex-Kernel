@@ -29,54 +29,66 @@ reqs = [
     'ipyleaflet',
     'scipy',
     'statsmodels==0.11.1',
-    'sqlalchemy==1.3.17'
+    'sqlalchemy==1.3.17',
+    'pennprov==2.2.8'
 ]
+
 
 # Get the long description from the README file
 with open(path.join(here, 'README.md')) as f:
     long_description = f.read()
 
 
+if __name__ == '__main__':
+    setup(
+        name="cerebralcortex-kernel",
 
-    version='3.2.1r4',
+        version='3.1.1r3',
 
-    package_data={'': ['default.yml']},
-    include_package_data=True,
+        description='Backend data analytics platform for MD2K software',
+        long_description=long_description,
 
-    description='Backend data analytics platform for MD2K software',
-    long_description=long_description,
+        author='MD2K.org',
+        author_email='dev@md2k.org',
 
-    author='MD2K.org',
-    author_email='dev@md2k.org',
+        license='BSD2',
+        url = 'https://github.com/MD2Korg/CerebralCortex-Kernel/',
 
-    license='BSD2',
-    url = 'https://github.com/MD2Korg/CerebralCortex-Kernel/',
+        classifiers=[
 
-    classifiers=[
+            'Development Status :: 5 - Production/Stable',
 
-        'Development Status :: 5 - Production/Stable',
+            'Intended Audience :: Healthcare Industry',
+            'Intended Audience :: Science/Research',
 
-        'Intended Audience :: Healthcare Industry',
-        'Intended Audience :: Science/Research',
+            'License :: OSI Approved :: BSD License',
 
-        'License :: OSI Approved :: BSD License',
+            'Natural Language :: English',
 
-        'Natural Language :: English',
+            'Programming Language :: Python :: 3',
 
-        'Programming Language :: Python :: 3',
+            'Topic :: Scientific/Engineering :: Information Analysis',
+            'Topic :: System :: Distributed Computing'
+        ],
 
-        'Topic :: Scientific/Engineering :: Information Analysis',
-        'Topic :: System :: Distributed Computing'
-    ],
+        keywords='mHealth machine-learning data-analysis',
 
-    keywords='mHealth machine-learning data-analysis',
+        # You can just specify the packages manually here if your project is
+        # simple. Or you can use find_packages().
+        packages=find_packages(exclude=['contrib', 'docs', 'tests']),
 
-    # You can just specify the packages manually here if your project is
-    # simple. Or you can use find_packages().
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+        # List run-time dependencies here.  These will be installed by pip when
+        # your project is installed. For an analysis of "install_requires" vs pip's
+        # requirements files see:
+        # https://packaging.python.org/en/latest/requirements.html
+        install_requires=reqs,
 
-    # List run-time dependencies here.  These will be installed by pip when
-    # your project is installed. For an analysis of "install_requires" vs pip's
-    # requirements files see:
-    # https://packaging.python.org/en/latest/requirements.html
-    install_requires=reqs,
+
+        entry_points={
+            'console_scripts': [
+                'main=main:main'
+            ]
+        },
+
+    )
+
