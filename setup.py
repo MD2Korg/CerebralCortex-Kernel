@@ -45,6 +45,8 @@ if __name__ == '__main__':
 
         version='3.1.1r3',
 
+        package_data={'': ['default.yml']},
+
         description='Backend data analytics platform for MD2K software',
         long_description=long_description,
 

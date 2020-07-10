@@ -93,17 +93,6 @@ class FileSystemStorage:
 
         return df
 
-        # if version=="all":
-        #     hdfs_url = self._get_storage_path(stream_name)
-        #     df = self.obj.sparkSession.read.load(hdfs_url)
-        #     return df
-        # else:
-        #     hdfs_url = self._get_storage_path(stream_name)
-        #     hdfs_url = hdfs_url+"version="+str(version)
-        #     df = self.obj.sparkSession.read.load(hdfs_url)
-        #     df = df.withColumn('version', lit(int(version)))
-        #     return df
-
     def write_file(self, stream_name:str, data:DataStream.data, file_mode:str) -> bool:
         """
         Write pyspark DataFrame to a file storage system
@@ -122,13 +111,6 @@ class FileSystemStorage:
             return self.write_pandas_dataframe(stream_name, data)
         else:
             return self.write_spark_dataframe(stream_name, data, file_mode)
-
-        # hdfs_url = self._get_storage_path(stream_name)
-        # try:
-        #     data.write.partitionBy(["version","user"]).format('parquet').mode('overwrite').save(hdfs_url)
-        #     return True
-        # except Exception as e:
-        #     raise Exception("Cannot store dataframe: "+str(e))
 
     def write_spark_dataframe(self, stream_name, data,file_mode):
         hdfs_url = self._get_storage_path(stream_name)
@@ -158,7 +140,6 @@ class FileSystemStorage:
 
         Returns:
             str: file_name of newly create parquet file
-
         """
         base_dir_path = self._get_storage_path(stream_name)
         table = pa.Table.from_pandas(df, preserve_index=False)
@@ -280,45 +261,6 @@ class FileSystemStorage:
         """
         stream_path = self._get_storage_path()
         return [d.replace("stream=","") for d in os.listdir(stream_path) if os.path.isdir(os.path.join(stream_path, d)) and stream_name.lower() in d.lower()]
-
-    def get_stream_name(self, metadata_hash: uuid) -> str:
-        """
-        metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
-
-        Args:
-            metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.
-        Returns:
-            str: name of a stream
-        Examples:
-            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
-            >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
-            >>> ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST
-        """
-        stream_name = self.obj.sql_data.get_stream_name(metadata_hash)
-        #stream_path = self._get_storage_path(stream_name=stream_name)
-        if self.is_stream(stream_name):
-            return stream_name
-        else:
-            raise Exception(metadata_hash+" does not exist.")
-
-    def get_stream_metadata_hash(self, stream_name: str) -> list:
-        """
-        Get all the metadata_hash associated with a stream name.
-
-        Args:
-            stream_name (str): name of a stream
-        Returns:
-            list[str]: list of all the metadata hashes
-        Examples:
-            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
-            >>> CC.get_stream_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
-            >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
-        """
-
-        if self.is_stream(stream_name):
-            return self.obj.sql_data.get_stream_metadata_hash(stream_name)
-        else:
-            raise Exception(stream_name+" does not exist.")
 
     def _get_storage_path(self, stream_name:str=None)->str:
         """

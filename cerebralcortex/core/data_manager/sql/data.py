@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sqlalchemy as db
-from cerebralcortex.core.data_manager.sql.orm import Base
+from cerebralcortex.core.data_manager.sql import Base
 from sqlalchemy_utils import create_database, database_exists
 
 

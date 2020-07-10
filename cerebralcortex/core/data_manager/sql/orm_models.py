@@ -27,7 +27,7 @@ import sqlalchemy as db
 from sqlalchemy import Column, String, Integer, Date, Boolean, Numeric, JSON, Text, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
-from cerebralcortex.core.data_manager.sql.orm import Base
+from cerebralcortex.core.data_manager.sql import Base
 
 
 class Stream(Base):
