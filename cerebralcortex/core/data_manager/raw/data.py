@@ -57,8 +57,6 @@ class RawData(StreamHandler, FileBasedStorage):
 
         self.metadata = Metadata()
 
-        self.nosql = FileBasedStorage(self)
-
         # pseudo factory pattern
         if self.nosql_store == "hdfs":
             self.hdfs_ip = self.config['hdfs']['host']
@@ -77,6 +75,8 @@ class RawData(StreamHandler, FileBasedStorage):
             self.fs = os
         else:
             raise ValueError(self.nosql_store + " is not supported.")
+
+        self.nosql = FileBasedStorage(self)
 
         # if self.config["visualization_storage"]!="none":
         #     self.timeSeriesData = TimeSeriesData(CC)

@@ -24,7 +24,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from datetime import datetime
+
 from pyspark.sql import functions as F
+
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream import Metadata
 from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_data, gen_phone_battery_metadata
@@ -82,7 +84,7 @@ class DataStreamTest:
 
         from pyspark.sql.functions import pandas_udf, PandasUDFType
         import pandas as pd
-        from pyspark.sql.types import StructField, StructType, StringType, FloatType
+        from pyspark.sql.types import StructField, StructType, FloatType
         schema = StructType([
             StructField("mean", FloatType()),
             StructField("val_1", FloatType()),

@@ -23,35 +23,34 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import pathlib
-import unittest
-import warnings
-
-from cerebralcortex import Kernel
-from cerebralcortex.algorithms.glucose.glucose_variability_metrics import glucose_var
-from cerebralcortex.core.datatypes import DataStream
-from cerebralcortex.core.metadata_manager.stream import Metadata
+from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_metadata
 
 
-class TestDataframeUDF(unittest.TestCase):
+class NoSqlStorageTest:
 
-    def test_00(self):
-        warnings.simplefilter("ignore")
-        config_filepath = "./../../conf/"
-
-        # create sample_data directory. Note: make sure this path is same as the filesystem path in cerebralcortex.yml
-        pathlib.Path("./sample_data/").mkdir(parents=True, exist_ok=True)
-
-        self.study_name = "dbdp"
-        self.CC = Kernel(config_filepath, study_name=self.study_name)
-        spark = self.CC.sparkSession
-
-        df = spark.read.load("./sample_data/data/study=dbdp/stream=cgm_glucose_variability_metrics/")
-        df.show()
-        ds = DataStream(data=df, metadata=Metadata())
-
-        results = glucose_var(ds)
-        results.show()
-
-
-
+    def test__get_storage_path(self):
+        pass
+    def test__path_exist(self):
+        pass
+    def test__ls_dir(self):
+        pass
+    def test__create_dir(self):
+        pass
+    def test_read_file(self):
+        pass
+    def test_write_file(self):
+        pass
+    def test_write_pandas_to_parquet_file(self):
+        pass
+    def test_is_study(self):
+        pass
+    def test_is_stream(self):
+        pass
+    def test_get_stream_versions(self):
+        pass
+    def test_list_streams(self):
+        pass
+    def test_list_users(self):
+        pass
+    def test_search_stream(self):
+        pass

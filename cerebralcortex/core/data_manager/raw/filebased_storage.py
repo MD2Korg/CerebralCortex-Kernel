@@ -47,6 +47,9 @@ class FileBasedStorage:
         """
         self.obj = obj
 
+        if self.obj.new_study or self.obj.study_name=="default":
+            self._create_dir()
+
     def _get_storage_path(self, stream_name:str=None, version:int=None, user_id:str=None):
         """
         Construct storage path for data

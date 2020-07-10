@@ -23,17 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import jwt
-from datetime import datetime, timedelta
-
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
-from datetime import datetime, timedelta
-import random
-from cerebralcortex.core.datatypes import DataStream
-from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_data, gen_phone_battery_metadata
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
-from cerebralcortex.core.util.spark_helper import get_or_create_sc
-from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
+from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_metadata
 
 
 class SqlStorageTest:

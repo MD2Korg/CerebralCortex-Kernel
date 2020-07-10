@@ -29,9 +29,7 @@ import unittest
 import warnings
 
 from cerebralcortex import Kernel
-from cerebralcortex.test_suite.test_object_storage import TestObjectStorage
 from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
-from cerebralcortex.test_suite.test_stream import DataStreamTest
 
 
 class TestCerebralCortex(unittest.TestCase, SqlStorageTest):
@@ -84,12 +82,3 @@ class TestCerebralCortex(unittest.TestCase, SqlStorageTest):
         if not os.path.isdir(self.cc_conf["filesystem"]["filesystem_path"]):
             os.mkdir(self.cc_conf["filesystem"]["filesystem_path"])
         self.CC.create_user(self.username, self.user_password, self.user_role, self.user_metadata, self.user_settings)
-
-    def test_9999_last(self):
-        """
-        Delete all the sample test data folder/files and sql entries
-
-        """
-        self.CC.delete_user(self.username)
-        # if self.cc_conf['nosql_storage']=="filesystem":
-        #     shutil.rmtree(self.cc_conf["filesystem"]["filesystem_path"])
