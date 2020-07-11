@@ -29,6 +29,7 @@ from cerebralcortex.algorithms.ecg.rr_interval import get_rr_interval
 from cerebralcortex.algorithms.ecg.hrv_features import get_hrv_features
 from cerebralcortex.algorithms.utils.feature_normalization import normalize_features
 from cerebralcortex.algorithms.stress_prediction.ecg_stress import compute_stress_probability
+from cerebralcortex.algorithms.stress_prediction.stress_imputation import forward_fill_data, impute_stress_likelihood
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
     ModuleMetadata
@@ -86,6 +87,7 @@ if __name__ == "__main__":
     stress_features_normalized = normalize_features(stress_features,input_feature_array_name='features')
     ecg_stress_probability = compute_stress_probability(stress_features_normalized,model_path=model_path)
     ecg_stress_probability.metadata = get_metadata(stream_name=output_stream_name)
-
-    ecg_stress_probability.show()
-    #CC.save_stream(ecg_stress_probability,overwrite=True)
+    ecg_stress_probability_forward_filled = forward_fill_data(ecg_stress_probability)
+    ecg_stress_probability_imputed = impute_stress_likelihood(ecg_stress_probability_forward_filled)
+    ecg_stress_probability_imputed.show()
+    # CC.save_stream(ecg_stress_probability_imputed,overwrite=True)
