@@ -195,7 +195,7 @@ def impute_stress_likelihood(stress_data,output_stream_name='org.md2k.autosense.
         X_weekday = clf_week_day.transform(X_weekday).todense().reshape(X.shape[0],-1)
         X = np.concatenate([X_s,X_hour,X_weekday],axis=1)
         y = np.array(y)
-        print(X.shape)
+        # print(X.shape)
         clf = get_trained_model(X,y)
         start = data[data.imputed==1].shape[0]+1
         while data[data.imputed==1].shape[0]<start and data[data.imputed==1].shape[0]>0:

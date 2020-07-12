@@ -27,7 +27,7 @@ hdfs:
 #########################################################################
 #                          Relational Storage                           #
 #########################################################################
-relational_storage: sqlite
+relational_storage: mysql
 
 sqlite:
   file_path: "/Users/ali/IdeaProjects/MD2K_DATA/sqlite/"

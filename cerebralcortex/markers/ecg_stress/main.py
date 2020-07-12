@@ -24,7 +24,7 @@
 import argparse
 from pyspark.sql import functions as F
 from cerebralcortex.kernel import Kernel
-from cerebralcortex.algorithms.ecg.data_quality import ecg_quality
+from cerebralcortex.algorithms.ecg.autosense_data_quality import ecg_autosense_data_quality
 from cerebralcortex.algorithms.ecg.rr_interval import get_rr_interval
 from cerebralcortex.algorithms.ecg.hrv_features import get_hrv_features
 from cerebralcortex.algorithms.utils.feature_normalization import normalize_features
@@ -79,7 +79,8 @@ if __name__ == "__main__":
 
     CC = Kernel(config_dir, study_name=study_name)
     ecg_data = CC.get_stream(ecg_stream_name)
-    ecg_data_with_quality = ecg_quality(ecg_data,sensor_name=sensor_name,Fs=Fs)
+    ecg_data_with_quality = ecg_autosense_data_quality(ecg_data,sensor_name=sensor_name,Fs=Fs)
+    ecg_data_with_quality.show()
     ecg_rr = get_rr_interval(ecg_data_with_quality,Fs=Fs)
     stress_features = get_hrv_features(ecg_rr)
     feature_names = ['var','iqr','mean','median','80th','20th','heartrate','vlf','lf','hf','lfhf']
@@ -87,6 +88,7 @@ if __name__ == "__main__":
     stress_features_normalized = normalize_features(stress_features,input_feature_array_name='features')
     ecg_stress_probability = compute_stress_probability(stress_features_normalized,model_path=model_path)
     ecg_stress_probability.metadata = get_metadata(stream_name=output_stream_name)
+    CC.save_stream(ecg_stress_probability)
     ecg_stress_probability_forward_filled = forward_fill_data(ecg_stress_probability)
     ecg_stress_probability_imputed = impute_stress_likelihood(ecg_stress_probability_forward_filled)
     ecg_stress_probability_imputed.show()

@@ -21,7 +21,8 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-from cerebralcortex.algorithms.ecg.data_quality import ecg_quality
+
+from cerebralcortex.algorithms.ecg.autosense_data_quality import ecg_autosense_data_quality
 from cerebralcortex.algorithms.ecg.rr_interval import get_rr_interval
 from cerebralcortex.algorithms.ecg.hrv_features import get_hrv_features
 from cerebralcortex.algorithms.utils.feature_normalization import normalize_features

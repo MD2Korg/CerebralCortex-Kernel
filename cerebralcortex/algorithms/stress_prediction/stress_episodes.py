@@ -235,7 +235,7 @@ window = 60 # seconds FIXME TODO
 def impute(df):
     df['available'] = 1
     missing_vals = pd.DataFrame(columns=df.columns)
-
+    #print(missing_vals)
     for x in range(1, len(df['timestamp'].values)):
         diff = (df['timestamp'].values[x] - df['timestamp'].values[x-1])/np.timedelta64(1, 's')#1000000000
         if diff > 60:
@@ -246,7 +246,9 @@ def impute(df):
 
             for y in range(num_rows_to_insert):
                 imputed_timestamp = available_timestamp + np.timedelta64((y+1)*window, 's')
-                new_row = [available_userid, imputed_timestamp, available_stress, 0]
+                #new_row = [available_userid, imputed_timestamp, available_stress, 0]
+                new_row = [imputed_timestamp, available_stress, 1, available_userid, 0]
+                #print(new_row)
                 missing_vals.loc[len(missing_vals)] = new_row
 
 
@@ -256,3 +258,10 @@ def impute(df):
 
     return df_imputed
 
+from cerebralcortex.kernel import Kernel
+CC = Kernel("/Users/ali/IdeaProjects/CerebralCortex-2.0/conf/", study_name="rice")
+ecg_data = CC.get_stream("org.md2k.autosense.ecg.stress.probability").drop("window").drop("localtime")
+
+#ecg_data.show()
+
+ecg_data._data.groupby(['user','version']).apply(stress_episodes_estimation).show()
