@@ -66,6 +66,10 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
     def get_metadata(stream_name = 'org.md2k.autosense.ecg.quality'):
         stream_metadata = Metadata()
         stream_metadata.set_name(stream_name).set_description("Chest ECG quality 3 seconds") \
+            .add_dataDescriptor(DataDescriptor().set_name("timestamp").set_type("datetime")) \
+            .add_dataDescriptor(DataDescriptor().set_name("localtime").set_type("datetime")) \
+            .add_dataDescriptor(DataDescriptor().set_name("version").set_type("int")) \
+            .add_dataDescriptor(DataDescriptor().set_name("user").set_type("string")) \
             .add_dataDescriptor(
             DataDescriptor().set_name("quality").set_type("string") \
                 .set_attribute("description", "ECG data quality") \
@@ -141,7 +145,7 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
 
     ecg_quality_stream = ecg.compute(data_quality,windowDuration=3,startTime='0 seconds')
     data = ecg_quality_stream._data
-    ds = DataStream(data=data,metadata=get_metadata())
+    ds = DataStream(data=data,metadata=Metadata())
     return ds
 
 

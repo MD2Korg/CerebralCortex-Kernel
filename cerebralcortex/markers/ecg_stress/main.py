@@ -25,7 +25,7 @@ import argparse
 from pyspark.sql import functions as F
 from cerebralcortex.kernel import Kernel
 from cerebralcortex.algorithms.ecg.autosense_data_quality import ecg_autosense_data_quality
-from cerebralcortex.algorithms.ecg.rr_interval import get_rr_interval
+from cerebralcortex.algorithms.ecg.autosense_rr_interval import get_rr_interval
 from cerebralcortex.algorithms.ecg.hrv_features import get_hrv_features
 from cerebralcortex.algorithms.utils.feature_normalization import normalize_features
 from cerebralcortex.algorithms.stress_prediction.ecg_stress import compute_stress_probability
@@ -80,8 +80,8 @@ if __name__ == "__main__":
     CC = Kernel(config_dir, study_name=study_name)
     ecg_data = CC.get_stream(ecg_stream_name)
     ecg_data_with_quality = ecg_autosense_data_quality(ecg_data,sensor_name=sensor_name,Fs=Fs)
-    ecg_data_with_quality.show()
     ecg_rr = get_rr_interval(ecg_data_with_quality,Fs=Fs)
+    ecg_rr.show()
     stress_features = get_hrv_features(ecg_rr)
     feature_names = ['var','iqr','mean','median','80th','20th','heartrate','vlf','lf','hf','lfhf']
     stress_features = stress_features.withColumn('features',F.array([F.col(i) for i in feature_names]))

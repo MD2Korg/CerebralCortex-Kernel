@@ -23,7 +23,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cerebralcortex.algorithms.ecg.autosense_data_quality import ecg_autosense_data_quality
-from cerebralcortex.algorithms.ecg.rr_interval import get_rr_interval
+from cerebralcortex.algorithms.ecg.autosense_rr_interval import get_rr_interval
 from cerebralcortex.algorithms.ecg.hrv_features import get_hrv_features
 from cerebralcortex.algorithms.utils.feature_normalization import normalize_features
 from pyspark.sql import functions as F
