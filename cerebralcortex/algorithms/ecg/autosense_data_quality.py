@@ -37,7 +37,7 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
                                range_threshold=50,
                                eck_threshold_band_loose = 400,
                                window_size=3,
-                               acceptable_outlier_percent = 34,
+                               acceptable_outlier_percent = 34
                                ):
     """
 
@@ -57,10 +57,10 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
     Returns:
         DataStream - structure [timestamp, localtime, version.....]
     """
-    data_quality_band_loose = 'loose/improper attachment',
-    data_quality_not_worn = 'sensor off body',
-    data_quality_band_off = 'battery down/disconnected',
-    data_quality_missing = 'interittent data loss',
+    data_quality_band_loose = 'loose/improper attachment'
+    data_quality_not_worn = 'sensor off body'
+    data_quality_band_off = 'battery down/disconnected'
+    data_quality_missing = 'interittent data loss'
     data_quality_good = 'acceptable'
 
     def get_metadata(stream_name = 'org.md2k.autosense.ecg.quality'):
@@ -141,6 +141,7 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
             data = data.sort_values('timestamp')
             if sensor_name in ['autosense']:
                 data['quality'] = get_quality_autosense(list(data['ecg']))
+                #print(data)
         return data
 
     ecg_quality_stream = ecg.compute(data_quality,windowDuration=3,startTime='0 seconds')
