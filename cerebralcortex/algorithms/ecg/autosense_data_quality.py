@@ -24,7 +24,7 @@
 
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import StructField, StructType, DoubleType, StringType, TimestampType, IntegerType
-
+from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
     ModuleMetadata
@@ -62,8 +62,9 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
     data_quality_band_off = 'battery down/disconnected'
     data_quality_missing = 'interittent data loss'
     data_quality_good = 'acceptable'
+    stream_name = 'org.md2k.autosense.ecg.quality'
 
-    def get_metadata(stream_name = 'org.md2k.autosense.ecg.quality'):
+    def get_metadata():
         stream_metadata = Metadata()
         stream_metadata.set_name(stream_name).set_description("Chest ECG quality 3 seconds") \
             .add_dataDescriptor(DataDescriptor().set_name("timestamp").set_type("datetime")) \
@@ -134,19 +135,20 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
         StructField("quality", StringType()),
         StructField("ecg", DoubleType())
     ])
+
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+    @CC_MProvAgg('ecg--org.md2k.autosense--autosense_chest--chest', 'ecg_autosense_data_quality', stream_name, ['user', 'timestamp'], ['user', 'timestamp'])
     def data_quality(data):
         data['quality'] = ''
         if data.shape[0]>0:
             data = data.sort_values('timestamp')
             if sensor_name in ['autosense']:
                 data['quality'] = get_quality_autosense(list(data['ecg']))
-                #print(data)
         return data
 
     ecg_quality_stream = ecg.compute(data_quality,windowDuration=3,startTime='0 seconds')
     data = ecg_quality_stream._data
-    ds = DataStream(data=data,metadata=Metadata())
+    ds = DataStream(data=data,metadata=get_metadata())
     return ds
 
 

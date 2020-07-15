@@ -59,6 +59,14 @@ class Metadata():
         self.name = value
         return self
 
+    def get_name(self):
+        """
+
+        Returns: name of a stream
+
+        """
+        return self.name
+
     def set_description(self, stream_description:str):
         """
         Add stream description

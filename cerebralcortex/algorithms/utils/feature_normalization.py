@@ -41,16 +41,6 @@ from collections import OrderedDict
 
 
 import math
-def weighted_avg_and_std(values, weights):
-    """
-    Return the weighted average and standard deviation.
-
-    values, weights -- Numpy ndarrays with the same shape.
-    """
-    average = np.average(values, weights=weights)
-    # Fast and numerically precise:
-    variance = np.average((values-average)**2, weights=weights)
-    return average, math.sqrt(variance)
 
 def normalize_features(data,
                        index_of_first_order_feature =2,
@@ -71,6 +61,18 @@ def normalize_features(data,
     if 'window' in data.columns:
         data_day = data_day.withColumn('start',F.col('window').start).withColumn('end',F.col('window').end).drop(*['window'])
     schema = data_day._data.schema
+
+    def weighted_avg_and_std(values, weights):
+        """
+        Return the weighted average and standard deviation.
+
+        values, weights -- Numpy ndarrays with the same shape.
+        """
+        average = np.average(values, weights=weights)
+        # Fast and numerically precise:
+        variance = np.average((values-average)**2, weights=weights)
+        return average, math.sqrt(variance)
+
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     def normalize_features(a):
         if len(a)<minimum_minutes_in_day:
@@ -87,6 +89,7 @@ def normalize_features(data,
             feature_matrix[:,i]  = (feature_matrix[:,i] - m)/s
         a['features_normalized']  = list([np.array(b) for b in feature_matrix])
         return a
+
     data_normalized = data_day._data.groupby(['user','day','version']).apply(normalize_features)
     if 'window' in data.columns:
         data_normalized = data_normalized.withColumn('window',F.struct('start', 'end')).drop(*['start','end','day'])

@@ -80,11 +80,14 @@ if __name__ == "__main__":
     CC = Kernel(config_dir, study_name=study_name)
     ecg_data = CC.get_stream(ecg_stream_name)
     ecg_data_with_quality = ecg_autosense_data_quality(ecg_data,sensor_name=sensor_name,Fs=Fs)
+
     ecg_rr = get_rr_interval(ecg_data_with_quality,Fs=Fs)
-    ecg_rr.show()
+    ecg_rr.show(4)
     stress_features = get_hrv_features(ecg_rr)
+
     feature_names = ['var','iqr','mean','median','80th','20th','heartrate','vlf','lf','hf','lfhf']
     stress_features = stress_features.withColumn('features',F.array([F.col(i) for i in feature_names]))
+
     stress_features_normalized = normalize_features(stress_features,input_feature_array_name='features')
     ecg_stress_probability = compute_stress_probability(stress_features_normalized,model_path=model_path)
     ecg_stress_probability.metadata = get_metadata(stream_name=output_stream_name)

@@ -31,18 +31,21 @@ from pyspark.sql import functions as F
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
 from scipy.stats import iqr
+from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
 
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
     ModuleMetadata
 
 
-def get_rr_interval(ecg_data,Fs=64, ):
+def get_rr_interval(ecg_data,Fs=64):
+
+    stream_name = 'org.md2k.autosense.ecg.rr'
 
     class Quality(Enum):
         ACCEPTABLE = 1
         UNACCEPTABLE = 0
 
-    def get_metadata(stream_name = 'org.md2k.autosense.ecg.rr'):
+    def get_metadata():
         stream_metadata = Metadata()
         stream_metadata.set_name(stream_name).set_description("ECG RR interval in milliseconds") \
             .add_dataDescriptor(
@@ -150,6 +153,7 @@ def get_rr_interval(ecg_data,Fs=64, ):
     ])
     detectors = Detectors(Fs)
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+    @CC_MProvAgg('org.md2k.autosense.ecg.quality', 'get_rr_interval', stream_name, ['user', 'timestamp'], ['user', 'timestamp'])
     def ecg_r_peak(key,data):
         if data.shape[0]>1000:
             data = data.sort_values('timestamp').reset_index(drop=True)
@@ -194,7 +198,7 @@ def get_rr_interval(ecg_data,Fs=64, ):
             return pd.DataFrame([],columns=['timestamp','localtime','version','user','rr'])
 
     ecg_data = ecg_data.withColumn('time',F.col('timestamp').cast('double'))
-    ecg_data = ecg_data.filter(F.col('quality')=='Acceptable')
+    ecg_data = ecg_data.filter(F.col('quality')=='acceptable')
     ecg_rr = ecg_data.compute(ecg_r_peak,windowDuration=600,startTime='0 seconds')
     ecg_rr.metadata = get_metadata()
     return ecg_rr
