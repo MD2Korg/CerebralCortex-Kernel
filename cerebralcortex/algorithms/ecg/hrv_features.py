@@ -43,7 +43,16 @@ from collections import OrderedDict
 def get_hrv_features(rr_data,
                      acceptable_percentage=50,
                      window_length=60):
+    """
 
+    Args:
+        rr_data (DataStream):
+        acceptable_percentage (int):
+        window_length (int):
+
+    Returns:
+
+    """
     stream_name = 'org.md2k.autosense.ecg.features'
 
     def get_metadata():
@@ -130,6 +139,21 @@ def get_hrv_features(rr_data,
                         vlf= (0.003, 0.04),
                         lf = (0.04, 0.15),
                         hf = (0.15, 0.4)):
+        """
+
+        Args:
+            RRints:
+            tmStamps:
+            band_type:
+            lf_bw:
+            hf_bw:
+            vlf:
+            lf:
+            hf:
+
+        Returns:
+
+        """
         NNs = RRints
         tss = tmStamps
         frequency_range = np.linspace(0.001, 1, 10000)
@@ -196,6 +220,15 @@ def get_hrv_features(rr_data,
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     @CC_MProvAgg('org.md2k.autosense.ecg.rr', 'get_hrv_features', stream_name, ['user', 'timestamp'], ['user', 'timestamp'])
     def ecg_r_peak(key,data):
+        """
+
+        Args:
+            key:
+            data:
+
+        Returns:
+
+        """
         if data.shape[0]>=acceptable_percentage*window_length/100:
             data = data.sort_values('time')
             data['time'] = 1000*data['time']

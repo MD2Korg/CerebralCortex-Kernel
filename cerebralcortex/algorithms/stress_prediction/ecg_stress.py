@@ -31,6 +31,7 @@ from pyspark.sql.types import StructField, StructType, DoubleType,MapType, Strin
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 import numpy as np
 import pandas as pd
+from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
     ModuleMetadata
@@ -40,6 +41,27 @@ import pickle
 def compute_stress_probability(stress_features_normalized,
                                model_path='.',
                                feature_index=None):
+    stream_name = 'org.md2k.autosense.ecg.stress.probability'
+    def get_metadata():
+        stream_metadata = Metadata()
+        stream_metadata.set_name(stream_name).set_description("stress likelihood computed from ECG") \
+            .add_dataDescriptor(
+            DataDescriptor().set_name("stress_probability")
+                .set_type("double").set_attribute("description","stress likelihood computed from ECG only model")
+                .set_attribute("threshold","0.47")) \
+            .add_dataDescriptor(
+            DataDescriptor().set_name("window")
+                .set_type("struct")
+                .set_attribute("description", "window start and end time in UTC")
+                .set_attribute('start', 'start of 1 minute window')
+                .set_attribute('end','end of 1 minute window')) \
+            .add_module(
+            ModuleMetadata().set_name("ECG Stress Model")
+                .set_attribute("url", "http://md2k.org/")
+                .set_attribute('algorithm','cStress')
+                .set_attribute('unit','ms').set_author("Md Azim Ullah", "mullah@memphis.edu"))
+        return stream_metadata
+
     stress_features_normalized = stress_features_normalized.withColumn('start',F.col('window').start)
     stress_features_normalized = stress_features_normalized.withColumn('end',F.col('window').end).drop('window')
     stress_features_normalized = stress_features_normalized.withColumn('stress_probability',F.lit(1).cast('double'))
@@ -47,6 +69,7 @@ def compute_stress_probability(stress_features_normalized,
     ecg_model = pickle.load(open(model_path,'rb'))
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+    @CC_MProvAgg('"org.md2k.autosense.ecg.normalized.features"', 'get_hrv_features', stream_name, ['user', 'timestamp'], ['user', 'timestamp'])
     def get_stress_prob(data):
         if data.shape[0]>0:
             features = []
@@ -63,6 +86,7 @@ def compute_stress_probability(stress_features_normalized,
 
     ecg_stress_likelihoods = stress_features_normalized.compute(get_stress_prob,windowDuration=6000,startTime='0 seconds')
     ecg_stress_final = ecg_stress_likelihoods.select('timestamp', F.struct('start', 'end').alias('window'), 'localtime','stress_probability','user','version')
+    ecg_stress_final.metadata = get_metadata()
     return ecg_stress_final
 
 

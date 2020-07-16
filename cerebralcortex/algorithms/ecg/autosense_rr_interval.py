@@ -38,7 +38,16 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataD
 
 
 def get_rr_interval(ecg_data,Fs=64):
+    """
 
+
+    Args:
+        ecg_data (DataStream):
+        Fs (int):
+
+    Returns:
+        DataStream - timestamp, localtime, user, version ....
+    """
     stream_name = 'org.md2k.autosense.ecg.rr'
 
     class Quality(Enum):
@@ -46,6 +55,12 @@ def get_rr_interval(ecg_data,Fs=64):
         UNACCEPTABLE = 0
 
     def get_metadata():
+        """
+        generate metadata for the stream
+
+        Returns:
+            MetaData object
+        """
         stream_metadata = Metadata()
         stream_metadata.set_name(stream_name).set_description("ECG RR interval in milliseconds") \
             .add_dataDescriptor(
@@ -114,9 +129,12 @@ def get_rr_interval(ecg_data,Fs=64):
         Reference - Berntson, Gary G., et al. "An approach to artifact identification: Application to heart period data."
         Psychophysiology 27.5 (1990): 586-598.
 
-        :param ecg_rr: RR interval datastream
+        Args:
+            ecg_ts (timestamp):
+            ecg_rr (..): RR interval
 
-        :return: An annotated datastream specifying when the ECG RR interval datastream is acceptable
+        Returns:
+            An annotated datastream specifying when the ECG RR interval datastream is acceptable
         """
 
 
@@ -152,9 +170,18 @@ def get_rr_interval(ecg_data,Fs=64):
         StructField("rr", FloatType())
     ])
     detectors = Detectors(Fs)
+
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     @CC_MProvAgg('org.md2k.autosense.ecg.quality', 'get_rr_interval', stream_name, ['user', 'timestamp'], ['user', 'timestamp'])
-    def ecg_r_peak(key,data):
+    def ecg_r_peak(data):
+        """
+
+        Args:
+            data:
+
+        Returns:
+
+        """
         if data.shape[0]>1000:
             data = data.sort_values('timestamp').reset_index(drop=True)
             index_all = np.array(list(range(data.shape[0])))
@@ -184,7 +211,6 @@ def get_rr_interval(ecg_data,Fs=64):
             if len(index)<3:
                 return pd.DataFrame([],columns=['timestamp','localtime','version','user','rr'])
             index = np.array(index)
-            ecg_rr_ts = ecg_rr_ts[index]
             ecg_rr_val = ecg_rr_val[index]
             index_all = index_all[index]
 

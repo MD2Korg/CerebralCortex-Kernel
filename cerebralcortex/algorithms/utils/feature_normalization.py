@@ -31,6 +31,7 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataD
     ModuleMetadata
 import numpy as np
 from pyspark.sql import functions as F
+from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
 from scipy.stats import iqr
 from scipy import interpolate, signal
 import matplotlib.pyplot as plt
@@ -50,6 +51,21 @@ def normalize_features(data,
                        no_features=11,
                        epsilon = 1e-8,
                        input_feature_array_name='features'):
+    """
+
+    Args:
+        data:
+        index_of_first_order_feature:
+        lower_percentile:
+        higher_percentile:
+        minimum_minutes_in_day:
+        no_features:
+        epsilon:
+        input_feature_array_name:
+
+    Returns:
+
+    """
     data_day = data.withColumn('day',F.date_format('localtime','yyyyMMdd'))
     stream_metadata = data.metadata
     stream_metadata.add_dataDescriptor(
@@ -74,6 +90,7 @@ def normalize_features(data,
         return average, math.sqrt(variance)
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+    @CC_MProvAgg('org.md2k.autosense.ecg.features', 'normalize_features', "org.md2k.autosense.ecg.normalized.features", ['user', 'timestamp'], ['user', 'timestamp'])
     def normalize_features(a):
         if len(a)<minimum_minutes_in_day:
             return pd.DataFrame([],columns=a.columns)

@@ -40,7 +40,7 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
                                acceptable_outlier_percent = 34
                                ):
     """
-
+    Some desc..
 
     Args:
         ecg (DataStream):
@@ -88,6 +88,14 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
         return stream_metadata
 
     def get_quality_autosense(data):
+        """
+
+        Args:
+            data:
+
+        Returns:
+
+        """
         minimum_expected_samples = window_size*acceptable_outlier_percent*Fs/100
 
         if (len(data)== 0):
@@ -139,6 +147,14 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     @CC_MProvAgg('ecg--org.md2k.autosense--autosense_chest--chest', 'ecg_autosense_data_quality', stream_name, ['user', 'timestamp'], ['user', 'timestamp'])
     def data_quality(data):
+        """
+
+        Args:
+            data:
+
+        Returns:
+
+        """
         data['quality'] = ''
         if data.shape[0]>0:
             data = data.sort_values('timestamp')

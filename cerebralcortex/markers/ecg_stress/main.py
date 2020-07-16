@@ -36,25 +36,7 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataD
 import pickle
 import numpy as np
 
-def get_metadata(stream_name = 'org.md2k.autosense.ecg.stress.probability'):
-    stream_metadata = Metadata()
-    stream_metadata.set_name(stream_name).set_description("stress likelihood computed from ECG") \
-        .add_dataDescriptor(
-            DataDescriptor().set_name("stress_probability")
-                .set_type("double").set_attribute("description","stress likelihood computed from ECG only model")
-                .set_attribute("threshold","0.47")) \
-        .add_dataDescriptor(
-            DataDescriptor().set_name("window")
-                .set_type("struct")
-                .set_attribute("description", "window start and end time in UTC")
-                .set_attribute('start', 'start of 1 minute window')
-                .set_attribute('end','end of 1 minute window')) \
-        .add_module(
-            ModuleMetadata().set_name("ECG Stress Model")
-                .set_attribute("url", "http://md2k.org/")
-                .set_attribute('algorithm','cStress')
-                .set_attribute('unit','ms').set_author("Md Azim Ullah", "mullah@memphis.edu"))
-    return stream_metadata
+
 
 
 if __name__ == "__main__":
@@ -65,7 +47,6 @@ if __name__ == "__main__":
     parser.add_argument('-f', '--frequency', help='ECG Sampling Frequency', required=False,default="64")
     parser.add_argument('-p', '--path', help='Stress Model Path', required=False,default='/Users/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/markers/ecg_stress/model/stress_ecg_final.p')
     parser.add_argument('-n', '--sensor_name', help='Sensor Type', required=False,default='autosense')
-    parser.add_argument('-o', '--output_stream_name', help='Final Stress Stream Name', required=False,default='org.md2k.autosense.ecg.stress.probability')
 
 
     args = vars(parser.parse_args())
@@ -75,7 +56,6 @@ if __name__ == "__main__":
     Fs = int(str(args["frequency"]).strip())
     model_path = str(args["path"]).strip()
     sensor_name = str(args["sensor_name"]).strip()
-    output_stream_name = str(args["output_stream_name"]).strip()
 
     CC = Kernel(config_dir, study_name=study_name)
     ecg_data = CC.get_stream(ecg_stream_name)
@@ -90,8 +70,6 @@ if __name__ == "__main__":
 
     stress_features_normalized = normalize_features(stress_features,input_feature_array_name='features')
     ecg_stress_probability = compute_stress_probability(stress_features_normalized,model_path=model_path)
-    ecg_stress_probability.metadata = get_metadata(stream_name=output_stream_name)
-    CC.save_stream(ecg_stress_probability)
     ecg_stress_probability_forward_filled = forward_fill_data(ecg_stress_probability)
     ecg_stress_probability_imputed = impute_stress_likelihood(ecg_stress_probability_forward_filled)
     ecg_stress_probability_imputed.show()
