@@ -45,7 +45,7 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 class Kernel:
 
-    def __init__(self, configs_dir_path: str="", cc_configs:dict=None, study_name:str="default", new_study:bool=False, enable_spark:bool=True, enable_spark_ui=False, mprov=False):
+    def __init__(self, configs_dir_path: str="", cc_configs:dict=None, study_name:str="default", new_study:bool=False, enable_spark:bool=True, enable_spark_ui=False):
         """
         CerebralCortex constructor
 
@@ -56,7 +56,6 @@ class Kernel:
             new_study (bool): create a new study with study_name if it does not exist
             enable_spark (bool): enable spark
             enable_spark_ui (bool): enable spark ui
-            mprov (bool): if set to true then running algorithms will store provenance information in pennprov server. setup pennprov server (https://bitbucket.org/penndb/pennprov/src/master/) if you set this to True
         Raises:
             ValueError: If configuration_filepath is None or empty.
         Examples:
@@ -80,16 +79,15 @@ class Kernel:
             self.sqlContext = None
             self.sparkSession = None
 
-        if mprov:
-            if self.config["mprov"]=="pennprov":
-                os.environ["MPROV_HOST"] = self.config["pennprov"]["host"]
-                os.environ["MPROV_USER"] = self.config["pennprov"]["user"]
-                os.environ["MPROV_PASSWORD"] = self.config["pennprov"]["password"]
-                os.environ["ENABLE_MPROV"] = "True"
-            elif self.config["mprov"]=="none":
-                os.environ["ENABLE_MPROV"] = "False"
-            else:
-                raise ValueError("Please check cerebralcortex.yml file. mprov is not properly configured.")
+        if self.config["mprov"]=="pennprov":
+            os.environ["MPROV_HOST"] = self.config["pennprov"]["host"]
+            os.environ["MPROV_USER"] = self.config["pennprov"]["user"]
+            os.environ["MPROV_PASSWORD"] = self.config["pennprov"]["password"]
+            os.environ["ENABLE_MPROV"] = "True"
+        elif self.config["mprov"]=="none":
+            os.environ["ENABLE_MPROV"] = "False"
+        else:
+            raise ValueError("Please check cerebralcortex.yml file. mprov is not properly configured.")
 
         self.new_study = new_study
 
