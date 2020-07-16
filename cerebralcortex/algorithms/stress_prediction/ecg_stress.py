@@ -41,6 +41,17 @@ import pickle
 def compute_stress_probability(stress_features_normalized,
                                model_path='.',
                                feature_index=None):
+    """
+
+
+    Args:
+        stress_features_normalized:
+        model_path:
+        feature_index:
+
+    Returns:
+
+    """
     stream_name = 'org.md2k.autosense.ecg.stress.probability'
     def get_metadata():
         stream_metadata = Metadata()
@@ -71,6 +82,15 @@ def compute_stress_probability(stress_features_normalized,
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     @CC_MProvAgg('"org.md2k.autosense.ecg.normalized.features"', 'get_hrv_features', stream_name, ['user', 'timestamp'], ['user', 'timestamp'])
     def get_stress_prob(data):
+        """
+
+
+        Args:
+            data:
+
+        Returns:
+
+        """
         if data.shape[0]>0:
             features = []
             for i in range(data.shape[0]):

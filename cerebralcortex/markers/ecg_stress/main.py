@@ -48,7 +48,7 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--path', help='Stress Model Path', required=False,default='/Users/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/markers/ecg_stress/model/stress_ecg_final.p')
     parser.add_argument('-n', '--sensor_name', help='Sensor Type', required=False,default='autosense')
 
-
+    # parse arguements
     args = vars(parser.parse_args())
     config_dir = str(args["config_dir"]).strip()
     ecg_stream_name = str(args["ecg_stream_name"]).strip()
@@ -57,17 +57,16 @@ if __name__ == "__main__":
     model_path = str(args["path"]).strip()
     sensor_name = str(args["sensor_name"]).strip()
 
+    # create CC object
     CC = Kernel(config_dir, study_name=study_name)
+
+    # get stream data
     ecg_data = CC.get_stream(ecg_stream_name)
+
+    # Stress computation pipline
     ecg_data_with_quality = ecg_autosense_data_quality(ecg_data,sensor_name=sensor_name,Fs=Fs)
-
     ecg_rr = get_rr_interval(ecg_data_with_quality,Fs=Fs)
-    ecg_rr.show(4)
     stress_features = get_hrv_features(ecg_rr)
-
-    feature_names = ['var','iqr','mean','median','80th','20th','heartrate','vlf','lf','hf','lfhf']
-    stress_features = stress_features.withColumn('features',F.array([F.col(i) for i in feature_names]))
-
     stress_features_normalized = normalize_features(stress_features,input_feature_array_name='features')
     ecg_stress_probability = compute_stress_probability(stress_features_normalized,model_path=model_path)
     ecg_stress_probability_forward_filled = forward_fill_data(ecg_stress_probability)

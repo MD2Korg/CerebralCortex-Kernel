@@ -44,6 +44,16 @@ from sklearn.preprocessing import LabelEncoder,OneHotEncoder
 
 
 def get_metadata(stress_imputed_data, output_stream_name):
+    """
+    generate metadata for a datastream.
+
+    Args:
+        stress_imputed_data (DataStream):
+        output_stream_name (str):
+
+    Returns:
+
+    """
     schema = stress_imputed_data.schema
     stream_metadata = Metadata()
     stream_metadata.set_name(output_stream_name).set_description("stress imputed")
@@ -58,7 +68,17 @@ def get_metadata(stress_imputed_data, output_stream_name):
     return stream_metadata
 
 def forward_fill_data(stress_data,output_stream_name = 'org.md2k.autosense.ecg.stress.probability.forward.filled',minimum_points_per_day=60):
+    """
 
+
+    Args:
+        stress_data (DataStream):
+        output_stream_name (str):
+        minimum_points_per_day (int):
+
+    Returns:
+
+    """
     if 'stress_probability' not in stress_data.columns and 'stress_likelihood' in stress_data.columns:
         stress_data = stress_data.withColumnRenamed('stress_likelihood','stress_probability')
     stress_data = stress_data.withColumn('day',F.date_format('localtime',"yyyyMMdd"))
@@ -86,6 +106,15 @@ def forward_fill_data(stress_data,output_stream_name = 'org.md2k.autosense.ecg.s
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     @CC_MProvAgg('org.md2k.autosense.ecg.stress.probability', 'forward_fill_data', output_stream_name, ['user', 'timestamp'], ['user', 'timestamp'])
     def impute_forwardfill(data):
+        """
+
+
+        Args:
+            data:
+
+        Returns:
+
+        """
         if data.shape[0]<minimum_points_per_day:
             return pd.DataFrame([],columns=['timestamp','localtime','start','end',
                                             'version','user','day','stress_probability',
@@ -137,7 +166,16 @@ def forward_fill_data(stress_data,output_stream_name = 'org.md2k.autosense.ecg.s
 
 
 def impute_stress_likelihood(stress_data,output_stream_name='org.md2k.autosense.ecg.stress.probability.imputed'):
+    """
 
+
+    Args:
+        stress_data (DataStream):
+        output_stream_name (str):
+
+    Returns:
+
+    """
     def best_fit_slope(ys):
         return np.mean(np.diff(ys))
 
@@ -177,6 +215,15 @@ def impute_stress_likelihood(stress_data,output_stream_name='org.md2k.autosense.
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     @CC_MProvAgg('org.md2k.autosense.ecg.stress.probability.forward.filled', 'impute_stress_likelihood', output_stream_name, ['user', 'timestamp'], ['user', 'timestamp'])
     def fillup_imputation(data):
+        """
+
+
+        Args:
+            data:
+
+        Returns:
+
+        """
         data = data.sort_values('start').reset_index(drop=True)
         X = []
         y = []

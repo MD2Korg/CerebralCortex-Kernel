@@ -91,11 +91,20 @@ def normalize_features(data,
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     @CC_MProvAgg('org.md2k.autosense.ecg.features', 'normalize_features', "org.md2k.autosense.ecg.normalized.features", ['user', 'timestamp'], ['user', 'timestamp'])
-    def normalize_features(a):
-        if len(a)<minimum_minutes_in_day:
-            return pd.DataFrame([],columns=a.columns)
-        quals1 = np.array([1]*a.shape[0])
-        feature_matrix = np.array(list(a[input_feature_array_name])).reshape(-1,no_features)
+    def normalize_features(data):
+        """
+
+
+        Args:
+            data:
+
+        Returns:
+
+        """
+        if len(data)<minimum_minutes_in_day:
+            return pd.DataFrame([], columns=data.columns)
+        quals1 = np.array([1] * data.shape[0])
+        feature_matrix = np.array(list(data[input_feature_array_name])).reshape(-1, no_features)
         ss = np.repeat(feature_matrix[:,index_of_first_order_feature],np.int64(np.round(100*quals1)))
         rr_70th = np.percentile(ss,lower_percentile)
         rr_95th = np.percentile(ss,higher_percentile)
@@ -104,8 +113,8 @@ def normalize_features(data,
             m,s = weighted_avg_and_std(feature_matrix[index,i], quals1[index])
             s+=epsilon
             feature_matrix[:,i]  = (feature_matrix[:,i] - m)/s
-        a['features_normalized']  = list([np.array(b) for b in feature_matrix])
-        return a
+        data['features_normalized']  = list([np.array(b) for b in feature_matrix])
+        return data
 
     data_normalized = data_day._data.groupby(['user','day','version']).apply(normalize_features)
     if 'window' in data.columns:

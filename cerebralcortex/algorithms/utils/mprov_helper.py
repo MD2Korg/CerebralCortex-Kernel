@@ -30,18 +30,23 @@ from pennprov.connection.mprov_connection_cache import MProvConnectionCache
 from pennprov.api.decorators import MProvAgg
 from functools import wraps
 
-
+import inspect
 def MProvAgg_empty():
     """
     This is an empty decorator. This will be applied if mprov server setting is OFF
     """
     def inner_function(func):
+
+        print("*"*100, func)
         @wraps(func)
-        def wrapper(arg):
-            return func(arg)
+        def wrapper(key, data):
+            args_name = inspect.getfullargspec(func)[0]
+            if len(args_name)>1:
+                return func(key, data)
+            else:
+                return func(data)
         return wrapper
     return inner_function
-
 
 def CC_get_prov_connection(graph_name=None):
     mprov = os.getenv("ENABLE_MPROV")
