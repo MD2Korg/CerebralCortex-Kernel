@@ -21,6 +21,9 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import warnings
+
 from pyspark.sql import functions as F
 from pyspark.sql.types import StructField, StructType, DoubleType,MapType, StringType,ArrayType, FloatType, TimestampType, IntegerType
 from pyspark.sql.functions import pandas_udf, PandasUDFType
@@ -41,6 +44,7 @@ from sklearn.decomposition import PCA
 from sklearn.neighbors import KNeighborsRegressor
 from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
 from sklearn.preprocessing import LabelEncoder,OneHotEncoder
+from pandas.core.common import SettingWithCopyWarning
 
 
 def get_metadata(stress_imputed_data, output_stream_name):
@@ -176,6 +180,7 @@ def impute_stress_likelihood(stress_data,output_stream_name='org.md2k.autosense.
     Returns:
 
     """
+
     def best_fit_slope(ys):
         return np.mean(np.diff(ys))
 
@@ -224,6 +229,8 @@ def impute_stress_likelihood(stress_data,output_stream_name='org.md2k.autosense.
         Returns:
 
         """
+        warnings.simplefilter(action="ignore")
+
         data = data.sort_values('start').reset_index(drop=True)
         X = []
         y = []

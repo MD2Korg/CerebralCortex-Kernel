@@ -55,16 +55,14 @@ def stress_episodes_estimation(stress_data: object) -> object:
     threshold_yes = 0.36;
     threshold_no = 0.36;
 
-    data = impute(stress_data)
-
     # Smooth the stress values
     stress_smoothed_list = []
 
-    for c in range(2,len(data['stress_probability'].values)):
-        smoothed_stress = (data['stress_probability'].values[c] + \
-                         data['stress_probability'].values[c-1] + \
-                         data['stress_probability'].values[c-2]) / smoothing_window
-        stress_smoothed_list.append((data['timestamp'].values[c], smoothed_stress))
+    for c in range(2,len(stress_data['stress_probability'].values)):
+        smoothed_stress = (stress_data['stress_probability'].values[c] + \
+                         stress_data['stress_probability'].values[c-1] + \
+                         stress_data['stress_probability'].values[c-2]) / smoothing_window
+        stress_smoothed_list.append((stress_data['timestamp'].values[c], smoothed_stress))
 
     ema_fast_list = []
     ema_fast_list.append(stress_smoothed_list[0])
@@ -131,7 +129,7 @@ def stress_episodes_estimation(stress_data: object) -> object:
                 stress_episode_peak.append((stress_smoothed_list[c][0], NOTCLASSIFIED))
                 stress_episode_classification.append((stress_smoothed_list[c][0], NOTCLASSIFIED))
             else:
-                proportion_available = get_proportion_available(data, episode_start_timestamp, stress_smoothed_list[c][0]) 
+                proportion_available = get_proportion_available(stress_data, episode_start_timestamp, stress_smoothed_list[c][0])
                 if proportion_available < 0.5:
                     stress_episode_start.append((episode_start_timestamp, UNKNOWN))
                     stress_episode_peak.append((stress_smoothed_list[c][0], UNKNOWN))
@@ -162,7 +160,7 @@ def stress_episodes_estimation(stress_data: object) -> object:
     
 
     stress_episode_df = pd.DataFrame(index = np.arange(0, len(stress_episode_classification)), columns=['user', 'timestamp', 'stress_episode'])
-    user = data['user'].values[0]
+    user = stress_data['user'].values[0]
     index = 0
     for c in stress_episode_classification:
         ts = c[0]

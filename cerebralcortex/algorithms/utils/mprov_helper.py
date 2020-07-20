@@ -36,8 +36,6 @@ def MProvAgg_empty():
     This is an empty decorator. This will be applied if mprov server setting is OFF
     """
     def inner_function(func):
-
-        print("*"*100, func)
         @wraps(func)
         def wrapper(key, data):
             args_name = inspect.getfullargspec(func)[0]
