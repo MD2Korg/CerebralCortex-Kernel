@@ -28,6 +28,7 @@ from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
 
 from cerebralcortex.core.datatypes import DataStream
+from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
     ModuleMetadata
 
@@ -70,7 +71,7 @@ def compute_stress_episodes(ecg_stress_probability, macd_param_fast = 7, macd_pa
             .add_module(
             ModuleMetadata().set_name("cerebralcortex.algorithm.stress_prediction.stress_episodes.compute_stress_episodes")
                 .set_attribute("url", "http://md2k.org/").set_author(
-                "Md Azim Ullah", "mullah@memphis.edu"))
+                "Anandatirtha Nandugudi", "info@memphis.edu"))
         return stream_metadata
 
     schema = StructType([
@@ -83,6 +84,7 @@ def compute_stress_episodes(ecg_stress_probability, macd_param_fast = 7, macd_pa
     ])
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+    @CC_MProvAgg('org.md2k.autosense.ecg.stress.probability.imputed', 'stress_episodes_estimation', stream_name, ['user', 'timestamp'], ['user', 'timestamp'])
     def stress_episodes_estimation(stress_data: object) -> object:
         """
         smooth stress probabilities and use MACD to label stress episodes
@@ -125,7 +127,7 @@ def compute_stress_episodes(ecg_stress_probability, macd_param_fast = 7, macd_pa
         for indx in range(len(stress_smoothed_list)):
             ema_fast_prev = ema_fast_list[-1][1]
             ema_fast_current = stress_smoothed_list[indx][1]
-            ema_fast = ewma(ema_fast_current, ema_fast_prev, 2.0/(macd_param_fast + 1)) # alpha * current + (1 - alpha) * previous -> alpha * (current - previous) + previous
+            ema_fast = ewma(ema_fast_current, ema_fast_prev, 2.0/(macd_param_fast + 1))
             ema_fast_list.append((stress_smoothed_list[indx][0], ema_fast))
 
             ema_slow_prev = ema_slow_list[-1][1]

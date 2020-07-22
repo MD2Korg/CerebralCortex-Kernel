@@ -1,6 +1,6 @@
 # Copyright (c) 2020, MD2K Center of Excellence
 # All rights reserved.
-# Md Azim Ullah (mullah@memphis.edu)
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
@@ -22,7 +22,6 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import argparse
 
 from cerebralcortex.algorithms.ecg.autosense_data_quality import ecg_autosense_data_quality
 from cerebralcortex.algorithms.ecg.autosense_rr_interval import get_rr_interval
@@ -31,31 +30,20 @@ from cerebralcortex.algorithms.stress_prediction.ecg_stress import compute_stres
 from cerebralcortex.algorithms.stress_prediction.stress_episodes import compute_stress_episodes
 from cerebralcortex.algorithms.stress_prediction.stress_imputation import forward_fill_data, impute_stress_likelihood
 from cerebralcortex.algorithms.utils.feature_normalization import normalize_features
-from cerebralcortex.kernel import Kernel
+from cerebralcortex.core.datatypes.datastream import DataStream
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="ECG Stress Calculation")
-    parser.add_argument('-c', '--config_dir', help='CC Configuration directory path', required=False,default="/Users/ali/IdeaProjects/CerebralCortex-2.0/conf/")
-    parser.add_argument('-a', '--ecg_stream_name', help='Input ECG Stream Name', required=False,default="ecg--org.md2k.autosense--autosense_chest--chest")
-    parser.add_argument('-s', '--study_name', help='Study Name', required=False,default="rice")
-    parser.add_argument('-f', '--frequency', help='ECG Sampling Frequency', required=False,default="64")
-    parser.add_argument('-p', '--path', help='Stress Model Path', required=False,default='/Users/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/markers/ecg_stress/model/stress_ecg_final.p')
-    parser.add_argument('-n', '--sensor_name', help='Sensor Type', required=False,default='autosense')
+def stress_from_ecg(ecg_data:DataStream, sensor_name:str="autosense", Fs:int=64, model_path="./model/stress_ecg_final.p"):
+    """
+    Compute stress episodes from ecg timeseries data
 
-    # parse arguments
-    args = vars(parser.parse_args())
-    config_dir = str(args["config_dir"]).strip()
-    ecg_stream_name = str(args["ecg_stream_name"]).strip()
-    study_name = str(args["study_name"]).strip()
-    Fs = int(str(args["frequency"]).strip())
-    model_path = str(args["path"]).strip()
-    sensor_name = str(args["sensor_name"]).strip()
+    Args:
+        ecg_data (DataStream): ecg data
+        sensor_name (str): name of the sensor used to collect ecg data. Currently supports 'autosense' only
+        Fs (int): frequency of sensor data
 
-    # create CC object
-    CC = Kernel(config_dir, study_name=study_name)
-
-    # get stream data
-    ecg_data = CC.get_stream(ecg_stream_name)
+    Returns:
+        DataStream: stress episodes
+    """
 
     ###                          Stress computation pipeline
 
@@ -81,6 +69,4 @@ if __name__ == "__main__":
     # Compute stress episodes
     stress_episodes = compute_stress_episodes(ecg_stress_probability=ecg_stress_probability_imputed)
 
-    stress_episodes.show(truncate=False)
-    # Save results
-    #CC.save_stream(ecg_stress_probability_imputed,overwrite=True)
+    return stress_episodes
