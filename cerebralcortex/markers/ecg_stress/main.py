@@ -30,6 +30,7 @@ from cerebralcortex.algorithms.ecg.hrv_features import get_hrv_features
 from cerebralcortex.algorithms.utils.feature_normalization import normalize_features
 from cerebralcortex.algorithms.stress_prediction.ecg_stress import compute_stress_probability
 from cerebralcortex.algorithms.stress_prediction.stress_imputation import forward_fill_data, impute_stress_likelihood
+from cerebralcortex.algorithms.stress_prediction.stress_episodes import compute_stress_episodes
 
 
 if __name__ == "__main__":
@@ -77,6 +78,9 @@ if __name__ == "__main__":
     ecg_stress_probability_forward_filled = forward_fill_data(ecg_stress_probability)
     ecg_stress_probability_imputed = impute_stress_likelihood(ecg_stress_probability_forward_filled)
 
-    ecg_stress_probability_imputed.show()
+    # Compute stress episodes
+    stress_episodes = compute_stress_episodes(ecg_stress_probability=ecg_stress_probability_imputed)
+
+    stress_episodes.show(truncate=False)
     # Save results
-    CC.save_stream(ecg_stress_probability_imputed,overwrite=True)
+    #CC.save_stream(ecg_stress_probability_imputed,overwrite=True)
