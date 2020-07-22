@@ -17,35 +17,46 @@ filesystem:
   # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
   filesystem_path: "/tmp/"
 
-object_storage:
-  object_storage_path: "/tmp/"
+#hdfs:
+#  host: localhost
+#  port: 9001
+#  raw_files_dir: "/cc3/"
+
+
 
 #########################################################################
 #                          Relational Storage                           #
 #########################################################################
-relational_storage: mysql
+relational_storage: sqlite
 
-mysql:
-  host: 127.0.0.1 # change if MySQL is installed remotely
-  port: 3306 # Change if MySQL is not using default port
-  db_user: root # Change
-  db_pass: pass # Change
+sqlite:
+  file_path: "/tmp/"
 
-  # Note: do not change following parameters if you don't know what you are doing
-  database: cerebralcortex
-  connection_pool_size: 1
+#mysql:
+#  host: 127.0.0.1 # change if MySQL is installed remotely
+#  port: 3306 # Change if MySQL is not using default port
+#  db_user: root # Change
+#  db_pass: pass # Change
+#  database: cerebralcortex
 
 #########################################################################
 ###################### Visualization Data Storage #######################
 #########################################################################
 visualization_storage: none
 
+#influxdb:
+#  host: 127.0.0.1
+#  port: 8086
+#  database: cerebralcortex_raw
+#  db_user: ""
+#  db_pass: ""
+
 #########################################################################
 #                          Data Provenance Storage                      #
 #########################################################################
 mprov: none
 
-pennprov:
-  host: http://127.0.0.1:8088
-  user: demo
-  password: demo
+#pennprov:
+#  host: http://127.0.0.1:8088
+#  user: demo
+#  password: demo

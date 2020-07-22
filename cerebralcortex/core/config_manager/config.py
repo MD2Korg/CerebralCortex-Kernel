@@ -25,7 +25,7 @@
 
 import os.path
 import pathlib
-
+from pathlib import Path
 from cerebralcortex.core.config_manager.config_handler import ConfigHandler
 
 
@@ -41,6 +41,13 @@ class Configuration(ConfigHandler):
 
         if cc_configs=="default":
             self.load_file(str(pathlib.Path(__file__).parent.absolute())+"/default.yml")
+            user_home_dir  = str(Path.home()) + "/cc_data/"
+            self.config["filesystem"]["filesystem_path"] = user_home_dir
+            Path(self.config["filesystem"]["filesystem_path"]).mkdir(parents=True, exist_ok=True)
+            self.config["sqlite"]["file_path"] = user_home_dir
+            self.config["cc"]["log_files_path"]  = user_home_dir +"logs/"
+            Path(self.config["cc"]["log_files_path"]).mkdir(parents=True, exist_ok=True)
+
         elif isinstance(cc_configs, dict):
             self.load_file(str(pathlib.Path(__file__).parent.absolute())+"/default.yml")
             self.config.update(cc_configs)

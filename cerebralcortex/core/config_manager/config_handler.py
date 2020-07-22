@@ -48,13 +48,11 @@ class ConfigHandler:
         if "filesystem" in self.config and self.config["filesystem"]["filesystem_path"]!="" and self.config["filesystem"]["filesystem_path"][-1] !="/":
             self.config["filesystem"]["filesystem_path"]+="/"
 
-        if "object_storage" in self.config and self.config["object_storage"]["object_storage_path"]!="" and self.config["object_storage"]["object_storage_path"][-1] !="/":
-            self.config["object_storage"]["object_storage_path"]+="/"
-
-        # if "data_ingestion" in self.config and self.config["data_ingestion"]["data_dir_path"]!="" and self.config["data_ingestion"]["data_dir_path"][-1] !="/":
-        #     self.config["data_ingestion"]["data_dir_path"]+="/"
+        if "sqlite" in self.config and self.config["sqlite"]["file_path"]!="" and self.config["sqlite"]["file_path"][-1] !="/":
+            self.config["sqlite"]["file_path"]+="/"
 
         if "log_files_path" in self.config and self.config["cc"]["log_files_path"]!="" and self.config["cc"]["log_files_path"][-1]!="":
             self.config["cc"]["log_files_path"] +="/"
             if not os.access(self.config["cc"]["log_files_path"], os.W_OK):
                 raise Exception(self.config["cc"]["log_files_path"]+" path is not writable. Please check your cerebralcortex.yml configurations for 'log_files_path'.")
+
