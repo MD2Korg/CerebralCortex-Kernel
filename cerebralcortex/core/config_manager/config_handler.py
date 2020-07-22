@@ -26,21 +26,30 @@
 import os
 
 import yaml
+from pathlib import Path
 
 
 class ConfigHandler:
 
-    def load_file(self, filepath: str):
+    def load_file(self, filepath: str, default_configs=False):
         """
         Helper method to load a yaml file
-        :param config_dir_path:
 
         Args:
             filepath (str): path to a yml configuration file
+
         """
 
         with open(filepath, 'r') as ymlfile:
             self.config = yaml.safe_load(ymlfile)
+
+        if default_configs:
+            user_home_dir  = str(Path.home()) + "/cc_data/"
+            self.config["filesystem"]["filesystem_path"] = user_home_dir
+            Path(self.config["filesystem"]["filesystem_path"]).mkdir(parents=True, exist_ok=True)
+            self.config["sqlite"]["file_path"] = user_home_dir
+            self.config["cc"]["log_files_path"]  = user_home_dir +"logs/"
+            Path(self.config["cc"]["log_files_path"]).mkdir(parents=True, exist_ok=True)
 
         if "hdfs" in self.config and self.config["hdfs"]["raw_files_dir"]!="" and self.config["hdfs"]["raw_files_dir"][-1] !="/":
             self.config["hdfs"]["raw_files_dir"]+="/"
