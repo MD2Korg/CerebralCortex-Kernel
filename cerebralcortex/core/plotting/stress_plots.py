@@ -23,18 +23,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import plotly.plotly as py
-import plotly.graph_objs as go
 import pandas as pd
-import random
-from datetime import datetime, timedelta
-import cufflinks as cf
-from plotly.offline import iplot, init_notebook_mode
-import pandas as pd
-from datetime import datetime
 import plotly.figure_factory as ff
+import plotly.graph_objs as go
+from plotly.offline import iplot
 
-import cerebralcortex.core.plotting.stress_plots
+
 class StressStreamPlots():
     def plot_pie(self, pdf, group_by_column=None):
         pdf=pdf.groupby(str(group_by_column), as_index=False).agg('count')

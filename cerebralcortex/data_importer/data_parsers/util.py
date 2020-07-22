@@ -27,6 +27,7 @@ import pandas as pd
 
 from cerebralcortex.data_importer.util.helper_methods import rename_column_name
 
+
 def assign_column_names_types_strict(df: pd, metadata: dict = None) -> pd:
     """
     Change column names to the names defined in metadata->data_descriptor block

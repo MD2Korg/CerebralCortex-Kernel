@@ -22,22 +22,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from pyspark.sql.types import StructField, StructType, DoubleType,MapType, StringType,ArrayType, FloatType, TimestampType, IntegerType
-from pyspark.sql.functions import pandas_udf, PandasUDFType
 import numpy as np
 import pandas as pd
+from pyspark.sql import functions as F
+from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.types import StructField, StructType, DoubleType, StringType, ArrayType, TimestampType, IntegerType
+from scipy import signal
+from scipy.stats import iqr
+
+from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
     ModuleMetadata
-import numpy as np
-from pyspark.sql import functions as F
-from scipy.stats import iqr
-from scipy import interpolate, signal
-from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
-import matplotlib.pyplot as plt
-from matplotlib import style
-import matplotlib.patches as mpatches
-from collections import OrderedDict
 
 
 def get_hrv_features(rr_data,

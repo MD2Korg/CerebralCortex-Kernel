@@ -24,9 +24,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from cerebralcortex.core.datatypes import DataStream
-from typing import List
 import uuid
+from typing import List
+
+from cerebralcortex.core.datatypes import DataStream
+
 
 class BlueprintStorage():
     """

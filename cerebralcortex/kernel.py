@@ -23,15 +23,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import uuid
 import os
+import uuid
 import warnings
 from datetime import datetime
 from typing import List
 
-from cerebralcortex.core.util.spark_helper import get_or_create_sc
 from cerebralcortex.core.config_manager.config import Configuration
-
 from cerebralcortex.core.data_manager.raw.data import RawData
 from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 from cerebralcortex.core.data_manager.sql.data import SqlData
@@ -39,8 +37,8 @@ from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
-
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
+from cerebralcortex.core.util.spark_helper import get_or_create_sc
 
 
 class Kernel:

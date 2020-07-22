@@ -23,25 +23,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import json
 import os
-
-import gzip
-import types
 import warnings
-from typing import Callable
-import re
+
 import pandas as pd
 import pyarrow as pa
-import pyarrow.parquet as pq
-from texttable import Texttable
 
 from cerebralcortex import Kernel
-from cerebralcortex.core.data_manager.raw.data import RawData
-from cerebralcortex.core.data_manager.sql.data import SqlData
-from cerebralcortex.core.metadata_manager.stream import Metadata
-from cerebralcortex.data_importer.data_parsers.util import assign_column_names_types
-from cerebralcortex.data_importer.util.directory_scanners import dir_scanner
 
 # Disable pandas warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)

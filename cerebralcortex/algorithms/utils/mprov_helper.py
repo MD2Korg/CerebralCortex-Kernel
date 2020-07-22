@@ -23,14 +23,17 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import inspect
 import os
 from datetime import timezone, datetime
-from cerebralcortex.core.metadata_manager.stream.metadata import ModuleMetadata
-from pennprov.connection.mprov_connection_cache import MProvConnectionCache
-from pennprov.api.decorators import MProvAgg
 from functools import wraps
 
-import inspect
+from pennprov.api.decorators import MProvAgg
+from pennprov.connection.mprov_connection_cache import MProvConnectionCache
+
+from cerebralcortex.core.metadata_manager.stream.metadata import ModuleMetadata
+
+
 def MProvAgg_empty():
     """
     This is an empty decorator. This will be applied if mprov server setting is OFF

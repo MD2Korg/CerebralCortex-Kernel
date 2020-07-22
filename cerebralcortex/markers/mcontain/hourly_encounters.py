@@ -24,19 +24,19 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from cerebralcortex.algorithms.bluetooth.encounter import bluetooth_encounter,remove_duplicate_encounters
-from cerebralcortex.algorithms.gps.clustering import cluster_gps
-from cerebralcortex.core.metadata_manager.stream.metadata import DataDescriptor, ModuleMetadata
-from dateutil import parser as dateparser
-from pyspark.sql.types import StructField, StructType, DoubleType,StringType, TimestampType, IntegerType, ArrayType
-from pyspark.sql.functions import pandas_udf, PandasUDFType
-from pyspark.sql import functions as F
-from cerebralcortex.core.datatypes import DataStream
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
-import pandas as pd
-import numpy as np
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 
+import pandas as pd
+from dateutil import parser as dateparser
+from pyspark.sql import functions as F
+from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.types import StructField, StructType, DoubleType, StringType, TimestampType, IntegerType, ArrayType
+
+from cerebralcortex.algorithms.bluetooth.encounter import bluetooth_encounter, remove_duplicate_encounters
+from cerebralcortex.algorithms.gps.clustering import cluster_gps
+from cerebralcortex.core.datatypes import DataStream
+from cerebralcortex.core.metadata_manager.stream.metadata import DataDescriptor, ModuleMetadata
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 def generate_metadata_hourly():

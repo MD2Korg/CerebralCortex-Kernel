@@ -31,8 +31,8 @@ from pyspark.sql import functions as F
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
 from scipy.stats import iqr
-from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
 
+from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
     ModuleMetadata
 

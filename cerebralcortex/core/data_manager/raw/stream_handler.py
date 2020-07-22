@@ -26,12 +26,12 @@
 
 import traceback
 from enum import Enum
-import pandas as pd
 
+import pandas as pd
 from pyspark.sql.functions import lit
 
-from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.algorithms.utils.mprov_helper import write_metadata_to_mprov
+from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 

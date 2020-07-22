@@ -23,10 +23,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sqlalchemy as db
-from sqlalchemy import Column, String, Integer, Date, Boolean, Numeric, JSON, Text, UniqueConstraint
-from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
+
+from sqlalchemy import Column, String, Integer, Date, Boolean, JSON, Text, UniqueConstraint
+
 from cerebralcortex.core.data_manager.sql import Base
 
 

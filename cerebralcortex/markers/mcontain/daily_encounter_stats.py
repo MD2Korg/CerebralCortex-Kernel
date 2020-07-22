@@ -47,17 +47,19 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from cerebralcortex.algorithms.bluetooth.encounter import *
-from cerebralcortex.markers.mcontain.hourly_encounters import *
-from pyspark.sql.types import StructField, StructType, DoubleType,StringType, TimestampType, IntegerType
-from pyspark.sql.functions import pandas_udf, PandasUDFType
+import time
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
 from pyspark.sql import functions as F
+from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.types import StructField, StructType, DoubleType, StringType, TimestampType, IntegerType
+
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
-import pandas as pd, numpy as np
-import time
-from datetime import datetime,timedelta
-from dateutil import parser as dateparser
+from cerebralcortex.markers.mcontain.hourly_encounters import *
+
 
 def generate_metadata_dailystats():
     stream_metadata = Metadata()

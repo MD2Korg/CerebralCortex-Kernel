@@ -23,16 +23,9 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import plotly.plotly as py
-import plotly.graph_objs as go
-import pandas as pd
-import random
-from datetime import datetime, timedelta
 import cufflinks as cf
+import plotly.graph_objs as go
 from plotly.offline import iplot, init_notebook_mode
-import pandas as pd
-from datetime import datetime
-from ipyleaflet import Map, Marker, MarkerCluster
 
 
 class BasicPlots():

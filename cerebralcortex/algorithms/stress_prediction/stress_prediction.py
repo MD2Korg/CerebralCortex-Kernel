@@ -21,18 +21,12 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-from typing import List
-import numpy as np
-from scipy import signal
-from scipy.stats import iqr
-from scipy.stats.mstats_basic import winsorize
-from enum import Enum
-from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, ArrayType
-from pyspark.sql.functions import pandas_udf, PandasUDFType
-import pandas as pd
-import datetime
 import pickle
 
+import numpy as np
+import pandas as pd
+from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType
 
 schema = StructType([
     StructField("user", StringType()),
@@ -43,7 +37,7 @@ schema = StructType([
 
 @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
 def stress_prediction(data: object) -> object:
-    
+
     num_rows = len(data['rr_feature'].values)
 
     fm = np.zeros((num_rows, 11))

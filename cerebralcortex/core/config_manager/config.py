@@ -25,6 +25,7 @@
 
 import os.path
 import pathlib
+
 from cerebralcortex.core.config_manager.config_handler import ConfigHandler
 
 

@@ -24,7 +24,7 @@
 
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import StructField, StructType, DoubleType, StringType, TimestampType, IntegerType
-from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
+
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
     ModuleMetadata

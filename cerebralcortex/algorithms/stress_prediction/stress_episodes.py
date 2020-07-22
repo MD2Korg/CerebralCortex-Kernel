@@ -22,40 +22,15 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from typing import List
 import numpy as np
-from scipy import signal
-from scipy.stats import iqr
-from scipy.stats.mstats_basic import winsorize
-from enum import Enum
-from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, ArrayType, IntegerType
-from pyspark.sql.functions import pandas_udf, PandasUDFType
 import pandas as pd
-import datetime
-from datetime import datetime
-import warnings
+from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
 
-from pyspark.sql import functions as F
-from pyspark.sql.types import StructField, StructType, DoubleType,MapType, StringType,ArrayType, FloatType, TimestampType, IntegerType
-from pyspark.sql.functions import pandas_udf, PandasUDFType
-import numpy as np
-import pandas as pd
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
     ModuleMetadata
-from sklearn.preprocessing import LabelEncoder
-import os
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import OneHotEncoder,LabelBinarizer
-from sklearn import preprocessing
-from sklearn import ensemble
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import StratifiedShuffleSplit,GridSearchCV,KFold,train_test_split
-from sklearn.decomposition import PCA
-from sklearn.neighbors import KNeighborsRegressor
-from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
-from sklearn.preprocessing import LabelEncoder,OneHotEncoder
-from pandas.core.common import SettingWithCopyWarning
+
 
 def compute_stress_episodes(ecg_stress_probability, macd_param_fast = 7, macd_param_slow = 19, macd_param_signal = 2, threshold_stressed = 0.36, threshold_not_stressed= 0.36):
     """
@@ -334,8 +309,3 @@ def compute_stress_episodes(ecg_stress_probability, macd_param_fast = 7, macd_pa
 
     data = ecg_stress_probability._data.groupby(['user', 'version']).apply(stress_episodes_estimation)
     return DataStream(data=data, metadata=get_metadata())
-
-# from cerebralcortex.kernel import Kernel
-# CC = Kernel("/Users/ali/IdeaProjects/CerebralCortex-2.0/conf/", study_name="rice")
-# ecg_data = CC.get_stream("org.md2k.autosense.ecg.stress.probability.imputed")
-# compute_stress_episodes(None)

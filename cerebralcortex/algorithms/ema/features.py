@@ -26,12 +26,12 @@
 import json
 
 import pandas as pd
-
-from cerebralcortex.core.datatypes import DataStream
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.group import GroupedData
 from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
+
+from cerebralcortex.core.datatypes import DataStream
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 def ema_incentive(ds):

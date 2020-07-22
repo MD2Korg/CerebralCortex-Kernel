@@ -22,26 +22,17 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from pyspark.sql.types import StructField, StructType, DoubleType,MapType, StringType,ArrayType, FloatType, TimestampType, IntegerType
-from pyspark.sql.functions import pandas_udf, PandasUDFType
+import math
+
 import numpy as np
 import pandas as pd
-from cerebralcortex.core.datatypes import DataStream
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
-    ModuleMetadata
-import numpy as np
 from pyspark.sql import functions as F
+from pyspark.sql.functions import pandas_udf, PandasUDFType
+
 from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
-from scipy.stats import iqr
-from scipy import interpolate, signal
-import matplotlib.pyplot as plt
-from matplotlib import style
-import matplotlib.patches as mpatches
-from collections import OrderedDict
+from cerebralcortex.core.datatypes import DataStream
+from cerebralcortex.core.metadata_manager.stream.metadata import DataDescriptor
 
-
-
-import math
 
 def normalize_features(data,
                        index_of_first_order_feature =2,

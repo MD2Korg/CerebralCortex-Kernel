@@ -34,6 +34,7 @@ from typing import List
 
 import jwt
 from pytz import timezone
+
 from cerebralcortex.core.data_manager.sql.orm_models import User
 
 

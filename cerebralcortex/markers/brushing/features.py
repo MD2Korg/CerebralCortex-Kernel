@@ -1,24 +1,15 @@
-import re
-import sys
 from typing import List
-import math
-import pandas as pd
+
 import numpy as np
-from cerebralcortex.core.datatypes import DataStream
-from datetime import timedelta
-from pyspark.sql import DataFrame
-from pyspark.sql import functions as F
-from pyspark.sql.functions import udf
+import pandas as pd
+from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import *
 # from pyspark.sql.functions import pandas_udf,PandasUDFType
-from operator import attrgetter
 from pyspark.sql.types import StructType
-from pyspark.sql.functions import pandas_udf, PandasUDFType
-from pyspark.sql.window import Window
 
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
-from cerebralcortex.core.plotting.basic_plots import BasicPlots
-from cerebralcortex.core.plotting.stress_plots import StressStreamPlots
+from cerebralcortex.core.datatypes import DataStream
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
+
 
 def compute_corr_mse_accel_gyro(self, exclude_col_names: list = [],
                                 accel_column_names: list = ['accelerometer_x', 'accelerometer_y', 'accelerometer_z'],

@@ -24,27 +24,20 @@
 
 import warnings
 
-from pyspark.sql import functions as F
-from pyspark.sql.types import StructField, StructType, DoubleType,MapType, StringType,ArrayType, FloatType, TimestampType, IntegerType
-from pyspark.sql.functions import pandas_udf, PandasUDFType
 import numpy as np
 import pandas as pd
+from pyspark.sql import functions as F
+from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.types import StructField, StructType, DoubleType, StringType, IntegerType
+from sklearn.model_selection import GridSearchCV, KFold
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
+
+from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
     ModuleMetadata
-from sklearn.preprocessing import LabelEncoder
-import os
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import OneHotEncoder,LabelBinarizer
-from sklearn import preprocessing
-from sklearn import ensemble
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import StratifiedShuffleSplit,GridSearchCV,KFold,train_test_split
-from sklearn.decomposition import PCA
-from sklearn.neighbors import KNeighborsRegressor
-from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
-from sklearn.preprocessing import LabelEncoder,OneHotEncoder
-from pandas.core.common import SettingWithCopyWarning
 
 
 def get_metadata(stress_imputed_data, output_stream_name):

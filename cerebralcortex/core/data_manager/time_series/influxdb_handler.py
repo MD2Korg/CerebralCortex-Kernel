@@ -24,14 +24,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-import pandas as pd
 import traceback
 from datetime import datetime
 
+import pandas as pd
+from influxdb import DataFrameClient
 from influxdb import InfluxDBClient
 
 from cerebralcortex.core.datatypes import DataStream
-from influxdb import DataFrameClient
 
 
 class InfluxdbHandler():

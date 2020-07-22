@@ -26,14 +26,15 @@
 
 import json
 import time
-from branca.element import CssLink, Figure, JavascriptLink, MacroElement
+from datetime import datetime
+
+import folium
 import numpy as np
+import pandas as pd
+from branca.element import CssLink, Figure, JavascriptLink, MacroElement
 from folium.folium import Map
 from folium.utilities import iter_points, none_max, none_min, parse_options
-import pandas as pd
 from jinja2 import Template
-import folium
-from datetime import datetime
 
 
 class TimestampedGeoJson(MacroElement):

@@ -1,8 +1,8 @@
 import argparse
 
+from cerebralcortex.kernel import Kernel
 from cerebralcortex.markers.brushing.util import get_max_features, reorder_columns, classify_brushing
 from cerebralcortex.markers.brushing.util import get_orientation_data, get_candidates, filter_candidates
-from cerebralcortex.kernel import Kernel
 
 
 def generate_candidates(CC, user_id, accel_stream_name, gyro_stream_name, output_stream_name):

@@ -1,6 +1,9 @@
-from pyspark.sql import functions as F
-from cerebralcortex.kernel import Kernel
 import argparse
+
+from pyspark.sql import functions as F
+
+from cerebralcortex.kernel import Kernel
+
 
 def assign_covid_user(data,covid_users):
     if not isinstance(covid_users,list):

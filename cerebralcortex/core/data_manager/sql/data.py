@@ -24,14 +24,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sqlalchemy as db
-from cerebralcortex.core.data_manager.sql import Base
 from sqlalchemy_utils import create_database, database_exists
 
-
-from cerebralcortex.core.log_manager.log_handler import LogTypes
-
+from cerebralcortex.core.data_manager.sql import Base
 from cerebralcortex.core.data_manager.sql.stream_handler import StreamHandler
 from cerebralcortex.core.data_manager.sql.users_handler import UserHandler
+from cerebralcortex.core.log_manager.log_handler import LogTypes
 
 
 class SqlData(StreamHandler, UserHandler):
