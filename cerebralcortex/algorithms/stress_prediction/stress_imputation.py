@@ -281,6 +281,7 @@ def impute_stress_likelihood(stress_data,output_stream_name='org.md2k.autosense.
             X = np.concatenate([X_s,X_hour,X_weekday],axis=1)
             data['stress_probability'].loc[index] = clf.predict(X).reshape(-1)
             data['imputed'].loc[index] = 2
+        data['imputed'][data.imputed==2]=1
         return data
 
     lookback = 3

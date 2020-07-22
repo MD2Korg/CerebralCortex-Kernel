@@ -145,7 +145,7 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
     ])
 
     @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
-    @CC_MProvAgg('ecg--org.md2k.autosense--autosense_chest--chest', 'ecg_autosense_data_quality', stream_name, ['user', 'timestamp'], ['user', 'timestamp'])
+    #@CC_MProvAgg('ecg--org.md2k.autosense--autosense_chest--chest', 'ecg_autosense_data_quality', stream_name, ['user', 'timestamp'], ['user', 'timestamp'])
     def data_quality(data):
         """
 

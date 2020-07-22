@@ -538,3 +538,16 @@ class Kernel:
             str: encrypted password
         """
         return self.SqlData.encrypt_user_password(user_password)
+
+    def read_file(self, fpath, format):
+        """
+        
+        Args:
+            fpath (str): path of the file 
+            format (str): string, name of the data source, supported formats are 'csv','json', and 'parquet'.
+
+        Returns:
+            DataStream object
+        """
+        df = self.sparkSession.read.format(format).load(fpath)
+        return DataStream(data=df, metadata=Metadata())

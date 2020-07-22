@@ -32,6 +32,7 @@ from pyspark.sql.types import StructField, StructType, StringType, FloatType, Ti
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 import pandas as pd
 import datetime
+from datetime import datetime
 
 NOTSTRESS = "NOTSTRESS"
 UNSURE = 'UNSURE'
@@ -45,7 +46,7 @@ schema = StructType([
     StructField("stress_episode", StringType()),
 ])
 
-@pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+#@pandas_udf(schema, PandasUDFType.GROUPED_MAP)
 def stress_episodes_estimation(stress_data: object) -> object:
     # --- Constants definitions --- 
     smoothing_window = 3 # FIXME - 3 minutes
@@ -57,6 +58,7 @@ def stress_episodes_estimation(stress_data: object) -> object:
 
     # Smooth the stress values
     stress_smoothed_list = []
+    #stress_data = impute(stress_data)
 
     for c in range(2,len(stress_data['stress_probability'].values)):
         smoothed_stress = (stress_data['stress_probability'].values[c] + \
@@ -64,6 +66,7 @@ def stress_episodes_estimation(stress_data: object) -> object:
                          stress_data['stress_probability'].values[c-2]) / smoothing_window
         stress_smoothed_list.append((stress_data['timestamp'].values[c], smoothed_stress))
 
+    # EMA = Exponential Moving Average
     ema_fast_list = []
     ema_fast_list.append(stress_smoothed_list[0])
     ema_slow_list = []
@@ -80,7 +83,7 @@ def stress_episodes_estimation(stress_data: object) -> object:
     for c in range(len(stress_smoothed_list)):
         ema_fast_prev = ema_fast_list[-1][1]
         ema_fast_current = stress_smoothed_list[c][1]
-        ema_fast = ewma(ema_fast_current, ema_fast_prev, 2.0/(macd_param_fast + 1))
+        ema_fast = ewma(ema_fast_current, ema_fast_prev, 2.0/(macd_param_fast + 1)) # alpha * current + (1 - alpha) * previous -> alpha * (current - previous) + previous
         ema_fast_list.append((stress_smoothed_list[c][0], ema_fast))
 
         ema_slow_prev = ema_slow_list[-1][1]
@@ -100,10 +103,10 @@ def stress_episodes_estimation(stress_data: object) -> object:
 
         if histogram_prev <=0 and histogram > 0:
             # Episode has ended, started increasing again
-            start_timestamp = -1;
-            peak_timestamp = -1;
+            start_timestamp = None;
+            peak_timestamp = None;
             end_timestamp = stress_smoothed_list[c][0]
-            stress_class = -1
+            stress_class = None
             if len(stress_episode_start):
                 start_timestamp = stress_episode_start[-1][0]
 
@@ -111,8 +114,7 @@ def stress_episodes_estimation(stress_data: object) -> object:
                 peak_timestamp = stress_episode_classification[-1][0]
                 stress_class = stress_episode_classification[-1][1]
 
-            if stress_class != -1:
-                #print('Found full stress episode', stress_class)
+            if stress_class:
                 #TODO - Handle this?????
                 stress_episode_timestamps = []
                 stress_episode_timestamps.append(start_timestamp) 
@@ -124,22 +126,22 @@ def stress_episodes_estimation(stress_data: object) -> object:
         if histogram_prev >=0 and histogram < 0:
             # Episode is in the middle, started decreasing
             episode_start_timestamp = get_episode_start_timestamp(stress_episode_classification, histogram_list, stress_smoothed_list[c][0]) 
-            if episode_start_timestamp == -1:
+            if episode_start_timestamp is None:
                 stress_episode_start.append((episode_start_timestamp, NOTCLASSIFIED))
                 stress_episode_peak.append((stress_smoothed_list[c][0], NOTCLASSIFIED))
-                stress_episode_classification.append((stress_smoothed_list[c][0], NOTCLASSIFIED))
+                stress_episode_classification.append([stress_smoothed_list[c][0], NOTCLASSIFIED])
             else:
                 proportion_available = get_proportion_available(stress_data, episode_start_timestamp, stress_smoothed_list[c][0])
                 if proportion_available < 0.5:
                     stress_episode_start.append((episode_start_timestamp, UNKNOWN))
                     stress_episode_peak.append((stress_smoothed_list[c][0], UNKNOWN))
-                    stress_episode_classification.append((stress_smoothed_list[c][0], UNKNOWN))
+                    stress_episode_classification.append([stress_smoothed_list[c][0], UNKNOWN])
                 else:
                     historical_stress = get_historical_values_timestamp_based(stress_smoothed_list, episode_start_timestamp, stress_smoothed_list[c][0])
                     if not len(historical_stress):
                         stress_episode_start.append((episode_start_timestamp, UNKNOWN))
                         stress_episode_peak.append((stress_smoothed_list[c][0], UNKNOWN))
-                        stress_episode_classification.append((stress_smoothed_list[c][0], UNKNOWN))
+                        stress_episode_classification.append([stress_smoothed_list[c][0], UNKNOWN])
                     else:
                         cumu_sum = 0.0
                         for hs in historical_stress:
@@ -148,33 +150,34 @@ def stress_episodes_estimation(stress_data: object) -> object:
                         if stress_density >= threshold_yes:
                             stress_episode_start.append((episode_start_timestamp, YESSTRESS))
                             stress_episode_peak.append((stress_smoothed_list[c][0], YESSTRESS))
-                            stress_episode_classification.append((stress_smoothed_list[c][0], YESSTRESS))
+                            stress_episode_classification.append([stress_smoothed_list[c][0], YESSTRESS])
                         elif stress_density <= threshold_no:
                             stress_episode_start.append((episode_start_timestamp, NOTSTRESS))
                             stress_episode_peak.append((stress_smoothed_list[c][0], NOTSTRESS))
-                            stress_episode_classification.append((stress_smoothed_list[c][0], NOTSTRESS))
+                            stress_episode_classification.append([stress_smoothed_list[c][0], NOTSTRESS])
                         else:
                             stress_episode_start.append((episode_start_timestamp, UNSURE))
                             stress_episode_peak.append((stress_smoothed_list[c][0], UNSURE))
-                            stress_episode_classification.append((stress_smoothed_list[c][0], UNSURE))
-    
+                            stress_episode_classification.append([stress_smoothed_list[c][0], UNSURE])
 
-    stress_episode_df = pd.DataFrame(index = np.arange(0, len(stress_episode_classification)), columns=['user', 'timestamp', 'stress_episode'])
-    user = stress_data['user'].values[0]
-    index = 0
-    for c in stress_episode_classification:
-        ts = c[0]
-        status = c[1]
-        stress_episode_df.loc[index] = [user, ts, status]
-        index += 1
+    return pd.DataFrame(stress_episode_classification, columns=['timestamp', 'stress_episode'])
 
-    return stress_episode_df
+def ewma(current:int, previous:int, alpha:int)->float:
+    """
+    compute exponential weighted moving average
 
-def ewma(x, y, alpha):
-    return alpha * x + (1 - alpha) * y
+    Args:
+        current (int): current stress probability value
+        previous (int): previous stress probability value
+        alpha (int):
+
+    Returns:
+        float
+    """
+    return alpha * current + (1 - alpha) * previous
 
 def get_episode_start_timestamp(stress_episode_classification, histogram_list, currenttime):
-    timestamp_prev = -1
+    timestamp_prev = None
     if len(stress_episode_classification) >= 3:
         timestamp_prev = stress_episode_classification[-3][0]
     elif len(stress_episode_classification) == 2:
@@ -185,7 +188,7 @@ def get_episode_start_timestamp(stress_episode_classification, histogram_list, c
     histogram_history =  get_historical_values_timestamp_based(histogram_list, timestamp_prev, currenttime)
 
     if len(histogram_history) <= 1:
-        return -1
+        return None
 
     for x in range(len(histogram_history)-2 , -1, -1):
         if histogram_history[x][1] <= 0:
@@ -197,7 +200,7 @@ def get_episode_start_timestamp(stress_episode_classification, histogram_list, c
 def get_historical_values_timestamp_based(data, start_timestamp, currenttime):
     toreturn = []
     starttime = start_timestamp
-    if starttime == -1:
+    if starttime == None:
         starttime = currenttime - np.timedelta64(100*365*24*3600, 's') # approx 100 year to approximate -1
     for c in data:
         if c[0] >= starttime and c[0] <= currenttime:
@@ -212,12 +215,12 @@ def get_proportion_available(data, st, current_timestamp):
     count = 0
     available = 0
     start_timestamp = st
-    if start_timestamp == -1:
-        start_timestamp = current_timestamp - np.timedelta(100, 'Y')
+    if start_timestamp is None:
+        start_timestamp = current_timestamp
     for x in range(len(data)):
         row_time = data.iloc[x]['timestamp']
         if row_time >= start_timestamp and row_time <= current_timestamp:
-            available += data.iloc[x]['available']
+            available += data.iloc[x]['imputed']
             count +=1
         if row_time > current_timestamp:
             break
@@ -258,8 +261,12 @@ def impute(df):
 
 from cerebralcortex.kernel import Kernel
 CC = Kernel("/Users/ali/IdeaProjects/CerebralCortex-2.0/conf/", study_name="rice")
-ecg_data = CC.get_stream("org.md2k.autosense.ecg.stress.probability").drop("window").drop("localtime")
+ecg_data = CC.get_stream("org.md2k.autosense.ecg.stress.probability.imputed").drop("window").drop("localtime")
 
 #ecg_data.show()
 
-ecg_data._data.groupby(['user','version']).apply(stress_episodes_estimation).show()
+#ecg_data._data.groupby(['user','version']).apply(stress_episodes_estimation).show()
+
+pdf = ecg_data.toPandas()
+pdf2 = stress_episodes_estimation(pdf)
+print(pdf2)

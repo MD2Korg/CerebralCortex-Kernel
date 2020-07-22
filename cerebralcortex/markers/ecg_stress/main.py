@@ -21,8 +21,8 @@
 # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 import argparse
-from pyspark.sql import functions as F
 from cerebralcortex.kernel import Kernel
 from cerebralcortex.algorithms.ecg.autosense_data_quality import ecg_autosense_data_quality
 from cerebralcortex.algorithms.ecg.autosense_rr_interval import get_rr_interval
@@ -30,13 +30,6 @@ from cerebralcortex.algorithms.ecg.hrv_features import get_hrv_features
 from cerebralcortex.algorithms.utils.feature_normalization import normalize_features
 from cerebralcortex.algorithms.stress_prediction.ecg_stress import compute_stress_probability
 from cerebralcortex.algorithms.stress_prediction.stress_imputation import forward_fill_data, impute_stress_likelihood
-from cerebralcortex.core.datatypes import DataStream
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
-    ModuleMetadata
-import pickle
-import numpy as np
-
-
 
 
 if __name__ == "__main__":
@@ -48,7 +41,7 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--path', help='Stress Model Path', required=False,default='/Users/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/markers/ecg_stress/model/stress_ecg_final.p')
     parser.add_argument('-n', '--sensor_name', help='Sensor Type', required=False,default='autosense')
 
-    # parse arguements
+    # parse arguments
     args = vars(parser.parse_args())
     config_dir = str(args["config_dir"]).strip()
     ecg_stream_name = str(args["ecg_stream_name"]).strip()
@@ -63,13 +56,27 @@ if __name__ == "__main__":
     # get stream data
     ecg_data = CC.get_stream(ecg_stream_name)
 
-    # Stress computation pipline
+    ###                          Stress computation pipeline
+
+    # Compute data quality
     ecg_data_with_quality = ecg_autosense_data_quality(ecg_data,sensor_name=sensor_name,Fs=Fs)
+
+    # Compute RR intervals
     ecg_rr = get_rr_interval(ecg_data_with_quality,Fs=Fs)
+
+    # Compute HRV features
     stress_features = get_hrv_features(ecg_rr)
+
+    # Normalize features
     stress_features_normalized = normalize_features(stress_features,input_feature_array_name='features')
+
+    # Compute stress probability
     ecg_stress_probability = compute_stress_probability(stress_features_normalized,model_path=model_path)
+
+    # Forward fill and impute stress data
     ecg_stress_probability_forward_filled = forward_fill_data(ecg_stress_probability)
     ecg_stress_probability_imputed = impute_stress_likelihood(ecg_stress_probability_forward_filled)
+
     ecg_stress_probability_imputed.show()
-    #CC.save_stream(ecg_stress_probability_imputed,overwrite=True)
+    # Save results
+    CC.save_stream(ecg_stress_probability_imputed,overwrite=True)
