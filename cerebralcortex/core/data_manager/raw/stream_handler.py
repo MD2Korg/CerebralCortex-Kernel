@@ -90,7 +90,7 @@ class StreamHandler():
         if version=="latest":
             version = max(all_versions)
 
-        version = int(version.version)
+        version = int(version)
         stream_metadata = self.sql_data.get_stream_metadata_by_name(stream_name=stream_name, version=version)
 
         if stream_metadata:

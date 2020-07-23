@@ -27,7 +27,7 @@ import json
 import os
 import unittest
 
-from cerebralcortex_rest import client
+from cerebralcortex_restclient import client
 
 class TestCerebralCortex(unittest.TestCase):
 

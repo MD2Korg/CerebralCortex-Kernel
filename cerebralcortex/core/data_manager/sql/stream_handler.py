@@ -108,7 +108,7 @@ class StreamHandler:
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_stream_metadata_by_name(self, stream_name: str, version:int) -> List[Metadata]:
+    def get_stream_metadata_by_name(self, stream_name: str, version:int) -> Metadata:
         """
         Get a list of metadata for all versions available for a stream.
 
@@ -133,7 +133,7 @@ class StreamHandler:
         if rows:
             return Metadata().from_json_file(rows.stream_metadata)
         else:
-            return []
+            return None
 
     def list_streams(self)->List[Metadata]:
         """
@@ -169,13 +169,10 @@ class StreamHandler:
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
         rows = self.session.query(Stream.name).filter(Stream.name.ilike('%'+stream_name+'%')).all()
-        results = []
         if rows:
-            for row in rows:
-                results.append(row.name)
-            return results
+            return rows
         else:
-            return results
+            return []
 
     def get_stream_versions(self, stream_name: str) -> list:
         """
@@ -223,13 +220,10 @@ class StreamHandler:
 
         rows = self.session.query(Stream.name, Stream.version, Stream.metadata_hash).filter((Stream.name == stream_name) & (Stream.study_name==self.study_name)).all()
 
-        results = []
         if rows:
-            for row in rows:
-                results.append([row.name, row.version, row.metadata_hash])
-            return results
+            return rows
         else:
-            return results
+            return []
 
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """
@@ -276,7 +270,7 @@ class StreamHandler:
             (Stream.metadata_hash == metadata_hash) & (Stream.study_name == self.study_name)).first()
 
         if rows:
-            return [rows.name, rows.stream_metadata]
+            return rows
         else:
             raise Exception(str(metadata_hash)+ " does not exist.")
 

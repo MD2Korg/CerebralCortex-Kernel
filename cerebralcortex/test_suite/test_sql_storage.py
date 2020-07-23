@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_metadata
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 class SqlStorageTest:
@@ -35,25 +36,28 @@ class SqlStorageTest:
         result = self.CC.SqlData.save_stream_metadata(stream_metadata)
         self.assertEqual(result.get("status", False), True)
 
-
     def test_01_get_stream_metadata_by_name(self):
         result = self.CC.SqlData.get_stream_metadata_by_name(self.stream_name, version=1)
-        self.assertTrue(len(result)>0)
+        self.assertEqual(len(result.data_descriptor),5)
 
     def test_02_list_streams(self):
         result = self.CC.SqlData.list_streams()
         self.assertTrue(len(result)>0)
+        self.assertTrue(isinstance(result[0], Metadata))
 
     def test_03_search_stream(self):
         result = self.CC.SqlData.search_stream("battery")
         self.assertTrue(len(result) > 0)
+        self.assertEqual(result[0].name,self.stream_name)
 
     def test_04_get_stream_versions(self):
         result = self.CC.SqlData.get_stream_versions(self.stream_name)
         self.assertTrue(len(result) > 0)
+        self.assertEqual(result[0],1)
 
     def test_05_get_stream_metadata_hash(self):
         result = self.CC.SqlData.get_stream_metadata_hash(self.stream_name)
+        self.assertTrue(len(result) > 0)
         self.assertEqual(result[0].metadata_hash,self.metadata_hash)
 
     def test_06_get_stream_name(self):
@@ -62,6 +66,7 @@ class SqlStorageTest:
 
     def test_07_get_stream_metadata_by_hash(self):
         result = self.CC.SqlData.get_stream_metadata_by_hash(self.metadata_hash)
+        self.assertTrue(len(result) > 0)
         self.assertEqual(result.name, self.stream_name)
 
     def test_08_is_stream(self):

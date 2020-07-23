@@ -236,13 +236,10 @@ class UserHandler():
 
         rows = self.session.query(User.user_id, User.username).filter(User.study_name == self.study_name).all()
 
-        results = []
         if rows:
-            for row in rows:
-                results.append([row.user_id, row.username])
-            return results
+            return rows
         else:
-            return results
+            return []
 
     def get_username(self, user_id: str) -> str:
         """

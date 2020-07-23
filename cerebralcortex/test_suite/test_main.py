@@ -33,7 +33,7 @@ from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
 from cerebralcortex.test_suite.test_nosql_storage import NoSqlStorageTest
 
 
-class TestCerebralCortex(unittest.TestCase, SqlStorageTest):
+class TestCerebralCortex(unittest.TestCase, NoSqlStorageTest, SqlStorageTest):
 
     def setUp(self):
         """
@@ -80,6 +80,9 @@ class TestCerebralCortex(unittest.TestCase, SqlStorageTest):
         This test will create required entries in sql database.
 
         """
-        if not os.path.isdir(self.cc_conf["filesystem"]["filesystem_path"]):
-            os.mkdir(self.cc_conf["filesystem"]["filesystem_path"])
-        self.CC.create_user(self.username, self.user_password, self.user_role, self.user_metadata, self.user_settings)
+        try:
+            if not os.path.isdir(self.cc_conf["filesystem"]["filesystem_path"]):
+                os.mkdir(self.cc_conf["filesystem"]["filesystem_path"])
+            self.CC.create_user(self.username, self.user_password, self.user_role, self.user_metadata, self.user_settings)
+        except:
+            pass
