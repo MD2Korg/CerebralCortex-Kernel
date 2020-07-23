@@ -46,13 +46,13 @@ class StreamHandler():
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
-    def get_stream(self, stream_name:str, version:str="all", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
+    def get_stream(self, stream_name:str, version:str="latest", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
         """
         Retrieve a data-stream with it's metadata.
 
         Args:
             stream_name (str): name of a stream
-            version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
+            version (str): version of a stream. Acceptable parameters are latest, or a specific version of a stream (e.g., 2)
             user_id (str): id of a user
             data_type (DataSet):  DataSet.COMPLETE returns both Data and Metadata. DataSet.ONLY_DATA returns only Data. DataSet.ONLY_METADATA returns only metadata of a stream. (Default=DataSet.COMPLETE)
 
@@ -83,22 +83,23 @@ class StreamHandler():
 
         version = str(version).strip().replace(" ", "")
 
-        if version!="all" and version!="latest":
+        if version!="latest":
             if int(version) not in all_versions:
                 raise Exception("Version "+str(version)+" is not available for stream: "+str(stream_name))
 
         if version=="latest":
             version = max(all_versions)
 
+        version = int(version.version)
         stream_metadata = self.sql_data.get_stream_metadata_by_name(stream_name=stream_name, version=version)
 
-        if len(stream_metadata) > 0:
+        if stream_metadata:
             if data_type == DataSet.COMPLETE:
-                df = self.nosql.read_file(stream_name=stream_name, version=version, user_id=user_id)
+                df = self.read_file(stream_name=stream_name, version=version, user_id=user_id)
                 #df = df.dropDuplicates(subset=['timestamp'])
                 stream = DataStream(data=df,metadata=stream_metadata)
             elif data_type == DataSet.ONLY_DATA:
-                df = self.nosql.read_file(stream_name=stream_name, version=version, user_id=user_id)
+                df = self.read_file(stream_name=stream_name, version=version, user_id=user_id)
                 #df = df.dropDuplicates(subset=['timestamp'])
                 stream = DataStream(data=df)
             elif data_type == DataSet.ONLY_METADATA:
@@ -143,7 +144,7 @@ class StreamHandler():
             stream_name = stream_name.lower()
             if not stream_name:
                 raise ValueError("Stream name cannot be empty/None. Check metadata.")
-            metadata = self.__update_data_desciptor(data=data, metadata=metadata)
+            #metadata = self.__update_data_desciptor(data=data, metadata=metadata)
             try:
                 if datastream:
                     if isinstance(data, pd.DataFrame):
@@ -168,7 +169,7 @@ class StreamHandler():
                         else:
                             data = data.withColumn('version', lit(version))
 
-                        status = self.nosql.write_file(stream_name, data, file_mode)
+                        status = self.write_file(stream_name, data, file_mode)
                         return status
                     else:
                         print("Something went wrong in saving data points in SQL store.")

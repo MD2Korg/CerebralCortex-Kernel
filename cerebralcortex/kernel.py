@@ -103,7 +103,7 @@ class Kernel:
         warnings.simplefilter('always', DeprecationWarning)
 
 
-        if not new_study and not self.RawData.nosql.is_study():
+        if not new_study and not self.RawData.is_study():
             raise Exception("Study name does not exist.")
 
         if self.config["visualization_storage"] != "none":
@@ -134,7 +134,7 @@ class Kernel:
         return self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB, overwrite=overwrite)
 
     
-    def get_stream(self, stream_name: str, version: str = "all", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
+    def get_stream(self, stream_name: str, version: str = "latest", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
         """
         Retrieve a data-stream with it's metadata.
 
@@ -201,7 +201,7 @@ class Kernel:
             >>> CC.is_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> True
         """
-        return self.RawData.nosql.is_stream(stream_name)
+        return self.RawData.is_stream(stream_name)
 
     def get_stream_versions(self, stream_name: str) -> list:
         """
@@ -218,7 +218,7 @@ class Kernel:
             >>> CC.get_stream_versions("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> [1, 2, 4]
         """
-        return self.RawData.nosql.get_stream_versions(stream_name)
+        return self.RawData.get_stream_versions(stream_name)
 
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """
@@ -250,7 +250,7 @@ class Kernel:
         """
         return self.SqlData.get_stream_metadata_hash(stream_name)
 
-    def get_stream_metadata_by_name(self, stream_name: str, version:str= "all") -> List[Metadata]:
+    def get_stream_metadata_by_name(self, stream_name: str, version:str=1) -> List[Metadata]:
         """
         Get a list of metadata for all versions available for a stream.
 
@@ -295,7 +295,7 @@ class Kernel:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.list_streams()
         """
-        return self.RawData.nosql.list_streams()
+        return self.RawData.list_streams()
 
     def search_stream(self, stream_name):
         """
@@ -311,7 +311,7 @@ class Kernel:
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
 
-        return self.RawData.nosql.search_stream(stream_name=stream_name)
+        return self.RawData.search_stream(stream_name=stream_name)
 
     ################### USER RELATED METHODS ##################################
 

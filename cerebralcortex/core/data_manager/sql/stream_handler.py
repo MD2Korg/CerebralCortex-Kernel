@@ -108,13 +108,13 @@ class StreamHandler:
     ################## GET DATA METHODS ###############################
     ###################################################################
 
-    def get_stream_metadata_by_name(self, stream_name: str, version:str= "all") -> List[Metadata]:
+    def get_stream_metadata_by_name(self, stream_name: str, version:int) -> List[Metadata]:
         """
         Get a list of metadata for all versions available for a stream.
 
         Args:
             stream_name (str): name of a stream
-            version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
+            version (int): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
 
         Returns:
             list (Metadata): Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
@@ -128,14 +128,10 @@ class StreamHandler:
         if stream_name is None or stream_name=="":
             raise ValueError("stream_name cannot be None or empty.")
 
-        result = []
-        if version=="all":
-            rows = self.session.query(Stream.name, Stream.stream_metadata).filter(Stream.name==stream_name).all()
-        else:
-            rows = self.session.query(Stream.name, Stream.stream_metadata).filter((Stream.name == stream_name) & (Stream.version==version) & (Stream.study_name==self.study_name)).all()
+        rows = self.session.query(Stream.stream_metadata).filter((Stream.name == stream_name) & (Stream.version==version) & (Stream.study_name==self.study_name)).first()
 
         if rows:
-            return rows
+            return Metadata().from_json_file(rows.stream_metadata)
         else:
             return []
 
