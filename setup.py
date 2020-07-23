@@ -30,7 +30,8 @@ reqs = [
     'scipy',
     'statsmodels==0.11.1',
     'sqlalchemy==1.3.17',
-    'pennprov==2.2.8'
+    'pennprov==2.2.8',
+    'cerebralcortex_restclient==3.1.0.post1'
 ]
 
 

@@ -27,6 +27,7 @@ from cerebralcortex.test_suite.util.data_helper import gen_phone_battery_metadat
 
 
 class SqlStorageTest:
+
     ###### STREAM RELATED TEST CASES #####
     def test_00_save_stream_metadata(self):
         stream_metadata = gen_phone_battery_metadata()

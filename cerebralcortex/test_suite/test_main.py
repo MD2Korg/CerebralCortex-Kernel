@@ -30,9 +30,10 @@ import warnings
 
 from cerebralcortex import Kernel
 from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
+from cerebralcortex.test_suite.test_nosql_storage import NoSqlStorageTest
 
 
-class TestCerebralCortex(unittest.TestCase, SqlStorageTest):
+class TestCerebralCortex(unittest.TestCase, NoSqlStorageTest):
 
     def setUp(self):
         """

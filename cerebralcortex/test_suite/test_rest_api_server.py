@@ -29,7 +29,6 @@ import unittest
 
 from cerebralcortex_rest import client
 
-
 class TestCerebralCortex(unittest.TestCase):
 
     auth_token = ""

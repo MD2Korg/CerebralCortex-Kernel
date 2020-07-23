@@ -75,8 +75,6 @@ class RawData(StreamHandler, FileBasedStorage):
         else:
             raise ValueError(self.nosql_store + " is not supported.")
 
-        self.nosql = FileBasedStorage(self)
-
         # if self.config["visualization_storage"]!="none":
         #     self.timeSeriesData = TimeSeriesData(CC)
 

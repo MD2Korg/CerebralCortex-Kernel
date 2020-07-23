@@ -23,32 +23,53 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import pandas as pd
 
 class NoSqlStorageTest:
 
     def test__get_storage_path(self):
-        pass
+        result = self.CC.RawData._get_storage_path()
+        self.assertTrue(len(result)>0)
+
     def test__path_exist(self):
-        pass
+        result = self.CC.RawData._path_exist()
+        self.assertEqual(result, True)
+
     def test__ls_dir(self):
-        pass
+        result = self.CC.RawData._ls_dir()
+        self.assertTrue(len(result)>0)
+
     def test__create_dir(self):
-        pass
-    def test_read_file(self):
-        pass
-    def test_write_file(self):
-        pass
+        result = self.CC.RawData._create_dir()
+        self.assertTrue(len(result)>0)
+
     def test_write_pandas_to_parquet_file(self):
-        pass
+        test_list = [['a','b','c'], ['AA','BB','CC']]
+        pdf  = pd.DataFrame(test_list, columns=['col_A', 'col_B', 'col_C'])
+        result = self.CC.RawData.write_pandas_to_parquet_file(df=pdf, stream_name="pandas-to-parquet-test-stream", stream_version=1, user_id="test_user")
+        self.assertTrue(len(result)>0)
+
     def test_is_study(self):
-        pass
+        result = self.CC.RawData.is_study()
+        self.assertEqual(result, True)
+
     def test_is_stream(self):
-        pass
+        result = self.CC.RawData.is_stream(stream_name=self.stream_name)
+        self.assertEqual(result, True)
+
     def test_get_stream_versions(self):
-        pass
+        result = self.CC.RawData.get_stream_versions(stream_name=self.stream_name)
+        self.assertTrue(len(result)>0)
+
     def test_list_streams(self):
-        pass
-    def test_list_users(self):
-        pass
+        result = self.CC.RawData.list_streams()
+        print("Stream names", result)
+        self.assertTrue(len(result)>0)
+
+    # def test_list_users(self):
+    #     result = self.CC.RawData.list_users(stream_name=self.stream_name)
+    #     self.assertTrue(len(result)>0)
+
     def test_search_stream(self):
-        pass
+        result = self.CC.RawData.search_stream(stream_name="battery")
+        self.assertTrue(len(result)>0)

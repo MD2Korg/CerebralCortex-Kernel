@@ -36,18 +36,17 @@ from pyspark.sql import functions as F
 from cerebralcortex.core.datatypes import DataStream
 
 
-class FileBasedStorage:
+class FileBasedStorage():
 
-    def __init__(self, obj):
+    def __init__(self):
         """
         Constructor
 
         Args:
             obj (object): Object of Data class
         """
-        self.obj = obj
 
-        if self.obj.new_study or self.obj.study_name=="default":
+        if self.new_study or self.study_name=="default":
             self._create_dir()
 
     def _get_storage_path(self, stream_name:str=None, version:int=None, user_id:str=None):
@@ -63,7 +62,7 @@ class FileBasedStorage:
             str: path where data shall be stored/searched
         """
 
-        dirpath = self.obj.data_path+"study="+self.obj.study_name+"/"
+        dirpath = self.data_path+"study="+self.study_name+"/"
 
         if stream_name:
             dirpath += "stream={0}/".format(stream_name)
@@ -95,10 +94,10 @@ class FileBasedStorage:
             bool: true if path exist, false otherwise
         """
         storage_path = self._get_storage_path(stream_name=stream_name, version=version, user_id=user_id)
-        if self.obj.nosql_store == "hdfs":
-            status = self.obj.fs.exists(storage_path)
-        elif self.obj.nosql_store=="filesystem":
-            status = self.obj.fs.path.exists(storage_path)
+        if self.nosql_store == "hdfs":
+            status = self.fs.exists(storage_path)
+        elif self.nosql_store=="filesystem":
+            status = self.fs.path.exists(storage_path)
         else:
             raise Exception("Not supported File system")
 
@@ -120,10 +119,10 @@ class FileBasedStorage:
             list[str]: list of file and/or dir names
         """
         storage_path = self._get_storage_path(stream_name=stream_name, version=version, user_id=user_id)
-        if self.obj.nosql_store == "hdfs":
-            return self.obj.fs.ls(storage_path)
-        elif self.obj.nosql_store=="filesystem":
-            return self.obj.fs.listdir(storage_path)
+        if self.nosql_store == "hdfs":
+            return self.fs.ls(storage_path)
+        elif self.nosql_store=="filesystem":
+            return self.fs.listdir(storage_path)
         else:
             raise Exception("Not supported File system")
 
@@ -138,8 +137,15 @@ class FileBasedStorage:
 
         """
         storage_path = self._get_storage_path(stream_name=stream_name, version=version, user_id=user_id)
-        if not os.path.exists(storage_path):
-            self.obj.fs.mkdir(storage_path)
+        if self.nosql_store == "hdfs":
+            if not self.fs.exists(storage_path):
+                self.fs.mkdir(storage_path)
+            return storage_path
+        elif self.nosql_store=="filesystem":
+            if not os.path.exists(storage_path):
+                self.fs.makedirs(storage_path)
+            return storage_path
+        return None
 
 
     def read_file(self, stream_name:str, version:str="latest", user_id:str=None)->object:
@@ -170,7 +176,7 @@ class FileBasedStorage:
         else:
             data_path = self._get_storage_path(stream_name=stream_name)
 
-        df = self.obj.sparkSession.read.load(data_path)
+        df = self.sparkSession.read.load(data_path)
 
         if version is not None and version!="all":
             df = df.withColumn('version', F.lit(int(version)))
@@ -221,15 +227,12 @@ class FileBasedStorage:
         Returns:
             str: file_name of newly create parquet file
         """
-        data_path = self._get_storage_path(stream_name=stream_name, version=stream_version, user_id=user_id)
 
         table = pa.Table.from_pandas(df, preserve_index=False)
         file_id = str(uuid4().hex) + ".parquet"
 
-        data_path = os.path.join(data_path, file_id)
-        if not self.obj.fs.exists(data_path):
-            self.obj.fs.makedirs(data_path)
-
+        data_path = self._create_dir(stream_name=stream_name, version=stream_version, user_id=user_id)
+        data_path = data_path+file_id
         pq.write_table(table, data_path)
 
         return data_path
@@ -305,7 +308,7 @@ class FileBasedStorage:
         stream_names = []
         all_streams = self._ls_dir()
         for strm in all_streams:
-            stream_names.append(strm.replace(stream_path,"").replace("stream=","").replace("study="+self.obj.study_name, ""))
+            stream_names.append(strm.replace(stream_path,"").replace("stream=","").replace("study="+self.study_name, ""))
         return stream_names
 
     def list_users(self, stream_name)->List[str]:
@@ -328,7 +331,7 @@ class FileBasedStorage:
         all_streams = self._ls_dir()
         for strm in all_streams:
             all_versions = self._ls_dir(stream_name=stream_name)
-            stream_names.append(strm.replace(stream_path,"").replace("stream=","").replace("study="+self.obj.study_name, ""))
+            stream_names.append(strm.replace(stream_path,"").replace("stream=","").replace("study="+self.study_name, ""))
         return stream_names
 
     def search_stream(self, stream_name)->List[str]:
@@ -345,7 +348,7 @@ class FileBasedStorage:
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
         stream_path = self._get_storage_path()
-        all_streams = self._ls_dir(stream_name=stream_name)
+        all_streams = self._ls_dir()
         stream_names = []
         for strm in all_streams:
             if stream_name in strm:
