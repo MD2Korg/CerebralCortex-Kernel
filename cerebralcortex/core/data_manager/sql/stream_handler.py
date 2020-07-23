@@ -146,12 +146,14 @@ class StreamHandler:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> CC.list_streams()
         """
-        rows = self.session.query(Stream.name, Stream.stream_metadata).filter(Stream.study_name == self.study_name).all()
-
+        rows = self.session.query(Stream.stream_metadata).filter(Stream.study_name == self.study_name).all()
+        results = []
         if rows:
-            return rows
+            for row in rows:
+                results.append(Metadata().from_json_file(row.stream_metadata))
+            return results
         else:
-            return []
+            return results
 
     def search_stream(self, stream_name):
         """
@@ -167,11 +169,13 @@ class StreamHandler:
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
         rows = self.session.query(Stream.name).filter(Stream.name.ilike('%'+stream_name+'%')).all()
-
+        results = []
         if rows:
-            return rows
+            for row in rows:
+                results.append(row.name)
+            return results
         else:
-            return []
+            return results
 
     def get_stream_versions(self, stream_name: str) -> list:
         """
@@ -193,10 +197,13 @@ class StreamHandler:
 
         rows = self.session.query(Stream.version).filter((Stream.name==stream_name) & (Stream.study_name==self.study_name)).all()
 
+        results = []
         if rows:
-            return rows
+            for row in rows:
+                results.append(row.version)
+            return results
         else:
-            []
+            return results
 
     def get_stream_metadata_hash(self, stream_name: str) -> List[str]:
         """
@@ -214,12 +221,15 @@ class StreamHandler:
         if not stream_name:
             raise ValueError("stream_name are required field.")
 
-        rows = self.session.query(Stream.metadata_hash).filter((Stream.name == stream_name) & (Stream.study_name==self.study_name)).all()
+        rows = self.session.query(Stream.name, Stream.version, Stream.metadata_hash).filter((Stream.name == stream_name) & (Stream.study_name==self.study_name)).all()
 
+        results = []
         if rows:
-            return rows
+            for row in rows:
+                results.append([row.name, row.version, row.metadata_hash])
+            return results
         else:
-            return []
+            return results
 
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """
@@ -245,18 +255,18 @@ class StreamHandler:
         else:
             raise Exception(str(metadata_hash)+ " does not exist.")
 
-    def get_stream_metadata_by_hash(self, metadata_hash: uuid) -> str:
+    def get_stream_metadata_by_hash(self, metadata_hash: uuid) -> List:
         """
        metadata_hash are unique to each stream version. This reverse look can return the stream name of a metadata_hash.
 
        Args:
            metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.
        Returns:
-           dict: stream metadata and other info related to a stream
+           List: [stream_name, metadata]
        Examples:
            >>> CC = CerebralCortex("/directory/path/of/configs/")
            >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
-           >>> {"name": .....} # stream metadata and other information
+           >>> ["name" .....] # stream metadata and other information
        """
 
         if not metadata_hash:
@@ -266,7 +276,7 @@ class StreamHandler:
             (Stream.metadata_hash == metadata_hash) & (Stream.study_name == self.study_name)).first()
 
         if rows:
-            return rows
+            return [rows.name, rows.stream_metadata]
         else:
             raise Exception(str(metadata_hash)+ " does not exist.")
 

@@ -37,7 +37,7 @@ class SqlStorageTest:
 
 
     def test_01_get_stream_metadata_by_name(self):
-        result = self.CC.SqlData.get_stream_metadata_by_name(self.stream_name)
+        result = self.CC.SqlData.get_stream_metadata_by_name(self.stream_name, version=1)
         self.assertTrue(len(result)>0)
 
     def test_02_list_streams(self):

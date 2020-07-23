@@ -218,7 +218,7 @@ class UserHandler():
             else:
                 return True
 
-    def list_users(self) -> List[dict]:
+    def list_users(self) -> List[list]:
         """
         Get a list of all users part of a study.
 
@@ -227,19 +227,22 @@ class UserHandler():
         Raises:
             ValueError: Study name is a requied field.
         Returns:
-            list[dict]: Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
+            list[list]: Returns empty list if there is no user associated to the study_name and/or study_name does not exist.
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> CC.list_users("mperf")
             >>> [{"76cc444c-4fb8-776e-2872-9472b4e66b16": "nasir_ali"}] # [{user_id, user_name}]
         """
 
-        user = self.session.query(User.user_id, User.username).filter(User.study_name == self.study_name).all()
+        rows = self.session.query(User.user_id, User.username).filter(User.study_name == self.study_name).all()
 
-        if len(user) == 0:
-            return []
+        results = []
+        if rows:
+            for row in rows:
+                results.append([row.user_id, row.username])
+            return results
         else:
-            return user
+            return results
 
     def get_username(self, user_id: str) -> str:
         """

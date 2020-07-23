@@ -33,7 +33,7 @@ from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
 from cerebralcortex.test_suite.test_nosql_storage import NoSqlStorageTest
 
 
-class TestCerebralCortex(unittest.TestCase, NoSqlStorageTest):
+class TestCerebralCortex(unittest.TestCase, SqlStorageTest):
 
     def setUp(self):
         """
