@@ -11,7 +11,7 @@ reqs = [
     'SQLAlchemy-Utils==0.36.6',
     'minio==2.2.4',
     'influxdb==5.2.1',
-    'pyarrow==0.15.1',
+    'pyarrow==0.17.1',
     'pympler==0.5',
     'hdfs3==0.3.0',
     'pyspark==3.0.0',
@@ -19,13 +19,12 @@ reqs = [
     'PyJWT==1.7.1',
     'pandas==1.0.5',
     'texttable',
-    'numpy==1.16.1',
+    'numpy==1.19.1',
     'geopy==1.18.1',
-    'Shapely==1.6.4.post2',
-    'scikit-learn==0.22.2.post1',
-    'plotly==3.10.0',
+    'scikit-learn==0.23.1',
+    'plotly==4.9.0',
     'matplotlib',
-    'cufflinks==0.16',
+    'cufflinks',
     'ipyleaflet',
     'scipy',
     'statsmodels==0.11.1',
@@ -44,7 +43,7 @@ if __name__ == '__main__':
     setup(
         name="cerebralcortex-kernel",
 
-        version='3.1.1r3',
+        version='3.3.0',
 
         package_data={'': ['default.yml']},
 

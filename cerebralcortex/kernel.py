@@ -28,7 +28,8 @@ import uuid
 import warnings
 from datetime import datetime
 from typing import List
-
+from pyspark.sql import functions as F
+from pyspark.sql import types as T
 from cerebralcortex.core.config_manager.config import Configuration
 from cerebralcortex.core.data_manager.raw.data import RawData
 from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
@@ -104,7 +105,7 @@ class Kernel:
 
 
         if not new_study and not self.RawData.is_study():
-            raise Exception("Study name does not exist.")
+            raise Exception("Study name does not exist. If this is a new study set new_study param to True")
 
         if self.config["visualization_storage"] != "none":
             self.TimeSeriesData = TimeSeriesData(self)
@@ -112,13 +113,12 @@ class Kernel:
     ###########################################################################
     #                     RAW DATA MANAGER METHODS                            #
     ###########################################################################
-    def save_stream(self, datastream: DataStream, ingestInfluxDB: bool = False, overwrite=False)->bool:
+    def save_stream(self, datastream: DataStream, overwrite=False)->bool:
         """
         Saves datastream raw data in selected NoSQL storage and metadata in MySQL.
 
         Args:
             datastream (DataStream): a DataStream object
-            ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana
             overwrite (bool): if set to true, whole existing datastream data will be overwritten by new data
         Returns:
             bool: True if stream is successfully stored or throws an exception
@@ -131,7 +131,7 @@ class Kernel:
             >>> ds = DataStream(dataframe, MetaData)
             >>> CC.save_stream(ds)
         """
-        return self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB, overwrite=overwrite)
+        return self.RawData.save_stream(datastream=datastream, overwrite=overwrite)
 
     
     def get_stream(self, stream_name: str, version: str = "latest", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
@@ -156,8 +156,6 @@ class Kernel:
             >>> ds.metadata # an object of MetaData class
             >>> ds.get_metadata(version=1) # get the specific version metadata of a stream
         """
-        if user_id:
-            version = "latest"
 
         return self.RawData.get_stream(stream_name=stream_name, version=version, user_id=user_id, data_type=data_type)
 
@@ -242,11 +240,11 @@ class Kernel:
         Args:
             stream_name (str): name of a stream
         Returns:
-            list[str]: list of all the metadata hashes
+            list: list of all the metadata hashes with name and versions
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.get_stream_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
-            >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
+            >>> [["stream_name", "version", "metadata_hash"]]
         """
         return self.SqlData.get_stream_metadata_hash(stream_name)
 
@@ -259,13 +257,13 @@ class Kernel:
             version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
 
         Returns:
-            list[Metadata]: Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
+            Metadata: Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
         Raises:
             ValueError: stream_name cannot be None or empty.
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.get_stream_metadata_by_name("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST", version=1)
-            >>> [Metadata] # list of MetaData class objects
+            >>> Metadata # list of MetaData class objects
         """
         return self.SqlData.get_stream_metadata_by_name(stream_name, version)
 
@@ -276,11 +274,11 @@ class Kernel:
            Args:
                metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.
            Returns:
-               dict: stream metadata and other info related to a stream
+               List: [stream_name, metadata]
            Examples:
                >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
                >>> CC.get_stream_metadata_by_hash("00ab666c-afb8-476e-9872-6472b4e66b68")
-               >>> {"name": .....} # stream metadata and other information
+               >>> ["name" .....] # stream metadata and other information
        """
         return self.SqlData.get_stream_metadata_by_hash(metadata_hash=metadata_hash)
 
@@ -318,6 +316,7 @@ class Kernel:
     def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict, encrypt_password:bool=False)->bool:
         """
         Create a user in SQL storage if it doesn't exist
+
         Args:
             username (str): Only alphanumeric usernames are allowed with the max length of 25 chars.
             user_password (str): no size limit on password
@@ -332,20 +331,6 @@ class Kernel:
             Exception: if sql query fails
         """
         return self.SqlData.create_user(username, user_password, user_role, user_metadata, user_settings, encrypt_password)
-
-    def delete_user(self, username:str)->bool:
-        """
-        Delete a user record in SQL table
-
-        Args:
-            username: username of a user that needs to be deleted
-        Returns:
-            bool: if user is successfully removed
-        Raises:
-            ValueError: if username param is empty or None
-            Exception: if sql query fails
-        """
-        return self.SqlData.delete_user(username)
 
     def is_user(self, user_id: str = None, user_name: str = None) -> bool:
         """
@@ -537,15 +522,36 @@ class Kernel:
         """
         return self.SqlData.encrypt_user_password(user_password)
 
-    def read_file(self, fpath, format):
+    # ~~~~~~~~~~~~~~~~~~~~      Data Import ~~~~~~~~~~~~~~~~~~~~~~~ #
+
+    def read_csv(self, file_path, header:bool=False, column_names:list=[], timestamp_column_index:int=0, timein:str="milliseconds", metadata:Metadata=None)->DataStream:
         """
         
         Args:
-            fpath (str): path of the file 
-            format (str): string, name of the data source, supported formats are 'csv','json', and 'parquet'.
+            file_path (str): path of the file
+            header (bool): set it to True if csv contains header column
+            column_names (list[str]): list of column names
+            timestamp_column_index (int): index of the timestamp column name
+            timein (str): if timestamp is epoch time, provide whether it is in milliseconds or seconds
+            metadata (Metadata): metadata object for the csv file
 
         Returns:
             DataStream object
         """
-        df = self.sparkSession.read.format(format).load(fpath)
-        return DataStream(data=df, metadata=Metadata())
+        if timein not in ["milliseconds", "seconds"]:
+            raise Exception("timestamp can only be in milliseconds or seconds.")
+
+        if column_names:
+            df = self.sparkSession.read.csv(file_path, inferSchema=True, header=header).toDF(*column_names)
+        else:
+            df = self.sparkSession.read.csv(file_path, inferSchema=True, header=header)
+
+        if timein=="milliseconds" and str(df.schema[timestamp_column_index].dataType)!="TimestampType":
+            df = df.withColumn("timestamp", df[timestamp_column_index]/1000)
+
+        parsed_df  = df.withColumn('timestamp', df[timestamp_column_index].cast(dataType=T.TimestampType()))
+
+        if isinstance(metadata, Metadata) and metadata:
+            return DataStream(data=parsed_df, metadata=metadata)
+        else:
+            return DataStream(data=parsed_df, metadata=Metadata())

@@ -113,14 +113,13 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    def save_stream(self, datastream, overwrite=False, ingestInfluxDB=False, publishOnKafka=False)->bool:
+    def save_stream(self, datastream, overwrite=False)->bool:
         """
         Saves datastream raw data in selected NoSQL storage and metadata in MySQL.
 
         Args:
             datastream (DataStream): a DataStream object
             overwrite (bool): if set to true, whole existing datastream data will be overwritten by new data
-            ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana
         Returns:
             bool: True if stream is successfully stored or throws an exception
         Todo:
@@ -188,6 +187,7 @@ class StreamHandler():
             else:
                 data = data.drop('version')
         return data
+
     def __update_data_desciptor(self, data, metadata):
         """
         Read pyspark dataframe clumns and add each column name and type to datadescriptor field

@@ -122,8 +122,7 @@ def gen_location_datastream(user_id, stream_name) -> object:
         DataStream: datastream object of gps location stream with its metadata
 
     """
-    column_name = ["timestamp", "localtime", "user", "version", "latitude", "longitude", "altitude", "speed", "bearing",
-                   "accuracy"]
+    column_name = ["timestamp", "localtime", "user", "version", "latitude", "longitude", "altitude", "speed", "bearing","accuracy"]
     sample_data = []
     timestamp = datetime(2019, 9, 1, 11, 34, 59)
     sqlContext = get_or_create_sc("sqlContext")

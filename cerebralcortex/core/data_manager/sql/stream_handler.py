@@ -117,7 +117,7 @@ class StreamHandler:
             version (int): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
 
         Returns:
-            list (Metadata): Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
+            Metadata: Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
         Raises:
             ValueError: stream_name cannot be None or empty.
         Examples:
@@ -202,18 +202,18 @@ class StreamHandler:
         else:
             return results
 
-    def get_stream_metadata_hash(self, stream_name: str) -> List[str]:
+    def get_stream_metadata_hash(self, stream_name: str) -> List:
         """
         Get all the metadata_hash associated with a stream name.
 
         Args:
             stream_name (str): name of a stream
         Returns:
-            list[str]: list of all the metadata hashes
+            list: list of all the metadata hashes with name and versions
         Examples:
             >>> CC = CerebralCortex("/directory/path/of/configs/")
             >>> CC.get_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
-            >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
+            >>> [["stream_name", "version", "metadata_hash"]]
         """
         if not stream_name:
             raise ValueError("stream_name are required field.")

@@ -95,6 +95,20 @@ class Metadata():
         self.data_descriptor.append(dd)
         return self
 
+    def get_dataDescriptor(self, name):
+        """
+        get data descriptor by name
+
+        Args:
+            name (str):
+
+        Returns:
+            DataDescriptor object
+        """
+        for dd in self.data_descriptor:
+            if dd.name == name:
+                return dd
+
     def add_input_stream(self, input_stream:str):
         """
         Add input streams that were used to derive a new stream
