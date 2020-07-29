@@ -27,7 +27,7 @@ import json
 import os
 import unittest
 
-from cerebralcortex_restclient import client
+from cerebralcortex_rest import client
 
 class TestCerebralCortex(unittest.TestCase):
 
@@ -137,8 +137,8 @@ class TestCerebralCortex(unittest.TestCase):
         result = client.get_objects_list_in_bucket(url="http://localhost:8089/api/v3/bucket/default", auth_token=self.__class__.auth_token)
         self.assertEqual(result.status_code, 200)
 
-        result = client.get_objects_stats(url="http://localhost:8089/api/v3/bucket/stats/default/test_bucket/test_obj.zip", auth_token=self.__class__.auth_token)
+        result = client.get_objects_stats(url="http://localhost:8089/api/v3/bucket/stats/default/test_bucket/some_obj.zip", auth_token=self.__class__.auth_token)
         self.assertEqual(result.status_code, 200)
 
-        result = client.get_object(url="http://localhost:8089/api/v3/bucket/default/test_bucket/test_obj.zip", auth_token=self.__class__.auth_token)
+        result = client.get_object(url="http://localhost:8089/api/v3/bucket/default/test_bucket/some_obj.zip", auth_token=self.__class__.auth_token)
         self.assertEqual(result.status_code, 200)

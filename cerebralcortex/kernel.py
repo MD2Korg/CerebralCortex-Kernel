@@ -28,7 +28,6 @@ import uuid
 import warnings
 from datetime import datetime
 from typing import List
-from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from cerebralcortex.core.config_manager.config import Configuration
 from cerebralcortex.core.data_manager.raw.data import RawData
@@ -58,7 +57,11 @@ class Kernel:
         Raises:
             ValueError: If configuration_filepath is None or empty.
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC = Kernel(cc_configs="default", study_name="default")
+            >>> # if you want to change any of the configs, pass cc_configs as dict with new configurations
+            >>> updated_cc_configs = {"nosql_storage": "filesystem", "filesystem_path": "/path/to/store/data/"}
+            >>> CC = Kernel(cc_configs=updated_cc_configs, study_name="default")
+            >>> # for complete configs, have a look at default configs at: https://github.com/MD2Korg/CerebralCortex-Kernel/blob/3.3/cerebralcortex/core/config_manager/default.yml
         """
         if not configs_dir_path and not cc_configs:
             raise ValueError("Please provide configs_dir_path or cc_configs.")
@@ -163,22 +166,22 @@ class Kernel:
     #                     TIME SERIES DATA MANAGER METHODS                    #
     ###########################################################################
 
-    def save_data_to_influxdb(self, datastream: DataStream):
-        """
-        Save data stream to influxdb only for visualization purposes.
-
-        Args:
-            datastream (DataStream): a DataStream object
-        Returns:
-            bool: True if data is ingested successfully or False otherwise
-        Todo:
-            This needs to be updated with the new structure. Should metadata be stored or not?
-        Example:
-            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
-            >>> ds = DataStream(dataframe, MetaData)
-            >>> CC.save_data_to_influxdb(ds)
-        """
-        self.TimeSeriesData.save_data_to_influxdb(datastream)
+    # def save_data_to_influxdb(self, datastream: DataStream):
+    #     """
+    #     Save data stream to influxdb only for visualization purposes.
+    #
+    #     Args:
+    #         datastream (DataStream): a DataStream object
+    #     Returns:
+    #         bool: True if data is ingested successfully or False otherwise
+    #     Todo:
+    #         This needs to be updated with the new structure. Should metadata be stored or not?
+    #     Example:
+    #         >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+    #         >>> ds = DataStream(dataframe, MetaData)
+    #         >>> CC.save_data_to_influxdb(ds)
+    #     """
+    #     self.TimeSeriesData.save_data_to_influxdb(datastream)
 
     ###########################################################################
     #               SQL DATA MANAGER METHODS                                  #
@@ -526,7 +529,7 @@ class Kernel:
 
     def read_csv(self, file_path, header:bool=False, column_names:list=[], timestamp_column_index:int=0, timein:str="milliseconds", metadata:Metadata=None)->DataStream:
         """
-        
+        Reads a csv file (compressed or uncompressed), parse it, convert it into CC DataStream object format and returns it
         Args:
             file_path (str): path of the file
             header (bool): set it to True if csv contains header column

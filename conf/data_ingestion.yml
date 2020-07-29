@@ -17,7 +17,7 @@ data_ingestion:
   ingestion_type: "offline"
 
   # if ingestion_type is set to "offline" then please specify hard-drive path where all the raw incoming data should be stored
-  raw_data_path: "/home/ali/IdeaProjects/MD2K_DATA/mcontain/raw/"
+  raw_data_path: "/Users/ali/cc_data/"
 
 
 #########################################################################################
