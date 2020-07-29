@@ -91,7 +91,7 @@ def gen_phone_battery_metadata()->Metadata:
         Metadata: metadata of phone battery stream
     """
     stream_metadata = Metadata()
-    stream_metadata.set_description("this is a test-stream.").set_name("BATTERY--org.md2k.phonesensor--PHONE") \
+    stream_metadata.set_study_name("default").set_description("this is a test-stream.").set_name("BATTERY--org.md2k.phonesensor--PHONE") \
         .add_dataDescriptor(
         DataDescriptor().set_name("timestamp").set_type("datetime").set_attribute("description", "UTC timestamp")) \
         .add_dataDescriptor(

@@ -67,7 +67,6 @@ class SqlStorageTest:
     def test_07_get_stream_metadata_by_hash(self):
         result = self.CC.SqlData.get_stream_metadata_by_hash(self.metadata_hash)
         self.assertTrue(len(result) > 0)
-        self.assertEqual(result.name, self.stream_name)
 
     def test_08_is_stream(self):
         result = self.CC.SqlData.is_stream(self.stream_name)

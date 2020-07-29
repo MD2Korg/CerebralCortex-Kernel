@@ -40,7 +40,7 @@ class Stream(Base):
     stream_metadata=Column('stream_metadata', JSON)
     creation_date = Column('creation_date', Date)
 
-    __table_args__ = (UniqueConstraint('name','study_name', name='unique_stream_study_key'),)
+    __table_args__ = (UniqueConstraint('name','study_name', 'metadata_hash', name='unique_stream_study_key'),)
 
     def __init__(self, name, version, study_name, metadata_hash, stream_metadata):
         self.name = name

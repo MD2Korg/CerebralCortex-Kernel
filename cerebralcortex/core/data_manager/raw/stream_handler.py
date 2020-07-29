@@ -141,6 +141,7 @@ class StreamHandler():
         if metadata:
             stream_name = metadata.name # only supports one data-stream storage at a time
             stream_name = stream_name.lower()
+            metadata.set_study_name(self.study_name)
             if not stream_name:
                 raise ValueError("Stream name cannot be empty/None. Check metadata.")
             #metadata = self.__update_data_desciptor(data=data, metadata=metadata)

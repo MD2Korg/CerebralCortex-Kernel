@@ -74,7 +74,7 @@ class UserHandler():
                     user_settings=user_settings, user_metadata=user_metadata)
 
         try:
-            self.session.merge(user)
+            self.session.add(user)
             self.session.commit()
             return True
         except Exception as e:

@@ -52,9 +52,8 @@ class StreamHandler:
         if isinstance(metadata_obj, Metadata):
             metadata_hash = metadata_obj.get_hash()
             metadata_obj = metadata_obj.to_json()
-
         else:
-            metadata_hash = Metadata().get_hash_by_json(metadata_obj)
+            raise Exception("Metadata is not type of MetaData object class.")
 
         stream_name = metadata_obj.get("name")
 

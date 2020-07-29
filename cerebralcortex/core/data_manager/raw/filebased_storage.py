@@ -298,7 +298,7 @@ class FileBasedStorage():
         Get all the available stream names
 
         Returns:
-            List[str]: list of available streams metadata
+            List[str]: list of available streams names
 
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
@@ -311,28 +311,26 @@ class FileBasedStorage():
             stream_names.append(strm.replace(stream_path,"").replace("stream=","").replace("study="+self.study_name, ""))
         return stream_names
 
-    def list_users(self, stream_name)->List[str]:
+    def list_users(self, stream_name:str, version:int=1)->List[str]:
         """
         Get all the available stream names with metadata
 
         stream_name (str): name of a stream
+        version (int): version of a stream
 
         Returns:
-            List[Metadata]: list of available streams metadata
+            List[str]: list of available user-ids for a giving stream version
 
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
-            >>> CC.list_streams()
+            >>> CC.list_users()
         """
-
-        stream_path = self._get_storage_path(stream_name=stream_name)
-        stream_names = []
+        stream_path = self._get_storage_path(stream_name=stream_name, version=version)
+        all_users = self._ls_dir(stream_name=stream_name, version=version)
         user_ids = []
-        all_streams = self._ls_dir()
-        for strm in all_streams:
-            all_versions = self._ls_dir(stream_name=stream_name)
-            stream_names.append(strm.replace(stream_path,"").replace("stream=","").replace("study="+self.study_name, ""))
-        return stream_names
+        for usr in all_users:
+            user_ids.append(usr.replace(stream_path,"").replace("user=","").replace("study="+self.study_name, ""))
+        return user_ids
 
     def search_stream(self, stream_name)->List[str]:
         """
