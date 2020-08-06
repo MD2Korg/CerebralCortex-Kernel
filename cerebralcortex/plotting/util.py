@@ -36,7 +36,7 @@ def ds_to_pdf(ds, user_id=None) -> pd.DataFrame:
         pandas.DataFrame
     """
     if user_id:
-        ds = ds.filter_user(user_id=user_id)
+        ds = ds.filter_user(user_id)
 
     pdf = ds._data.toPandas()
     if "timestamp" in pdf.columns:
