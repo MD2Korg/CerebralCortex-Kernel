@@ -66,12 +66,9 @@ class DataStream(DataFrame):
     def writeStream(self):
         raise NotImplementedError
 
-    def get_metadata(self, version: int = None) -> Metadata:
+    def get_metadata(self) -> Metadata:
         """
         get stream metadata
-
-        Args:
-            version (int): version of a stream
 
         Returns:
             Metadata: single version of a stream
@@ -79,12 +76,8 @@ class DataStream(DataFrame):
             Exception: if specified version is not available for the stream
 
         """
-        for md in self._metadata:
-            if md.version == version:
-                return md
-            else:
-                raise Exception("Version '" + str(version) + "' is not available for this stream.")
-        return None
+
+        return self._metadata
 
     @property
     def metadata(self):
