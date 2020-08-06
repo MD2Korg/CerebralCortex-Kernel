@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
+import os
 import uuid
 from typing import List
 
@@ -39,7 +40,7 @@ class Metadata():
         """
         self.name = None
         self.description = ""
-        self.study_name = ""
+        self.study_name = os.getenv("STUDY_NAME")
         self.metadata_hash = None
         self.input_streams = []
         self.annotations = []

@@ -70,6 +70,7 @@ class Kernel:
 
         self.config_filepath = configs_dir_path
         self.study_name = study_name
+        os.environ["STUDY_NAME"] = study_name
         self.config = Configuration(configs_dir_path, cc_configs).config
 
         if enable_spark:
