@@ -1,4 +1,4 @@
-# Copyright (c) 2020, MD2K Center of Excellence
+# Copyright (c) 2019, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -23,32 +23,151 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-def plot_stress_pie(ds, x_axis_column="stresser_main"):
-    pdf = ds._data.toPandas()
-    pdf = ds._sort_values(pdf)
-    ds._stress_plots.plot_pie(pdf, x_axis_column)
+import pandas as pd
+import plotly.figure_factory as ff
+import plotly.graph_objs as go
+from plotly.offline import iplot
+from cerebralcortex.plotting.util import ds_to_pdf
 
+def plot_pie(ds, group_by_column="stresser_main"):
+    pdf = ds_to_pdf(ds)
+    pdf=pdf.groupby(str(group_by_column), as_index=False).agg('count')
+    labels=[]
+    values=[]
+    for index, row in pdf.iterrows():
+        labels.append(row["stresser_main"])
+        values.append(row["density"])
 
-def plot_stress_gantt(ds):
-    pdf = ds._data.toPandas()
-    pdf = ds._sort_values(pdf)
-    ds._stress_plots.plot_gantt(pdf)
+    trace = go.Pie(labels=labels, values=values)
+    iplot([trace], filename='stresser_pie_chart')
 
+def plot_gantt(ds):
+    pdf = ds_to_pdf(ds)
+    data=[]
+    for index, row in pdf.iterrows():
+        data.append(dict(Task=row["stresser_sub"], Start=row["start_time"], Finish=row["end_time"], Resource=row["stresser_main"]))
 
-def plot_stress_sankey(ds, cat_cols=["stresser_main", "stresser_sub"], value_cols='density',
-                       title="Stressers' Sankey Diagram"):
-    pdf = ds._data.toPandas()
-    pdf = ds._sort_values(pdf)
-    ds._stress_plots.plot_sankey(df=pdf, cat_cols=cat_cols, value_cols=value_cols, title=title)
+    fig = ff.create_gantt(data, index_col='Resource', title='Stressers, Main & Sub Categories',
+                          show_colorbar=True, bar_width=0.8, showgrid_x=True, showgrid_y=True)
+    fig['layout']['yaxis'].update({"showticklabels":False})
+    iplot(fig, filename='gantt-hours-minutes')
 
+def plot_sankey(ds, cat_cols=["stresser_main", "stresser_sub"], value_cols='density',
+                title="Stressers' Sankey Diagram"):
+    pdf = ds_to_pdf(ds)
+    labelList = []
 
-def plot_stress_bar(ds, x_axis_column="stresser_main"):
-    pdf = ds._data.toPandas()
-    pdf = ds._sort_values(pdf)
-    ds._stress_plots.plot_bar(pdf, x_axis_column=x_axis_column)
+    for catCol in cat_cols:
+        labelListTemp =  list(set(pdf[catCol].values))
+        labelList = labelList + labelListTemp
 
+    # remove duplicates from labelList
+    labelList = list(dict.fromkeys(labelList))
 
-def plot_stress_comparison(ds, x_axis_column="stresser_main", usr_id=None, compare_with="all"):
-    pdf = ds._data.toPandas()
-    pdf = ds._sort_values(pdf)
-    ds._stress_plots.plot_comparison(pdf, x_axis_column=x_axis_column, usr_id=usr_id, compare_with=compare_with)
+    # transform df into a source-target pair
+    for i in range(len(cat_cols)-1):
+        if i==0:
+            sourceTargetDf = pdf[[cat_cols[i],cat_cols[i+1],value_cols]]
+            sourceTargetDf.columns = ['source','target','density']
+        else:
+            tempDf = pdf[[cat_cols[i],cat_cols[i+1],value_cols]]
+            tempDf.columns = ['source','target','density']
+            sourceTargetDf = pd.concat([sourceTargetDf,tempDf])
+        sourceTargetDf = sourceTargetDf.groupby(['source','target']).agg({'density':'mean'}).reset_index()
+
+    # add index for source-target pair
+    sourceTargetDf['sourceID'] = sourceTargetDf['source'].apply(lambda x: labelList.index(x))
+    sourceTargetDf['targetID'] = sourceTargetDf['target'].apply(lambda x: labelList.index(x))
+
+    # creating the sankey diagram
+    data = dict(
+        type='sankey',
+        node = dict(
+            pad = 15,
+            thickness = 20,
+            line = dict(
+                color = "black",
+                width = 0.5
+            ),
+            label = labelList
+        ),
+        link = dict(
+            source = sourceTargetDf['sourceID'],
+            target = sourceTargetDf['targetID'],
+            value = sourceTargetDf['density']
+        )
+    )
+
+    layout =  dict(
+        title = title,
+        font = dict(
+            size = 10
+        )
+    )
+
+    fig = dict(data=[data], layout=layout)
+    iplot(fig, validate=False)
+
+def plot_bar(ds, x_axis_column="stresser_main"):
+    pdf = ds_to_pdf(ds)
+    grouped_pdf=pdf.groupby(["user",x_axis_column], as_index=False).agg('mean')
+    user_ids = pdf.groupby("user", as_index=False).last()
+
+    data = []
+
+    for index, row in user_ids.iterrows():
+        sub=grouped_pdf.loc[grouped_pdf['user'] == row["user"]]
+        sub.sort_values(x_axis_column)
+
+        data.append(go.Bar({
+            'y': sub["density"],
+            'x': sub[x_axis_column],
+            'name': row["user"]
+        }))
+
+    layout = go.Layout(
+        title="All Participants' Stress Levels By Each Stressors",
+        yaxis=dict(
+            title='Average Stress Density'
+        )
+    )
+    fig = go.Figure(data=data, layout=layout)
+    iplot(fig, filename='basic-line')
+
+def plot_comparison(ds, x_axis_column="stresser_main", usr_id=None, compare_with="all"):
+    pdf = ds_to_pdf(ds)
+    data = []
+    if usr_id:
+        usr_data = pdf.loc[pdf['user'] == str(usr_id)]
+
+        if compare_with =="all" or compare_with is None:
+            compare_with_data = pdf.loc[pdf['user'] != str(usr_id)]
+        else:
+            compare_with_data = pdf.loc[pdf['user'] == str(compare_with)]
+
+        grouped_user_pdf=usr_data.groupby([x_axis_column], as_index=False).agg('mean')
+        grouped_compare_with_pdf=compare_with_data.groupby([x_axis_column], as_index=False).agg('mean')
+
+        data.append(go.Bar({
+            'y': grouped_user_pdf["density"],
+            'x': grouped_user_pdf[x_axis_column],
+            'name': usr_id
+        }))
+        if compare_with=="all":
+            compare_with = "All Participants"
+        data.append(go.Bar({
+            'y': grouped_compare_with_pdf["density"],
+            'x': grouped_compare_with_pdf[x_axis_column],
+            'name': compare_with
+        }))
+
+        layout = go.Layout(
+            title="Comparison of Stress Levels Amongst Participants",
+            yaxis=dict(
+                title='Average Stress Density'
+            )
+        )
+        fig = go.Figure(data=data, layout=layout)
+        iplot(fig, filename='basic-line')
+    else:
+        raise Exception("usr_id cannot be None/Blank.")

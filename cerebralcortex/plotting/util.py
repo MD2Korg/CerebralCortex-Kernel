@@ -23,42 +23,20 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import cufflinks as cf
-import plotly.graph_objs as go
-from plotly.offline import iplot, init_notebook_mode
+import pandas as pd
 
 
-class BasicPlots():
-    def remove_cols(self, pdf, cols=["user", "version", "timestamp", "localtimestamp", "localtime", "window"]):
-        for col in cols:
-            if col in pdf.columns:
-                del pdf[col]
-        return pdf
+def ds_to_pdf(ds) -> pd.DataFrame:
+    """
+    converts DataStream object into pandas dataframe
+    Args:
+        ds (DataStream):
 
-    def timeseries(self, pdf, y_axis_column=None):
-        cf.set_config_file(offline=True, world_readable=True, theme='ggplot')
-        init_notebook_mode(connected=True)
-        ts = pdf['timestamp']
-        pdf = self.remove_cols(pdf)
-        if y_axis_column:
-            data = [go.Scatter(x=ts, y=pdf[str(y_axis_column)])]
-            iplot(data, filename = 'time-series-plot')
-        else:
-            iplot([{
-                'x': ts,
-                'y': pdf[col],
-                'name': col
-            }  for col in pdf.columns], filename='time-series-plot')
+    Returns:
+        pandas.DataFrame
+    """
 
-    def hist(self, pdf, x_axis_column=None):
-        cf.set_config_file(offline=True, world_readable=True, theme='ggplot')
-        init_notebook_mode(connected=True)
-        pdf = self.remove_cols(pdf)
-        if x_axis_column:
-            data = [go.Histogram(x=pdf[str(x_axis_column)])]
-            iplot(data, filename='basic histogram')
-        else:
-            pdf.iplot(kind='histogram', filename='basic histogram')
-
-
-
+    pdf = ds._data.toPandas()
+    if "timestamp" in pdf.columns:
+        return pdf.sort_values('timestamp')
+    return pdf

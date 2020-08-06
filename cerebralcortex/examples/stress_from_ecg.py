@@ -54,7 +54,7 @@ if __name__ == "__main__":
     stress_episodes = stress_from_ecg(ecg_data, sensor_name=sensor_name, Fs=Fs, model_path=model_path)
 
     # show results
-    stress_episodes.show(truncate=False)
+    stress_episodes.explain(True)
 
     # Store results
     # CC.save_stream(clusterz)
