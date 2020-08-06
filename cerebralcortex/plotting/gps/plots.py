@@ -26,16 +26,17 @@
 from ipyleaflet import Map, Marker, MarkerCluster
 from cerebralcortex.plotting.util import ds_to_pdf
 
-def plot_gps_clusters(ds, zoom=5):
+def plot_gps_clusters(ds, user_id:str, zoom=5):
     """
     Plots GPS coordinates
 
     Args:
         ds (DataStream): datastream object
+        user_id (str): uuid of a user
         zoom: min 0 and max 100, zoom map
 
     """
-    pdf = ds_to_pdf(ds)
+    pdf = ds_to_pdf(ds, user_id)
 
     marker_list = []
     center = None

@@ -29,8 +29,15 @@ import plotly.graph_objs as go
 from plotly.offline import iplot
 from cerebralcortex.plotting.util import ds_to_pdf
 
-def plot_pie(ds, group_by_column="stresser_main"):
-    pdf = ds_to_pdf(ds)
+def plot_pie(ds, user_id, group_by_column="stresser_main"):
+    """
+
+    Args:
+        ds:
+        user_id:
+        group_by_column:
+    """
+    pdf = ds_to_pdf(ds, user_id)
     pdf=pdf.groupby(str(group_by_column), as_index=False).agg('count')
     labels=[]
     values=[]
@@ -41,8 +48,14 @@ def plot_pie(ds, group_by_column="stresser_main"):
     trace = go.Pie(labels=labels, values=values)
     iplot([trace], filename='stresser_pie_chart')
 
-def plot_gantt(ds):
-    pdf = ds_to_pdf(ds)
+def plot_gantt(ds, user_id):
+    """
+
+    Args:
+        ds:
+        user_id:
+    """
+    pdf = ds_to_pdf(ds, user_id)
     data=[]
     for index, row in pdf.iterrows():
         data.append(dict(Task=row["stresser_sub"], Start=row["start_time"], Finish=row["end_time"], Resource=row["stresser_main"]))
@@ -52,9 +65,18 @@ def plot_gantt(ds):
     fig['layout']['yaxis'].update({"showticklabels":False})
     iplot(fig, filename='gantt-hours-minutes')
 
-def plot_sankey(ds, cat_cols=["stresser_main", "stresser_sub"], value_cols='density',
+def plot_sankey(ds, user_id, cat_cols=["stresser_main", "stresser_sub"], value_cols='density',
                 title="Stressers' Sankey Diagram"):
-    pdf = ds_to_pdf(ds)
+    """
+
+    Args:
+        ds:
+        user_id:
+        cat_cols:
+        value_cols:
+        title:
+    """
+    pdf = ds_to_pdf(ds, user_id)
     labelList = []
 
     for catCol in cat_cols:
@@ -109,6 +131,13 @@ def plot_sankey(ds, cat_cols=["stresser_main", "stresser_sub"], value_cols='dens
     iplot(fig, validate=False)
 
 def plot_bar(ds, x_axis_column="stresser_main"):
+    """
+
+    Args:
+        ds:
+        user_id:
+        x_axis_column:
+    """
     pdf = ds_to_pdf(ds)
     grouped_pdf=pdf.groupby(["user",x_axis_column], as_index=False).agg('mean')
     user_ids = pdf.groupby("user", as_index=False).last()
@@ -135,6 +164,14 @@ def plot_bar(ds, x_axis_column="stresser_main"):
     iplot(fig, filename='basic-line')
 
 def plot_comparison(ds, x_axis_column="stresser_main", usr_id=None, compare_with="all"):
+    """
+
+    Args:
+        ds:
+        x_axis_column:
+        usr_id:
+        compare_with:
+    """
     pdf = ds_to_pdf(ds)
     data = []
     if usr_id:

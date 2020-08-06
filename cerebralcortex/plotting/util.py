@@ -26,7 +26,7 @@
 import pandas as pd
 
 
-def ds_to_pdf(ds) -> pd.DataFrame:
+def ds_to_pdf(ds, user_id=None) -> pd.DataFrame:
     """
     converts DataStream object into pandas dataframe
     Args:
@@ -35,6 +35,8 @@ def ds_to_pdf(ds) -> pd.DataFrame:
     Returns:
         pandas.DataFrame
     """
+    if user_id:
+        ds = ds.filter_user(user_id=user_id)
 
     pdf = ds._data.toPandas()
     if "timestamp" in pdf.columns:

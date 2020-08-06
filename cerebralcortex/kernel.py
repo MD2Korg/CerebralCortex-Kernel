@@ -547,13 +547,16 @@ class Kernel:
 
         if column_names:
             df = self.sparkSession.read.csv(file_path, inferSchema=True, header=header).toDF(*column_names)
+
         else:
             df = self.sparkSession.read.csv(file_path, inferSchema=True, header=header)
 
-        if timein=="milliseconds" and str(df.schema[timestamp_column_index].dataType)!="TimestampType":
-            df = df.withColumn("timestamp", df[timestamp_column_index]/1000)
+        timestamp_column_name = df.schema[timestamp_column_index].name
 
-        parsed_df  = df.withColumn('timestamp', df[timestamp_column_index].cast(dataType=T.TimestampType()))
+        if timein=="milliseconds" and str(df.schema[timestamp_column_index].dataType)!="TimestampType":
+            df = df.withColumn(timestamp_column_name, df[timestamp_column_name]/1000)
+
+        parsed_df  = df.withColumn(timestamp_column_name, df[timestamp_column_name].cast(dataType=T.TimestampType()))
 
         if isinstance(metadata, Metadata) and metadata:
             return DataStream(data=parsed_df, metadata=metadata)

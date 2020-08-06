@@ -30,15 +30,16 @@ from plotly.offline import iplot, init_notebook_mode
 from cerebralcortex.plotting.util import ds_to_pdf, _remove_cols
 from cerebralcortex.core.datatypes.datastream import DataStream
 
-def timeseries(ds: DataStream, y_axis_column:str=None):
+def plot_timeseries(ds: DataStream, user_id:str, y_axis_column:str=None):
     """
     line plot of timeseries data
 
     Args:
         ds (DataStream):
+        user_id (str): uuid of a user
         y_axis_column (str): x axis column is hard coded as timestamp column. only y-axis can be passed as a param
     """
-    pdf = ds_to_pdf(ds)
+    pdf = ds_to_pdf(ds, user_id)
     cf.set_config_file(offline=True, world_readable=True, theme='ggplot')
     init_notebook_mode(connected=True)
     ts = pdf['timestamp']
@@ -53,16 +54,17 @@ def timeseries(ds: DataStream, y_axis_column:str=None):
             'name': col
         }  for col in pdf.columns], filename='time-series-plot')
 
-def hist(ds, x_axis_column=None):
+def plot_hist(ds, user_id:str, x_axis_column=None):
     """
     histogram plot of timeseries data
 
     Args:
         ds (DataStream):
+        user_id (str): uuid of a user
         x_axis_column (str): x axis column of the plot
     """
 
-    pdf = ds_to_pdf(ds)
+    pdf = ds_to_pdf(ds, user_id)
     cf.set_config_file(offline=True, world_readable=True, theme='ggplot')
     init_notebook_mode(connected=True)
     pdf = _remove_cols(pdf)
