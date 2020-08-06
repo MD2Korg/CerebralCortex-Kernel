@@ -27,7 +27,7 @@ import cufflinks as cf
 import pandas as pd
 import plotly.graph_objs as go
 from plotly.offline import iplot, init_notebook_mode
-from cerebralcortex.plotting.util import ds_to_pdf
+from cerebralcortex.plotting.util import ds_to_pdf, _remove_cols
 from cerebralcortex.core.datatypes.datastream import DataStream
 
 def timeseries(ds: DataStream, y_axis_column:str=None):
@@ -71,20 +71,3 @@ def hist(ds, x_axis_column=None):
         iplot(data, filename='basic histogram')
     else:
         pdf.iplot(kind='histogram', filename='basic histogram')
-
-
-def _remove_cols(pdf:pd.DataFrame, cols:list=["user", "version", "timestamp", "localtimestamp", "localtime", "window"]):
-    """
-    remove DataFrame columns
-
-    Args:
-        pdf (pd.DataFrame):
-        cols (list):
-
-    Returns:
-
-    """
-    for col in cols:
-        if col in pdf.columns:
-            del pdf[col]
-    return pdf

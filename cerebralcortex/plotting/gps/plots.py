@@ -24,7 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from ipyleaflet import Map, Marker, MarkerCluster
-
+from cerebralcortex.plotting.util import ds_to_pdf
 
 def plot_gps_clusters(ds, zoom=5):
     """
@@ -35,8 +35,7 @@ def plot_gps_clusters(ds, zoom=5):
         zoom: min 0 and max 100, zoom map
 
     """
-    pdf = ds._data.toPandas()
-    pdf = ds._sort_values(pdf)
+    pdf = ds_to_pdf(ds)
 
     marker_list = []
     center = None

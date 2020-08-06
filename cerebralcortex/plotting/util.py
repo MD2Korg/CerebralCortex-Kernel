@@ -40,3 +40,19 @@ def ds_to_pdf(ds) -> pd.DataFrame:
     if "timestamp" in pdf.columns:
         return pdf.sort_values('timestamp')
     return pdf
+
+def _remove_cols(pdf:pd.DataFrame, cols:list=["user", "version", "timestamp", "localtimestamp", "localtime", "window"]):
+    """
+    remove DataFrame columns
+
+    Args:
+        pdf (pd.DataFrame):
+        cols (list):
+
+    Returns:
+
+    """
+    for col in cols:
+        if col in pdf.columns:
+            del pdf[col]
+    return pdf
