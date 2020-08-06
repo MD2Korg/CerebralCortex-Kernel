@@ -67,6 +67,7 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
     def get_metadata():
         stream_metadata = Metadata()
         stream_metadata.set_name(stream_name).set_description("Chest ECG quality 3 seconds") \
+            .add_input_stream(ecg.metadata.get_name()) \
             .add_dataDescriptor(DataDescriptor().set_name("timestamp").set_type("datetime")) \
             .add_dataDescriptor(DataDescriptor().set_name("localtime").set_type("datetime")) \
             .add_dataDescriptor(DataDescriptor().set_name("version").set_type("int")) \

@@ -49,5 +49,5 @@ def plot_gps_clusters(ds, user_id:str, zoom=5):
     marker_cluster = MarkerCluster(
         markers=(marker_list)
     )
-    m.add_layer(marker_cluster);
+    m.add_layer(marker_cluster)
     return m

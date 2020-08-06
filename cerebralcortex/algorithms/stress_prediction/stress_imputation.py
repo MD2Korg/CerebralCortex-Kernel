@@ -40,7 +40,7 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataD
     ModuleMetadata
 
 
-def get_metadata(stress_imputed_data, output_stream_name):
+def get_metadata(stress_imputed_data, output_stream_name, input_stream_name):
     """
     generate metadata for a datastream.
 
@@ -53,7 +53,8 @@ def get_metadata(stress_imputed_data, output_stream_name):
     """
     schema = stress_imputed_data.schema
     stream_metadata = Metadata()
-    stream_metadata.set_name(output_stream_name).set_description("stress imputed")
+    stream_metadata.set_name(output_stream_name).set_description("stress imputed")\
+        .add_input_stream(input_stream_name)
     for field in schema.fields:
         stream_metadata.add_dataDescriptor(
             DataDescriptor().set_name(str(field.name)).set_type(str(field.dataType))
@@ -158,7 +159,7 @@ def forward_fill_data(stress_data,output_stream_name = 'org.md2k.autosense.ecg.s
     cols.remove('weekday')
     cols.remove('day')
     stress_imputed_data = stress_imputed_data.select(*cols)
-    ds = DataStream(data=stress_imputed_data,metadata=get_metadata(stress_imputed_data=stress_imputed_data, output_stream_name=output_stream_name))
+    ds = DataStream(data=stress_imputed_data,metadata=get_metadata(stress_imputed_data=stress_imputed_data, output_stream_name=output_stream_name, input_stream_name=stress_data.metadata.get_name()))
     return ds
 
 
@@ -300,5 +301,5 @@ def impute_stress_likelihood(stress_data,output_stream_name='org.md2k.autosense.
     cols.remove('weekday')
     cols.remove('day')
     stress_imputed_data = stress_imputed_data.select(*cols)
-    ds = DataStream(data=stress_imputed_data,metadata=get_metadata(stress_imputed_data=stress_imputed_data,output_stream_name=output_stream_name))
+    ds = DataStream(data=stress_imputed_data,metadata=get_metadata(stress_imputed_data=stress_imputed_data,output_stream_name=output_stream_name, input_stream_name=stress_data.metadata.get_name()))
     return ds

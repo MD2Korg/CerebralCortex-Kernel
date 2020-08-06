@@ -54,6 +54,7 @@ def get_hrv_features(rr_data,
     def get_metadata():
         stream_metadata = Metadata()
         stream_metadata.set_name(stream_name).set_description("HRV Features from ECG RR interval") \
+            .add_input_stream(rr_data.metadata.get_name()) \
             .add_dataDescriptor(
             DataDescriptor()
                 .set_name("var")

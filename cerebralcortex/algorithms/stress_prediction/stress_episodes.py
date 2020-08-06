@@ -59,6 +59,7 @@ def compute_stress_episodes(ecg_stress_probability, macd_param_fast = 7, macd_pa
     def get_metadata():
         stream_metadata = Metadata()
         stream_metadata.set_name(stream_name).set_description("Stress episodes computed using MACD formula.") \
+            .add_input_stream(ecg_stress_probability.metadata.get_name()) \
             .add_dataDescriptor(DataDescriptor().set_name("timestamp").set_type("datetime")) \
             .add_dataDescriptor(DataDescriptor().set_name("localtime").set_type("datetime")) \
             .add_dataDescriptor(DataDescriptor().set_name("version").set_type("int")) \
@@ -71,7 +72,7 @@ def compute_stress_episodes(ecg_stress_probability, macd_param_fast = 7, macd_pa
             .add_module(
             ModuleMetadata().set_name("cerebralcortex.algorithm.stress_prediction.stress_episodes.compute_stress_episodes")
                 .set_attribute("url", "http://md2k.org/").set_author(
-                "Anandatirtha Nandugudi", "info@memphis.edu"))
+                "Anandatirtha Nandugudi", "dev@md2k.org"))
         return stream_metadata
 
     schema = StructType([

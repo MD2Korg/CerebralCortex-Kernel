@@ -15,7 +15,7 @@ pandas==1.0.5
 texttable
 numpy==1.19.1
 geopy==1.18.1
-scikit-learn==0.23.1
+scikit-learn==0.22.2.post1
 plotly==4.9.0
 matplotlib
 cufflinks

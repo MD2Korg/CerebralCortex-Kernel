@@ -52,6 +52,7 @@ def compute_stress_probability(stress_features_normalized,
     def get_metadata():
         stream_metadata = Metadata()
         stream_metadata.set_name(stream_name).set_description("stress likelihood computed from ECG") \
+            .add_input_stream(stress_features_normalized.metadata.get_name()) \
             .add_dataDescriptor(
             DataDescriptor().set_name("stress_probability")
                 .set_type("double").set_attribute("description","stress likelihood computed from ECG only model")

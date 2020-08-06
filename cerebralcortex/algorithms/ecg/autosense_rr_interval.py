@@ -63,6 +63,7 @@ def get_rr_interval(ecg_data,Fs=64):
         """
         stream_metadata = Metadata()
         stream_metadata.set_name(stream_name).set_description("ECG RR interval in milliseconds") \
+            .add_input_stream(ecg_data.metadata.get_name()) \
             .add_dataDescriptor(
             DataDescriptor().set_name("rr").set_type("float") \
                 .set_attribute("description","rr interval")) \

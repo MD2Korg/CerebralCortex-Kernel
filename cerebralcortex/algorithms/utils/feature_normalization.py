@@ -59,7 +59,9 @@ def normalize_features(data,
     """
     data_day = data.withColumn('day',F.date_format('localtime','yyyyMMdd'))
     stream_metadata = data.metadata
-    stream_metadata.add_dataDescriptor(
+    stream_metadata \
+        .add_input_stream(data.metadata.get_name()) \
+        .add_dataDescriptor(
         DataDescriptor()
             .set_name("features_normalized")
             .set_type("array")
