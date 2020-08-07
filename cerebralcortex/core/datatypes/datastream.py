@@ -665,7 +665,7 @@ class DataStream(DataFrame):
 
     def groupby(self, *cols):
         """
-        Groups the DataFrame using the specified columns, so we can run aggregation on them.
+        Groups the DataFrame using the specified columns, so we can run aggregation on them. This method will return pyspark.sql.GroupedData object.
 
         Args:
             list of columns to group by. Each element should be a column name (string) or an expression (Column)
@@ -673,7 +673,7 @@ class DataStream(DataFrame):
         Returns:
         """
         data = self._data.groupby(*cols)
-        return DataStream(data=data, metadata=Metadata())
+        return data
 
     def head(self, n=None):
         """
