@@ -23,20 +23,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
 import pathlib
 import unittest
 import warnings
 
 from cerebralcortex import Kernel
+from cerebralcortex.algorithms.glucose.glucose_variability_metrics import glucose_var
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream import Metadata
-from cerebralcortex.algorithms.glucose.glucose_variability_metrics import glucose_var
-from cerebralcortex.test_suite.util.data_helper import gen_location_datastream
-from cerebralcortex.algorithms.gps.clustering import cluster_gps
-from cerebralcortex.test_suite.test_object_storage import TestObjectStorage
-from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
-from cerebralcortex.test_suite.test_stream import DataStreamTest
 
 
 class TestDataframeUDF(unittest.TestCase):

@@ -23,16 +23,18 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from pyspark.sql import functions as F
+import struct
+
+import numpy as np
+import pandas as pd
+from numpy import int16, uint8
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import StructField, StructType, \
     DoubleType, StringType, FloatType, IntegerType
+
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, \
     ModuleMetadata
-import struct
-import numpy as np
-import pandas as pd
-from numpy import int16,uint8
+
 
 def Preprc(raw_data: object, flag: object = 0) -> object:
     """

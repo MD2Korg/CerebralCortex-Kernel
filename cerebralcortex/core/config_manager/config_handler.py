@@ -23,22 +23,33 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import yaml
 import os
+
+import yaml
+from pathlib import Path
+
 
 class ConfigHandler:
 
-    def load_file(self, filepath: str):
+    def load_file(self, filepath: str, default_configs=False):
         """
         Helper method to load a yaml file
-        :param config_dir_path:
 
         Args:
             filepath (str): path to a yml configuration file
+
         """
 
         with open(filepath, 'r') as ymlfile:
             self.config = yaml.safe_load(ymlfile)
+
+        if default_configs:
+            user_home_dir  = str(Path.home()) + "/cc_data/"
+            self.config["filesystem"]["filesystem_path"] = user_home_dir
+            Path(self.config["filesystem"]["filesystem_path"]).mkdir(parents=True, exist_ok=True)
+            self.config["sqlite"]["file_path"] = user_home_dir
+            self.config["cc"]["log_files_path"]  = user_home_dir +"logs/"
+            Path(self.config["cc"]["log_files_path"]).mkdir(parents=True, exist_ok=True)
 
         if "hdfs" in self.config and self.config["hdfs"]["raw_files_dir"]!="" and self.config["hdfs"]["raw_files_dir"][-1] !="/":
             self.config["hdfs"]["raw_files_dir"]+="/"
@@ -46,13 +57,11 @@ class ConfigHandler:
         if "filesystem" in self.config and self.config["filesystem"]["filesystem_path"]!="" and self.config["filesystem"]["filesystem_path"][-1] !="/":
             self.config["filesystem"]["filesystem_path"]+="/"
 
-        if "object_storage" in self.config and self.config["object_storage"]["object_storage_path"]!="" and self.config["object_storage"]["object_storage_path"][-1] !="/":
-            self.config["object_storage"]["object_storage_path"]+="/"
-
-        # if "data_ingestion" in self.config and self.config["data_ingestion"]["data_dir_path"]!="" and self.config["data_ingestion"]["data_dir_path"][-1] !="/":
-        #     self.config["data_ingestion"]["data_dir_path"]+="/"
+        if "sqlite" in self.config and self.config["sqlite"]["file_path"]!="" and self.config["sqlite"]["file_path"][-1] !="/":
+            self.config["sqlite"]["file_path"]+="/"
 
         if "log_files_path" in self.config and self.config["cc"]["log_files_path"]!="" and self.config["cc"]["log_files_path"][-1]!="":
             self.config["cc"]["log_files_path"] +="/"
             if not os.access(self.config["cc"]["log_files_path"], os.W_OK):
                 raise Exception(self.config["cc"]["log_files_path"]+" path is not writable. Please check your cerebralcortex.yml configurations for 'log_files_path'.")
+

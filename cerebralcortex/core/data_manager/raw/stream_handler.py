@@ -26,11 +26,13 @@
 
 import traceback
 from enum import Enum
-import pandas as pd
 
+import pandas as pd
 from pyspark.sql.functions import lit
 
+from cerebralcortex.algorithms.utils.mprov_helper import write_metadata_to_mprov
 from cerebralcortex.core.datatypes import DataStream
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 class DataSet(Enum):
@@ -44,13 +46,13 @@ class StreamHandler():
     ###################################################################
     ################## GET DATA METHODS ###############################
     ###################################################################
-    def get_stream(self, stream_name:str, version:str="all", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
+    def get_stream(self, stream_name:str, version:str="latest", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
         """
         Retrieve a data-stream with it's metadata.
 
         Args:
             stream_name (str): name of a stream
-            version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
+            version (str): version of a stream. Acceptable parameters are latest, or a specific version of a stream (e.g., 2)
             user_id (str): id of a user
             data_type (DataSet):  DataSet.COMPLETE returns both Data and Metadata. DataSet.ONLY_DATA returns only Data. DataSet.ONLY_METADATA returns only metadata of a stream. (Default=DataSet.COMPLETE)
 
@@ -81,22 +83,23 @@ class StreamHandler():
 
         version = str(version).strip().replace(" ", "")
 
-        if version!="all" and version!="latest":
+        if version!="latest":
             if int(version) not in all_versions:
                 raise Exception("Version "+str(version)+" is not available for stream: "+str(stream_name))
 
         if version=="latest":
             version = max(all_versions)
 
+        version = int(version)
         stream_metadata = self.sql_data.get_stream_metadata_by_name(stream_name=stream_name, version=version)
 
-        if len(stream_metadata) > 0:
+        if stream_metadata:
             if data_type == DataSet.COMPLETE:
-                df = self.nosql.read_file(stream_name=stream_name, version=version, user_id=user_id)
+                df = self.read_file(stream_name=stream_name, version=version, user_id=user_id)
                 #df = df.dropDuplicates(subset=['timestamp'])
                 stream = DataStream(data=df,metadata=stream_metadata)
             elif data_type == DataSet.ONLY_DATA:
-                df = self.nosql.read_file(stream_name=stream_name, version=version, user_id=user_id)
+                df = self.read_file(stream_name=stream_name, version=version, user_id=user_id)
                 #df = df.dropDuplicates(subset=['timestamp'])
                 stream = DataStream(data=df)
             elif data_type == DataSet.ONLY_METADATA:
@@ -110,14 +113,13 @@ class StreamHandler():
     ###################################################################
     ################## STORE DATA METHODS #############################
     ###################################################################
-    def save_stream(self, datastream, overwrite=False, ingestInfluxDB=False, publishOnKafka=False)->bool:
+    def save_stream(self, datastream, overwrite=False)->bool:
         """
         Saves datastream raw data in selected NoSQL storage and metadata in MySQL.
 
         Args:
             datastream (DataStream): a DataStream object
             overwrite (bool): if set to true, whole existing datastream data will be overwritten by new data
-            ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana
         Returns:
             bool: True if stream is successfully stored or throws an exception
         Todo:
@@ -139,9 +141,10 @@ class StreamHandler():
         if metadata:
             stream_name = metadata.name # only supports one data-stream storage at a time
             stream_name = stream_name.lower()
+            metadata.set_study_name(self.study_name)
             if not stream_name:
                 raise ValueError("Stream name cannot be empty/None. Check metadata.")
-            metadata = self.__update_data_desciptor(data=data, metadata=metadata)
+            #metadata = self.__update_data_desciptor(data=data, metadata=metadata)
             try:
                 if datastream:
                     if isinstance(data, pd.DataFrame):
@@ -157,14 +160,16 @@ class StreamHandler():
                     result = self.sql_data.save_stream_metadata(metadata)
                     
                     if result["status"]==True:
-                        version = result["version"]
+                        write_metadata_to_mprov(metadata=metadata)
+
+                        version = result.get("version")
 
                         if isinstance(data, pd.DataFrame):
                             data["version"] = version
                         else:
                             data = data.withColumn('version', lit(version))
 
-                        status = self.nosql.write_file(stream_name, data, file_mode)
+                        status = self.write_file(stream_name, data, file_mode)
                         return status
                     else:
                         print("Something went wrong in saving data points in SQL store.")
@@ -183,6 +188,7 @@ class StreamHandler():
             else:
                 data = data.drop('version')
         return data
+
     def __update_data_desciptor(self, data, metadata):
         """
         Read pyspark dataframe clumns and add each column name and type to datadescriptor field

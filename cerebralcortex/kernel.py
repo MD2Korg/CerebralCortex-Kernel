@@ -23,15 +23,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import uuid
 import os
+import uuid
 import warnings
 from datetime import datetime
 from typing import List
-
-from cerebralcortex.core.util.spark_helper import get_or_create_sc
+from pyspark.sql import types as T
 from cerebralcortex.core.config_manager.config import Configuration
-from cerebralcortex.core.data_manager.object.data import ObjectData
 from cerebralcortex.core.data_manager.raw.data import RawData
 from cerebralcortex.core.data_manager.raw.stream_handler import DataSet
 from cerebralcortex.core.data_manager.sql.data import SqlData
@@ -39,13 +37,13 @@ from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
-
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
+from cerebralcortex.core.util.spark_helper import get_or_create_sc
 
 
 class Kernel:
 
-    def __init__(self, configs_dir_path: str="", cc_configs:dict=None, study_name:str="default", new_study:bool=False, enable_spark:bool=True, enable_spark_ui=False, mprov=False):
+    def __init__(self, configs_dir_path: str="", cc_configs:dict=None, study_name:str="default", new_study:bool=False, enable_spark:bool=True, enable_spark_ui=False):
         """
         CerebralCortex constructor
 
@@ -56,11 +54,14 @@ class Kernel:
             new_study (bool): create a new study with study_name if it does not exist
             enable_spark (bool): enable spark
             enable_spark_ui (bool): enable spark ui
-            mprov (bool): if set to true then running algorithms will store provenance information in pennprov server. setup pennprov server (https://bitbucket.org/penndb/pennprov/src/master/) if you set this to True
         Raises:
             ValueError: If configuration_filepath is None or empty.
         Examples:
-            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+            >>> CC = Kernel(cc_configs="default", study_name="default")
+            >>> # if you want to change any of the configs, pass cc_configs as dict with new configurations
+            >>> updated_cc_configs = {"nosql_storage": "filesystem", "filesystem_path": "/path/to/store/data/"}
+            >>> CC = Kernel(cc_configs=updated_cc_configs, study_name="default")
+            >>> # for complete configs, have a look at default configs at: https://github.com/MD2Korg/CerebralCortex-Kernel/blob/3.3/cerebralcortex/core/config_manager/default.yml
         """
         if not configs_dir_path and not cc_configs:
             raise ValueError("Please provide configs_dir_path or cc_configs.")
@@ -69,6 +70,7 @@ class Kernel:
 
         self.config_filepath = configs_dir_path
         self.study_name = study_name
+        os.environ["STUDY_NAME"] = study_name
         self.config = Configuration(configs_dir_path, cc_configs).config
 
         if enable_spark:
@@ -80,16 +82,15 @@ class Kernel:
             self.sqlContext = None
             self.sparkSession = None
 
-        if mprov:
-            if self.config["mprov"]=="pennprov":
-                os.environ["MPROV_HOST"] = self.config["pennprov"]["host"]
-                os.environ["MPROV_USER"] = self.config["pennprov"]["user"]
-                os.environ["MPROV_PASSWORD"] = self.config["pennprov"]["password"]
-                os.environ["ENABLE_MPROV"] = "True"
-            elif self.config["mprov"]=="none":
-                os.environ["ENABLE_MPROV"] = "False"
-            else:
-                raise ValueError("Please check cerebralcortex.yml file. mprov is not properly configured.")
+        if self.config["mprov"]=="pennprov":
+            os.environ["MPROV_HOST"] = self.config["pennprov"]["host"]
+            os.environ["MPROV_USER"] = self.config["pennprov"]["user"]
+            os.environ["MPROV_PASSWORD"] = self.config["pennprov"]["password"]
+            os.environ["ENABLE_MPROV"] = "True"
+        elif self.config["mprov"]=="none":
+            os.environ["ENABLE_MPROV"] = "False"
+        else:
+            raise ValueError("Please check cerebralcortex.yml file. mprov is not properly configured.")
 
         self.new_study = new_study
 
@@ -101,15 +102,14 @@ class Kernel:
         self.logtypes = LogTypes()
         self.SqlData = SqlData(self)
         self.RawData = RawData(self)
-        self.ObjectData = ObjectData(self)
         self.TimeSeriesData = None
 
 
         warnings.simplefilter('always', DeprecationWarning)
 
 
-        if not new_study and not self.RawData.nosql.is_study():
-            raise Exception("Study name does not exist.")
+        if not new_study and not self.RawData.is_study():
+            raise Exception("Study name does not exist. If this is a new study set new_study param to True")
 
         if self.config["visualization_storage"] != "none":
             self.TimeSeriesData = TimeSeriesData(self)
@@ -117,13 +117,12 @@ class Kernel:
     ###########################################################################
     #                     RAW DATA MANAGER METHODS                            #
     ###########################################################################
-    def save_stream(self, datastream: DataStream, ingestInfluxDB: bool = False, overwrite=False)->bool:
+    def save_stream(self, datastream: DataStream, overwrite=False)->bool:
         """
         Saves datastream raw data in selected NoSQL storage and metadata in MySQL.
 
         Args:
             datastream (DataStream): a DataStream object
-            ingestInfluxDB (bool): Setting this to True will ingest the raw data in InfluxDB as well that could be used to visualize data in Grafana
             overwrite (bool): if set to true, whole existing datastream data will be overwritten by new data
         Returns:
             bool: True if stream is successfully stored or throws an exception
@@ -136,10 +135,10 @@ class Kernel:
             >>> ds = DataStream(dataframe, MetaData)
             >>> CC.save_stream(ds)
         """
-        return self.RawData.save_stream(datastream=datastream, ingestInfluxDB=ingestInfluxDB, overwrite=overwrite)
+        return self.RawData.save_stream(datastream=datastream, overwrite=overwrite)
 
     
-    def get_stream(self, stream_name: str, version: str = "all", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
+    def get_stream(self, stream_name: str, version: str = "latest", user_id:str=None, data_type=DataSet.COMPLETE) -> DataStream:
         """
         Retrieve a data-stream with it's metadata.
 
@@ -161,8 +160,6 @@ class Kernel:
             >>> ds.metadata # an object of MetaData class
             >>> ds.get_metadata(version=1) # get the specific version metadata of a stream
         """
-        if user_id:
-            version = "latest"
 
         return self.RawData.get_stream(stream_name=stream_name, version=version, user_id=user_id, data_type=data_type)
 
@@ -170,22 +167,22 @@ class Kernel:
     #                     TIME SERIES DATA MANAGER METHODS                    #
     ###########################################################################
 
-    def save_data_to_influxdb(self, datastream: DataStream):
-        """
-        Save data stream to influxdb only for visualization purposes.
-
-        Args:
-            datastream (DataStream): a DataStream object
-        Returns:
-            bool: True if data is ingested successfully or False otherwise
-        Todo:
-            This needs to be updated with the new structure. Should metadata be stored or not?
-        Example:
-            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
-            >>> ds = DataStream(dataframe, MetaData)
-            >>> CC.save_data_to_influxdb(ds)
-        """
-        self.TimeSeriesData.save_data_to_influxdb(datastream)
+    # def save_data_to_influxdb(self, datastream: DataStream):
+    #     """
+    #     Save data stream to influxdb only for visualization purposes.
+    #
+    #     Args:
+    #         datastream (DataStream): a DataStream object
+    #     Returns:
+    #         bool: True if data is ingested successfully or False otherwise
+    #     Todo:
+    #         This needs to be updated with the new structure. Should metadata be stored or not?
+    #     Example:
+    #         >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
+    #         >>> ds = DataStream(dataframe, MetaData)
+    #         >>> CC.save_data_to_influxdb(ds)
+    #     """
+    #     self.TimeSeriesData.save_data_to_influxdb(datastream)
 
     ###########################################################################
     #               SQL DATA MANAGER METHODS                                  #
@@ -206,7 +203,7 @@ class Kernel:
             >>> CC.is_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> True
         """
-        return self.RawData.nosql.is_stream(stream_name)
+        return self.RawData.is_stream(stream_name)
 
     def get_stream_versions(self, stream_name: str) -> list:
         """
@@ -223,7 +220,7 @@ class Kernel:
             >>> CC.get_stream_versions("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
             >>> [1, 2, 4]
         """
-        return self.RawData.nosql.get_stream_versions(stream_name)
+        return self.RawData.get_stream_versions(stream_name)
 
     def get_stream_name(self, metadata_hash: uuid) -> str:
         """
@@ -238,7 +235,7 @@ class Kernel:
             >>> CC.get_stream_name("00ab666c-afb8-476e-9872-6472b4e66b68")
             >>> ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST
         """
-        return self.RawData.nosql.get_stream_name(metadata_hash)
+        return self.SqlData.get_stream_name(metadata_hash)
 
     def get_stream_metadata_hash(self, stream_name: str) -> list:
         """
@@ -247,15 +244,15 @@ class Kernel:
         Args:
             stream_name (str): name of a stream
         Returns:
-            list[str]: list of all the metadata hashes
+            list: list of all the metadata hashes with name and versions
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.get_stream_metadata_hash("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
-            >>> ["00ab666c-afb8-476e-9872-6472b4e66b68", "15cc444c-dfb8-676e-3872-8472b4e66b12"]
+            >>> [["stream_name", "version", "metadata_hash"]]
         """
-        return self.RawData.nosql.get_stream_metadata_hash(stream_name)
+        return self.SqlData.get_stream_metadata_hash(stream_name)
 
-    def get_stream_metadata_by_name(self, stream_name: str, version:str= "all") -> List[Metadata]:
+    def get_stream_metadata_by_name(self, stream_name: str, version:str=1) -> List[Metadata]:
         """
         Get a list of metadata for all versions available for a stream.
 
@@ -264,13 +261,13 @@ class Kernel:
             version (str): version of a stream. Acceptable parameters are all, latest, or a specific version of a stream (e.g., 2.0) (Default="all")
 
         Returns:
-            list[Metadata]: Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
+            Metadata: Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
         Raises:
             ValueError: stream_name cannot be None or empty.
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.get_stream_metadata_by_name("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST", version=1)
-            >>> [Metadata] # list of MetaData class objects
+            >>> Metadata # list of MetaData class objects
         """
         return self.SqlData.get_stream_metadata_by_name(stream_name, version)
 
@@ -281,11 +278,11 @@ class Kernel:
            Args:
                metadata_hash (uuid): This could be an actual uuid object or a string form of uuid.
            Returns:
-               dict: stream metadata and other info related to a stream
+               List: [stream_name, metadata]
            Examples:
                >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
                >>> CC.get_stream_metadata_by_hash("00ab666c-afb8-476e-9872-6472b4e66b68")
-               >>> {"name": .....} # stream metadata and other information
+               >>> ["name" .....] # stream metadata and other information
        """
         return self.SqlData.get_stream_metadata_by_hash(metadata_hash=metadata_hash)
 
@@ -300,7 +297,7 @@ class Kernel:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.list_streams()
         """
-        return self.RawData.nosql.list_streams()
+        return self.RawData.list_streams()
 
     def search_stream(self, stream_name):
         """
@@ -316,13 +313,14 @@ class Kernel:
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
 
-        return self.RawData.nosql.search_stream(stream_name=stream_name)
+        return self.RawData.search_stream(stream_name=stream_name)
 
     ################### USER RELATED METHODS ##################################
 
     def create_user(self, username:str, user_password:str, user_role:str, user_metadata:dict, user_settings:dict, encrypt_password:bool=False)->bool:
         """
         Create a user in SQL storage if it doesn't exist
+
         Args:
             username (str): Only alphanumeric usernames are allowed with the max length of 25 chars.
             user_password (str): no size limit on password
@@ -337,20 +335,6 @@ class Kernel:
             Exception: if sql query fails
         """
         return self.SqlData.create_user(username, user_password, user_role, user_metadata, user_settings, encrypt_password)
-
-    def delete_user(self, username:str)->bool:
-        """
-        Delete a user record in SQL table
-
-        Args:
-            username: username of a user that needs to be deleted
-        Returns:
-            bool: if user is successfully removed
-        Raises:
-            ValueError: if username param is empty or None
-            Exception: if sql query fails
-        """
-        return self.SqlData.delete_user(username)
 
     def is_user(self, user_id: str = None, user_name: str = None) -> bool:
         """
@@ -399,7 +383,7 @@ class Kernel:
             ValueError: User ID is a required field.
         Examples:
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
-            >>> CC.get_user_name("76cc444c-4fb8-776e-2872-9472b4e66b16")
+            >>> CC.get_username("76cc444c-4fb8-776e-2872-9472b4e66b16")
             >>> 'nasir_ali'
         """
         return self.SqlData.get_user_name(user_id)
@@ -542,218 +526,39 @@ class Kernel:
         """
         return self.SqlData.encrypt_user_password(user_password)
 
-    ###########################################################################
-    #                      OBJECTS DATA MANAGER METHODS                       #
-    ###########################################################################
+    # ~~~~~~~~~~~~~~~~~~~~      Data Import ~~~~~~~~~~~~~~~~~~~~~~~ #
 
-    def create_bucket(self, bucket_name: str) -> bool:
+    def read_csv(self, file_path, header:bool=False, column_names:list=[], timestamp_column_index:int=0, timein:str="milliseconds", metadata:Metadata=None)->DataStream:
         """
-        creates a bucket aka folder in object storage system.
-
+        Reads a csv file (compressed or uncompressed), parse it, convert it into CC DataStream object format and returns it
         Args:
-            bucket_name (str): name of the bucket
-        Returns:
-            bool: True if bucket was successfully created. On failure, returns an error with dict {"error":"error-message"}
-        Raises:
-            ValueError: Bucket name cannot be empty/None.
-        Examples:
-            >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
-            >>> CC.create_bucket("live_data_folder")
-            >>> True
-        """
-        return self.ObjectData.create_bucket(bucket_name)
-
-    def upload_object(self, bucket_name: str, object_name: str, object_filepath:str) -> bool:
-        """
-        Upload an object in a bucket aka folder of object storage system.
-
-        Args:
-            bucket_name (str): name of the bucket
-            object_name (str): name of the object to be uploaded
-            object_filepath (str): it shall contain full path of a file with file name (e.g., /home/nasir/obj.zip)
-        Returns:
-            bool: True if object  successfully uploaded. On failure, returns an error with dict {"error":"error-message"}
-        Raises:
-            ValueError: Bucket name cannot be empty/None.
-        """
-
-        return self.ObjectData.upload_object(bucket_name, object_name, object_filepath)
-
-    def get_buckets(self) -> dict:
-        """
-        returns all available buckets in an object storage
+            file_path (str): path of the file
+            header (bool): set it to True if csv contains header column
+            column_names (list[str]): list of column names
+            timestamp_column_index (int): index of the timestamp column name
+            timein (str): if timestamp is epoch time, provide whether it is in milliseconds or seconds
+            metadata (Metadata): metadata object for the csv file
 
         Returns:
-            dict: {bucket-name: str, [{"key":"value"}]}, in case of an error {"error": str}
-
+            DataStream object
         """
-        return self.ObjectData.get_buckets()
+        if timein not in ["milliseconds", "seconds"]:
+            raise Exception("timestamp can only be in milliseconds or seconds.")
 
-    def get_bucket_objects(self, bucket_name: str) -> dict:
-        """
-        returns a list of all objects stored in the specified Minio bucket
+        if column_names:
+            df = self.sparkSession.read.csv(file_path, inferSchema=True, header=header).toDF(*column_names)
 
-        Args:
-            bucket_name (str): name of the bucket aka folder
-        Returns:
-            dict: {bucket-objects: [{"object_name":"", "metadata": {}}...],  in case of an error {"error": str}
-        """
-        return self.ObjectData.get_bucket_objects(bucket_name)
+        else:
+            df = self.sparkSession.read.csv(file_path, inferSchema=True, header=header)
 
-    def get_object_stats(self, bucket_name: str, object_name: str) -> dict:
-        """
-        Returns properties (e.g., object type, last modified etc.) of an object stored in a specified bucket
+        timestamp_column_name = df.schema[timestamp_column_index].name
 
-        Args:
-            bucket_name (str): name of a bucket aka folder
-            object_name (str): name of an object
-        Returns:
-            dict: information of an object (e.g., creation_date, object_size etc.). In case of an error {"error": str}
-        Raises:
-            ValueError: Missing bucket_name and object_name params.
-            Exception: {"error": "error-message"}
-        """
-        return self.ObjectData.get_object_stats(bucket_name, object_name)
+        if timein=="milliseconds" and str(df.schema[timestamp_column_index].dataType)!="TimestampType":
+            df = df.withColumn(timestamp_column_name, df[timestamp_column_name]/1000)
 
-    def get_object(self, bucket_name: str, object_name: str) -> dict:
-        """
-        Returns stored object (HttpResponse)
+        parsed_df  = df.withColumn(timestamp_column_name, df[timestamp_column_name].cast(dataType=T.TimestampType()))
 
-        Args:
-            bucket_name (str): name of a bucket aka folder
-            object_name (str): name of an object that needs to be downloaded
-        Returns:
-            file-object: object that needs to be downloaded. If file does not exists then it returns an error {"error": "File does not exist."}
-        Raises:
-            ValueError: Missing bucket_name and object_name params.
-            Exception: {"error": "error-message"}
-        """
-        return self.ObjectData.get_object(bucket_name, object_name)
-
-    def is_bucket(self, bucket_name: str) -> bool:
-        """
-        checks whether a bucket exist
-
-        Args:
-            bucket_name (str): name of the bucket aka folder
-        Returns:
-            bool: True if bucket exist or False otherwise. In case an error {"error": str}
-        Raises:
-            ValueError: bucket_name cannot be None or empty.
-        """
-        return self.ObjectData.is_bucket(bucket_name)
-
-    def is_object(self, bucket_name: str, object_name: str) -> dict:
-        """
-        checks whether an object exist in a bucket
-
-        Args:
-            bucket_name (str): name of the bucket aka folder
-            object_name (str): name of the object
-        Returns:
-            bool: True if object exist or False otherwise. In case an error {"error": str}
-        Raises:
-            Excecption: if bucket_name and object_name are empty or None
-        """
-        return self.ObjectData.is_object(bucket_name, object_name)
-
-
-    ################### CACHE RELATED METHODS ##################################
-
-    def set_cache_value(self, key: str, value: str) -> bool:
-        """
-        Creates a new cache entry in the cache. Values are overwritten for existing keys.
-
-        Args:
-            key: key in the cache
-            value: value associated with the key
-        Returns:
-            bool: True on successful insert or False otherwise.
-        Raises:
-            ValueError: if key is None or empty
-        """
-        return self.SqlData.set_cache_value(key, value)
-
-    def get_cache_value(self, key: str) -> str:
-        """
-        Retrieves value from the cache for the given key.
-
-        Args:
-            key: key in the cache
-        Returns:
-            str: The value in the cache
-        Raises:
-            ValueError: if key is None or empty
-        """
-        return self.SqlData.get_cache_value(key)
-
-
-    ###########################################################################
-    #                      mProve Data Provenance                             #
-    ###########################################################################
-
-    # def store_activity(self, activity: str, start: int, end: int, location: int):
-    #     """
-    #     Create an entity node for an activity (a stream operator computation)
-    #
-    #     Args:
-    #         activity: Name of the operation
-    #         start: Start time
-    #         end: End time
-    #         location: Index position etc
-    #     """
-    #     self.MProvConnection.store_activity(activity=activity, start=start, end=end, location=location)
-    #
-    # def store_stream_tuple(self, stream_name: str, stream_index: int, input_tuple: BasicTuple):
-    #     """
-    #     Create an entity node for a stream tuple
-    #
-    #     Args:
-    #         stream_name: The name of the stream itself
-    #         stream_index: The index position (count) or timestamp (if unique)
-    #         input_tuple: The actual stream value
-    #     Returns:
-    #         token for the new node
-    #     """
-    #     self.MProvConnection.store_stream_tuple(stream_name=stream_name, stream_index=stream_index, input_tuple=input_tuple)
-    #
-    # def store_annotation(self, stream_name: str, stream_index: int, annotation_name: str, annotation_value):
-    #     """
-    #     Create a node for an annotation to an entity / tuple
-    #
-    #     Args:
-    #         stream_name: The name of the stream itself
-    #         stream_index: The index position (count) or timestamp (if unique) of the stream element we are annotating
-    #         annotation_name: The name of the annotation
-    #         annotation_value: The value of the annotation
-    #     """
-    #     self.MProvConnection.store_annotation(stream_name=stream_name, stream_index=stream_index, annotation_name=annotation_name, annotation_value=annotation_value)
-    #
-    # def store_window_and_inputs(self, output_stream_name: str, output_stream_index: int, input_tokens_list: list ):
-    #     """
-    #     Store a mapping between an operator window, from
-    #     which a stream is to be derived, and the input
-    #     nodes
-    #
-    #     Args:
-    #         output_stream_name:
-    #         output_stream_index:
-    #         input_tokens_list:
-    #     """
-    #     self.MProvConnection.store_window_and_inputs(output_stream_name=output_stream_name, output_stream_index=output_stream_index, input_tokens_list=input_tokens_list)
-    #
-    # def store_windowed_result(self, output_stream_name: str, output_stream_index: int, output_tuple: BasicTuple, input_tokens_list: list, activity: str, start: int, end: int ):
-    #     """
-    #     When we have a windowed computation, this creates a complex derivation subgraph
-    #     in one operation.
-    #
-    #     Args:
-    #         output_stream_name: The name of the stream our operator produces
-    #         output_stream_index: The position of the outgoing tuple in the stream
-    #         output_tuple: The tuple itself
-    #         input_tokens_list: IDs of the inputs to the computation
-    #         activity: The computation name
-    #         start: Start time
-    #         end: End time
-    #     """
-    #     self.MProvConnection.store_windowed_result(output_stream_name=output_stream_name, output_stream_index=output_stream_index, output_tuple=output_tuple, input_tokens_list=input_tokens_list, activity=activity, start=start, end=end)
+        if isinstance(metadata, Metadata) and metadata:
+            return DataStream(data=parsed_df, metadata=metadata)
+        else:
+            return DataStream(data=parsed_df, metadata=Metadata())

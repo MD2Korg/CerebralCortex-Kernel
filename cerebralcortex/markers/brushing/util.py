@@ -1,12 +1,12 @@
 import pickle
 
 import pandas as pd
-
 from pyspark.sql import functions as F
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.types import *
 from pyspark.sql.types import StructType
 from pyspark.sql.window import Window
+
 
 #re-orient-signal
 def get_orientation_data(ds, wrist, ori=1, is_new_device=False,

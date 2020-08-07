@@ -25,6 +25,7 @@
 
 import os.path
 import pathlib
+
 from cerebralcortex.core.config_manager.config_handler import ConfigHandler
 
 
@@ -39,9 +40,10 @@ class Configuration(ConfigHandler):
         """
 
         if cc_configs=="default":
-            self.load_file(str(pathlib.Path(__file__).parent.absolute())+"/default.yml")
+            self.load_file(str(pathlib.Path(__file__).parent.absolute())+"/default.yml", default_configs=True)
+
         elif isinstance(cc_configs, dict):
-            self.load_file(str(pathlib.Path(__file__).parent.absolute())+"/default.yml")
+            self.load_file(str(pathlib.Path(__file__).parent.absolute())+"/default.yml", default_configs=True)
             self.config.update(cc_configs)
 
         elif config_dir:

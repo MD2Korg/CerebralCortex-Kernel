@@ -25,16 +25,15 @@
 
 import os
 
-from cerebralcortex.core.data_manager.raw.storage_filesystem import FileSystemStorage
-from cerebralcortex.core.data_manager.raw.storage_hdfs import HDFSStorage
-from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
-from cerebralcortex.core.data_manager.time_series.data import TimeSeriesData
-from cerebralcortex.core.log_manager.log_handler import LogTypes
 import pyarrow as pa
+
+from cerebralcortex.core.data_manager.raw.filebased_storage import FileBasedStorage
+from cerebralcortex.core.data_manager.raw.stream_handler import StreamHandler
+from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
-class RawData(StreamHandler, HDFSStorage, FileSystemStorage):
+class RawData(StreamHandler, FileBasedStorage):
     def __init__(self, CC):
         """
         Constructor
@@ -59,26 +58,24 @@ class RawData(StreamHandler, HDFSStorage, FileSystemStorage):
 
         # pseudo factory pattern
         if self.nosql_store == "hdfs":
-            self.nosql = HDFSStorage(self)
             self.hdfs_ip = self.config['hdfs']['host']
             self.hdfs_port = self.config['hdfs']['port']
             self.hdfs_spark_url = "hdfs://"+str(self.hdfs_ip)+":"+str(self.hdfs_port)+"/"
-            self.raw_files_dir = self.config['hdfs']['raw_files_dir']
-            if self.raw_files_dir[-1]!="/":
-                self.raw_files_dir+="/"
+            self.data_path = self.config['hdfs']['raw_files_dir']
+            if self.data_path[-1]!= "/":
+                self.data_path+= "/"
             self.fs = pa.hdfs.connect(self.hdfs_ip, self.hdfs_port)
         elif self.nosql_store=="filesystem":
-            self.nosql = FileSystemStorage(self)
-            self.filesystem_path = self.config["filesystem"]["filesystem_path"]
-            if self.filesystem_path[-1]!="/":
-                self.filesystem_path+="/"
-            if not os.access(self.filesystem_path, os.W_OK):
-                raise Exception(self.filesystem_path+" path is not writable. Please check your cerebralcortex.yml configurations.")
+            self.data_path = self.config["filesystem"]["filesystem_path"]
+            if self.data_path[-1]!= "/":
+                self.data_path+= "/"
+            if not os.access(self.data_path, os.W_OK):
+                raise Exception(self.data_path + " path is not writable. Please check your cerebralcortex.yml configurations.")
+            self.fs = os
         else:
             raise ValueError(self.nosql_store + " is not supported.")
 
-        if self.config["visualization_storage"]!="none":
-            self.timeSeriesData = TimeSeriesData(CC)
+        # if self.config["visualization_storage"]!="none":
+        #     self.timeSeriesData = TimeSeriesData(CC)
 
         self.logtypes = LogTypes()
-

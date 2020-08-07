@@ -23,14 +23,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from typing import List
-
 import os
+from typing import List
 
 import pyarrow as pa
 
 from cerebralcortex.core.config_manager.config import Configuration
-
 
 
 def get_study_names(configs_dir_path: str)->List[str]:

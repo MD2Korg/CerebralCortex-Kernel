@@ -24,6 +24,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
+import os
 import uuid
 from typing import List
 
@@ -39,6 +40,7 @@ class Metadata():
         """
         self.name = None
         self.description = ""
+        self.study_name = os.getenv("STUDY_NAME")
         self.metadata_hash = None
         self.input_streams = []
         self.annotations = []
@@ -58,6 +60,28 @@ class Metadata():
         """
         self.name = value
         return self
+
+    def set_study_name(self, value:str):
+        """
+        set study name
+
+        Args:
+            value (str): study name
+
+        Returns:
+            self
+
+        """
+        self.study_name = value
+        return self
+
+    def get_name(self):
+        """
+
+        Returns: name of a stream
+
+        """
+        return self.name
 
     def set_description(self, stream_description:str):
         """
@@ -86,6 +110,20 @@ class Metadata():
         """
         self.data_descriptor.append(dd)
         return self
+
+    def get_dataDescriptor(self, name):
+        """
+        get data descriptor by name
+
+        Args:
+            name (str):
+
+        Returns:
+            DataDescriptor object
+        """
+        for dd in self.data_descriptor:
+            if dd.name == name:
+                return dd
 
     def add_input_stream(self, input_stream:str):
         """
@@ -145,6 +183,8 @@ class Metadata():
 
         if not self.name:
             raise ValueError("Stream name is not defined.")
+        if not self.study_name:
+            raise ValueError("Study name is missing. use metadata.set_study_name method to set study name.")
         if not self.description:
             raise ValueError("Stream description is not defined.")
         if len(self.data_descriptor)==0:
@@ -176,6 +216,7 @@ class Metadata():
         for mm_obj in self.modules:
             module_metadata.append(mm_obj.__dict__)
         metadata_json["name"] = self.name
+        metadata_json["study_name"] = self.study_name
         metadata_json["description"] = self.description
         metadata_json["annotations"] = self.annotations
         metadata_json["input_streams"] = self.input_streams
@@ -192,13 +233,14 @@ class Metadata():
 
         """
         name = self.name
+        study_name = self.study_name
         data_descriptor = ""
         modules = ""
         for dd in self.data_descriptor:
             data_descriptor += str(dd.name)+str(dd.type)
         for mm in self.modules:
             modules += str(mm.name) + str(mm.version) + str(mm.authors)
-        hash_string = str(name)+"None"+str(data_descriptor)+str(modules)
+        hash_string = str(study_name)+str(name)+"None"+str(data_descriptor)+str(modules)
         hash_string = hash_string.strip().lower().replace(" ", "")
 
         return str(uuid.uuid3(uuid.NAMESPACE_DNS, hash_string))
@@ -310,6 +352,7 @@ class Metadata():
             md.data_descriptor = data_descriptor_list
             md.modules = module_list
             md.name = metadata.get("name", "")
+            md.study_name = metadata.get("study_name","")
             md.description = metadata.get("description", "")
             md.version = int(metadata.get("version", 1))
             md.input_streams = metadata.get("input_streams", [])

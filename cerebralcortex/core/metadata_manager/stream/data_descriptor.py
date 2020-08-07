@@ -90,4 +90,3 @@ class DataDescriptor():
         """
         self.__dict__ = obj
         return self
-

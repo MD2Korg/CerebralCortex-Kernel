@@ -29,12 +29,11 @@ import unittest
 import warnings
 
 from cerebralcortex import Kernel
-from cerebralcortex.test_suite.test_object_storage import TestObjectStorage
 from cerebralcortex.test_suite.test_sql_storage import SqlStorageTest
-from cerebralcortex.test_suite.test_stream import DataStreamTest
+from cerebralcortex.test_suite.test_nosql_storage import NoSqlStorageTest
 
 
-class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, TestObjectStorage):
+class TestCerebralCortex(unittest.TestCase, NoSqlStorageTest, SqlStorageTest):
 
     def setUp(self):
         """
@@ -57,9 +56,9 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         # sql/nosql params
         self.stream_name = "battery--org.md2k.phonesensor--phone"
         self.stream_version = 1
-        self.metadata_hash = "96816db3-ce79-37a8-bfe2-034db8c56a6d"
+        self.metadata_hash = "48e367f8-12f1-32d5-8d18-d17a8dae82ef"
         self.username = "test_user"
-        self.user_id = "bca0c-e19c-3956-9db2-5459ccadd40cfb2"
+        self.user_id = "bfb2ca0c-e19c-3956-9db2-5459ccadd40c"
         self.user_password = "test_password"
         self.user_password_encrypted = "10a6e6cc8311a3e2bcc09bf6c199adecd5dd59408c343e926b129c4914f3cb01"
         self.user_role = "test_role"
@@ -81,15 +80,9 @@ class TestCerebralCortex(unittest.TestCase, DataStreamTest, SqlStorageTest, Test
         This test will create required entries in sql database.
 
         """
-        if not os.path.isdir(self.cc_conf["filesystem"]["filesystem_path"]):
-            os.mkdir(self.cc_conf["filesystem"]["filesystem_path"])
-        self.CC.create_user(self.username, self.user_password, self.user_role, self.user_metadata, self.user_settings)
-
-    def test_9999_last(self):
-        """
-        Delete all the sample test data folder/files and sql entries
-
-        """
-        self.CC.delete_user(self.username)
-        # if self.cc_conf['nosql_storage']=="filesystem":
-        #     shutil.rmtree(self.cc_conf["filesystem"]["filesystem_path"])
+        try:
+            if not os.path.isdir(self.cc_conf["filesystem"]["filesystem_path"]):
+                os.mkdir(self.cc_conf["filesystem"]["filesystem_path"])
+            self.CC.create_user(self.username, self.user_password, self.user_role, self.user_metadata, self.user_settings)
+        except:
+            pass

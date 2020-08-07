@@ -27,15 +27,13 @@ import re
 import sys
 from typing import List
 
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
-from cerebralcortex.core.plotting.basic_plots import BasicPlots
-from cerebralcortex.core.plotting.stress_plots import StressStreamPlots
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
 from pyspark.sql.functions import udf
 from pyspark.sql.types import *
-
 from pyspark.sql.window import Window
+
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
 
 
 class DataStream(DataFrame):
@@ -54,8 +52,6 @@ class DataStream(DataFrame):
         
         self._data = data
         self._metadata = metadata
-        self._basic_plots = BasicPlots()
-        self._stress_plots = StressStreamPlots()
 
         if isinstance(data, DataFrame):
             super(self.__class__, self).__init__(data._jdf, data.sql_ctx)
@@ -70,12 +66,9 @@ class DataStream(DataFrame):
     def writeStream(self):
         raise NotImplementedError
 
-    def get_metadata(self, version: int = None) -> Metadata:
+    def get_metadata(self) -> Metadata:
         """
         get stream metadata
-
-        Args:
-            version (int): version of a stream
 
         Returns:
             Metadata: single version of a stream
@@ -83,12 +76,8 @@ class DataStream(DataFrame):
             Exception: if specified version is not available for the stream
 
         """
-        for md in self._metadata:
-            if md.version == version:
-                return md
-            else:
-                raise Exception("Version '" + str(version) + "' is not available for this stream.")
-        return None
+
+        return self._metadata
 
     @property
     def metadata(self):
@@ -297,27 +286,6 @@ class DataStream(DataFrame):
 
         exprs = {x: methodName for x in columns}
         return exprs
-
-    ############################### PLOTS ###############################
-
-    def _sort_values(self, pdf):
-        if "timestamp" in pdf.columns:
-            return pdf.sort_values('timestamp')
-        return pdf
-
-    def plot(self, y_axis_column=None):
-        pdf = self._data.toPandas()
-        pdf = self._sort_values(pdf)
-        self._basic_plots.timeseries(pdf, y_axis_column=y_axis_column)
-
-    def plot_hist(self, x_axis_column=None):
-        pdf = self._data.toPandas()
-        pdf = self._sort_values(pdf)
-        self._basic_plots.hist(pdf, x_axis_column=x_axis_column)
-
-#TODO: move visualization to their own algo modules
-
-
 
 
     #############################################################################

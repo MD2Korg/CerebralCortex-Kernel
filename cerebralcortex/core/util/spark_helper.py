@@ -35,7 +35,6 @@ def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal", enable_s
     Returns:
 
     """
-    from pyspark.sql import SQLContext
     from pyspark.sql import SparkSession
 
     ss = SparkSession.builder

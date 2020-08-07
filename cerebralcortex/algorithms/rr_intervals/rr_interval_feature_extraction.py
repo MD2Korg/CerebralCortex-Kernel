@@ -22,15 +22,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from typing import List
+
 import numpy as np
-from scipy import signal
-from scipy.stats import iqr
-from scipy.stats.mstats_basic import winsorize
-from enum import Enum
-from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, ArrayType
-from pyspark.sql.functions import pandas_udf, PandasUDFType
 import pandas as pd
-import datetime
+from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, ArrayType
+from scipy import signal
+from scipy.stats.mstats_basic import winsorize
+
 
 def lomb(time_stamps:List,
          samples:List,

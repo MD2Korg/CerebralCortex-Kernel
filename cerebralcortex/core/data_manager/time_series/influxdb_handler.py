@@ -24,14 +24,14 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
-import pandas as pd
 import traceback
 from datetime import datetime
 
+import pandas as pd
+from influxdb import DataFrameClient
 from influxdb import InfluxDBClient
 
 from cerebralcortex.core.datatypes import DataStream
-from influxdb import DataFrameClient
 
 
 class InfluxdbHandler():
@@ -62,7 +62,7 @@ class InfluxdbHandler():
         datapoints = datastream.data
         stream_identifier = datastream.identifier
         stream_owner_id = datastream.owner
-        stream_owner_name = self.sql_data.get_user_name(stream_owner_id)
+        stream_owner_name = self.sql_data.get_username(stream_owner_id)
         stream_name = datastream.name
 
         if datastream.data_descriptor:

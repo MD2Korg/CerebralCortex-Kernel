@@ -24,19 +24,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import math
-from typing import List
 
 import numpy as np
 import pandas as pd
-
-from cerebralcortex.core.datatypes.datastream import DataStream
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from pyspark.sql import functions as F
 from pyspark.sql.functions import pandas_udf, PandasUDFType
 from pyspark.sql.group import GroupedData
 from pyspark.sql.types import *
 from pyspark.sql.types import StructType
 from pyspark.sql.window import Window
+
+from cerebralcortex.core.datatypes.datastream import DataStream
+from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
 
 def complementary_filter(ds, freq: int = 16, accelerometer_x: str = "accelerometer_x",

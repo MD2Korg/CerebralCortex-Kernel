@@ -1,11 +1,48 @@
-from cerebralcortex.test_suite.util.data_helper import gen_location_datastream
+# Copyright (c) 2020, MD2K Center of Excellence
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice, this
+# list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+# this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
 from cerebralcortex.algorithms.gps.clustering import cluster_gps
 from cerebralcortex.kernel import Kernel
+from cerebralcortex.test_suite.util.data_helper import gen_location_datastream
 
+cc_config = "/../../conf/"
 
-CC = Kernel(cc_configs="default", mprov=True)
+# Create CC object
+CC = Kernel(configs_dir_path=cc_config)
+
+# get location data
 ds_gps = gen_location_datastream(user_id="bfb2ca0c-e19c-3956-9db2-5459ccadd40c", stream_name="gps--org.md2k.phonesensor--phone")
 
-d2=ds_gps.window(windowDuration=60)
-dd=cluster_gps(d2)
-dd.show(1)
+# window location data
+windowed_ds=ds_gps.window(windowDuration=60)
+
+# Cluster GPS data
+clusterz = cluster_gps(windowed_ds)
+
+# show results
+clusterz.show(truncate=False)
+
+# Store results
+# CC.save_stream(clusterz)

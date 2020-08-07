@@ -24,15 +24,18 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from pyspark.sql.types import StructField, StructType, DoubleType,StringType, TimestampType, IntegerType, ArrayType, BooleanType, LongType
-from pyspark.sql.functions import pandas_udf, PandasUDFType
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
+import pytz
 from pyspark.sql import functions as F
+from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.types import StructField, StructType, DoubleType, StringType, TimestampType, IntegerType, ArrayType, \
+    BooleanType, LongType
+
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
-import pandas as pd, numpy as np
-from datetime import datetime, date, timedelta
-import pytz
-
 
 
 def bluetooth_encounter(data,

@@ -23,14 +23,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import random
 from datetime import datetime, timedelta
 
-from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
-from datetime import datetime, timedelta
-import random
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataDescriptor, ModuleMetadata
 from cerebralcortex.core.util.spark_helper import get_or_create_sc
+
 
 def gen_phone_battery_data2()->object:
     """
@@ -92,9 +91,17 @@ def gen_phone_battery_metadata()->Metadata:
         Metadata: metadata of phone battery stream
     """
     stream_metadata = Metadata()
-    stream_metadata.set_description("this is a test-stream.").set_name("BATTERY--org.md2k.phonesensor--PHONE") \
+    stream_metadata.set_study_name("default").set_description("this is a test-stream.").set_name("BATTERY--org.md2k.phonesensor--PHONE") \
         .add_dataDescriptor(
-        DataDescriptor().set_name("level").set_type("float").set_attribute("description", "current battery charge")) \
+        DataDescriptor().set_name("timestamp").set_type("datetime").set_attribute("description", "UTC timestamp")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("localtime").set_type("datetime").set_attribute("description", "local timestamp")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("battery_level").set_type("float").set_attribute("description", "current battery charge")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("version").set_type("int").set_attribute("description", "stream version")) \
+        .add_dataDescriptor(
+        DataDescriptor().set_name("user").set_type("string").set_attribute("description", "user id")) \
         .add_module(
         ModuleMetadata().set_name("battery").set_version("1.2.4").set_attribute("attribute_key", "attribute_value").set_author(
             "test_user", "test_user@test_email.com"))
@@ -115,8 +122,7 @@ def gen_location_datastream(user_id, stream_name) -> object:
         DataStream: datastream object of gps location stream with its metadata
 
     """
-    column_name = ["timestamp", "localtime", "user", "version", "latitude", "longitude", "altitude", "speed", "bearing",
-                   "accuracy"]
+    column_name = ["timestamp", "localtime", "user", "version", "latitude", "longitude", "altitude", "speed", "bearing","accuracy"]
     sample_data = []
     timestamp = datetime(2019, 9, 1, 11, 34, 59)
     sqlContext = get_or_create_sc("sqlContext")

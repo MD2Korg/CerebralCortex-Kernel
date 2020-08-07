@@ -6,7 +6,7 @@ cc:
   throw_exception: True #if this is set to True then application will get exceptions
   auth_token_expire_time: 40000 #seconds
   auth_encryption_key: "md@k&#8"
-  log_files_path: "/Users/ali/IdeaProjects/CerebralCortex-Platform/mount_points/apiserver/data/"
+  log_files_path: "/Users/ali/cc_data/"
 
 #########################################################################
 #                        NoSQL Storage                                  #
@@ -15,35 +15,29 @@ nosql_storage: filesystem
 
 filesystem:
   # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
-
-  filesystem_path: "/Users/ali/IdeaProjects/MD2K_DATA/dbdp/"
+  filesystem_path: "/Users/ali/IdeaProjects/MD2K_DATA/stress_sample_ecg_data/"
 
 hdfs:
   host: localhost
   port: 9001
   raw_files_dir: "/user/ali/cc33/"
 
-#########################################################################
-#                        OBJECT Storage                                 #
-#########################################################################
 
-object_storage:
-  object_storage_path: "/Users/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/test_suite/sample_data/objects/"
 
 #########################################################################
 #                          Relational Storage                           #
 #########################################################################
 relational_storage: mysql
 
+sqlite:
+  file_path: "/Users/ali/cc_data/"
+
 mysql:
   host: 127.0.0.1 # change if MySQL is installed remotely
   port: 3306 # Change if MySQL is not using default port
   db_user: root # Change
   db_pass: pass # Change
-
-  # Note: do not change following parameters if you don't know what you are doing
   database: cerebralcortex
-  connection_pool_size: 1
 
 #########################################################################
 ###################### Visualization Data Storage #######################

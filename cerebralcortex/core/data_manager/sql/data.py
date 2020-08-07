@@ -1,4 +1,4 @@
-# Copyright (c) 2019, MD2K Center of Excellence
+# Copyright (c) 2020, MD2K Center of Excellence
 # - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
 #
@@ -23,20 +23,16 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from typing import List
+import sqlalchemy as db
+from sqlalchemy_utils import create_database, database_exists
 
-import mysql.connector
-import mysql.connector.pooling
-
-from cerebralcortex.core.data_manager.sql.cache_handler import CacheHandler
+from cerebralcortex.core.data_manager.sql import Base
 from cerebralcortex.core.data_manager.sql.stream_handler import StreamHandler
-from cerebralcortex.core.data_manager.sql.metadata_handler import MetadataHandler
 from cerebralcortex.core.data_manager.sql.users_handler import UserHandler
 from cerebralcortex.core.log_manager.log_handler import LogTypes
-from cerebralcortex.core.data_manager.sql.data_ingestion_handler import DataIngestionHandler
 
 
-class SqlData(StreamHandler, UserHandler, CacheHandler, DataIngestionHandler, MetadataHandler):
+class SqlData(StreamHandler, UserHandler):
     def __init__(self, CC):
         """
         Constructor
@@ -48,8 +44,8 @@ class SqlData(StreamHandler, UserHandler, CacheHandler, DataIngestionHandler, Me
         """
         if isinstance(CC, dict):
             self.config = CC
-            self.study_name = self.config["study_name"]
-            self.new_study = self.config["new_study"]
+            # self.study_name = self.config["study_name"]
+            # self.new_study = self.config["new_study"]
         else:
             self.config = CC.config
             self.study_name = CC.study_name
@@ -58,96 +54,31 @@ class SqlData(StreamHandler, UserHandler, CacheHandler, DataIngestionHandler, Me
         self.logtypes = LogTypes()
         self.sql_store = self.config["relational_storage"]
 
-        if self.sql_store!="mysql":
-            raise Exception(self.sql_store+": SQL storage is not supported. Please install and configure MySQL.")
+        if self.sql_store =="mysql":
 
-        self.hostIP = self.config['mysql']['host']
-        self.hostPort = self.config['mysql']['port']
-        self.database = self.config['mysql']['database']
-        self.dbUser = self.config['mysql']['db_user']
-        self.dbPassword = self.config['mysql']['db_pass']
-        self.datastreamTable = "stream"
-        self.kafkaOffsetsTable = "kafka_offsets"
-        self.ingestionLogsTable = "ingestion_logs"
-        self.correctedMetadata = "corrected_metadata"
-        self.userTable = "user"
-        self.poolName = "CC_Pool"
-        self.poolSize = self.config['mysql']['connection_pool_size']
-        self.pool = self.create_pool(pool_name=self.poolName, pool_size=self.poolSize)
+            self.hostIP = self.config['mysql']['host']
+            self.hostPort = self.config['mysql']['port']
+            self.database = self.config['mysql']['database']
+            self.dbUser = self.config['mysql']['db_user']
+            self.dbPassword = self.config['mysql']['db_pass']
 
-    def create_pool(self, pool_name: str = "CC_Pool", pool_size: int = 1):
-        """
-        Create a connection pool, after created, the request of connecting
-        MySQL could get a connection from this pool instead of request to
-        create a connection.
+            url = 'mysql+mysqlconnector://{0}:{1}@{2}:{3}/{4}'.format(self.dbUser, self.dbPassword, self.hostIP, self.hostPort, self.database)
 
-        Args:
-            pool_name (str): the name of pool, (default="CC_Pool")
-            pool_size (int): size of MySQL connections pool (default=1)
-        Returns:
-            object: MySQL connections pool
-        """
-        dbconfig = {
-            "host": self.hostIP,
-            "port": self.hostPort,
-            "user": self.dbUser,
-            "password": self.dbPassword,
-            "database": self.database,
-        }
-
-        pool = mysql.connector.pooling.MySQLConnectionPool(
-            pool_name=pool_name,
-            pool_size=pool_size,
-            pool_reset_session=True,
-            **dbconfig)
-        return pool
-
-    def close(self, conn, cursor):
-        """
-        close connection of mysql.
-
-        Args:
-            conn (object): MySQL connection object
-            cursor (object): MySQL cursor object
-        Raises:
-            Exception: if connection is closed
-        """
-        try:
-            cursor.close()
-            conn.close()
-        except Exception as exp:
-            raise Exception(exp)
-
-    def execute(self, sql, args=None, commit=False, executemany=False)->List[dict]:
-        """
-        Execute a sql, it could be with args and with out args. The usage is
-        similar with execute() function in module pymysql.
-
-        Args:
-            sql (str): sql clause
-            args (tuple): args need by sql clause
-            commit (bool): whether to commit
-            executemany (bool): execute batch
-        Returns:
-            list[dict]: returns a list of dicts if commit is set to False
-        Raises:
-            Exception: if MySQL query fails
-        """
-        # get connection form connection pool instead of create one.
-        conn = self.pool.get_connection()
-        cursor = conn.cursor(dictionary=True)
-        if args:
-            if executemany:
-                cursor.executemany(sql, args)
-            else:
-                cursor.execute(sql, args)
+        elif self.sql_store == "sqlite":
+            database_file_path = self.config["sqlite"]["file_path"]
+            if database_file_path[:-1]!="/":
+                database_file_path = database_file_path+"/"
+            url = 'sqlite:///{0}cc_kernel_database.db'.format(database_file_path)
         else:
-            cursor.execute(sql)
-        if commit is True:
-            conn.commit()
-            self.close(conn, cursor)
-            return None
-        else:
-            res = cursor.fetchall()
-            self.close(conn, cursor)
-            return res
+            raise Exception(self.sql_store + ": SQL storage is not supported. Please install and configure MySQL or sqlite.")
+
+        engine = db.create_engine(url)
+
+        if not database_exists(url):
+            create_database(url)
+
+        Base.metadata.create_all(engine)
+
+        Session = db.orm.sessionmaker()
+        Session.configure(bind=engine)
+        self.session = Session()

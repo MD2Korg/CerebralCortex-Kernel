@@ -22,14 +22,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import numpy as np
-import pandas as pd
-
-from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, ModuleMetadata
-from pyspark.sql.functions import pandas_udf, PandasUDFType
-from pyspark.sql.types import StructField, StructType, StringType, FloatType, TimestampType, IntegerType
-from pyspark.sql.group import GroupedData
 
 
 def update_metadata(stream_metadata, stream_name, stream_desc, module_name, module_version, authors:list, input_stream_names:list=[], annotations:list=[]) -> Metadata:
