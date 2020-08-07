@@ -63,9 +63,11 @@ class Kernel:
             >>> CC = Kernel(cc_configs=updated_cc_configs, study_name="default")
             >>> # for complete configs, have a look at default configs at: https://github.com/MD2Korg/CerebralCortex-Kernel/blob/3.3/cerebralcortex/core/config_manager/default.yml
         """
-
-        os.environ["PYSPARK_PYTHON"] = os.environ['_']
-        os.environ["PYSPARK_DRIVER_PYTHON"] = os.environ['_']
+        try:
+            os.environ["PYSPARK_PYTHON"] = os.environ['_']
+            os.environ["PYSPARK_DRIVER_PYTHON"] = os.environ['_']
+        except:
+            raise Exception("Please set PYSPARK_PYTHON and PYSPARK_DRIVER_PYTHON environment variable. For example, export PYSPARK_DRIVER_PYTHON=/path/to/python/dir")
 
         if not configs_dir_path and not cc_configs:
             raise ValueError("Please provide configs_dir_path or cc_configs.")
@@ -532,11 +534,12 @@ class Kernel:
 
     # ~~~~~~~~~~~~~~~~~~~~      Data Import ~~~~~~~~~~~~~~~~~~~~~~~ #
 
-    def read_csv(self, file_path, header:bool=False, column_names:list=[], timestamp_column_index:int=0, timein:str="milliseconds", metadata:Metadata=None)->DataStream:
+    def read_csv(self, file_path, stream_name:str, header:bool=False, column_names:list=[], timestamp_column_index:int=0, timein:str="milliseconds", metadata:Metadata=None)->DataStream:
         """
         Reads a csv file (compressed or uncompressed), parse it, convert it into CC DataStream object format and returns it
         Args:
             file_path (str): path of the file
+            stream_name (str): name of the stream
             header (bool): set it to True if csv contains header column
             column_names (list[str]): list of column names
             timestamp_column_index (int): index of the timestamp column name
@@ -563,6 +566,10 @@ class Kernel:
         parsed_df  = df.withColumn(timestamp_column_name, df[timestamp_column_name].cast(dataType=T.TimestampType()))
 
         if isinstance(metadata, Metadata) and metadata:
-            return DataStream(data=parsed_df, metadata=metadata)
+            mtadata = metadata
         else:
-            return DataStream(data=parsed_df, metadata=Metadata())
+            mtadata = Metadata()
+
+        ds = DataStream(data=parsed_df, metadata=mtadata)
+        ds.metadata.set_name(stream_name)
+        return ds

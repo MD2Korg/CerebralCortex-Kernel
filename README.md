@@ -11,7 +11,12 @@ CerebralCortex Kernel is part of our
  CerebralCortex-Kernel is capable of parallelizing tasks and scale a job to n-number of cores/machines. CerebralCortex Kernel offers some builtin features as follows:
 
 ## Installation
-pip3 install cerebralcortex-kernel
+CerebralCortex-Kernel requires minimum [Python3.6](https://www.python.org/downloads/release/python-360/). To install CerebralCortex-Kernel as an API:
+
+```pip3 install cerebralcortex-kernel```
+
+- Note: please use appropriate pip (e.g., pip, pip3, pip3.6 etc.) installed on your machine 
+
 
 ## Usage
 ```
@@ -31,9 +36,38 @@ CC = Kernel(configs_dir_path="dir/path/to/configs/")
 ```
 
 ### How to use builtin algorithms
+Using builtin algorithms are as easy as loading data, passing it to algorithm and get the results. 
+Below is an example on how to compute CGM Glucose Variability Metrics.
+
 - (Download Glucose Data)
+- Install Cerebral Cortex Kernel ```pip install cerebralcortex-kernel```
+- Open terminal and start python3 shell
 
+```$xslt
+# import packages
+from cerebralcortex.kernel import Kernel
+from cerebralcortex.algorithms.glucose.glucose_variability_metrics import glucose_var
 
+# Create Kernel object
+CC = Kernel(cc_configs="default")
+
+# Read sample CSV data
+ds = CC.read_csv("/Users/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/test_suite/sample_data/cgm_glucose_variability_metrics/sample.csv", stream_name="cgm_glucose_variability_metrics", header=True)
+
+# view sample data
+ds.show(2)
+
+# Apply glucose_variability_metrics algorithm on the data
+results = glucose_var(ds)
+
+# view results
+results.show(2)
+
+# save computed data 
+CC.save_stream(results)
+```
+
+Please have a look at [jupyter notebook](https://github.com/MD2Korg/CerebralCortex/blob/master/jupyter_demo/datastream_operation.ipynb) for basic operation that could be perform on DataStream object.
 
 ### Algorithms to  Analyze Sensor Data
 External CerebralCortex-Kernel offers following builtin algorithms to analyze sensor data.
@@ -42,23 +76,24 @@ External CerebralCortex-Kernel offers following builtin algorithms to analyze se
 - ECG RR Interval Computation
 - Heart Rate Variability Feature Computation
 - CGM Glucose Variability Metrics
-- GPS Data Clustering
+- [GPS Data Clustering](https://github.com/MD2Korg/CerebralCortex/blob/master/jupyter_demo/cc_algorithms.ipynb)
 - Sensor Data Interpolation
 - Statistical Features Computation
+- [List of all available algorithms](https://github.com/MD2Korg/CerebralCortex-Kernel/tree/master/cerebralcortex/algorithms)
 
 ### Markers with ML Models
-- Stress Detection using ECG data
-- mContain Social Crowding
+- [Stress Detection using ECG data](https://github.com/MD2Korg/CerebralCortex-Kernel/tree/master/cerebralcortex/markers/ecg_stress)
+- [mContain Social Crowding](https://github.com/MD2Korg/CerebralCortex-Kernel/tree/master/cerebralcortex/markers/mcontain)
 - Brushing Detection using Accelerometer and Gyro Data (TODO)
 
 ### Visualization
-- Basic Plots for Timeseries Data
-- Plot GPS Clusters on Map
-- Stress Visualization
+- [Basic Plots for Timeseries Data](https://github.com/MD2Korg/CerebralCortex/blob/master/jupyter_demo/plotting_demo.ipynb)
+- [Plot GPS Clusters on Map](https://github.com/MD2Korg/CerebralCortex/blob/master/jupyter_demo/cc_algorithms.ipynb)
+- [Stress Visualization](https://github.com/MD2Korg/CerebralCortex/blob/master/jupyter_demo/plotting_demo.ipynb)
 
 ### Import and Document Data
-- Import CSV Data in CerebralCortex-Kernel Format
-- Document imported Data using MetaData Module
+- [Import CSV Data in CerebralCortex-Kernel Format](https://github.com/MD2Korg/CerebralCortex/blob/master/jupyter_demo/import_and_analyse_data.ipynb)
+- [Document imported Data using MetaData Module](https://github.com/MD2Korg/CerebralCortex/blob/master/jupyter_demo/import_and_analyse_data.ipynb)
 
 ### External CerebralCortex-Kernel Supported Platforms
 - mProv 
@@ -66,39 +101,23 @@ External CerebralCortex-Kernel offers following builtin algorithms to analyze se
 
 
 ## Examples
-- [How to use CerebralCortex-Kernel API](https://github.com/MD2Korg/CerebralCortex-kernel-Examples)
+- [Jupyter Notebooks](https://github.com/MD2Korg/CerebralCortex/tree/master/jupyter_demo)
 
 ## Documentation
 
 - [Source code documentation](https://cerebralcortex-kernel.readthedocs.io/en/latest/)
 
-## Installation
+## Deploy on Cloud
 CerebralCortex-Kernel is a part of CerebralCortex cloud platform. To test the complete cloud platform, please visit [CerebralCortex](https://github.com/MD2Korg/CerebralCortex).
 
-CerebralCortex-Kernel requires minimum [Python3.6](https://www.python.org/downloads/release/python-360/). To install CerebralCortex-Kernel as an API:
-
-```pip3 install cerebralcortex-kernel```
-
-- Note: please use appropriate pip (e.g., pip, pip3, pip3.6 etc.) installed on your machine 
-
-### Dependencies
-
--  `Python3.6`
-
-   -  Note: Python3.7 is not compatible with some of the requirements
-   -  Make sure pip version matches Python version
-   
 
 ## FAQ
 **1 - Do I need whole CerebralCortex cloud platform to use CerebralCortex-Kernal?**
 
-No! If you want to use CerebralCortex-Kernel independently then you would need: 
-* Backend storage (FileSystem/HDFS and MySQL) with some data. Here is [some sample data](TODO) to play with.
-* Setup the [configurations](https://github.com/MD2Korg/CerebralCortex-Kernel/tree/master/conf)
-* Use the [examples](TODO) to start exploring data
+No! If you want to use CerebralCortex-Kernel independently.
 
 
-**2 - How can I change NoSQL storage backend?**
+**2 - How can I change NoSQL backend storage layer?**
 
 CerebralCortex-Kernel follows component based structure. This makes it easier to add/remove features. 
 * Add a new class in [Data manager-Raw](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/core/data_manager/raw/). 
@@ -109,9 +128,9 @@ CerebralCortex-Kernel follows component based structure. This makes it easier to
 **3 - How can I replace MySQL with another SQL storage system?** 
 
 * Add a new class in [Data manager-SQL](https://github.com/MD2Korg/CerebralCortex-Kernel/tree/master/cerebralcortex/core/data_manager/sql). 
-* New class must implement all of the methods available in (stream_handler.py)[https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/core/data_manager/sql/stream_handler.py] class.
+* New class must implement all of the methods available in [stream_handler.py](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/core/data_manager/sql/stream_handler.py) class.
 * Create an object of new class in [Data-SQL](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/core/data_manager/sql/data.py) with appropriate parameters.
-* Add appropriate configurations in [cerebralcortex.yml](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/conf/cerebralcortex.yml) in (Relational Storage)[https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/conf/cerebralcortex.yml#L31] section.
+* Add appropriate configurations in [cerebralcortex.yml](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/conf/cerebralcortex.yml) in [Relational Storage](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/conf/cerebralcortex.yml) section.
 
 **4 - Where are all the backend storage related classes/methods?**    
 
