@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 here = path.abspath(path.dirname(__file__))
 
 reqs = [
-    'wheel==0.29.0',
+    'wheel==0.34.2',
     'pytz==2017.2',
     'mysql-connector-python==8.0.15',
     'PyYAML>=5.3.1',
@@ -48,7 +48,9 @@ if __name__ == '__main__':
         package_data={'': ['default.yml']},
 
         description='Backend data analytics platform for MD2K software',
+        long_description_content_type='text/markdown',
         long_description=long_description,
+
 
         author='MD2K.org',
         author_email='dev@md2k.org',
