@@ -7,66 +7,78 @@ You can find more information about MD2K software on our
 [MD2K website](https://md2k.org/).
 
 CerebralCortex Kernel is part of our 
-[CerebralCortex cloud platform](https://github.com/MD2Korg/CerebralCortex). 
- CerebralCortex-Kernel is capable of parallelizing tasks and scale a job to n-number of cores/machines. CerebralCortex Kernel offers some builtin features as follows:
+[CerebralCortex cloud platform](https://github.com/MD2Korg/CerebralCortex).
+CerebralCortex-Kernel is capable of parallelizing tasks and scale a job to n-number of cores/machines. CerebralCortex Kernel offers some builtin features as follows:
 
 ## Installation
+### Dependencies
+CerebralCortex Kernel requires `java 8` to run. Java 8 prior to version 8u92 support is deprecated as of CerebralCortex-Kernel 3.3.0.
+- check java version - `java -version` 
+- set ``JAVA_HOME`` to `java 8`
+- OR start python shell with ``JAVA_HOME=/path/to/java/Home python3``
+
+
+### Install using pip
 CerebralCortex-Kernel requires minimum [Python3.6](https://www.python.org/downloads/release/python-360/). To install CerebralCortex-Kernel as an API:
 
-```pip3 install cerebralcortex-kernel```
+`pip3 install cerebralcortex-kernel`
 
 - Note: please use appropriate pip (e.g., pip, pip3, pip3.6 etc.) installed on your machine 
 
+### Install from source code
+- Clone repo - 
+` git clone https://github.com/MD2Korg/CerebralCortex-Kernel.git`
+- `cd CerebralCortex-Kernel`
+- `python3 setup.py install`
 
 ## Usage
-```
-from cerebralcortex.kernel import Kernel
-CC = Kernel(cc_configs="default")
 
-# to view default configs
-print(CC.config)
+    from cerebralcortex.kernel import Kernel
+    CC = Kernel(cc_configs="default")
+    
+    # to view default configs
+    print(CC.config)
+    
+    # default data storage path is
+    # /user/home/folder/cc_data
 
-# default data storage path is
-# /user/home/folder/cc_data
-```
+
 By default Kernel will load default configs. Please have a look at all available [configurations](https://github.com/MD2Korg/CerebralCortex-Kernel/tree/master/conf) for CerebralCortex-Kernel. 
 You may also load config files as:
-```$xslt
-CC = Kernel(configs_dir_path="dir/path/to/configs/")
-```
+
+`CC = Kernel(configs_dir_path="dir/path/to/configs/", new_study=True)`
 
 ### How to use builtin algorithms
 Using builtin algorithms are as easy as loading data, passing it to algorithm and get the results. 
 Below is an example on how to compute CGM Glucose Variability Metrics.
 
-- [Download Glucose Data](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/test_suite/sample_data/cgm_glucose_variability_metrics/sample.csv)
-- Install Cerebral Cortex Kernel ```pip install cerebralcortex-kernel```
+- [Download Glucose Data](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/test_suite/sample_data/cgm_glucose_variability_metrics/sample.csv). The device used to collect glucose was the [Dexcom G6 Continuous Glucose Monitor](https://www.dexcom.com/g6-cgm-system)
+- Install Cerebral Cortex Kernel `pip install cerebralcortex-kernel`
 - Open terminal and start python3 shell
 
-```$xslt
-# import packages
-from cerebralcortex.kernel import Kernel
-from cerebralcortex.algorithms.glucose.glucose_variability_metrics import glucose_var
-
-# Create Kernel object
-CC = Kernel(cc_configs="default")
-
-# Read sample CSV data
-ds = CC.read_csv("/path/of/the/downloaded/file/sample.csv", stream_name="cgm_glucose_variability_metrics", header=True)
-
-# view sample data
-ds.show(2)
-
-# Apply glucose_variability_metrics algorithm on the data
-results = glucose_var(ds)
-
-# view results
-results.show(2)
-
-# save computed data 
-CC.save_stream(results)
-```
-
+### Python Code
+    # import packages
+    from cerebralcortex.kernel import Kernel
+    from cerebralcortex.algorithms.glucose.glucose_variability_metrics import glucose_var
+    
+    # Create Kernel object
+    CC = Kernel(cc_configs="default", new_study=True)
+    
+    # Read sample CSV data
+    ds = CC.read_csv("/path/of/the/downloaded/file/sample.csv", stream_name="cgm_glucose_variability_metrics", header=True)
+    
+    # view sample data
+    ds.show(2)
+    
+    # Apply glucose_variability_metrics algorithm on the data
+    results = glucose_var(ds)
+    
+    # view results
+    results.show(2)
+    
+    # save computed data 
+    CC.save_stream(results)
+     
 Please have a look at [jupyter notebook](https://github.com/MD2Korg/CerebralCortex/blob/master/jupyter_demo/datastream_operation.ipynb) for basic operation that could be perform on DataStream object.
 
 ### Algorithms to  Analyze Sensor Data
