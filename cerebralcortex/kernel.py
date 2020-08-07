@@ -63,6 +63,10 @@ class Kernel:
             >>> CC = Kernel(cc_configs=updated_cc_configs, study_name="default")
             >>> # for complete configs, have a look at default configs at: https://github.com/MD2Korg/CerebralCortex-Kernel/blob/3.3/cerebralcortex/core/config_manager/default.yml
         """
+
+        os.environ["PYSPARK_PYTHON"] = os.environ['_']
+        os.environ["PYSPARK_DRIVER_PYTHON"] = os.environ['_']
+
         if not configs_dir_path and not cc_configs:
             raise ValueError("Please provide configs_dir_path or cc_configs.")
         elif configs_dir_path and cc_configs:

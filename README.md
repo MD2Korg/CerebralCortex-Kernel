@@ -1,16 +1,69 @@
 # CerebralCortex Kernel
-Cerebral Cortex is the big data cloud companion of mCerebrum designed to support population-scale data analysis, visualization, model development, and intervention design for mobile sensor data.
+Cerebral Cortex is the big data cloud companion of mCerebrum designed to support population-scale 
+data analysis, visualization, model development, and intervention design for mobile sensor data.
 
-You can find more information about MD2K software on our [software website](https://md2k.org/software) or the MD2K organization on our [MD2K website](https://md2k.org/).
+You can find more information about MD2K software on our 
+[software website](https://md2k.org/software) or the MD2K organization on our 
+[MD2K website](https://md2k.org/).
 
-CerebralCortex Kernel is part of our [CerebralCortex cloud platform](https://github.com/MD2Korg/CerebralCortex). CerebralCortex Kernel is mainly responsible to store/retrieve mobile sensor data along with it's metadata. 
+CerebralCortex Kernel is part of our 
+[CerebralCortex cloud platform](https://github.com/MD2Korg/CerebralCortex). 
+ CerebralCortex-Kernel is capable of parallelizing tasks and scale a job to n-number of cores/machines. CerebralCortex Kernel offers some builtin features as follows:
 
-**Note**:
+## Installation
+pip3 install cerebralcortex-kernel
 
-We have renamed following repositories.
+## Usage
+```
+from cerebralcortex.kernel import Kernel
+CC = Kernel(cc_configs="default")
 
-* CerebralCortex-Platform -> CerebralCortex
-* CerebralCortex - >  CerebralCortex-Kernel
+# to view default configs
+print(CC.config)
+
+# default data storage path is
+# /user/home/folder/cc_data
+```
+By default Kernel will load default configs. Please have a look at all available [configurations](https://github.com/MD2Korg/CerebralCortex-Kernel/tree/master/conf) for CerebralCortex-Kernel. 
+You may also load config files as:
+```$xslt
+CC = Kernel(configs_dir_path="dir/path/to/configs/")
+```
+
+### How to use builtin algorithms
+- (Download Glucose Data)
+
+
+
+### Algorithms to  Analyze Sensor Data
+External CerebralCortex-Kernel offers following builtin algorithms to analyze sensor data.
+
+- ECG sensor data quality
+- ECG RR Interval Computation
+- Heart Rate Variability Feature Computation
+- CGM Glucose Variability Metrics
+- GPS Data Clustering
+- Sensor Data Interpolation
+- Statistical Features Computation
+
+### Markers with ML Models
+- Stress Detection using ECG data
+- mContain Social Crowding
+- Brushing Detection using Accelerometer and Gyro Data (TODO)
+
+### Visualization
+- Basic Plots for Timeseries Data
+- Plot GPS Clusters on Map
+- Stress Visualization
+
+### Import and Document Data
+- Import CSV Data in CerebralCortex-Kernel Format
+- Document imported Data using MetaData Module
+
+### External CerebralCortex-Kernel Supported Platforms
+- mProv 
+- mFlow 
+
 
 ## Examples
 - [How to use CerebralCortex-Kernel API](https://github.com/MD2Korg/CerebralCortex-kernel-Examples)
