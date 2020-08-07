@@ -39,7 +39,7 @@ CC = Kernel(configs_dir_path="dir/path/to/configs/")
 Using builtin algorithms are as easy as loading data, passing it to algorithm and get the results. 
 Below is an example on how to compute CGM Glucose Variability Metrics.
 
-- (Download Glucose Data)
+- [Download Glucose Data](https://github.com/MD2Korg/CerebralCortex-Kernel/blob/master/cerebralcortex/test_suite/sample_data/cgm_glucose_variability_metrics/sample.csv)
 - Install Cerebral Cortex Kernel ```pip install cerebralcortex-kernel```
 - Open terminal and start python3 shell
 
@@ -52,7 +52,7 @@ from cerebralcortex.algorithms.glucose.glucose_variability_metrics import glucos
 CC = Kernel(cc_configs="default")
 
 # Read sample CSV data
-ds = CC.read_csv("/Users/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/test_suite/sample_data/cgm_glucose_variability_metrics/sample.csv", stream_name="cgm_glucose_variability_metrics", header=True)
+ds = CC.read_csv("/path/of/the/downloaded/file/sample.csv", stream_name="cgm_glucose_variability_metrics", header=True)
 
 # view sample data
 ds.show(2)
