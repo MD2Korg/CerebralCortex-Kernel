@@ -556,11 +556,13 @@ def glucose_var(ds):
         return pdf
 
     # check if datastream object contains grouped type of DataFrame
-    if not isinstance(ds._data, GroupedData):
-        raise Exception(
-            "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
+    # if not isinstance(ds._data, GroupedData):
+    #     raise Exception(
+    #         "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
 
-    data = ds._data.apply(get_all_metrics)
+
+
+    data = ds._data.groupBy(["user", "version"]).apply(get_all_metrics)
 
     results = DataStream(data=data, metadata=Metadata())
     metadta = update_metadata(stream_metadata=results.metadata,

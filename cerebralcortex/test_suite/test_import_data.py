@@ -52,8 +52,9 @@ CC = Kernel(config_filepath, new_study=True)
 
 column_names = ["timestamp", "user", "version", "latitude", "longitude", "altitude", "speed", "bearing","accuracy"]
 #column_names = ["timestamp","localtime","ecg","version", "user"]
-df = CC.read_csv("/Users/ali/IdeaProjects/MD2K_DATA/demo/csv_data/gps_with_timestamp_column.csv", column_names=column_names)
+df = CC.read_csv("/Users/ali/IdeaProjects/MD2K_DATA/demo/csv_data/gps_with_timestamp_column.csv", stream_name="sample-stream-data", column_names=column_names)
 #df=CC.sparkSession.read.format("csv").schema("ts Date, offset Integer, data String").load("/Users/ali/IdeaProjects/MD2K_DATA/cc1/data/NU/00465b72-18db-3541-9698-56584da2ff2a/00465b72-18db-3541-9698-56584da2ff2a+17284+org.md2k.datakit+PRIVACY+PHONE.csv.bz2")
 #CC.save_data_to_influxdb(df)
+ss=df.groupBy("user")
 df.show(truncate=False)
 df.printSchema()
