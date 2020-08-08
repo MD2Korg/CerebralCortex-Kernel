@@ -64,8 +64,10 @@ class Kernel:
             >>> # for complete configs, have a look at default configs at: https://github.com/MD2Korg/CerebralCortex-Kernel/blob/3.3/cerebralcortex/core/config_manager/default.yml
         """
         try:
-            os.environ["PYSPARK_PYTHON"] = os.environ['_']
-            os.environ["PYSPARK_DRIVER_PYTHON"] = os.environ['_']
+            if os.getenv("PYSPARK_PYTHON"):
+                os.environ["PYSPARK_PYTHON"] = os.environ['_']
+            if os.getenv("PYSPARK_DRIVER_PYTHON"):
+                os.environ["PYSPARK_DRIVER_PYTHON"] = os.environ['_']
         except:
             raise Exception("Please set PYSPARK_PYTHON and PYSPARK_DRIVER_PYTHON environment variable. For example, export PYSPARK_DRIVER_PYTHON=/path/to/python/dir")
 
