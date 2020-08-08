@@ -24,7 +24,7 @@ reqs = [
     'scikit-learn==0.22.2.post1',
     'plotly==4.9.0',
     'matplotlib',
-    'cufflinks',
+    'cufflinks==0.17.3',
     'ipyleaflet',
     'scipy',
     'py-ecg-detectors==1.0.2',
