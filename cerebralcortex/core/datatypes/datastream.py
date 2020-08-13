@@ -675,6 +675,26 @@ class DataStream(DataFrame):
         data = self._data.groupby(*cols)
         return data
 
+    def show(self, n=20, truncate=True, vertical=False):
+        """
+
+        Args:
+            n: Number of rows to show.
+            truncate: If set to ``True``, truncate strings longer than 20 chars by default.
+            If set to a number greater than one, truncates long strings to length ``truncate``
+            and align cells right.
+            vertical: If set to ``True``, print output rows vertically (one line
+            per column value).
+
+        Returns:
+
+        """
+        from pyspark.sql.group import GroupedData
+        if isinstance(self._data, GroupedData):
+            raise Exception(
+                "show is not callable on windowed/group data.")
+        self._data.show(n=n, truncate=truncate, vertical=vertical)
+
     def head(self, n=None):
         """
         Returns the first n rows.

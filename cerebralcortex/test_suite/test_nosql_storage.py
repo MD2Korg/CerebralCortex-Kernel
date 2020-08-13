@@ -41,6 +41,8 @@ class NoSqlStorageTest:
         data = gen_phone_battery_data()
         metadata = gen_phone_battery_metadata()
         ds = DataStream(data, metadata)
+        ww = ds.window()
+        ww.show()
         result = self.CC.save_stream(ds)
 
         self.assertEqual(result, True)
