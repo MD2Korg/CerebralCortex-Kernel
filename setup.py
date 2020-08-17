@@ -44,7 +44,7 @@ if __name__ == '__main__':
     setup(
         name="cerebralcortex-kernel",
 
-        version='3.3.0',
+        version='3.3.1',
 
         package_data={'': ['default.yml']},
 

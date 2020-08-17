@@ -692,7 +692,7 @@ class DataStream(DataFrame):
         from pyspark.sql.group import GroupedData
         if isinstance(self._data, GroupedData):
             raise Exception(
-                "show is not callable on windowed/group data.")
+                "show is not callable on windowed/grouped data.")
         self._data.show(n=n, truncate=truncate, vertical=vertical)
 
     def head(self, n=None):
