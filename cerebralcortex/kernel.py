@@ -536,13 +536,15 @@ class Kernel:
 
     # ~~~~~~~~~~~~~~~~~~~~      Data Import ~~~~~~~~~~~~~~~~~~~~~~~ #
 
-    def read_csv(self, file_path, stream_name:str, header:bool=False, column_names:list=[], timestamp_column_index:int=0, timein:str="milliseconds", metadata:Metadata=None)->DataStream:
+    def read_csv(self, file_path, stream_name:str, header:bool=False, delimiter:str=',', column_names:list=[], timestamp_column_index:int=0, timein:str="milliseconds", metadata:Metadata=None)->DataStream:
         """
         Reads a csv file (compressed or uncompressed), parse it, convert it into CC DataStream object format and returns it
+
         Args:
             file_path (str): path of the file
             stream_name (str): name of the stream
             header (bool): set it to True if csv contains header column
+            delimiter (str): seprator used in csv file. Default is comma
             column_names (list[str]): list of column names
             timestamp_column_index (int): index of the timestamp column name
             timein (str): if timestamp is epoch time, provide whether it is in milliseconds or seconds
@@ -555,10 +557,10 @@ class Kernel:
             raise Exception("timestamp can only be in milliseconds or seconds.")
 
         if column_names:
-            df = self.sparkSession.read.csv(file_path, inferSchema=True, header=header).toDF(*column_names)
+            df = self.sparkSession.read.options(inferschema='true', quote="'", delimiter=delimiter, header=header).csv(file_path).toDF(*column_names)
 
         else:
-            df = self.sparkSession.read.csv(file_path, inferSchema=True, header=header)
+            df = self.sparkSession.read.options(inferschema='true', quote="'", delimiter=delimiter, header=header).csv(file_path)
 
         timestamp_column_name = df.schema[timestamp_column_index].name
 
