@@ -61,7 +61,7 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
     data_quality_band_loose = 'loose/improper attachment'
     data_quality_not_worn = 'sensor off body'
     data_quality_band_off = 'battery down/disconnected'
-    data_quality_missing = 'interittent data loss'
+    data_quality_missing = 'intermittent data loss'
     data_quality_good = 'acceptable'
     stream_name = 'org.md2k.autosense.ecg.quality'
 
@@ -79,7 +79,7 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
                 .set_attribute('Loose/Improper Attachment','Electrode Displacement') \
                 .set_attribute('Sensor off Body', 'Autosense not worn') \
                 .set_attribute('Battery down/Disconnected', 'No data is present - Can be due to battery down or sensor disconnection') \
-                .set_attribute('Interittent Data Loss','Not enough samples are present') \
+                .set_attribute('Intermittent Data Loss','Not enough samples are present') \
                 .set_attribute('Acceptable','Good Quality')) \
             .add_dataDescriptor(
             DataDescriptor().set_name("ecg").set_type("double").set_attribute("description", \
