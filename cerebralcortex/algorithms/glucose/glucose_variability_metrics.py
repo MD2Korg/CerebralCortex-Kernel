@@ -32,7 +32,6 @@ from cerebralcortex.algorithms.utils.util import update_metadata
 from cerebralcortex.core.datatypes import DataStream
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 
-
 def glucose_var(ds):
     """
 
