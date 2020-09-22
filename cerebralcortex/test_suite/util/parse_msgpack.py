@@ -28,11 +28,12 @@ def msgpack_to_pandas(input_data: object) -> pd.DataFrame:
     else:
         df = pd.DataFrame(data, columns=header)
         df.columns = df.columns.str.lower()
-        df.timestamp = df['timestamp']
+        df.timestamp = pd.to_datetime(df['timestamp'], unit='us')
         df.timestamp = df.timestamp.dt.tz_localize('UTC')
         df.localtime = pd.to_datetime(df['localtime'], unit='us')
         df.localtime = df.localtime.dt.tz_localize('UTC')
         return df
+
 
 if __name__=="__main__":
 
