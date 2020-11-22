@@ -35,7 +35,7 @@ reqs = [
 ]
 
 
-# Get the long description from the README file
+# Get the long description from the README file.
 with open(path.join(here, 'README.md')) as f:
     long_description = f.read()
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
         keywords='mHealth machine-learning data-analysis',
 
         # You can just specify the packages manually here if your project is
-        # simple. Or you can use find_packages().
+        # simple. Or you can use find_packages()
         packages=find_packages(exclude=['contrib', 'docs', 'tests']),
 
         # List run-time dependencies here.  These will be installed by pip when
