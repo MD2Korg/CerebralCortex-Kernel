@@ -62,7 +62,10 @@ class FileBasedStorage():
             str: path where data shall be stored/searched
         """
 
-        dirpath = self.data_path+"study="+self.study_name+"/"
+        if self.nosql_store == "hdfs":
+            dirpath = self.hdfs_spark_url + self.data_path+"study="+self.study_name+"/"
+        else:
+            dirpath = self.data_path+"study="+self.study_name+"/"
 
         if stream_name:
             dirpath += "stream={0}/".format(stream_name)

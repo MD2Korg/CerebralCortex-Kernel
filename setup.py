@@ -14,7 +14,7 @@ reqs = [
     'pyarrow==0.17.1',
     'pympler==0.5',
     'hdfs3==0.3.0',
-    'pyspark==3.0.0',
+    'pyspark==3.0.1',
     'msgpack==0.6.1',
     'PyJWT==1.7.1',
     'pandas==1.0.5',
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     setup(
         name="cerebralcortex-kernel",
 
-        version='3.3.1',
+        version='3.3.2',
 
         package_data={'': ['default.yml']},
 
