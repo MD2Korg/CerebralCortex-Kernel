@@ -62,7 +62,7 @@ class SqlData(StreamHandler, UserHandler):
             self.dbUser = self.config['mysql']['db_user']
             self.dbPassword = self.config['mysql']['db_pass']
 
-            url = 'mysql+mysqlconnector://{0}:{1}@{2}:{3}/{4}'.format(self.dbUser, self.dbPassword, self.hostIP, self.hostPort, self.database)
+            url = 'mysql+mysqlconnector://{0}:{1}@{2}:{3}/{4}/?use_pure=True'.format(self.dbUser, self.dbPassword, self.hostIP, self.hostPort, self.database)
 
         elif self.sql_store == "sqlite":
             database_file_path = self.config["sqlite"]["file_path"]
