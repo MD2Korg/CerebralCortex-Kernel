@@ -75,6 +75,7 @@ class StreamHandler:
                 self.session.commit()
                 return {"status": True, "version": version, "record_type": "new"}
             except Exception as e:
+                self.session.rollback()
                 raise Exception(e)
 
     def _is_metadata_changed(self, stream_name, metadata_hash) -> dict:
@@ -92,6 +93,8 @@ class StreamHandler:
 
         """
         rows = self.session.query(Stream).filter(Stream.metadata_hash==metadata_hash).first()
+
+        self.close()
 
         if rows:
             return {"version": int(rows.version), "status": "exist"}
@@ -129,6 +132,8 @@ class StreamHandler:
 
         rows = self.session.query(Stream.stream_metadata).filter((Stream.name == stream_name) & (Stream.version==version) & (Stream.study_name==self.study_name)).first()
 
+        self.close()
+
         if rows:
             return Metadata().from_json_file(rows.stream_metadata)
         else:
@@ -146,6 +151,7 @@ class StreamHandler:
             >>> CC.list_streams()
         """
         rows = self.session.query(Stream.stream_metadata).filter(Stream.study_name == self.study_name).all()
+        self.close()
         results = []
         if rows:
             for row in rows:
@@ -168,6 +174,7 @@ class StreamHandler:
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
         rows = self.session.query(Stream.name).filter(Stream.name.ilike('%'+stream_name+'%')).all()
+        self.close()
         if rows:
             return rows
         else:
@@ -192,7 +199,7 @@ class StreamHandler:
             raise ValueError("Stream_name is a required field.")
 
         rows = self.session.query(Stream.version).filter((Stream.name==stream_name) & (Stream.study_name==self.study_name)).all()
-
+        self.close()
         results = []
         if rows:
             for row in rows:
@@ -218,7 +225,7 @@ class StreamHandler:
             raise ValueError("stream_name are required field.")
 
         rows = self.session.query(Stream.name, Stream.version, Stream.metadata_hash).filter((Stream.name == stream_name) & (Stream.study_name==self.study_name)).all()
-
+        self.close()
         if rows:
             return rows
         else:
@@ -242,7 +249,7 @@ class StreamHandler:
             raise ValueError("metadata_hash is a required field.")
 
         rows = self.session.query(Stream.name).filter((Stream.metadata_hash == metadata_hash) & (Stream.study_name==self.study_name)).first()
-
+        self.close()
         if rows:
             return rows.name
         else:
@@ -267,7 +274,7 @@ class StreamHandler:
 
         rows = self.session.query(Stream.stream_metadata).filter(
             (Stream.metadata_hash == metadata_hash) & (Stream.study_name == self.study_name)).first()
-
+        self.close()
         if rows:
             return rows.stream_metadata
         else:
@@ -289,7 +296,7 @@ class StreamHandler:
 
         rows = self.session.query(Stream.name).filter(
             (Stream.name == stream_name) & (Stream.study_name == self.study_name)).first()
-
+        self.close()
         if rows:
             return True
         else:

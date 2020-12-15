@@ -78,6 +78,7 @@ class UserHandler():
             self.session.commit()
             return True
         except Exception as e:
+            self.session.rollback()
             raise Exception(e)
 
     def get_user_metadata(self, user_id: uuid = None, username: str = None) -> dict:
@@ -108,6 +109,8 @@ class UserHandler():
             user = self.session.query(User).filter((User.username == username) & (User.study_name == self.study_name)).first()
         else:
             user = self.session.query(User).filter((User.user_id == user_id) & (User.username == username) & (User.study_name == self.study_name)).first()
+
+        self.close()
 
         if user:
             return user.user_metadata
@@ -142,6 +145,8 @@ class UserHandler():
             user = self.session.query(User.user_settings).filter((User.token == auth_token) & (User.study_name == self.study_name)).first()
         else:
             user = self.session.query(User.user_settings).filter((User.username == username) & (User.token == auth_token) & (User.study_name == self.study_name)).first()
+
+        self.close()
 
         if user:
             return user.user_settings
@@ -181,6 +186,8 @@ class UserHandler():
         token = jwt.encode({'username': username, "token_expire_at":str(token_expiry), "token_issued_at":str(token_issue_time)}, self.config["cc"]["auth_encryption_key"], algorithm='HS256')
         token = token.decode("utf-8")
 
+        self.close()
+
         if not user:
             return {"status":False, "auth_token": "", "msg":" Incorrect username and/or password."}
         elif not self.update_auth_token(username, token, token_issue_time, token_expiry):
@@ -206,6 +213,8 @@ class UserHandler():
 
         user = self.session.query(User).filter(
             (User.username == username) & (User.token == auth_token) & (User.study_name == self.study_name)).first()
+
+        self.close()
 
         if not user:
             return False
@@ -239,6 +248,8 @@ class UserHandler():
 
         rows = self.session.query(User.user_id, User.username).filter(User.study_name == self.study_name).all()
 
+        self.close()
+
         if rows:
             return rows
         else:
@@ -263,6 +274,8 @@ class UserHandler():
             raise ValueError("User ID is a required field.")
 
         user = self.session.query(User.username).filter((User.user_id==user_id) & (User.study_name == self.study_name)).first()
+
+        self.close()
 
         if not user:
             raise Exception(str(user_id)+" does not exist.")
@@ -289,6 +302,8 @@ class UserHandler():
 
         user = self.session.query(User.user_id).filter((User.username==user_name) & (User.study_name == self.study_name)).first()
 
+        self.close()
+
         if not user:
             raise Exception(str(user_name)+ " does not exist.")
         else:
@@ -310,6 +325,7 @@ class UserHandler():
             >>> CC.is_user(user_id="76cc444c-4fb8-776e-2872-9472b4e66b16")
             >>> True
         """
+
         if user_id and user_name:
             user = self.session.query(User.username).filter(
                 (User.user_id == user_id) & (User.username==user_name) & (User.study_name == self.study_name)).first()
@@ -321,6 +337,8 @@ class UserHandler():
                 (User.username == user_name) & (User.study_name == self.study_name)).first()
         else:
             raise ValueError("Both user_id and user_name cannot be None or empty.")
+
+        self.close()
 
         if user:
             return True
@@ -351,8 +369,10 @@ class UserHandler():
                 (User.username == username) & (User.study_name == self.study_name)).update({User.token: auth_token,
                                                                                         User.token_issued: auth_token_issued_time,
                                                                                         User.token_expiry: auth_token_expiry_time})
+            self.session.commit()
             return True
         except:
+            self.session.rollback()
             return False
 
     def gen_random_pass(self, string_type: str, size: int = 8) -> str:
