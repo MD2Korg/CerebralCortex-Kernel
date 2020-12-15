@@ -140,16 +140,19 @@ class UserHandler():
             raise ValueError("User ID or auth token cannot be empty.")
 
         if username and not auth_token:
-            user = self.session.query(User.user_settings).filter((User.username == username) & (User.study_name == self.study_name)).first()
+            user = self.session.query(User.user_settings, User.username, User.user_id).filter((User.username == username) & (User.study_name == self.study_name)).first()
         elif not username and auth_token:
-            user = self.session.query(User.user_settings).filter((User.token == auth_token) & (User.study_name == self.study_name)).first()
+            user = self.session.query(User.user_settings, User.username, User.user_id).filter((User.token == auth_token) & (User.study_name == self.study_name)).first()
         else:
-            user = self.session.query(User.user_settings).filter((User.username == username) & (User.token == auth_token) & (User.study_name == self.study_name)).first()
+            user = self.session.query(User.user_settings, User.username, User.user_id).filter((User.username == username) & (User.token == auth_token) & (User.study_name == self.study_name)).first()
 
         self.close()
 
         if user:
-            return user.user_settings
+            user_info = user.user_settings
+            user_info["username"] = user.username
+            user_info["user_id"] = user.user_id
+            return user_info
         else:
             return {}
 

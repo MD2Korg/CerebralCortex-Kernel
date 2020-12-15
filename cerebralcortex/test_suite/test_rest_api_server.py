@@ -116,7 +116,7 @@ class TestCerebralCortex(unittest.TestCase):
                                         })
         self.assertEqual(result.status_code, 200)
 
-        result = client.upload_stream_data(url="http://localhost:8089/api/v3/stream/default/48ef574f-3695-37ec-bd13-cac43b9168d1", auth_token=self.__class__.auth_token, data_file_path=os.getcwd() + "/sample_data/msgpack/phone_battery_stream.gz")
+        result = client.upload_stream_data(url="http://localhost:8089/api/v3/stream/default/86dee1cd-519d-396b-937c-253c432b37e2", auth_token=self.__class__.auth_token, data_file_path=os.getcwd() + "/sample_data/msgpack/phone_battery_stream.gz")
         self.assertEqual(result.status_code, 200)
 
         result = client.get_stream_metadata(url="http://localhost:8089/api/v3/stream/metadata/default/test-stream-name", auth_token=self.__class__.auth_token)

@@ -272,11 +272,12 @@ class StreamHandler:
         if not metadata_hash:
             raise ValueError("metadata_hash is a required field.")
 
-        rows = self.session.query(Stream.stream_metadata).filter(
-            (Stream.metadata_hash == metadata_hash) & (Stream.study_name == self.study_name)).first()
+        rows = self.session.query(Stream).filter((Stream.metadata_hash == metadata_hash) & (Stream.study_name == self.study_name)).first()
         self.close()
         if rows:
-            return rows.stream_metadata
+            stream_info = rows.stream_metadata
+            stream_info["version"] = rows.version
+            return stream_info
         else:
             raise Exception(str(metadata_hash)+ " does not exist.")
 
