@@ -302,3 +302,30 @@ class StreamHandler:
             return True
         else:
             return False
+
+    def _delete_stream(self, stream_name: str) -> bool:
+        """
+        Returns true if provided stream name is deleted.
+
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            bool: True if stream_name is deleted False otherwise
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC._delete_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> True
+        """
+
+        rows = self.session.query(Stream.name).filter(
+            (Stream.name == stream_name) & (Stream.study_name == self.study_name))
+
+        try:
+            rows.delete(synchronize_session=False)
+            self.session.commit()
+            self.close()
+            return True
+        except Exception as e:
+            raise e
+            return False
+

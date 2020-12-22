@@ -133,6 +133,8 @@ class StreamHandler():
         """
         if overwrite:
             file_mode="overwrite"
+            if not self.sql_data._delete_stream(datastream.metadata.name):
+                raise Exception("Cannot remove MySQL records during overwrite operation.")
         else:
             file_mode = "append"
             

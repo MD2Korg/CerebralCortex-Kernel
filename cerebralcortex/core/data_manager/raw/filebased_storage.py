@@ -229,6 +229,8 @@ class FileBasedStorage():
 
         Returns:
             str: file_name of newly create parquet file
+
+        TODO: provide a reference in Kernel. Also generate metadata and store it into MySQL
         """
 
         table = pa.Table.from_pandas(df, preserve_index=False)
