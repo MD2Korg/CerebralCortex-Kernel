@@ -5,7 +5,7 @@ PyYAML>=5.3.1
 SQLAlchemy-Utils==0.36.6
 minio==2.2.4
 influxdb==5.2.1
-pyarrow==0.17.1
+pyarrow==2.0.0
 pympler==0.5
 hdfs3==0.3.0
 pyspark==3.0.1
