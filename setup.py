@@ -4,34 +4,34 @@ from setuptools import setup, find_packages
 here = path.abspath(path.dirname(__file__))
 
 reqs = [
-    'wheel==0.34.2',
-    'pytz==2017.2',
+    'wheel',
+    'pytz',
     'mysql-connector-python==8.0.15',
     'PyYAML>=5.3.1',
     'SQLAlchemy-Utils==0.36.6',
-    'minio==2.2.4',
+    'minio',
     'influxdb==5.2.1',
-    'pyarrow==0.17.1',
-    'pympler==0.5',
+    'pyarrow',
+    'pympler',
     'hdfs3==0.3.0',
     'pyspark==3.0.1',
-    'msgpack==0.6.1',
-    'PyJWT==1.7.1',
-    'pandas==1.0.5',
+    'msgpack',
+    'PyJWT',
+    'pandas',
     'texttable',
-    'numpy==1.19.1',
-    'geopy==1.18.1',
-    'scikit-learn==0.22.2.post1',
+    'numpy',
+    'geopy',
+    'scikit-learn',
     'plotly==4.9.0',
     'matplotlib',
-    'cufflinks==0.17.3',
+    'cufflinks',
     'ipyleaflet',
     'scipy',
-    'py-ecg-detectors==1.0.2',
-    'statsmodels==0.11.1',
+    'py-ecg-detectors',
+    'statsmodels',
     'sqlalchemy==1.3.17',
     'pennprov==2.2.9',
-    'shapely==1.7.0'
+    'shapely'
 ]
 
 
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     setup(
         name="cerebralcortex-kernel",
 
-        version='3.3.5',
+        version='3.3.6',
 
         package_data={'': ['default.yml']},
 
