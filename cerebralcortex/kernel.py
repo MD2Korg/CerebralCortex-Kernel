@@ -379,7 +379,7 @@ class Kernel:
         """
         return self.SqlData.get_user_id(user_name)
 
-    def get_user_name(self, user_id: str) -> str:
+    def get_username(self, user_id: str) -> str:
         """
         Get the user name linked to a user id.
 
@@ -394,7 +394,7 @@ class Kernel:
             >>> CC.get_username("76cc444c-4fb8-776e-2872-9472b4e66b16")
             >>> 'nasir_ali'
         """
-        return self.SqlData.get_user_name(user_id)
+        return self.SqlData.get_username(user_id)
 
     def list_users(self) -> List[dict]:
         """
