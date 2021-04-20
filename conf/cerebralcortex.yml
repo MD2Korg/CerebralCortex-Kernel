@@ -6,7 +6,7 @@ cc:
   throw_exception: True #if this is set to True then application will get exceptions
   auth_token_expire_time: 40000 #seconds
   auth_encryption_key: "md@k&#8"
-  log_files_path: "/Users/ali/cc_data/"
+  log_files_path: "/var/log/cc/"
 
 #########################################################################
 #                        NoSQL Storage                                  #
@@ -27,7 +27,7 @@ hdfs:
 #########################################################################
 #                          Relational Storage                           #
 #########################################################################
-relational_storage: mysql
+relational_storage: sqlite
 
 sqlite:
   file_path: "/Users/ali/cc_data/"
@@ -37,7 +37,7 @@ mysql:
   port: 3306 # Change if MySQL is not using default port
   db_user: root # Change
   db_pass: pass # Change
-  database: cerebralcortex
+  database: cerebralcortex_cc33
 
 #########################################################################
 ###################### Visualization Data Storage #######################

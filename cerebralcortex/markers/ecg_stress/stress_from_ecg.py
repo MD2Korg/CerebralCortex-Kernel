@@ -58,7 +58,7 @@ def stress_from_ecg(ecg_data:DataStream, sensor_name:str="autosense", Fs:int=64,
 
     # Normalize features
     stress_features_normalized = normalize_features(stress_features,input_feature_array_name='features')
-
+    print(stress_features_normalized.metadata)
     # Compute stress probability
     ecg_stress_probability = compute_stress_probability(stress_features_normalized,model_path=model_path)
 

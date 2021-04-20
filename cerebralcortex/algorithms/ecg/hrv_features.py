@@ -255,9 +255,9 @@ def get_hrv_features(rr_data,
     df = df.withColumn('20th', F.col('features').getItem(5))
     ecg_features_final = df.withColumn('heartrate', F.col('features').getItem(6))
     ecg_features_final = ecg_features_final.drop('features')
-    ecg_features_final.metadata = get_metadata()
 
     feature_names = ['var','iqr','mean','median','80th','20th','heartrate','vlf','lf','hf','lfhf']
     stress_features = ecg_features_final.withColumn('features',F.array([F.col(i) for i in feature_names]))
+    stress_features.metadata = get_metadata()
 
     return stress_features
