@@ -32,7 +32,7 @@ if __name__ == "__main__":
     parser.add_argument('-c', '--config_dir', help='CC Configuration directory path', required=False,default="../../conf/")
     parser.add_argument('-a', '--ecg_stream_name', help='Input ECG Stream Name', required=False,default="ecg--org.md2k.autosense--autosense_chest--chest")
     parser.add_argument('-s', '--study_name', help='Study Name', required=False,default="rice")
-    parser.add_argument('-f', '--frequency', help='ECG Sampling Frequency', required=False,default="64")
+    parser.add_argument('-f', '--frequency', help='ECG Sampling Frequency', required=False,default="700")
     parser.add_argument('-p', '--path', help='Stress Model Path', required=False,default='../markers/ecg_stress/model/stress_ecg_final.p')
     parser.add_argument('-n', '--sensor_name', help='Sensor Type', required=False,default='autosense')
 
