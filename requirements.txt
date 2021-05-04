@@ -17,7 +17,7 @@ shapely
 numpy
 geopy
 scikit-learn
-plotly==4.9.0
+plotly
 matplotlib
 cufflinks==0.17.3
 ipyleaflet

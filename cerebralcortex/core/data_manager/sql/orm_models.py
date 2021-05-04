@@ -25,7 +25,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import Column, String, Integer, Date, Boolean, JSON, Text, UniqueConstraint
+from sqlalchemy import Column, String, Integer, DateTime, Boolean, JSON, Text, UniqueConstraint
 
 from cerebralcortex.core.data_manager.sql import Base
 
@@ -38,7 +38,7 @@ class Stream(Base):
     study_name = Column('study_name', String(100))
     metadata_hash=Column('metadata_hash', String(100), unique=True, index=True)
     stream_metadata=Column('stream_metadata', JSON)
-    creation_date = Column('creation_date', Date)
+    creation_date = Column('creation_date', DateTime, default=datetime.now())
 
     __table_args__ = (UniqueConstraint('name','study_name', 'metadata_hash', name='unique_stream_study_key'),)
 
@@ -64,14 +64,14 @@ class User(Base):
     password=Column('password', String(100))
     study_name=Column('study_name', String(100))
     token = Column('token', Text)
-    token_issued = Column('token_issued', Date)
-    token_expiry = Column('token_expiry', Date)
+    token_issued = Column('token_issued', DateTime, default=datetime.now())
+    token_expiry = Column('token_expiry', DateTime, default=datetime.now())
     user_role = Column('user_role', String(56))
     user_metadata=Column('user_metadata', JSON)
     user_settings = Column('user_settings', JSON)
     active = Column('active', Boolean)
     has_data = Column('has_data', Boolean)
-    creation_date = Column('creation_date', Date)
+    creation_date = Column('creation_date', DateTime, default=datetime.now())
 
     def __init__(self, user_id, username, password, study_name, token, token_issued, token_expiry, user_role="participant", user_metadata={}, user_settings={}, active=1):
         self.user_id = user_id

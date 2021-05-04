@@ -107,7 +107,7 @@ def bluetooth_encounter(data,
     data_filtered = data_filtered.filter(data_filtered.longitude!=200)
     data_result = data_filtered.groupBy(['user','major','minor','version']).apply(get_enconters)
     #     data_filtered.sort('timestamp').show(1000,False)
-    print(data_result.count(),'encounter count')
+    # print(data_result.count(),'encounter count')
     #     data_result.show(5,False)
     return DataStream(data=data_result, metadata=Metadata())
 
