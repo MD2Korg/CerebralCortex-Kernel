@@ -218,13 +218,23 @@ class DataStream(DataFrame):
         return DataStream(data=data, metadata=Metadata())
 
 
-    def compute(self, udfName, windowDuration: int = None, slideDuration: int = None,
+    def compute(self, udfName, schema=None, windowDuration: int = None, slideDuration: int = None,
                       groupByColumnName: List[str] = [], startTime=None):
         """
         Run an algorithm. This method supports running an udf method on windowed data
 
         Args:
-            udfName: Name of the algorithm
+            udfName: Name of the algorithm. The function should take a `pandas.DataFrame` and return another
+                    `pandas.DataFrame`. For each group, all columns are passed together as a `pandas.DataFrame`
+                    to the user-function and the returned `pandas.DataFrame` are combined as a
+                    :class:`DataStream`.
+
+            schema: The `schema` should be a :class:`StructType` describing the schema of the returned
+                    `pandas.DataFrame`. The column labels of the returned `pandas.DataFrame` must either match
+                    the field names in the defined schema if specified as strings, or match the
+                    field data types by position if not strings, e.g. integer indices.
+                    The length of the returned `pandas.DataFrame` can be arbitrary. Acceptable datatypes are "NullType", "StringType", "BinaryType", "BooleanType", "DateType", "TimestampType", "DecimalType", "DoubleType", "FloatType", "ByteType", "IntegerType", "LongType", "ShortType", "ArrayType", "MapType", "StructField", "StructType"
+
             windowDuration (int): duration of a window in seconds
             slideDuration (int): slide duration of a window
             groupByColumnName List[str]: groupby column names, for example, groupby user, col1, col2
@@ -232,6 +242,15 @@ class DataStream(DataFrame):
         Returns:
             DataStream: this will return a new datastream object with blank metadata
 
+        Examples:
+            >>> def normalize(pdf):
+            ...     v = pdf.v
+            ...     return pdf.assign(v=(v - v.mean()) / v.std())
+            # acceptable data types for schem are - "NullType", "StringType", "BinaryType", "BooleanType",
+            # "DateType", "TimestampType", "DecimalType", "DoubleType", "FloatType", "ByteType", "IntegerType",
+            # "LongType", "ShortType", "ArrayType", "MapType", "StructField", "StructType"
+            >>> ds.groupby("timestamp").applyInPandas(
+            ...     normalize, schema="id long, v double").show()
         """
         if slideDuration:
             slideDuration = str(slideDuration) + " seconds"
@@ -249,7 +268,10 @@ class DataStream(DataFrame):
             if len(groupByColumnName) > 0:
                 groupbycols.extend(groupByColumnName)
 
-            data = self._data.groupBy(groupbycols).apply(udfName)
+            if schema is None:
+                data = self._data.groupBy(groupbycols).apply(udfName)
+            else:
+                data = self._data.groupBy(groupbycols).applyInPandas(udfName, schema=schema)
 
         return DataStream(data=data, metadata=Metadata())
 
@@ -367,6 +389,56 @@ class DataStream(DataFrame):
         """
         return DataStream(data=self._data.colRegex(colName=colName), metadata=Metadata())
 
+    def applyInPandas(self, func, schema):
+        """
+        The function should take a `pandas.DataFrame` and return another
+        `pandas.DataFrame`. For each group, all columns are passed together as a `pandas.DataFrame`
+        to the user-function and the returned `pandas.DataFrame` are combined as a
+        `DataFrame`.
+
+        The `schema` should be a `StructType` describing the schema of the returned
+        `pandas.DataFrame`. The column labels of the returned `pandas.DataFrame` must either match
+        the field names in the defined schema if specified as strings, or match the
+        field data types by position if not strings, e.g. integer indices.
+        The length of the returned `pandas.DataFrame` can be arbitrary.
+
+        Args:
+            func: a Python native function that takes a `pandas.DataFrame`, and outputs a `pandas.DataFrame`.
+            schema: :class:`pyspark.sql.types.DataType` or str
+            the return type of the `func` in PySpark. The value can be either a
+            :class:`pyspark.sql.types.DataType` object or a DDL-formatted type string.
+
+        Returns:
+
+        """
+        return DataStream(data=self._data.applyInPandas(func=func, schema=schema), metadata=Metadata())
+
+    def apply(self, udf):
+        """
+
+        Args:
+            udf: :func:`pyspark.sql.functions.pandas_udf`
+            a grouped map user-defined function returned by
+            :func:`pyspark.sql.functions.pandas_udf`.
+
+        Examples:
+            >>> ds.groupby("timestamp").apply(normalize).show()
+        Returns:
+
+        """
+
+        return DataStream(data=self._data.apply(udf=udf), metadata=Metadata())
+
+    def cogroup(self, other):
+        """
+        Cogroups this group with another group so that we can run cogrouped operations.
+
+        Returns:
+
+        """
+
+        return DataStream(data=self._data.cogroup(other=other), metadata=Metadata())
+
     def collect(self):
         """
         Collect all the data to master node and return list of rows
@@ -431,7 +503,7 @@ class DataStream(DataFrame):
         data = self._data.corr(col1, col2, method)
         return DataStream(data=data, metadata=Metadata())
 
-#TODO: missing param for cov algo = pearson
+    #TODO: missing param for cov algo = pearson
     def cov(self, col1, col2):
         """
         Calculate the sample covariance for the given columns, specified by their names, as a double value.
@@ -537,17 +609,29 @@ class DataStream(DataFrame):
         data = self._data.dropna(how=how, thresh=thresh, subset=subset)
         return DataStream(data=data, metadata=Metadata())
 
-    def explain(self, extended=False):
+    def explain(self,  extended=None, mode=None):
         """
         Prints the (logical and physical) plans to the console for debugging purpose.
 
         Args:
-            extended:  boolean, default False. If False, prints only the physical plan.
+            extended:  bool, optional
+            default ``False``. If ``False``, prints only the physical plan.
+            When this is a string without specifying the ``mode``, it works as the mode is
+            specified.
+
+            mode: str, optional
+            specifies the expected output format of plans.
+            * ``simple``: Print only a physical plan.
+            * ``extended``: Print both logical and physical plans.
+            * ``codegen``: Print a physical plan and generated codes if they are available.
+            * ``cost``: Print a logical plan and statistics if they are available.
+            * ``formatted``: Split explain output into two sections: a physical plan outline \
+                and node details.
 
         Examples:
             >>> ds.explain()
         """
-        self._data.explain()
+        self._data.explain( extended=extended, mode=mode)
 
     def exceptAll(self, other):
         """
@@ -777,6 +861,37 @@ class DataStream(DataFrame):
         data = self._data.limit(num=num)
         return DataStream(data=data, metadata=Metadata())
 
+    def mapInPandas(self, func, schema):
+        """
+        Maps an iterator of batches in the current :class:`DataFrame` using a Python native
+        function that takes and outputs a pandas DataFrame, and returns the result as a
+        :class:`DataFrame`.
+        The function should take an iterator of `pandas.DataFrame`\\s and return
+        another iterator of `pandas.DataFrame`\\s. All columns are passed
+        together as an iterator of `pandas.DataFrame`\\s to the function and the
+        returned iterator of `pandas.DataFrame`\\s are combined as a :class:`DataFrame`.
+        Each `pandas.DataFrame` size can be controlled by
+        `spark.sql.execution.arrow.maxRecordsPerBatch`.
+
+        Args:
+            func: function a Python native function that takes an iterator of `pandas.DataFrame`, and
+                outputs an iterator of `pandas.DataFrame`.
+
+            schema: :class:`pyspark.sql.types.DataType` or str
+                the return type of the `func` in PySpark. The value can be either a
+                :class:`pyspark.sql.types.DataType` object or a DDL-formatted type string.
+
+        Returns:
+
+        Examples:
+            >>> def filter_func(iterator):
+            ...     for pdf in iterator:
+            ...         yield pdf[pdf.id == 1]
+            >>> ds.mapInPandas(filter_func, ds.schema).show()
+        """
+
+        return DataStream(data=self._data.mapInPandas(func=func, schema=schema), metadata=Metadata())
+
     def orderBy(self, *cols):
         """
         order by column name
@@ -916,6 +1031,23 @@ class DataStream(DataFrame):
         """
         pdf = self._data.toPandas()
         return pdf
+
+    def transform(self, func):
+        """
+        Returns a new :class:`DataFrame`. Concise syntax for chaining custom transformations
+
+        Args:
+            func: a function that takes and returns a :class:`DataFrame`.
+
+        Examples:
+            >>> def cast_all_to_int(input_df):
+            ...     return input_df.select([col(col_name).cast("int") for col_name in input_df.columns])
+            >>> def sort_columns_asc(input_df):
+            ...     return input_df.select(*sorted(input_df.columns))
+            >>> ds.transform(cast_all_to_int).transform(sort_columns_asc).show()
+        """
+
+        return DataStream(data=self._data.transform(func=func), metadata=Metadata())
 
     def union(self, other):
         """

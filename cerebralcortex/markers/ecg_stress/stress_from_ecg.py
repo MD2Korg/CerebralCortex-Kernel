@@ -64,31 +64,6 @@ def stress_from_ecg(ecg_data:DataStream, labels, sensor_name:str="autosense", Fs
 
     ecg_stress_probability  = ecg_stress_probability.sort("window")
 
-    ## TEST CODE
-    ecg_stress_probability.show(3, truncate=False)
-
-    from pyspark.sql import functions as F
-    from pyspark.sql.functions import udf
-    from pyspark.sql.types import IntegerType
-
-    # window label data into 60 seconds chunks
-    win = F.window("timestamp", windowDuration="60 seconds",startTime='0 seconds')
-    windowed_labels=labels.groupby(["user","version",win]).agg(F.collect_list("label"))
-    # label each window
-    label_window_udf = udf(lambda s: max(set(s), key=s.count), IntegerType())
-    final_labels = DataStream(windowed_labels.withColumn("window_label", label_window_udf(F.col("collect_list(label)"))).drop("collect_list(label)"))
-
-    final_labels.sort("window").show(4, truncate=False)
-
-    df1 = ecg_stress_probability
-    df2 = final_labels
-    df3 = ecg_stress_probability.join(final_labels, ecg_stress_probability["window"]==final_labels["window"]).select(ecg_stress_probability["*"],final_labels["window_label"]).sort("timestamp")#.show(5, truncate=False)
-
-    import pickle
-    pdf = df3.toPandas()
-    pdf.to_pickle("/Users/ali/cc_data/pdf.pkl")
-    ## END TEST CODE
-
     # Forward fill and impute stress data
     ecg_stress_probability_forward_filled = forward_fill_data(ecg_stress_probability)
     ecg_stress_probability_imputed = impute_stress_likelihood(ecg_stress_probability_forward_filled)
