@@ -1,50 +1,24 @@
 from os import path
 from setuptools import setup, find_packages
+from cerebralcortex.version import __version__
 
 here = path.abspath(path.dirname(__file__))
 
-reqs = [
-    'wheel',
-    'pytz',
-    'mysql-connector-python==8.0.15',
-    'PyYAML>=5.3.1',
-    'SQLAlchemy-Utils==0.36.6',
-    'minio',
-    'influxdb==5.2.1',
-    'pyarrow==3.0.0',
-    'pympler',
-    'hdfs3==0.3.0',
-    'pyspark==3.1.1',
-    'msgpack',
-    'PyJWT',
-    'pandas',
-    'texttable',
-    'numpy',
-    'geopy',
-    'scikit-learn',
-    'plotly',
-    'matplotlib',
-    'cufflinks',
-    'ipyleaflet',
-    'scipy',
-    'py-ecg-detectors',
-    'statsmodels',
-    'sqlalchemy==1.3.17',
-    'pennprov==2.2.9',
-    'shapely'
-]
+with open(path.join(here, 'requirements.txt')) as f:
+    requirementz = f.read()
+
+reqs = requirementz.split("\n")
 
 
 # Get the long description from the README file.
 with open(path.join(here, 'README.md')) as f:
     long_description = f.read()
 
-
 if __name__ == '__main__':
     setup(
         name="cerebralcortex-kernel",
 
-        version='3.3.7',
+        version=__version__,
 
         package_data={'': ['default.yml']},
 

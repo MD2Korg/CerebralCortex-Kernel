@@ -23,53 +23,169 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import cufflinks as cf
+
 import pandas as pd
 import plotly.graph_objs as go
-from plotly.offline import iplot, init_notebook_mode
+from plotly.subplots import make_subplots
 from cerebralcortex.plotting.util import ds_to_pdf, _remove_cols
 from cerebralcortex.core.datatypes.datastream import DataStream
 
-def plot_timeseries(ds: DataStream, user_id:str, y_axis_column:str=None):
+
+def plot_timeseries(ds: DataStream, user_id:str, x_axis_column:str="timestamp", y_axis_column:list="all", graph_title:str="Graph"):
     """
     line plot of timeseries data
 
     Args:
         ds (DataStream):
         user_id (str): uuid of a user
-        y_axis_column (str): x axis column is hard coded as timestamp column. only y-axis can be passed as a param
+        x_axis_column (str): timestamp or localtime are acceptable values only
+        y_axis_column (list): set this to "all" if you want to plot all columns
+        graph_title (str): title of the graph
     """
-    pdf = ds_to_pdf(ds, user_id)
-    cf.set_config_file(offline=True, world_readable=True, theme='ggplot')
-    init_notebook_mode(connected=True)
-    ts = pdf['timestamp']
-    pdf = _remove_cols(pdf)
-    if y_axis_column:
-        data = [go.Scatter(x=ts, y=pdf[str(y_axis_column)])]
-        iplot(data, filename = 'time-series-plot')
+    if isinstance(ds, pd.DataFrame):
+        pdf = ds.loc[ds['user'] == user_id]
     else:
-        iplot([{
-            'x': ts,
-            'y': pdf[col],
-            'name': col
-        }  for col in pdf.columns], filename='time-series-plot')
+        pdf = ds_to_pdf(ds, user_id)
 
-def plot_hist(ds, user_id:str, x_axis_column=None):
+    user_ids = list(pdf.user.unique())
+    subplot_titles = ["Participant ID: {}".format(x.upper()) for x in list(pdf.user.unique())]
+
+    if x_axis_column not in ["timestamp", "localtime"]:
+        raise Exception(" X axis can only be timestamp or localtime column.")
+
+    if y_axis_column=="all":
+        y_axis = sorted(list(set(pdf.columns.to_list())-set(["timestamp","user","version", "localtime"])))
+    elif isinstance(y_axis_column, list):
+        y_axis = y_axis_column
+    elif isinstance(y_axis_column, str):
+        y_axis = [y_axis_column]
+
+    fig = make_subplots(rows=len(user_ids), cols=1, subplot_titles=subplot_titles)
+    row_id = 1
+    for sid in user_ids:
+        if user_ids[-1]==sid:
+            lagend = True
+        else:
+            lagend = False
+        for y in y_axis:
+            fig.add_trace(go.Scatter(
+                x=pdf[x_axis_column][pdf.user==sid],
+                y=pdf[y][pdf.user==sid],
+                showlegend=lagend,
+                name=y
+            ), row=row_id, col=1)
+        fig.update_xaxes(title_text="Timestamp", row=row_id, col=1)
+
+        row_id +=1
+    height = 500*len(user_ids)
+
+    fig.update_layout(height=height, width=900, title_text=graph_title)
+    fig.show()
+
+
+def plot_histogram(ds: DataStream, user_id:str, x_axis_column:str="timestamp", y_axis_column:list="all", graph_title:str="Graph"):
     """
-    histogram plot of timeseries data
+    line plot of timeseries data
 
     Args:
         ds (DataStream):
         user_id (str): uuid of a user
-        x_axis_column (str): x axis column of the plot
+        x_axis_column (str): timestamp or localtime are acceptable values only
+        y_axis_column (list): set this to "all" if you want to plot all columns
+        graph_title (str): title of the graph
     """
-
-    pdf = ds_to_pdf(ds, user_id)
-    cf.set_config_file(offline=True, world_readable=True, theme='ggplot')
-    init_notebook_mode(connected=True)
-    pdf = _remove_cols(pdf)
-    if x_axis_column:
-        data = [go.Histogram(x=pdf[str(x_axis_column)])]
-        iplot(data, filename='basic histogram')
+    if isinstance(ds, pd.DataFrame):
+        pdf = ds.loc[ds['user'] == user_id]
     else:
-        pdf.iplot(kind='histogram', filename='basic histogram')
+        pdf = ds_to_pdf(ds, user_id)
+
+    user_ids = list(pdf.user.unique())
+    subplot_titles = ["Participant ID: {}".format(x.upper()) for x in list(pdf.user.unique())]
+
+    if x_axis_column not in ["timestamp", "localtime"]:
+        raise Exception(" X axis can only be timestamp or localtime column.")
+
+    if y_axis_column=="all":
+        y_axis = sorted(list(set(pdf.columns.to_list())-set(["timestamp","user","version", "localtime"])))
+    elif isinstance(y_axis_column, list):
+        y_axis = y_axis_column
+    elif isinstance(y_axis_column, str):
+        y_axis = [y_axis_column]
+
+    fig = make_subplots(rows=len(user_ids), cols=1, subplot_titles=subplot_titles)
+    row_id = 1
+    for sid in user_ids:
+        if user_ids[-1]==sid:
+            lagend = True
+        else:
+            lagend = False
+        for y in y_axis:
+            fig.add_trace(go.Box(
+                y=pdf[y][pdf.user==sid],
+                showlegend=lagend,
+                name=y
+            ), row=row_id, col=1)
+        fig.update_xaxes(row=row_id, col=1)
+
+        row_id +=1
+    height = 500*len(user_ids)
+
+    fig.update_layout(height=height, width=900, title_text=graph_title)
+    fig.show()
+
+
+def plot_box(ds: DataStream, user_id:str, x_axis_column:str="timestamp", y_axis_column:list="all", graph_title:str="Graph"):
+    """
+    line plot of timeseries data
+
+    Args:
+        ds (DataStream):
+        user_id (str): uuid of a user
+        x_axis_column (str): timestamp or localtime are acceptable values only
+        y_axis_column (list): set this to "all" if you want to plot all columns
+        graph_title (str): title of the graph
+    """
+    if isinstance(ds, pd.DataFrame):
+        pdf = ds.loc[ds['user'] == user_id]
+    else:
+        pdf = ds_to_pdf(ds, user_id)
+
+    user_ids = list(pdf.user.unique())
+    subplot_titles = ["Participant ID: {}".format(x.upper()) for x in list(pdf.user.unique())]
+
+    if x_axis_column not in ["timestamp", "localtime"]:
+        raise Exception(" X axis can only be timestamp or localtime column.")
+
+    if y_axis_column=="all":
+        y_axis = sorted(list(set(pdf.columns.to_list())-set(["timestamp","user","version", "localtime"])))
+    elif isinstance(y_axis_column, list):
+        y_axis = y_axis_column
+    elif isinstance(y_axis_column, str):
+        y_axis = [y_axis_column]
+
+    fig = make_subplots(rows=len(user_ids), cols=1, subplot_titles=subplot_titles)
+    row_id = 1
+    for sid in user_ids:
+        if user_ids[-1]==sid:
+            lagend = True
+        else:
+            lagend = False
+        for y in y_axis:
+            fig.add_trace(go.Histogram(
+                x=pdf[y][pdf.user==sid],
+                showlegend=lagend,
+                name=y
+            ), row=row_id, col=1)
+        fig.update_xaxes(row=row_id, col=1)
+
+        row_id +=1
+    height = 500*len(user_ids)
+
+    fig.update_layout(height=height, width=900,
+                      title_text=graph_title,
+                      xaxis_title_text='Value',
+                      yaxis_title_text='Count',
+                      bargap=0.2,
+                      bargroupgap=0.1
+                      )
+    fig.show()

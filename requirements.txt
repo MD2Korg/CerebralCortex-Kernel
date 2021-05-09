@@ -3,12 +3,11 @@ pytz
 mysql-connector-python==8.0.15
 PyYAML>=5.3.1
 SQLAlchemy-Utils==0.36.6
-minio
 influxdb==5.2.1
-pyarrow==2.0.0
+pyarrow==3.0.0
 pympler
 hdfs3==0.3.0
-pyspark==3.0.1
+pyspark==3.1.1
 msgpack==0.6.1
 PyJWT
 pandas

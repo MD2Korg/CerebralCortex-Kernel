@@ -39,7 +39,7 @@ from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from cerebralcortex.core.util.spark_helper import get_or_create_sc
-
+from cerebralcortex.version import __version__
 
 class Kernel:
 
@@ -76,6 +76,7 @@ class Kernel:
         elif configs_dir_path and cc_configs:
             raise ValueError("Provide only configs_dir_path OR cc_configs.")
 
+        self.version = __version__
         self.config_filepath = configs_dir_path
         self.study_name = study_name
         os.environ["STUDY_NAME"] = study_name

@@ -31,7 +31,7 @@ import pyarrow as pa
 from cerebralcortex.core.config_manager.config import Configuration
 
 
-def get_study_names(configs_dir_path: str)->List[str]:
+def get_study_names(configs_dir_path: str, default_config=True)->List[str]:
     """
     CerebralCortex constructor
 
@@ -44,7 +44,11 @@ def get_study_names(configs_dir_path: str)->List[str]:
     Examples:
         >>> get_study_names("/directory/path/of/configs/")
     """
-    config = Configuration(configs_dir_path).config
+    if default_config:
+        config = Configuration(configs_dir_path, "default").config
+    else:
+        config = Configuration(configs_dir_path).config
+
 
     nosql_store = config['nosql_storage']
 
