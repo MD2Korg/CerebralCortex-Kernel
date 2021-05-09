@@ -31,21 +31,18 @@ from cerebralcortex.plotting.util import ds_to_pdf, _remove_cols
 from cerebralcortex.core.datatypes.datastream import DataStream
 
 
-def plot_timeseries(ds: DataStream, user_id:str, x_axis_column:str="timestamp", y_axis_column:list="all", graph_title:str="Graph"):
+def plot_timeseries(ds, user_id:str=None, x_axis_column:str="timestamp", y_axis_column:list="all", graph_title:str="Graph"):
     """
     line plot of timeseries data
 
     Args:
-        ds (DataStream):
+        ds:
         user_id (str): uuid of a user
         x_axis_column (str): timestamp or localtime are acceptable values only
         y_axis_column (list): set this to "all" if you want to plot all columns
         graph_title (str): title of the graph
     """
-    if isinstance(ds, pd.DataFrame):
-        pdf = ds.loc[ds['user'] == user_id]
-    else:
-        pdf = ds_to_pdf(ds, user_id)
+    pdf = ds_to_pdf(ds, user_id)
 
     user_ids = list(pdf.user.unique())
     subplot_titles = ["Participant ID: {}".format(x.upper()) for x in list(pdf.user.unique())]
@@ -83,21 +80,18 @@ def plot_timeseries(ds: DataStream, user_id:str, x_axis_column:str="timestamp", 
     fig.show()
 
 
-def plot_histogram(ds: DataStream, user_id:str, x_axis_column:str="timestamp", y_axis_column:list="all", graph_title:str="Graph"):
+def plot_box(ds, user_id:str=None, x_axis_column:str="timestamp", y_axis_column:list="all", graph_title:str="Graph"):
     """
-    line plot of timeseries data
+    Box plot of timeseries data
 
     Args:
-        ds (DataStream):
+        ds: CC DataStream object or Pandas DataFrame object
         user_id (str): uuid of a user
         x_axis_column (str): timestamp or localtime are acceptable values only
         y_axis_column (list): set this to "all" if you want to plot all columns
         graph_title (str): title of the graph
     """
-    if isinstance(ds, pd.DataFrame):
-        pdf = ds.loc[ds['user'] == user_id]
-    else:
-        pdf = ds_to_pdf(ds, user_id)
+    pdf = ds_to_pdf(ds, user_id)
 
     user_ids = list(pdf.user.unique())
     subplot_titles = ["Participant ID: {}".format(x.upper()) for x in list(pdf.user.unique())]
@@ -134,21 +128,18 @@ def plot_histogram(ds: DataStream, user_id:str, x_axis_column:str="timestamp", y
     fig.show()
 
 
-def plot_box(ds: DataStream, user_id:str, x_axis_column:str="timestamp", y_axis_column:list="all", graph_title:str="Graph"):
+def plot_histogram(ds, user_id:str=None, x_axis_column:str="timestamp", y_axis_column:list="all", graph_title:str="Graph"):
     """
-    line plot of timeseries data
+    Histogram plot of timeseries data
 
     Args:
-        ds (DataStream):
+        ds: CC DataStream object or Pandas DataFrame object
         user_id (str): uuid of a user
         x_axis_column (str): timestamp or localtime are acceptable values only
         y_axis_column (list): set this to "all" if you want to plot all columns
         graph_title (str): title of the graph
     """
-    if isinstance(ds, pd.DataFrame):
-        pdf = ds.loc[ds['user'] == user_id]
-    else:
-        pdf = ds_to_pdf(ds, user_id)
+    pdf = ds_to_pdf(ds, user_id)
 
     user_ids = list(pdf.user.unique())
     subplot_titles = ["Participant ID: {}".format(x.upper()) for x in list(pdf.user.unique())]

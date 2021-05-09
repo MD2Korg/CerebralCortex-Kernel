@@ -31,7 +31,7 @@ import pyarrow as pa
 from cerebralcortex.core.config_manager.config import Configuration
 
 
-def get_study_names(configs_dir_path: str, default_config=True)->List[str]:
+def get_study_names(configs_dir_path: str=None, default_config=True)->List[str]:
     """
     CerebralCortex constructor
 
