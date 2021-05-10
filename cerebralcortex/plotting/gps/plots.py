@@ -23,10 +23,10 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from ipyleaflet import Map, Marker, MarkerCluster
+import folium
 from cerebralcortex.plotting.util import ds_to_pdf
 
-def plot_gps_clusters(ds, user_id:str, zoom=5):
+def plot_gps_clusters(ds, user_id:str=None, zoom=10):
     """
     Plots GPS coordinates
 
@@ -38,16 +38,13 @@ def plot_gps_clusters(ds, user_id:str, zoom=5):
     """
     pdf = ds_to_pdf(ds, user_id)
 
-    marker_list = []
     center = None
     for index, row in pdf.iterrows():
         if center is None:
             center = [row["latitude"], row["longitude"]]
-        marker_list.append(Marker(location=(row["latitude"], row["longitude"])))
-
-    m = Map(center=(center), zoom=zoom)
-    marker_cluster = MarkerCluster(
-        markers=(marker_list)
-    )
-    m.add_layer(marker_cluster)
+            m = folium.Map(
+                location=center,
+                zoom_start=zoom
+            )
+        folium.Marker(location=(row["latitude"], row["longitude"])).add_to(m)
     return m

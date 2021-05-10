@@ -17,6 +17,7 @@ numpy
 geopy
 scikit-learn
 plotly
+folium
 matplotlib
 cufflinks==0.17.3
 ipyleaflet

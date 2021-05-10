@@ -246,9 +246,9 @@ class DataStream(DataFrame):
             >>> def normalize(pdf):
             ...     v = pdf.v
             ...     return pdf.assign(v=(v - v.mean()) / v.std())
-            # acceptable data types for schem are - "NullType", "StringType", "BinaryType", "BooleanType",
-            # "DateType", "TimestampType", "DecimalType", "DoubleType", "FloatType", "ByteType", "IntegerType",
-            # "LongType", "ShortType", "ArrayType", "MapType", "StructField", "StructType"
+            # acceptable data types for schem are - "null", "string", "binary", "boolean",
+            # "date", "timestamp", "decimal", "double", "float", "byte", "integer",
+            # "long", "short", "array", "map", "structfield", "struct"
             >>> ds.groupby("timestamp").applyInPandas(
             ...     normalize, schema="id long, v double").show()
         """
@@ -271,7 +271,7 @@ class DataStream(DataFrame):
             if schema is None:
                 data = self._data.groupBy(groupbycols).apply(udfName)
             else:
-                data = self._data.groupBy(groupbycols).applyInPandas(udfName, schema=schema)
+                data = self._data.groupBy(groupbycols).applyInPandas(func=udfName, schema=schema)
 
         return DataStream(data=data, metadata=Metadata())
 
