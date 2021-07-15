@@ -914,6 +914,22 @@ class DataStream(DataFrame):
         """
         self._data.printSchema()
 
+    def randomSplit(self, weights, seed=None):
+        """
+        Randomly splits this :class:`DataFrame` with the provided weights.
+
+        Args:
+            weights: list of doubles as weights with which to split the :class:`DataFrame`.
+            Weights will be normalized if they don't sum up to 1.0.
+            seed: int, optional
+            The seed for sampling.
+
+        Returns:
+
+        Examples:
+            >>> splits = ds.randomSplit([1.0, 2.0], 24)
+            >>> splits[0].count()
+        """
     def replace(self, to_replace, value, subset=None):
         """
         Returns a new DataStream replacing a value with another value. Values to_replace and value must have the same type and can only be numerics, booleans, or strings. Value can have None. When replacing, the new value will be cast to the type of the existing column. For numeric replacements all values to be replaced should have unique floating point representation. In case of conflicts (for example with {42: -1, 42.0: 1}) and arbitrary replacement will be used.

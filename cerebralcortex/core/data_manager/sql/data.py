@@ -66,8 +66,8 @@ class SqlData(StreamHandler, UserHandler):
 
         elif self.sql_store == "sqlite":
             database_file_path = self.config["sqlite"]["file_path"]
-            if database_file_path[:-1]!="/":
-                database_file_path = database_file_path+"/"
+            if database_file_path[-1:]!="/":
+                database_file_path += "/"
             url = 'sqlite:///{0}cc_kernel_database.db'.format(database_file_path)
         else:
             raise Exception(self.sql_store + ": SQL storage is not supported. Please install and configure MySQL or sqlite.")

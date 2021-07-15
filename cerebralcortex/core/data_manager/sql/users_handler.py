@@ -187,7 +187,7 @@ class UserHandler():
         token_expiry = token_issue_time + expires
 
         token = jwt.encode({'username': username, "token_expire_at":str(token_expiry), "token_issued_at":str(token_issue_time)}, self.config["cc"]["auth_encryption_key"], algorithm='HS256')
-        token = token.decode("utf-8")
+        #token = token.decode("utf-8")
 
         self.close()
 

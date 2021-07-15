@@ -24,11 +24,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-import pandas as pd
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
-from cerebralcortex.plotting.util import ds_to_pdf, _remove_cols
-from cerebralcortex.core.datatypes.datastream import DataStream
+from cerebralcortex.plotting.util import ds_to_pdf
 
 
 def plot_timeseries(ds, user_id:str=None, x_axis_column:str="timestamp", y_axis_column:list="all", graph_title:str="Graph"):

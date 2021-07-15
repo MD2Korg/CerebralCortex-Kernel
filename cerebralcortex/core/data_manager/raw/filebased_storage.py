@@ -27,6 +27,7 @@
 import os
 from typing import List
 from uuid import uuid4
+import warnings
 
 import pandas as pd
 import pyarrow as pa
@@ -167,14 +168,17 @@ class FileBasedStorage():
             Exception: if stream name does not exist.
         """
 
-        if user_id is not None and version=="all":
-            raise Exception("Not supported, yet. You can only request only one version of a stream associated with a user.")
+        # if user_id is not None and version=="all":
+        #     raise Exception("Not supported, yet. You can only request only one version of a stream associated with a user.")
 
         if stream_name!="" and stream_name is not None:
             if not self._path_exist(stream_name=stream_name):
                 raise Exception(stream_name+" does not exist.")
 
-        if version is not None and version!="all":
+        if version == "all":
+            warnings.warn("Setting version='all'  is experimental If multiple versions of a stream have different schemas then any operation on datastream will throw schema mismatch exception.")
+            data_path = self._get_storage_path(stream_name=stream_name)
+        elif version is not None and version!="all":
             data_path = self._get_storage_path(stream_name=stream_name, version=version, user_id=user_id)
         else:
             data_path = self._get_storage_path(stream_name=stream_name)

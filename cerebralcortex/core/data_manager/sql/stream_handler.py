@@ -120,6 +120,7 @@ class StreamHandler:
 
         Returns:
             Metadata: Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
+
         Raises:
             ValueError: stream_name cannot be None or empty.
         Examples:
@@ -130,14 +131,24 @@ class StreamHandler:
         if stream_name is None or stream_name=="":
             raise ValueError("stream_name cannot be None or empty.")
 
-        rows = self.session.query(Stream.stream_metadata).filter((Stream.name == stream_name) & (Stream.version==version) & (Stream.study_name==self.study_name)).first()
+        if version=="all":
+            results = []
+            rows = self.session.query(Stream.stream_metadata).filter((Stream.name == stream_name) & (Stream.study_name==self.study_name)).all()
+            if rows:
+                for row in rows:
+                    results.append(Metadata().from_json_file(row.stream_metadata))
+            self.close()
+            return results
 
-        self.close()
-
-        if rows:
-            return Metadata().from_json_file(rows.stream_metadata)
         else:
-            return None
+            rows = self.session.query(Stream.stream_metadata).filter((Stream.name == stream_name) & (Stream.version==version) & (Stream.study_name==self.study_name)).first()
+
+            self.close()
+
+            if rows:
+                return Metadata().from_json_file(rows.stream_metadata)
+            else:
+                return None
 
     def list_streams(self)->List[Metadata]:
         """

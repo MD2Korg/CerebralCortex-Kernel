@@ -83,14 +83,16 @@ class StreamHandler():
 
         version = str(version).strip().replace(" ", "")
 
-        if version!="latest":
+        if version!="latest" and version!="all":
             if int(version) not in all_versions:
                 raise Exception("Version "+str(version)+" is not available for stream: "+str(stream_name))
 
         if version=="latest":
             version = max(all_versions)
 
-        version = int(version)
+        if version!="all":
+            version = int(version)
+
         stream_metadata = self.sql_data.get_stream_metadata_by_name(stream_name=stream_name, version=version)
 
         if stream_metadata:

@@ -64,7 +64,7 @@ class TestCerebralCortex(unittest.TestCase, NoSqlStorageTest, SqlStorageTest):
         self.user_role = "test_role"
         self.auth_token = "xxx"
         self.user_metadata = {"study_name": self.study_name}
-        self.user_settings = {"mcerebrum":"confs"}
+        self.user_settings = {'mcerebrum': 'confs', 'username': self.username, 'user_id': self.user_id}
 
         # object test params
         self.bucket_name = "test_bucket"
