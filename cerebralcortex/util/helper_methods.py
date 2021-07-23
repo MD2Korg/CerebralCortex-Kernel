@@ -64,6 +64,6 @@ def get_study_names(configs_dir_path: str=None, default_config=True)->List[str]:
         filesystem_path = config["filesystem"]["filesystem_path"]
         if not os.access(filesystem_path, os.W_OK):
             raise Exception(filesystem_path+" path is not writable. Please check your cerebralcortex.yml configurations.")
-        return [d.replace("study=","") for d in os.listdir(filesystem_path) if os.path.isdir(os.path.join(filesystem_path, d))]
+        return [d.replace("study=","") for d in os.listdir(filesystem_path) if os.path.isdir(os.path.join(filesystem_path, d)) and d.startswith("study=")]
     else:
         raise ValueError(nosql_store + " is not supported.")
