@@ -318,7 +318,7 @@ class FileBasedStorage():
         all_streams = self._ls_dir()
         for strm in all_streams:
             stream_name = strm.replace(self.data_path,"").replace("/stream=","").replace("study="+self.study_name, "")
-            if "_SUCCESS" not in stream_name:
+            if "_SUCCESS" not in stream_name and "=" in stream_name:
                 stream_names.append(stream_name)
         return stream_names
 
