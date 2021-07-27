@@ -1151,8 +1151,12 @@ class DataStream(DataFrame):
         data = self._data.withColumn(colName=colName, col=col)
         return DataStream(data=data, metadata=Metadata())
 
+
     # !!!!                       END Wrapper for PySpark Methods                           !!!
 
+    def save_as_csv(self):
+        #TODO:
+        raise NotImplementedError("TODO")
 
     ## !!!! HELPER METHOD !!!!!! ##
     def _gen_metadata(self):

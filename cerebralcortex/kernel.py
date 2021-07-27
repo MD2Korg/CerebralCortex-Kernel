@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
+import os, sys
 import uuid
 import warnings
 from datetime import datetime
@@ -64,12 +64,22 @@ class Kernel:
             >>> # for complete configs, have a look at default configs at: https://github.com/MD2Korg/CerebralCortex-Kernel/blob/3.3/cerebralcortex/core/config_manager/default.yml
         """
         try:
+
             if not os.getenv("PYSPARK_PYTHON"):
-                os.environ["PYSPARK_PYTHON"] = os.environ['_']
+                os.environ["PYSPARK_PYTHON"] = os.popen('which python3').read().replace("\n","")
             if not os.getenv("PYSPARK_DRIVER_PYTHON"):
-                os.environ["PYSPARK_DRIVER_PYTHON"] = os.environ['_']
+                os.environ["PYSPARK_DRIVER_PYTHON"] = os.popen('which python3').read().replace("\n","")
         except:
             raise Exception("Please set PYSPARK_PYTHON and PYSPARK_DRIVER_PYTHON environment variable. For example, export PYSPARK_DRIVER_PYTHON=/path/to/python/dir")
+
+        try:
+            if not os.getenv("SPARK_HOME"):
+                import pyspark
+                spark_installation_path = os.path.dirname(pyspark.__file__)
+                import findspark
+                findspark.init(spark_installation_path)
+        except:
+            raise Exception("Set SPARK_HOME environment variable.")
 
         if not configs_dir_path and not cc_configs:
             raise ValueError("Please provide configs_dir_path or cc_configs.")

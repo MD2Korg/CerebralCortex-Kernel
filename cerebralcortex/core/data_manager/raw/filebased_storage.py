@@ -313,12 +313,12 @@ class FileBasedStorage():
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.list_streams()
         """
-        stream_path = self._get_storage_path()
+        #stream_path = self._get_storage_path()
         stream_names = []
         all_streams = self._ls_dir()
         for strm in all_streams:
-            stream_name = strm.replace(self.data_path,"").replace("stream=","").replace("study="+self.study_name, "")
-            if "_SUCCESS" not in stream_name and "=" in stream_name:
+            if "=" in strm:
+                stream_name = strm.replace(self.data_path,"").replace("stream=","").replace("study="+self.study_name, "")
                 stream_names.append(stream_name)
         return stream_names
 

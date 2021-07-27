@@ -9,7 +9,7 @@ hdfs3==0.3.1
 pyspark==3.1.2
 msgpack==1.0.2
 PyJWT==2.1.0
-pandas==1.1.0
+pandas==1.1.5
 plotly==5.1.0
 datascience==0.17.0 # it installs folium==0.12.1. For colab
 matplotlib
