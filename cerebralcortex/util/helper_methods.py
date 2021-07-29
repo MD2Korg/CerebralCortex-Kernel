@@ -31,7 +31,7 @@ import pyarrow as pa
 from cerebralcortex.core.config_manager.config import Configuration
 
 
-def get_study_names(configs_dir_path: str)->List[str]:
+def get_study_names(configs_dir_path: str=None, default_config=True)->List[str]:
     """
     CerebralCortex constructor
 
@@ -44,7 +44,11 @@ def get_study_names(configs_dir_path: str)->List[str]:
     Examples:
         >>> get_study_names("/directory/path/of/configs/")
     """
-    config = Configuration(configs_dir_path).config
+    if default_config:
+        config = Configuration(configs_dir_path, "default").config
+    else:
+        config = Configuration(configs_dir_path).config
+
 
     nosql_store = config['nosql_storage']
 
@@ -60,6 +64,6 @@ def get_study_names(configs_dir_path: str)->List[str]:
         filesystem_path = config["filesystem"]["filesystem_path"]
         if not os.access(filesystem_path, os.W_OK):
             raise Exception(filesystem_path+" path is not writable. Please check your cerebralcortex.yml configurations.")
-        return [d.replace("study=","") for d in os.listdir(filesystem_path) if os.path.isdir(os.path.join(filesystem_path, d))]
+        return [d.replace("study=","") for d in os.listdir(filesystem_path) if os.path.isdir(os.path.join(filesystem_path, d)) and d.startswith("study=")]
     else:
         raise ValueError(nosql_store + " is not supported.")

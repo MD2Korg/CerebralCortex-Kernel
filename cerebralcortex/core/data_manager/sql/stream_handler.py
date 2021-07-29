@@ -75,6 +75,7 @@ class StreamHandler:
                 self.session.commit()
                 return {"status": True, "version": version, "record_type": "new"}
             except Exception as e:
+                self.session.rollback()
                 raise Exception(e)
 
     def _is_metadata_changed(self, stream_name, metadata_hash) -> dict:
@@ -92,6 +93,8 @@ class StreamHandler:
 
         """
         rows = self.session.query(Stream).filter(Stream.metadata_hash==metadata_hash).first()
+
+        self.close()
 
         if rows:
             return {"version": int(rows.version), "status": "exist"}
@@ -117,6 +120,7 @@ class StreamHandler:
 
         Returns:
             Metadata: Returns an empty list if no metadata is available for a stream_name or a list of metadata otherwise.
+
         Raises:
             ValueError: stream_name cannot be None or empty.
         Examples:
@@ -127,12 +131,24 @@ class StreamHandler:
         if stream_name is None or stream_name=="":
             raise ValueError("stream_name cannot be None or empty.")
 
-        rows = self.session.query(Stream.stream_metadata).filter((Stream.name == stream_name) & (Stream.version==version) & (Stream.study_name==self.study_name)).first()
+        if version=="all":
+            results = []
+            rows = self.session.query(Stream.stream_metadata).filter((Stream.name == stream_name) & (Stream.study_name==self.study_name)).all()
+            if rows:
+                for row in rows:
+                    results.append(Metadata().from_json_file(row.stream_metadata))
+            self.close()
+            return results
 
-        if rows:
-            return Metadata().from_json_file(rows.stream_metadata)
         else:
-            return None
+            rows = self.session.query(Stream.stream_metadata).filter((Stream.name == stream_name) & (Stream.version==version) & (Stream.study_name==self.study_name)).first()
+
+            self.close()
+
+            if rows:
+                return Metadata().from_json_file(rows.stream_metadata)
+            else:
+                return None
 
     def list_streams(self)->List[Metadata]:
         """
@@ -146,6 +162,7 @@ class StreamHandler:
             >>> CC.list_streams()
         """
         rows = self.session.query(Stream.stream_metadata).filter(Stream.study_name == self.study_name).all()
+        self.close()
         results = []
         if rows:
             for row in rows:
@@ -168,6 +185,7 @@ class StreamHandler:
             >>> ["BATTERY--org.md2k.motionsense--MOTION_SENSE_HRV--LEFT_WRIST", "BATTERY--org.md2k.phonesensor--PHONE".....]
         """
         rows = self.session.query(Stream.name).filter(Stream.name.ilike('%'+stream_name+'%')).all()
+        self.close()
         if rows:
             return rows
         else:
@@ -192,7 +210,7 @@ class StreamHandler:
             raise ValueError("Stream_name is a required field.")
 
         rows = self.session.query(Stream.version).filter((Stream.name==stream_name) & (Stream.study_name==self.study_name)).all()
-
+        self.close()
         results = []
         if rows:
             for row in rows:
@@ -218,7 +236,7 @@ class StreamHandler:
             raise ValueError("stream_name are required field.")
 
         rows = self.session.query(Stream.name, Stream.version, Stream.metadata_hash).filter((Stream.name == stream_name) & (Stream.study_name==self.study_name)).all()
-
+        self.close()
         if rows:
             return rows
         else:
@@ -242,7 +260,7 @@ class StreamHandler:
             raise ValueError("metadata_hash is a required field.")
 
         rows = self.session.query(Stream.name).filter((Stream.metadata_hash == metadata_hash) & (Stream.study_name==self.study_name)).first()
-
+        self.close()
         if rows:
             return rows.name
         else:
@@ -265,11 +283,12 @@ class StreamHandler:
         if not metadata_hash:
             raise ValueError("metadata_hash is a required field.")
 
-        rows = self.session.query(Stream.stream_metadata).filter(
-            (Stream.metadata_hash == metadata_hash) & (Stream.study_name == self.study_name)).first()
-
+        rows = self.session.query(Stream).filter((Stream.metadata_hash == metadata_hash) & (Stream.study_name == self.study_name)).first()
+        self.close()
         if rows:
-            return rows.stream_metadata
+            stream_info = rows.stream_metadata
+            stream_info["version"] = rows.version
+            return stream_info
         else:
             raise Exception(str(metadata_hash)+ " does not exist.")
 
@@ -289,8 +308,35 @@ class StreamHandler:
 
         rows = self.session.query(Stream.name).filter(
             (Stream.name == stream_name) & (Stream.study_name == self.study_name)).first()
-
+        self.close()
         if rows:
             return True
         else:
             return False
+
+    def _delete_stream(self, stream_name: str) -> bool:
+        """
+        Returns true if provided stream name is deleted.
+
+        Args:
+            stream_name (str): name of a stream
+        Returns:
+            bool: True if stream_name is deleted False otherwise
+        Examples:
+            >>> CC = CerebralCortex("/directory/path/of/configs/")
+            >>> CC._delete_stream("ACCELEROMETER--org.md2k.motionsense--MOTION_SENSE_HRV--RIGHT_WRIST")
+            >>> True
+        """
+
+        rows = self.session.query(Stream.name).filter(
+            (Stream.name == stream_name) & (Stream.study_name == self.study_name))
+
+        try:
+            rows.delete(synchronize_session=False)
+            self.session.commit()
+            self.close()
+            return True
+        except Exception as e:
+            raise e
+            return False
+

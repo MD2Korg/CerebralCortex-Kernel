@@ -22,7 +22,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from pyspark.sql.functions import pandas_udf, PandasUDFType
+from pyspark.sql.functions import pandas_udf, PandasUDFType, lit
 from pyspark.sql.types import StructField, StructType, DoubleType, StringType, TimestampType, IntegerType
 
 from cerebralcortex.algorithms.utils.mprov_helper import CC_MProvAgg
@@ -31,7 +31,9 @@ from cerebralcortex.core.metadata_manager.stream.metadata import Metadata, DataD
     ModuleMetadata
 
 
-def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
+def ecg_autosense_data_quality(ecg,
+                               Fs=64,
+                               sensor_name='autosense',
                                outlier_threshold_high = 4000,
                                outlier_threshold_low = 20,
                                slope_threshold = 100,
@@ -163,8 +165,10 @@ def ecg_autosense_data_quality(ecg,Fs=64,sensor_name='autosense',
             if sensor_name in ['autosense']:
                 data['quality'] = get_quality_autosense(list(data['ecg']))
         return data
-
-    ecg_quality_stream = ecg.compute(data_quality,windowDuration=3,startTime='0 seconds')
+    if sensor_name=='autosense':
+        ecg_quality_stream = ecg.compute(data_quality,windowDuration=3,startTime='0 seconds')
+    else:
+        ecg_quality_stream = ecg.withColumn('quality',lit('acceptable'))
     data = ecg_quality_stream._data
     ds = DataStream(data=data,metadata=get_metadata())
     return ds

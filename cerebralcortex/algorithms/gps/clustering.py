@@ -190,7 +190,7 @@ def cluster_gps(ds: DataStream, epsilon_constant:int = 1000,
         raise Exception(
             "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
 
-    data = ds._data.apply(gps_clustering)
+    data = ds._data.applyInPandas(gps_clustering)
     results = DataStream(data=data, metadata=Metadata())
     metadta = update_metadata(stream_metadata=results.metadata,
                               stream_name="gps--org.md2k.clusters",

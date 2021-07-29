@@ -35,10 +35,18 @@ def ds_to_pdf(ds, user_id=None) -> pd.DataFrame:
     Returns:
         pandas.DataFrame
     """
-    if user_id:
-        ds = ds.filter_user(user_id)
 
-    pdf = ds._data.toPandas()
+
+    if isinstance(ds, pd.DataFrame):
+        if user_id:
+            pdf = ds.loc[ds['user'] == user_id]
+        else:
+            pdf = ds
+    else:
+        if user_id:
+            ds = ds.filter_user(user_id)
+        pdf = ds._data.toPandas()
+
     if "timestamp" in pdf.columns:
         return pdf.sort_values('timestamp')
     return pdf

@@ -1,7 +1,6 @@
 # Copyright (c) 2020, MD2K Center of Excellence
-# - Nasir Ali <nasir.ali08@gmail.com>
 # All rights reserved.
-#
+# Md Azim Ullah (mullah@memphis.edu)
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
 #
@@ -23,28 +22,6 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import folium
-from cerebralcortex.plotting.util import ds_to_pdf
+__version__ = "3.3.16"
 
-def plot_gps_clusters(ds, user_id:str=None, zoom=10):
-    """
-    Plots GPS coordinates
 
-    Args:
-        ds (DataStream): datastream object
-        user_id (str): uuid of a user
-        zoom: min 0 and max 100, zoom map
-
-    """
-    pdf = ds_to_pdf(ds, user_id)
-
-    center = None
-    for index, row in pdf.iterrows():
-        if center is None:
-            center = [row["latitude"], row["longitude"]]
-            m = folium.Map(
-                location=center,
-                zoom_start=zoom
-            )
-        folium.Marker(location=(row["latitude"], row["longitude"])).add_to(m)
-    return m

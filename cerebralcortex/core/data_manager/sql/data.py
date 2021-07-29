@@ -62,17 +62,17 @@ class SqlData(StreamHandler, UserHandler):
             self.dbUser = self.config['mysql']['db_user']
             self.dbPassword = self.config['mysql']['db_pass']
 
-            url = 'mysql+mysqlconnector://{0}:{1}@{2}:{3}/{4}'.format(self.dbUser, self.dbPassword, self.hostIP, self.hostPort, self.database)
+            url = 'mysql+mysqlconnector://{0}:{1}@{2}:{3}/{4}?use_pure=True'.format(self.dbUser, self.dbPassword, self.hostIP, self.hostPort, self.database)
 
         elif self.sql_store == "sqlite":
             database_file_path = self.config["sqlite"]["file_path"]
-            if database_file_path[:-1]!="/":
-                database_file_path = database_file_path+"/"
+            if database_file_path[-1:]!="/":
+                database_file_path += "/"
             url = 'sqlite:///{0}cc_kernel_database.db'.format(database_file_path)
         else:
             raise Exception(self.sql_store + ": SQL storage is not supported. Please install and configure MySQL or sqlite.")
 
-        engine = db.create_engine(url)
+        engine = db.create_engine(url, pool_recycle = True)
 
         if not database_exists(url):
             create_database(url)
@@ -80,5 +80,8 @@ class SqlData(StreamHandler, UserHandler):
         Base.metadata.create_all(engine)
 
         Session = db.orm.sessionmaker()
-        Session.configure(bind=engine)
+        Session.configure(bind=engine, autoflush = True, autocommit = False)
         self.session = Session()
+
+    def close(self):
+        self.session.close()

@@ -30,11 +30,11 @@ from cerebralcortex.markers.ecg_stress.stress_from_ecg import stress_from_ecg
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="ECG Stress Calculation")
     parser.add_argument('-c', '--config_dir', help='CC Configuration directory path', required=False,default="../../conf/")
-    parser.add_argument('-a', '--ecg_stream_name', help='Input ECG Stream Name', required=False,default="ecg--org.md2k.autosense--autosense_chest--chest")
-    parser.add_argument('-s', '--study_name', help='Study Name', required=False,default="rice")
-    parser.add_argument('-f', '--frequency', help='ECG Sampling Frequency', required=False,default="64")
+    parser.add_argument('-a', '--ecg_stream_name', help='Input ECG Stream Name', required=False,default="wesad.chest.ecg")
+    parser.add_argument('-s', '--study_name', help='Study Name', required=False,default="wesad")
+    parser.add_argument('-f', '--frequency', help='ECG Sampling Frequency', required=False,default="700")
     parser.add_argument('-p', '--path', help='Stress Model Path', required=False,default='../markers/ecg_stress/model/stress_ecg_final.p')
-    parser.add_argument('-n', '--sensor_name', help='Sensor Type', required=False,default='autosense')
+    parser.add_argument('-n', '--sensor_name', help='Sensor Type', required=False,default='respiban')
 
     # parse arguments
     args = vars(parser.parse_args())
@@ -51,7 +51,8 @@ if __name__ == "__main__":
     # get stream data
     ecg_data = CC.get_stream(ecg_stream_name)
 
-    stress_episodes = stress_from_ecg(ecg_data, sensor_name=sensor_name, Fs=Fs, model_path=model_path)
+    label = CC.get_stream("wesad.label")
+    stress_episodes = stress_from_ecg(ecg_data, label, sensor_name=sensor_name, Fs=Fs, model_path=model_path)
 
     # show results
     stress_episodes.show(60)

@@ -23,7 +23,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
+import os, sys
 import uuid
 import warnings
 from datetime import datetime
@@ -39,7 +39,7 @@ from cerebralcortex.core.log_manager.log_handler import LogTypes
 from cerebralcortex.core.log_manager.logging import CCLogging
 from cerebralcortex.core.metadata_manager.stream.metadata import Metadata
 from cerebralcortex.core.util.spark_helper import get_or_create_sc
-
+from cerebralcortex.version import __version__
 
 class Kernel:
 
@@ -64,18 +64,29 @@ class Kernel:
             >>> # for complete configs, have a look at default configs at: https://github.com/MD2Korg/CerebralCortex-Kernel/blob/3.3/cerebralcortex/core/config_manager/default.yml
         """
         try:
+
             if not os.getenv("PYSPARK_PYTHON"):
-                os.environ["PYSPARK_PYTHON"] = os.environ['_']
+                os.environ["PYSPARK_PYTHON"] = os.popen('which python3').read().replace("\n","")
             if not os.getenv("PYSPARK_DRIVER_PYTHON"):
-                os.environ["PYSPARK_DRIVER_PYTHON"] = os.environ['_']
+                os.environ["PYSPARK_DRIVER_PYTHON"] = os.popen('which python3').read().replace("\n","")
         except:
             raise Exception("Please set PYSPARK_PYTHON and PYSPARK_DRIVER_PYTHON environment variable. For example, export PYSPARK_DRIVER_PYTHON=/path/to/python/dir")
+
+        try:
+            if not os.getenv("SPARK_HOME"):
+                import pyspark
+                spark_installation_path = os.path.dirname(pyspark.__file__)
+                import findspark
+                findspark.init(spark_installation_path)
+        except:
+            raise Exception("Set SPARK_HOME environment variable.")
 
         if not configs_dir_path and not cc_configs:
             raise ValueError("Please provide configs_dir_path or cc_configs.")
         elif configs_dir_path and cc_configs:
             raise ValueError("Provide only configs_dir_path OR cc_configs.")
 
+        self.version = __version__
         self.config_filepath = configs_dir_path
         self.study_name = study_name
         os.environ["STUDY_NAME"] = study_name
@@ -379,7 +390,7 @@ class Kernel:
         """
         return self.SqlData.get_user_id(user_name)
 
-    def get_user_name(self, user_id: str) -> str:
+    def get_username(self, user_id: str) -> str:
         """
         Get the user name linked to a user id.
 
@@ -394,7 +405,7 @@ class Kernel:
             >>> CC.get_username("76cc444c-4fb8-776e-2872-9472b4e66b16")
             >>> 'nasir_ali'
         """
-        return self.SqlData.get_user_name(user_id)
+        return self.SqlData.get_username(user_id)
 
     def list_users(self) -> List[dict]:
         """

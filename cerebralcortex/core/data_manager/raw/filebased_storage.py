@@ -27,6 +27,7 @@
 import os
 from typing import List
 from uuid import uuid4
+import warnings
 
 import pandas as pd
 import pyarrow as pa
@@ -62,7 +63,10 @@ class FileBasedStorage():
             str: path where data shall be stored/searched
         """
 
-        dirpath = self.data_path+"study="+self.study_name+"/"
+        if self.nosql_store == "hdfs":
+            dirpath = self.hdfs_spark_url + self.data_path+"study="+self.study_name+"/"
+        else:
+            dirpath = self.data_path+"study="+self.study_name+"/"
 
         if stream_name:
             dirpath += "stream={0}/".format(stream_name)
@@ -164,14 +168,17 @@ class FileBasedStorage():
             Exception: if stream name does not exist.
         """
 
-        if user_id is not None and version=="all":
-            raise Exception("Not supported, yet. You can only request only one version of a stream associated with a user.")
+        # if user_id is not None and version=="all":
+        #     raise Exception("Not supported, yet. You can only request only one version of a stream associated with a user.")
 
         if stream_name!="" and stream_name is not None:
             if not self._path_exist(stream_name=stream_name):
                 raise Exception(stream_name+" does not exist.")
 
-        if version is not None and version!="all":
+        if version == "all":
+            warnings.warn("Setting version='all'  is experimental If multiple versions of a stream have different schemas then any operation on datastream will throw schema mismatch exception.")
+            data_path = self._get_storage_path(stream_name=stream_name)
+        elif version is not None and version!="all":
             data_path = self._get_storage_path(stream_name=stream_name, version=version, user_id=user_id)
         else:
             data_path = self._get_storage_path(stream_name=stream_name)
@@ -226,6 +233,8 @@ class FileBasedStorage():
 
         Returns:
             str: file_name of newly create parquet file
+
+        TODO: provide a reference in Kernel. Also generate metadata and store it into MySQL
         """
 
         table = pa.Table.from_pandas(df, preserve_index=False)
@@ -304,11 +313,13 @@ class FileBasedStorage():
             >>> CC = Kernel("/directory/path/of/configs/", study_name="default")
             >>> CC.list_streams()
         """
-        stream_path = self._get_storage_path()
+        #stream_path = self._get_storage_path()
         stream_names = []
         all_streams = self._ls_dir()
         for strm in all_streams:
-            stream_names.append(strm.replace(stream_path,"").replace("stream=","").replace("study="+self.study_name, ""))
+            if "=" in strm:
+                stream_name = strm.replace(self.data_path,"").replace("stream=","").replace("study="+self.study_name, "")
+                stream_names.append(stream_name)
         return stream_names
 
     def list_users(self, stream_name:str, version:int=1)->List[str]:

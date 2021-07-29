@@ -32,7 +32,7 @@ from cerebralcortex.algorithms.stress_prediction.stress_imputation import forwar
 from cerebralcortex.algorithms.utils.feature_normalization import normalize_features
 from cerebralcortex.core.datatypes.datastream import DataStream
 
-def stress_from_ecg(ecg_data:DataStream, sensor_name:str="autosense", Fs:int=64, model_path="./model/stress_ecg_final.p"):
+def stress_from_ecg(ecg_data:DataStream, labels, sensor_name:str="autosense", Fs:int=64, model_path="./model/stress_ecg_final.p"):
     """
     Compute stress episodes from ecg timeseries data
 
@@ -62,9 +62,12 @@ def stress_from_ecg(ecg_data:DataStream, sensor_name:str="autosense", Fs:int=64,
     # Compute stress probability
     ecg_stress_probability = compute_stress_probability(stress_features_normalized,model_path=model_path)
 
+    ecg_stress_probability  = ecg_stress_probability.sort("window")
+
     # Forward fill and impute stress data
     ecg_stress_probability_forward_filled = forward_fill_data(ecg_stress_probability)
     ecg_stress_probability_imputed = impute_stress_likelihood(ecg_stress_probability_forward_filled)
+
 
     # Compute stress episodes
     stress_episodes = compute_stress_episodes(ecg_stress_probability=ecg_stress_probability_imputed)
