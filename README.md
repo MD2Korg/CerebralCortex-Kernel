@@ -113,7 +113,7 @@ External CerebralCortex-Kernel offers following builtin algorithms to analyze se
 
 
 ## Examples
-- [Jupyter Notebooks](https://github.com/MD2Korg/CerebralCortex/tree/master/jupyter_demo)
+- [Google Colab Notebooks](https://github.com/MD2Korg/CerebralCortex-Kernel/tree/master/examples)
 
 ## Documentation
 
