@@ -146,7 +146,7 @@ def cluster_gps(ds: DataStream, epsilon_constant:int = 1000,
                                                                        centroid).m)
         return list(centermost_point) + [area]
 
-    @pandas_udf(schema, PandasUDFType.GROUPED_MAP)
+    #@pandas_udf(schema, PandasUDFType.GROUPED_MAP)
     @CC_MProvAgg('gps--org.md2k.phonesensor--phone', 'gps_clustering', 'gps--org.md2k.clusters', ['user', 'timestamp'], ['user', 'timestamp'])
     def gps_clustering(data):
         if data.shape[0] < minimum_points_in_cluster:
@@ -190,7 +190,7 @@ def cluster_gps(ds: DataStream, epsilon_constant:int = 1000,
         raise Exception(
             "DataStream object is not grouped data type. Please use 'window' operation on datastream object before running this algorithm")
 
-    data = ds._data.applyInPandas(gps_clustering)
+    data = ds._data.applyInPandas(gps_clustering,schema=schema)
     results = DataStream(data=data, metadata=Metadata())
     metadta = update_metadata(stream_metadata=results.metadata,
                               stream_name="gps--org.md2k.clusters",
