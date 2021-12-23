@@ -5,6 +5,6 @@ This algorithm computes 23 clinically validated glucose variability metrics from
 
 We have also developed a [python](https://github.com/DigitalBiomarkerDiscoveryPipeline/cgmquantify) and an [R](https://github.com/DigitalBiomarkerDiscoveryPipeline/cgmquantify-R) package “cgmqantify” that provide functions to calculate glucose summary metrics, glucose variability metrics (as defined in clinical publications), and visualizations to visualize trends in CGM data.
 
-##Acknowledgments
+## Acknowledgments
 * This work was supported in part by the [Chan Zuckerberg Initiative DAF, an advised fund of Silicon Valley Community Foundation](https://chanzuckerberg.com/eoss/proposals/expanding-the-open-mhealth-platform-to-support-digital-biomarker-discovery/)
     * Grant Number: 2020-218599
