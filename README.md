@@ -188,3 +188,5 @@ This project is licensed under the BSD 2-Clause - see the [license](https://md2k
   * Grants: 1640813, 1722646
 * [Intelligence Advanced Research Projects Activity](https://www.iarpa.gov/)
   * Contract: 2017-17042800006
+* [Chan Zuckerberg Initiative DAF, an advised fund of Silicon Valley Community Foundation](https://chanzuckerberg.com/eoss/proposals/expanding-the-open-mhealth-platform-to-support-digital-biomarker-discovery/)
+  * Grant Number: 2020-218599

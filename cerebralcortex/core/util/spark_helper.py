@@ -46,8 +46,10 @@ def get_or_create_sc(type="sparkContext", name="CerebralCortex-Kernal", enable_s
     ss.config("spark.streaming.kafka.maxRatePerPartition", 2)
     ss.config("spark.sql.session.timeZone", "UTC")
 
-    if enable_spark_ui==False:
+    if enable_spark_ui==True:
         ss.config("spark.ui.enabled", True)
+    else:
+        ss.config("spark.ui.enabled", False)
 
     sparkSession = ss.getOrCreate()
 
