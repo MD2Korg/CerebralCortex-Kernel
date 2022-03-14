@@ -264,7 +264,7 @@ class StreamHandler:
         if rows:
             return rows.name
         else:
-            raise Exception(str(metadata_hash)+ " does not exist.")
+            raise Exception(str(metadata_hash)+ " does not exist in mysql.")
 
     def get_stream_metadata_by_hash(self, metadata_hash: uuid) -> List:
         """
@@ -290,7 +290,7 @@ class StreamHandler:
             stream_info["version"] = rows.version
             return stream_info
         else:
-            raise Exception(str(metadata_hash)+ " does not exist.")
+            raise Exception(str(metadata_hash)+ " does not exist in mysql.")
 
     def is_stream(self, stream_name: str) -> bool:
         """

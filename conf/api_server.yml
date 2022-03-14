@@ -22,4 +22,4 @@ routes: # Don't change if you don't know what you are doing
 #########################################################################
 
 object_storage:
-  object_storage_path: "/Users/ali/IdeaProjects/MD2K_DATA/stress_sample_ecg_data/"
+  object_storage_path: "/Users/ali/IdeaProjects/CerebralCortex-2.0/cerebralcortex/test_suite/sample_data/objects/"

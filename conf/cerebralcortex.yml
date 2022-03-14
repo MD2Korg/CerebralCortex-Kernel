@@ -15,7 +15,7 @@ nosql_storage: filesystem
 
 filesystem:
   # in case of nosql_store=filesystem, provide directory path where all processed-data shall be stored
-  filesystem_path: "/Users/ali/IdeaProjects/MD2K_DATA/stress_sample_ecg_data/"
+  filesystem_path: "/Users/ali/cc_data/"
 
 hdfs:
   host: localhost
